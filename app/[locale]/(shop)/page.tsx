@@ -1,0 +1,66 @@
+import { getTranslations } from "next-intl/server";
+import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { getPriceRange } from "@/lib/shop/price";
+import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { ProductCard } from "@/components/shop/product-card";
+import { ProductShelf } from "@/components/shop/product-shelf";
+import { CategoryTiles } from "@/components/shop/category-tiles";
+import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
+import { HeroSection } from "@/components/shop/hero-section";
+
+export default async function ShopHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category } = await searchParams;
+  const [t, allProducts, categories] = await Promise.all([
+    getTranslations("shop"),
+    getActiveProducts(),
+    getAllShopCategories(),
+  ]);
+
+  const displayedProducts = category
+    ? allProducts.filter((p) => p.categoryId === category)
+    : allProducts;
+
+  const bestSellers = allProducts.filter((p) => p.isFeatured).slice(0, 4);
+  const newArrivals = allProducts
+    .filter((p) => isNewProduct(p.createdAt))
+    .slice(0, 4);
+  const promos = allProducts
+    .filter((p) => {
+      const { min } = getPriceRange(p.variants, p.basePrice);
+      return isPromo(p.compareAtPrice, min);
+    })
+    .slice(0, 4);
+
+  return (
+    <div className="flex flex-col gap-12">
+      <HeroSection />
+
+      <CategoryTiles categories={categories} />
+
+      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
+      <ProductShelf title={t("newBadge")} products={newArrivals} />
+      <ProductShelf title={t("promoBadge")} products={promos} />
+
+      <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
+        <h2 className="text-xl font-semibold tracking-tight">
+          {t("allProductsTitle")}
+        </h2>
+        <CategoryFilterBar categories={categories} activeCategoryId={category} />
+
+        {displayedProducts.length === 0 ? (
+          <p className="text-muted-foreground">{t("noProducts")}</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {displayedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
