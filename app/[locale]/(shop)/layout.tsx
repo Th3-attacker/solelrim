@@ -1,17 +1,23 @@
+import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartTrigger } from "@/components/cart/cart-trigger";
 import { Link } from "@/i18n/navigation";
 
-export default function ShopLayout({
+export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("shop");
+
   return (
     <CartProvider>
       <div className="shop-theme flex min-h-screen flex-col">
+        <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
+          {t("announcementBar")}
+        </div>
         <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
             <Link

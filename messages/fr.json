@@ -117,7 +117,15 @@
     "heroSubtitle": "Vêtements et accessoires de sport sélectionnés pour la qualité et la performance.",
     "heroCta": "Découvrir le catalogue",
     "shopByCategory": "Parcourir par catégorie",
-    "allProductsTitle": "Tous les produits"
+    "allProductsTitle": "Tous les produits",
+    "announcementBar": "Paiement mobile sécurisé · Confirmation instantanée par WhatsApp",
+    "trustPaymentTitle": "Paiement mobile",
+    "trustPaymentDesc": "Réglez facilement via Bankily ou Masrivi.",
+    "trustWhatsappTitle": "Confirmation WhatsApp",
+    "trustWhatsappDesc": "Recevez une confirmation rapide de votre commande.",
+    "trustReviewTitle": "Commande vérifiée",
+    "trustReviewDesc": "Chaque commande est validée par notre équipe avant expédition.",
+    "categorySelectLabel": "Choisir une catégorie"
   },
   "cart": {
     "title": "Panier",

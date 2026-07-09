@@ -117,7 +117,15 @@
     "heroSubtitle": "ملابس ومستلزمات رياضية مختارة بعناية للجودة والأداء.",
     "heroCta": "تصفح الكتالوج",
     "shopByCategory": "تسوّق حسب الفئة",
-    "allProductsTitle": "جميع المنتجات"
+    "allProductsTitle": "جميع المنتجات",
+    "announcementBar": "دفع آمن عبر الهاتف · تأكيد فوري عبر واتساب",
+    "trustPaymentTitle": "دفع عبر الهاتف",
+    "trustPaymentDesc": "ادفع بسهولة عبر بنكيلي أو مصرفي.",
+    "trustWhatsappTitle": "تأكيد عبر واتساب",
+    "trustWhatsappDesc": "احصل على تأكيد سريع لطلبك.",
+    "trustReviewTitle": "طلب موثّق",
+    "trustReviewDesc": "يتم التحقق من كل طلب من طرف فريقنا قبل الشحن.",
+    "categorySelectLabel": "اختر فئة"
   },
   "cart": {
     "title": "السلة",

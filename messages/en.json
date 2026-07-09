@@ -117,7 +117,15 @@
     "heroSubtitle": "Sportswear and accessories selected for quality and performance.",
     "heroCta": "Browse the catalog",
     "shopByCategory": "Shop by category",
-    "allProductsTitle": "All products"
+    "allProductsTitle": "All products",
+    "announcementBar": "Secure mobile payment · Instant WhatsApp confirmation",
+    "trustPaymentTitle": "Mobile payment",
+    "trustPaymentDesc": "Pay easily via Bankily or Masrivi.",
+    "trustWhatsappTitle": "WhatsApp confirmation",
+    "trustWhatsappDesc": "Get a quick confirmation of your order.",
+    "trustReviewTitle": "Verified order",
+    "trustReviewDesc": "Every order is reviewed by our team before it ships.",
+    "categorySelectLabel": "Choose a category"
   },
   "cart": {
     "title": "Cart",
