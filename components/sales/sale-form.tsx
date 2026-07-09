@@ -173,8 +173,11 @@ export function SaleForm({
           </div>
 
           {fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-6 items-end gap-2">
-              <div className="col-span-4 flex flex-col gap-1">
+            <div
+              key={field.id}
+              className="grid grid-cols-1 items-end gap-2 sm:grid-cols-6"
+            >
+              <div className="flex flex-col gap-1 sm:col-span-4">
                 <Label className="text-xs">{t("selectVariant")}</Label>
                 <Select
                   value={watch(`items.${index}.variantId`)}
@@ -195,23 +198,25 @@ export function SaleForm({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-1 flex flex-col gap-1">
-                <Label className="text-xs">{t("quantity")}</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  {...register(`items.${index}.quantity`)}
-                />
+              <div className="flex items-end gap-2 sm:col-span-2">
+                <div className="flex flex-1 flex-col gap-1">
+                  <Label className="text-xs">{t("quantity")}</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...register(`items.${index}.quantity`)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => remove(index)}
+                  disabled={fields.length <= 1}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => remove(index)}
-                disabled={fields.length <= 1}
-              >
-                <Trash2 className="size-4" />
-              </Button>
             </div>
           ))}
 
