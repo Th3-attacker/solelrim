@@ -46,9 +46,12 @@ export default async function ShopHomePage({
       <ProductShelf title={t("promoBadge")} products={promos} />
 
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
-        <h2 className="text-xl font-semibold tracking-tight">
-          {t("allProductsTitle")}
-        </h2>
+        <div className="flex items-center gap-3">
+          <span className="h-6 w-1.5 rounded-full bg-primary" />
+          <h2 className="text-xl font-semibold tracking-tight">
+            {t("allProductsTitle")}
+          </h2>
+        </div>
         <CategoryFilterBar categories={categories} activeCategoryId={category} />
 
         {displayedProducts.length === 0 ? (

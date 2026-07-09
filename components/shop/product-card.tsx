@@ -20,29 +20,37 @@ export function ProductCard({ product }: { product: Product }) {
   const promo = isPromo(product.compareAtPrice, min);
 
   return (
-    <Link href={`/products/${product.id}`}>
-      <Card className="h-full overflow-hidden py-0 transition-colors hover:bg-muted/50">
-        <div className="relative aspect-square w-full bg-muted">
+    <Link href={`/products/${product.id}`} className="group block">
+      <Card className="h-full overflow-hidden gap-3 py-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+        <div className="relative aspect-square w-full overflow-hidden bg-muted">
           {image ? (
             <Image
               src={getProductImageUrl(image.storagePath)}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
-          ) : null}
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+              Solelrim
+            </div>
+          )}
           <div className="absolute start-2 top-2 flex flex-col gap-1">
+            {promo && <Badge className="shadow-sm">{t("promoBadge")}</Badge>}
             {product.isFeatured && (
-              <Badge variant="secondary">{t("bestSellerBadge")}</Badge>
+              <Badge variant="secondary" className="shadow-sm">
+                {t("bestSellerBadge")}
+              </Badge>
             )}
-            {promo && <Badge variant="secondary">{t("promoBadge")}</Badge>}
             {isNewProduct(product.createdAt) && (
-              <Badge variant="secondary">{t("newBadge")}</Badge>
+              <Badge variant="outline" className="border-foreground/20 bg-background/80 shadow-sm">
+                {t("newBadge")}
+              </Badge>
             )}
           </div>
         </div>
-        <CardContent className="px-3 pt-3">
+        <CardContent className="px-3">
           <p className="text-xs text-muted-foreground">
             {product.category.name}
           </p>
@@ -58,7 +66,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {product.compareAtPrice?.toFixed(2)}
               </span>
             )}
-            {min.toFixed(2)}
+            <span className="font-semibold text-primary">{min.toFixed(2)}</span>
           </p>
           <StockBadge status={status} />
         </CardFooter>

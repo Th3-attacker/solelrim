@@ -18,7 +18,7 @@ export async function CategoryFilterBar({
       <Link
         href="/"
         className={cn(
-          "rounded-full border px-3 py-1 text-sm",
+          "rounded-full border px-3 py-1 text-sm transition-colors",
           !activeCategoryId
             ? "border-primary bg-primary text-primary-foreground"
             : "border-border text-muted-foreground hover:bg-muted",
@@ -31,7 +31,7 @@ export async function CategoryFilterBar({
           key={category.id}
           href={{ pathname: "/", query: { category: category.id } }}
           className={cn(
-            "rounded-full border px-3 py-1 text-sm",
+            "rounded-full border px-3 py-1 text-sm transition-colors",
             activeCategoryId === category.id
               ? "border-primary bg-primary text-primary-foreground"
               : "border-border text-muted-foreground hover:bg-muted",

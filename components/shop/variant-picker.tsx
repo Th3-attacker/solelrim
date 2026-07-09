@@ -116,7 +116,7 @@ export function VariantPicker({
 
       {resolvedVariant && (
         <div className="flex items-center gap-3">
-          <p className="text-xl font-semibold">
+          <p className="text-2xl font-bold text-primary">
             {resolvedVariant.price.toFixed(2)}
           </p>
           <StockBadge
@@ -146,8 +146,10 @@ export function VariantPicker({
         />
         <Button
           type="button"
+          size="lg"
           onClick={handleAddToCart}
           disabled={!resolvedVariant || resolvedVariant.stock <= 0}
+          className="shadow-md shadow-primary/20"
         >
           {tCart("addToCart")}
         </Button>

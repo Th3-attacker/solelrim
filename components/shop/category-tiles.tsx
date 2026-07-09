@@ -1,3 +1,4 @@
+import { Tag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/card";
@@ -19,8 +20,12 @@ export async function CategoryTiles({ categories }: { categories: Category[] }) 
           <Link
             key={category.id}
             href={{ pathname: "/", query: { category: category.id } }}
+            className="group"
           >
-            <Card className="flex aspect-square items-center justify-center p-4 text-center transition-colors hover:bg-muted/50">
+            <Card className="flex aspect-square flex-col items-center justify-center gap-3 border-transparent bg-linear-to-br from-primary/10 to-muted p-4 text-center transition-all duration-300 group-hover:-translate-y-1 group-hover:border-primary/30 group-hover:shadow-md">
+              <div className="flex size-11 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <Tag className="size-5" />
+              </div>
               <span className="text-sm font-medium">{category.name}</span>
             </Card>
           </Link>
