@@ -4,6 +4,7 @@ import { getPriceRange } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { ProductCard } from "@/components/shop/product-card";
 import { ProductShelf } from "@/components/shop/product-shelf";
+import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
 import { CategoryTiles } from "@/components/shop/category-tiles";
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategorySelect } from "@/components/shop/category-select";
@@ -65,11 +66,11 @@ export default async function ShopHomePage({
         {displayedProducts.length === 0 ? (
           <p className="text-muted-foreground">{t("noProducts")}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <FavoritesSortedGrid ids={displayedProducts.map((p) => p.id)}>
             {displayedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
-          </div>
+          </FavoritesSortedGrid>
         )}
       </div>
     </div>

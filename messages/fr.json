@@ -125,7 +125,9 @@
     "trustWhatsappDesc": "Recevez une confirmation rapide de votre commande.",
     "trustReviewTitle": "Commande vérifiée",
     "trustReviewDesc": "Chaque commande est validée par notre équipe avant expédition.",
-    "categorySelectLabel": "Choisir une catégorie"
+    "categorySelectLabel": "Choisir une catégorie",
+    "addToFavorites": "Ajouter aux favoris",
+    "removeFromFavorites": "Retirer des favoris"
   },
   "cart": {
     "title": "Panier",

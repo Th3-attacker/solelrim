@@ -6,6 +6,7 @@ import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getVariantPrice, getPriceRange } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { VariantPicker } from "@/components/shop/variant-picker";
+import { FavoriteButton } from "@/components/shop/favorite-button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function ProductDetailPage({
@@ -62,15 +63,26 @@ export default async function ProductDetailPage({
       </div>
 
       <div>
-        <p className="text-sm text-muted-foreground">{product.category.name}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
-        <div className="mt-2 flex gap-1">
-          {product.isFeatured && (
-            <Badge variant="secondary">{t("bestSellerBadge")}</Badge>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-muted-foreground">{product.category.name}</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+          </div>
+          <FavoriteButton productId={product.id} className="border shrink-0" />
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {promo && (
+            <Badge className="border-0 bg-primary text-primary-foreground">
+              {t("promoBadge")}
+            </Badge>
           )}
-          {promo && <Badge variant="secondary">{t("promoBadge")}</Badge>}
           {isNewProduct(product.createdAt) && (
-            <Badge variant="secondary">{t("newBadge")}</Badge>
+            <Badge className="border-0 bg-foreground text-background">
+              {t("newBadge")}
+            </Badge>
+          )}
+          {product.isFeatured && (
+            <Badge variant="outline">{t("bestSellerBadge")}</Badge>
           )}
         </div>
         {product.description && (

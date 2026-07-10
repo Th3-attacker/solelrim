@@ -125,7 +125,9 @@
     "trustWhatsappDesc": "Get a quick confirmation of your order.",
     "trustReviewTitle": "Verified order",
     "trustReviewDesc": "Every order is reviewed by our team before it ships.",
-    "categorySelectLabel": "Choose a category"
+    "categorySelectLabel": "Choose a category",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites"
   },
   "cart": {
     "title": "Cart",

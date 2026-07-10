@@ -125,7 +125,9 @@
     "trustWhatsappDesc": "احصل على تأكيد سريع لطلبك.",
     "trustReviewTitle": "طلب موثّق",
     "trustReviewDesc": "يتم التحقق من كل طلب من طرف فريقنا قبل الشحن.",
-    "categorySelectLabel": "اختر فئة"
+    "categorySelectLabel": "اختر فئة",
+    "addToFavorites": "أضف إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة"
   },
   "cart": {
     "title": "السلة",
