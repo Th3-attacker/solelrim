@@ -1,15 +1,15 @@
-import { getTranslations } from "next-intl/server";
-import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
-import { getPriceRange } from "@/lib/shop/price";
-import { isNewProduct, isPromo } from "@/lib/shop/badges";
-import { ProductCard } from "@/components/shop/product-card";
-import { ProductShelf } from "@/components/shop/product-shelf";
-import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
-import { CategoryTiles } from "@/components/shop/category-tiles";
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategorySelect } from "@/components/shop/category-select";
+import { CategoryTiles } from "@/components/shop/category-tiles";
+import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
 import { HeroSection } from "@/components/shop/hero-section";
+import { ProductCard } from "@/components/shop/product-card";
+import { ProductShelf } from "@/components/shop/product-shelf";
 import { TrustBadges } from "@/components/shop/trust-badges";
+import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { getPriceRange } from "@/lib/shop/price";
+import { getTranslations } from "next-intl/server";
 
 export default async function ShopHomePage({
   searchParams,
@@ -44,14 +44,6 @@ export default async function ShopHomePage({
 
       <CategoryFilterBar categories={categories} activeCategoryId={category} />
 
-      <CategoryTiles categories={categories} />
-
-      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
-      <ProductShelf title={t("newBadge")} products={newArrivals} />
-      <ProductShelf title={t("promoBadge")} products={promos} />
-
-      <TrustBadges />
-
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -73,6 +65,14 @@ export default async function ShopHomePage({
           </FavoritesSortedGrid>
         )}
       </div>
+
+      <CategoryTiles categories={categories} />
+
+      <ProductShelf title={t("newBadge")} products={newArrivals} />
+      <ProductShelf title={t("promoBadge")} products={promos} />
+      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
+
+      <TrustBadges />
     </div>
   );
 }

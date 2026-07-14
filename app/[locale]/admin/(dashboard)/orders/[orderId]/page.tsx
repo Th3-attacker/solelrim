@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Tag } from "lucide-react";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import {
   Table,
   TableBody,
@@ -43,10 +46,20 @@ export default async function OrderDetailPage({
           <OrderStatusBadge status={order.status} />
         </div>
         {order.status === "PENDING" && <OrderActions orderId={order.id} />}
-        {order.status === "CONFIRMED" && order.confirmedAt && (
-          <p className="text-sm text-muted-foreground">
-            {order.confirmedAt.toLocaleString()}
-          </p>
+        {order.status === "CONFIRMED" && (
+          <div className="flex items-center gap-3">
+            {order.confirmedAt && (
+              <p className="text-sm text-muted-foreground">
+                {order.confirmedAt.toLocaleString()}
+              </p>
+            )}
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/orders/${order.id}/label`}>
+                <Tag className="size-4" />
+                {t("printLabel")}
+              </Link>
+            </Button>
+          </div>
         )}
         {order.status === "REJECTED" && order.rejectedAt && (
           <p className="text-sm text-muted-foreground">

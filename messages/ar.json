@@ -186,7 +186,10 @@
     "insufficientStockError": "المخزون غير كافٍ لتأكيد هذا الطلب.",
     "alreadyProcessed": "تمت معالجة هذا الطلب بالفعل.",
     "noOrders": "لا توجد طلبات بعد.",
-    "itemsTitle": "العناصر المطلوبة"
+    "itemsTitle": "العناصر المطلوبة",
+    "printLabel": "طباعة الملصق",
+    "labelReminder": "تحقق من المحتوى قبل تسليمه للعميل.",
+    "labelConfirmedOn": "تم تأكيد الطلب في"
   },
   "settings": {
     "title": "الإعدادات",

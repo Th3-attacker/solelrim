@@ -186,7 +186,10 @@
     "insufficientStockError": "Insufficient stock to confirm this order.",
     "alreadyProcessed": "This order has already been processed.",
     "noOrders": "No orders yet.",
-    "itemsTitle": "Ordered items"
+    "itemsTitle": "Ordered items",
+    "printLabel": "Print label",
+    "labelReminder": "Check the contents before handing to the customer.",
+    "labelConfirmedOn": "Order confirmed on"
   },
   "settings": {
     "title": "Settings",

@@ -186,7 +186,10 @@
     "insufficientStockError": "Stock insuffisant pour valider cette commande.",
     "alreadyProcessed": "Cette commande a déjà été traitée.",
     "noOrders": "Aucune commande pour le moment.",
-    "itemsTitle": "Articles commandés"
+    "itemsTitle": "Articles commandés",
+    "printLabel": "Imprimer l'étiquette",
+    "labelReminder": "Vérifiez le contenu avant de remettre au client.",
+    "labelConfirmedOn": "Commande confirmée le"
   },
   "settings": {
     "title": "Paramètres",
