@@ -14,7 +14,8 @@
     "noResults": "لا توجد نتائج.",
     "error": "حدث خطأ ما.",
     "requiredField": "هذا الحقل مطلوب.",
-    "optional": "اختياري"
+    "optional": "اختياري",
+    "currency": "أوقية"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

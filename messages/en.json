@@ -14,7 +14,8 @@
     "noResults": "No results.",
     "error": "Something went wrong.",
     "requiredField": "This field is required.",
-    "optional": "optional"
+    "optional": "optional",
+    "currency": "MRU"
   },
   "nav": {
     "dashboard": "Dashboard",

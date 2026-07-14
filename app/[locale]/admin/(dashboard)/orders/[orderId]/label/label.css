@@ -1,7 +1,0 @@
-/* A real label printer feeds a fixed 10x15cm sheet, so the print job for
-   this route must target that exact page size instead of the browser's
-   default A4/Letter. Scoped to this route via the CSS import below. */
-@page {
-  size: 10cm 15cm;
-  margin: 5mm;
-}

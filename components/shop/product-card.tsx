@@ -9,12 +9,14 @@ import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getPriceRange } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { formatPrice } from "@/lib/format/currency";
 import type { getActiveProducts } from "@/lib/queries/shop";
 
 type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 
 export function ProductCard({ product }: { product: Product }) {
   const t = useTranslations("shop");
+  const tCommon = useTranslations("common");
   const image = product.images[0];
   const status = getAggregateStockStatus(product.variants);
   const { min, isRange } = getPriceRange(product.variants, product.basePrice);
@@ -71,17 +73,25 @@ export function ProductCard({ product }: { product: Product }) {
           <p className="truncate text-sm font-medium">{product.name}</p>
         </CardContent>
         <CardFooter className="flex items-center justify-between gap-2 px-3 pb-3">
-          <p className="text-sm">
+          <div className="flex flex-wrap items-baseline gap-x-1.5 text-sm">
             {isRange && (
-              <span className="text-muted-foreground">{t("startingFrom")} </span>
+              <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
-            {promo && (
-              <span className="me-1 text-muted-foreground line-through">
-                {product.compareAtPrice?.toFixed(2)}
+            {/* Prices mix Latin digits and the MRU currency code, which stay
+                left-to-right even on the Arabic page — isolating direction
+                here stops two adjacent amounts from getting bidi-reordered
+                into an unreadable jumble. */}
+            <span dir="ltr" className="flex items-baseline gap-1.5">
+              {promo && product.compareAtPrice && (
+                <span className="text-muted-foreground line-through">
+                  {formatPrice(product.compareAtPrice, tCommon("currency"))}
+                </span>
+              )}
+              <span className="font-semibold text-primary">
+                {formatPrice(min, tCommon("currency"))}
               </span>
-            )}
-            <span className="font-semibold text-primary">{min.toFixed(2)}</span>
-          </p>
+            </span>
+          </div>
           <StockBadge status={status} />
         </CardFooter>
       </Link>

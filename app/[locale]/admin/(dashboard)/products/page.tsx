@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { DeleteProductButton } from "@/components/products/delete-product-button";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -63,7 +64,7 @@ export default async function AdminProductsPage() {
                 <TableCell className="text-muted-foreground">
                   {product.category.name}
                 </TableCell>
-                <TableCell>{product.basePrice.toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(product.basePrice, tCommon("currency"))}</TableCell>
                 <TableCell>
                   <StockBadge status={getAggregateStockStatus(product.variants)} />
                 </TableCell>

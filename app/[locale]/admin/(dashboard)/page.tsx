@@ -8,6 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -18,10 +19,11 @@ import {
 } from "@/components/ui/table";
 
 export default async function DashboardPage() {
-  const [t, tProducts, revenue, bestSellers, lowStock, summary] =
+  const [t, tProducts, tCommon, revenue, bestSellers, lowStock, summary] =
     await Promise.all([
       getTranslations("dashboard"),
       getTranslations("products"),
+      getTranslations("common"),
       getRevenueByDay(),
       getBestSellers(),
       getLowStockVariants(),
@@ -40,7 +42,7 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {summary.revenueThisMonth.toFixed(2)}
+            {formatPrice(summary.revenueThisMonth, tCommon("currency"))}
           </CardContent>
         </Card>
         <Card>

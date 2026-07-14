@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -14,8 +15,9 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminSalesPage() {
-  const [t, sales] = await Promise.all([
+  const [t, tCommon, sales] = await Promise.all([
     getTranslations("sales"),
+    getTranslations("common"),
     getAllSales(),
   ]);
 
@@ -58,7 +60,7 @@ export default async function AdminSalesPage() {
                 <TableCell className="text-muted-foreground">
                   {sale.client?.fullName ?? t("walkInClient")}
                 </TableCell>
-                <TableCell>{sale.total.toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
                 <TableCell>
                   <Badge
                     variant={sale.status === "COMPLETED" ? "secondary" : "destructive"}

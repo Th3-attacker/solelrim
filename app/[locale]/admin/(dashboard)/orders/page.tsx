@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -14,8 +15,9 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminOrdersPage() {
-  const [t, orders] = await Promise.all([
+  const [t, tCommon, orders] = await Promise.all([
     getTranslations("orders"),
+    getTranslations("common"),
     getAllOrders(),
   ]);
 
@@ -68,7 +70,7 @@ export default async function AdminOrdersPage() {
                   <TableCell className="text-muted-foreground">
                     {order.customerPhone}
                   </TableCell>
-                  <TableCell>{order.total.toFixed(2)}</TableCell>
+                  <TableCell>{formatPrice(order.total, tCommon("currency"))}</TableCell>
                   <TableCell>
                     <OrderStatusBadge status={order.status} />
                   </TableCell>

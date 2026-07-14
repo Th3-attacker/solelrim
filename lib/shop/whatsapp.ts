@@ -1,3 +1,5 @@
+import { formatPrice } from "@/lib/format/currency";
+
 // The message body is deliberately hardcoded French, not run through next-intl:
 // it is addressed to the store's French-speaking admin regardless of the
 // customer's browsing locale. Do not localize this.
@@ -21,10 +23,10 @@ export function buildOrderWhatsAppLink(params: {
     "",
     ...params.items.map(
       (i) =>
-        `- ${i.productName} (${i.size}, ${i.color}) x${i.quantity} — ${(i.unitPrice * i.quantity).toFixed(2)} MRU`,
+        `- ${i.productName} (${i.size}, ${i.color}) x${i.quantity} — ${formatPrice(i.unitPrice * i.quantity, "MRU")}`,
     ),
     "",
-    `Total: ${params.total.toFixed(2)} MRU`,
+    `Total: ${formatPrice(params.total, "MRU")}`,
     "",
     `Client: ${params.customerName}`,
     `Téléphone: ${params.customerPhone}`,

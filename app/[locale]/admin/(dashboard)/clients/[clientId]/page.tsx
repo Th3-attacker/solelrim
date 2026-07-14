@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getClientById } from "@/lib/queries/clients";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -19,9 +20,10 @@ export default async function ClientDetailPage({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
-  const [t, tSales, client] = await Promise.all([
+  const [t, tSales, tCommon, client] = await Promise.all([
     getTranslations("clients"),
     getTranslations("sales"),
+    getTranslations("common"),
     getClientById(clientId),
   ]);
 
@@ -76,7 +78,7 @@ export default async function ClientDetailPage({
                   <TableCell className="text-muted-foreground">
                     {sale.createdAt.toLocaleDateString()}
                   </TableCell>
-                  <TableCell>{sale.total.toFixed(2)}</TableCell>
+                  <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -13,6 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
+import { formatPrice } from "@/lib/format/currency";
 import {
   checkoutCustomerSchema,
   type CheckoutCustomerInput,
@@ -30,6 +31,7 @@ type Step = 1 | 2 | 3 | "success";
 export function CheckoutFlow({ settings }: { settings: Settings }) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const cart = useCart();
 
@@ -188,12 +190,12 @@ export function CheckoutFlow({ settings }: { settings: Settings }) {
                 <span>
                   {line.productName} ({line.size}, {line.color}) x{line.quantity}
                 </span>
-                <span>{(line.unitPrice * line.quantity).toFixed(2)}</span>
+                <span>{formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}</span>
               </div>
             ))}
             <div className="flex justify-between border-t pt-2 text-sm font-medium">
               <span>{tCart("subtotal")}</span>
-              <span>{cart.subtotal.toFixed(2)}</span>
+              <span>{formatPrice(cart.subtotal, tCommon("currency"))}</span>
             </div>
           </div>
           <div className="text-sm text-muted-foreground">

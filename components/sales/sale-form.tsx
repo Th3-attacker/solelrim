@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { createSale } from "@/lib/actions/sales";
+import { formatPrice } from "@/lib/format/currency";
 
 type Client = { id: string; fullName: string };
 type Variant = {
@@ -192,7 +193,7 @@ export function SaleForm({
                     {variants.map((variant) => (
                       <SelectItem key={variant.id} value={variant.id}>
                         {variant.productName} — {variant.size}/{variant.color} (
-                        {variant.stock}) — {variant.price.toFixed(2)}
+                        {variant.stock}) — {formatPrice(variant.price, tCommon("currency"))}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -225,7 +226,7 @@ export function SaleForm({
           )}
 
           <div className="flex justify-end text-sm font-medium">
-            {t("total")}: {total.toFixed(2)}
+            {t("total")}: {formatPrice(total, tCommon("currency"))}
           </div>
         </CardContent>
       </Card>

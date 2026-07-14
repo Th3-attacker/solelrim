@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { getVariantStockStatus } from "@/lib/shop/stock";
 import { useCart } from "@/components/cart/cart-provider";
+import { formatPrice } from "@/lib/format/currency";
 
 type PlainVariant = {
   id: string;
@@ -31,6 +32,7 @@ export function VariantPicker({
 }) {
   const t = useTranslations("products");
   const tCart = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const { addItem } = useCart();
 
   const sizes = useMemo(
@@ -117,7 +119,7 @@ export function VariantPicker({
       {resolvedVariant && (
         <div className="flex items-center gap-3">
           <p className="text-2xl font-bold text-primary">
-            {resolvedVariant.price.toFixed(2)}
+            {formatPrice(resolvedVariant.price, tCommon("currency"))}
           </p>
           <StockBadge
             status={getVariantStockStatus(

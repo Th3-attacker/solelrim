@@ -44,6 +44,14 @@ export default async function ShopHomePage({
 
       <CategoryFilterBar categories={categories} activeCategoryId={category} />
 
+      <CategoryTiles categories={categories} />
+
+      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
+      <ProductShelf title={t("newBadge")} products={newArrivals} />
+      <ProductShelf title={t("promoBadge")} products={promos} />
+
+      <TrustBadges />
+
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -65,14 +73,6 @@ export default async function ShopHomePage({
           </FavoritesSortedGrid>
         )}
       </div>
-
-      <CategoryTiles categories={categories} />
-
-      <ProductShelf title={t("newBadge")} products={newArrivals} />
-      <ProductShelf title={t("promoBadge")} products={promos} />
-      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
-
-      <TrustBadges />
     </div>
   );
 }

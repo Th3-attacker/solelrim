@@ -17,9 +17,11 @@ import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { useCart } from "@/components/cart/cart-provider";
+import { formatPrice } from "@/lib/format/currency";
 
 export function CartTrigger() {
   const t = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const side = getDirection(locale) === "rtl" ? "left" : "right";
   const { items, hydrated, itemCount, subtotal, updateQuantity, removeItem } =
@@ -96,7 +98,7 @@ export function CartTrigger() {
                   </div>
                   <div className="flex flex-col items-end justify-between">
                     <p className="text-sm font-medium">
-                      {(line.unitPrice * line.quantity).toFixed(2)}
+                      {formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}
                     </p>
                     <Button
                       type="button"
@@ -118,7 +120,7 @@ export function CartTrigger() {
           <SheetFooter className="border-t pt-4">
             <div className="flex items-center justify-between text-sm font-medium">
               <span>{t("subtotal")}</span>
-              <span>{subtotal.toFixed(2)}</span>
+              <span>{formatPrice(subtotal, tCommon("currency"))}</span>
             </div>
             <SheetClose asChild>
               <Button asChild className="w-full">

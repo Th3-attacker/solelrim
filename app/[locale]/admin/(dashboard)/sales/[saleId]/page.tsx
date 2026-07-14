@@ -4,6 +4,7 @@ import { getSaleById } from "@/lib/queries/sales";
 import { Badge } from "@/components/ui/badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -19,9 +20,10 @@ export default async function SaleDetailPage({
   params: Promise<{ saleId: string }>;
 }) {
   const { saleId } = await params;
-  const [t, tProducts, sale] = await Promise.all([
+  const [t, tProducts, tCommon, sale] = await Promise.all([
     getTranslations("sales"),
     getTranslations("products"),
+    getTranslations("common"),
     getSaleById(saleId),
   ]);
 
@@ -82,8 +84,8 @@ export default async function SaleDetailPage({
                 <TableCell>{item.variant.size}</TableCell>
                 <TableCell>{item.variant.color}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.unitPrice.toFixed(2)}</TableCell>
-                <TableCell>{item.lineTotal.toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(item.unitPrice, tCommon("currency"))}</TableCell>
+                <TableCell>{formatPrice(item.lineTotal, tCommon("currency"))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -91,13 +93,13 @@ export default async function SaleDetailPage({
 
         <div className="mt-4 flex flex-col items-end gap-1 text-sm">
           <p>
-            {t("subtotal")}: {sale.subtotal.toFixed(2)}
+            {t("subtotal")}: {formatPrice(sale.subtotal, tCommon("currency"))}
           </p>
           <p>
-            {t("discount")}: {sale.discount.toFixed(2)}
+            {t("discount")}: {formatPrice(sale.discount, tCommon("currency"))}
           </p>
           <p className="text-base font-semibold">
-            {t("total")}: {sale.total.toFixed(2)}
+            {t("total")}: {formatPrice(sale.total, tCommon("currency"))}
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { OrderActions } from "@/components/orders/order-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
   TableBody,
@@ -23,10 +24,11 @@ export default async function OrderDetailPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-  const [t, tProducts, tSales, order] = await Promise.all([
+  const [t, tProducts, tSales, tCommon, order] = await Promise.all([
     getTranslations("orders"),
     getTranslations("products"),
     getTranslations("sales"),
+    getTranslations("common"),
     getOrderById(orderId),
   ]);
 
@@ -105,14 +107,14 @@ export default async function OrderDetailPage({
                 <TableCell>{item.variant.size}</TableCell>
                 <TableCell>{item.variant.color}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.unitPrice.toFixed(2)}</TableCell>
-                <TableCell>{item.lineTotal.toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(item.unitPrice, tCommon("currency"))}</TableCell>
+                <TableCell>{formatPrice(item.lineTotal, tCommon("currency"))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <div className="mt-2 flex justify-end text-sm font-medium">
-          {tSales("total")}: {order.total.toFixed(2)}
+          {tSales("total")}: {formatPrice(order.total, tCommon("currency"))}
         </div>
       </div>
 

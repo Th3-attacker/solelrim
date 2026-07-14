@@ -140,4 +140,11 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind's preflight resets button cursor to default; every clickable
+     control in this app should read as clickable regardless of whether it
+     went through the shadcn Button component or a raw <button>. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
