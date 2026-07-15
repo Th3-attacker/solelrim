@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";
 import { Badge } from "@/components/ui/badge";
@@ -47,15 +46,15 @@ export function ProductCard({ product }: { product: Product }) {
   const colors = [...new Set(product.variants.map((v) => v.color))];
 
   return (
-    <Link href={`/products/${product.id}`} className="group block">
-      <Card className="h-full gap-2 border-none bg-transparent py-0 shadow-none">
-        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted">
+    <Link href={`/products/${product.id}`} className="group block h-full">
+      <div className="flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+        <div className="relative aspect-square w-full">
           {image ? (
             <Image
               src={getProductImageUrl(image.storagePath)}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
@@ -65,12 +64,12 @@ export function ProductCard({ product }: { product: Product }) {
           )}
 
           {badges.length > 0 && (
-            <div className="pointer-events-none absolute end-2 top-2 flex flex-col items-end gap-1">
+            <div className="pointer-events-none absolute end-0 top-0 flex flex-col items-end gap-1">
               {badges.map((badge) => (
                 <Badge
                   key={badge.key}
                   dir={badge.key === "promo" ? "ltr" : undefined}
-                  className="border-0 bg-background/95 text-foreground shadow-sm"
+                  className="border-0 bg-background text-foreground shadow-sm"
                 >
                   {badge.label}
                 </Badge>
@@ -79,7 +78,7 @@ export function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <CardContent className="flex flex-col gap-1 px-0.5">
+        <div className="flex flex-col gap-1">
           <div className="flex items-start justify-between gap-2">
             <p className="truncate text-sm text-foreground">{product.name}</p>
             <FavoriteButton
@@ -126,8 +125,8 @@ export function ProductCard({ product }: { product: Product }) {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
