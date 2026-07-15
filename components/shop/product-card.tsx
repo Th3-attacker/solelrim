@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +10,12 @@ import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getPriceRange } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { formatPrice } from "@/lib/format/currency";
+import { getSwatchColor } from "@/lib/shop/color-swatch";
 import type { getActiveProducts } from "@/lib/queries/shop";
 
 type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
+
+const MAX_SWATCHES = 4;
 
 export function ProductCard({ product }: { product: Product }) {
   const t = useTranslations("shop");
@@ -22,23 +25,31 @@ export function ProductCard({ product }: { product: Product }) {
   const { min, isRange } = getPriceRange(product.variants, product.basePrice);
   const promo = isPromo(product.compareAtPrice, min);
   const isNew = isNewProduct(product.createdAt);
+  const discountPercent =
+    promo && product.compareAtPrice
+      ? Math.round((1 - min / product.compareAtPrice.toNumber()) * 100)
+      : null;
 
-  // Cards go as narrow as ~170px on a 2-column mobile grid, sharing the top
-  // corners with the favorite button — show a single badge (the most
-  // relevant one) instead of stacking/crowding several onto one thumbnail.
-  // Priority: promo (financial incentive) > new (freshness) > best-seller.
-  const badge = promo
-    ? { label: t("promoBadge"), className: "bg-primary text-primary-foreground" }
-    : isNew
-      ? { label: t("newBadge"), className: "bg-foreground text-background" }
-      : product.isFeatured
-        ? { label: t("bestSellerBadge"), className: "bg-background/90 text-foreground" }
-        : null;
+  const badges = (
+    [
+      promo && discountPercent
+        ? { key: "promo", label: `-${discountPercent}%` }
+        : null,
+      isNew ? { key: "new", label: t("newBadge") } : null,
+      !promo && !isNew && product.isFeatured
+        ? { key: "featured", label: t("bestSellerBadge") }
+        : null,
+    ] as const
+  )
+    .filter((b): b is Exclude<typeof b, null> => b !== null)
+    .slice(0, 2);
+
+  const colors = [...new Set(product.variants.map((v) => v.color))];
 
   return (
-    <Card className="group h-full overflow-hidden gap-3 py-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative aspect-square w-full overflow-hidden bg-muted">
-        <Link href={`/products/${product.id}`} className="absolute inset-0 block">
+    <Link href={`/products/${product.id}`} className="group block">
+      <Card className="h-full gap-2 border-none bg-transparent py-0 shadow-none">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted">
           {image ? (
             <Image
               src={getProductImageUrl(image.storagePath)}
@@ -52,49 +63,71 @@ export function ProductCard({ product }: { product: Product }) {
               Solelrim
             </div>
           )}
-        </Link>
 
-        {badge && (
-          <Badge
-            className={`pointer-events-none absolute start-2 top-2 border-0 shadow-sm ${badge.className}`}
-          >
-            {badge.label}
-          </Badge>
-        )}
+          {badges.length > 0 && (
+            <div className="pointer-events-none absolute end-2 top-2 flex flex-col items-end gap-1">
+              {badges.map((badge) => (
+                <Badge
+                  key={badge.key}
+                  dir={badge.key === "promo" ? "ltr" : undefined}
+                  className="border-0 bg-background/95 text-foreground shadow-sm"
+                >
+                  {badge.label}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <FavoriteButton productId={product.id} className="absolute end-2 top-2 z-10" />
-      </div>
+        <CardContent className="flex flex-col gap-1 px-0.5">
+          <div className="flex items-start justify-between gap-2">
+            <p className="truncate text-sm text-foreground">{product.name}</p>
+            <FavoriteButton
+              productId={product.id}
+              className="size-7 shrink-0 bg-transparent shadow-none hover:bg-transparent"
+            />
+          </div>
 
-      <Link href={`/products/${product.id}`} className="flex flex-1 flex-col">
-        <CardContent className="flex-1 px-3">
-          <p className="text-xs text-muted-foreground">
-            {product.category.name}
-          </p>
-          <p className="truncate text-sm font-medium">{product.name}</p>
-        </CardContent>
-        <CardFooter className="flex items-center justify-between gap-2 px-3 pb-3">
-          <div className="flex flex-wrap items-baseline gap-x-1.5 text-sm">
-            {isRange && (
-              <span className="text-muted-foreground">{t("startingFrom")}</span>
-            )}
+          <div className="flex items-center justify-between gap-2">
             {/* Prices mix Latin digits and the MRU currency code, which stay
                 left-to-right even on the Arabic page — isolating direction
                 here stops two adjacent amounts from getting bidi-reordered
                 into an unreadable jumble. */}
-            <span dir="ltr" className="flex items-baseline gap-1.5">
+            <span dir="ltr" className="flex items-baseline gap-1.5 text-sm">
+              {isRange && (
+                <span className="text-muted-foreground">{t("startingFrom")}</span>
+              )}
               {promo && product.compareAtPrice && (
                 <span className="text-muted-foreground line-through">
                   {formatPrice(product.compareAtPrice, tCommon("currency"))}
                 </span>
               )}
-              <span className="font-semibold text-primary">
+              <span className="font-semibold text-foreground">
                 {formatPrice(min, tCommon("currency"))}
               </span>
             </span>
+            <StockBadge status={status} />
           </div>
-          <StockBadge status={status} />
-        </CardFooter>
-      </Link>
-    </Card>
+
+          {colors.length > 1 && (
+            <div className="flex items-center gap-1.5 pt-0.5">
+              {colors.slice(0, MAX_SWATCHES).map((color) => (
+                <span
+                  key={color}
+                  title={color}
+                  className="size-3.5 rounded-full ring-1 ring-inset ring-foreground/15"
+                  style={{ backgroundColor: getSwatchColor(color) }}
+                />
+              ))}
+              {colors.length > MAX_SWATCHES && (
+                <span className="text-xs text-muted-foreground">
+                  +{colors.length - MAX_SWATCHES}
+                </span>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
