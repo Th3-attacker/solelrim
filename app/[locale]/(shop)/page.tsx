@@ -40,7 +40,7 @@ export default async function ShopHomePage({
 
   return (
     <div className="flex flex-col gap-14">
-      <HeroSection />
+      <HeroSection products={allProducts} />
 
       <CategoryFilterBar categories={categories} activeCategoryId={category} />
 
