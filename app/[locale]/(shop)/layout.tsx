@@ -4,14 +4,31 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartTrigger } from "@/components/cart/cart-trigger";
 import { FavoritesProvider } from "@/components/shop/favorites-provider";
+import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
+import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
+import { getActiveProducts } from "@/lib/queries/shop";
+import { getPriceRange } from "@/lib/shop/price";
+import { getProductImageUrl } from "@/lib/supabase/storage";
 
 export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const t = await getTranslations("shop");
+  const [t, allProducts] = await Promise.all([
+    getTranslations("shop"),
+    getActiveProducts(),
+  ]);
+
+  const favoriteCandidates = allProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    imageUrl: product.images[0]
+      ? getProductImageUrl(product.images[0].storagePath)
+      : null,
+    price: getPriceRange(product.variants, product.basePrice).min,
+  }));
 
   return (
     <FavoritesProvider>
@@ -29,9 +46,11 @@ export default async function ShopLayout({
                 Sol<span className="text-primary">elrim</span>
               </Link>
               <div className="flex items-center gap-1">
+                <SearchTrigger />
+                <FavoritesTrigger products={favoriteCandidates} />
+                <CartTrigger />
                 <LanguageSwitcher />
                 <ModeToggle />
-                <CartTrigger />
               </div>
             </div>
           </header>

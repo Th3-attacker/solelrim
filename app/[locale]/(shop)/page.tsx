@@ -1,66 +1,70 @@
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
-import { CategorySelect } from "@/components/shop/category-select";
-import { CategoryTiles } from "@/components/shop/category-tiles";
 import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
 import { HeroSection } from "@/components/shop/hero-section";
 import { ProductCard } from "@/components/shop/product-card";
-import { ProductShelf } from "@/components/shop/product-shelf";
+import { ProductFilters } from "@/components/shop/product-filters";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
-import { isNewProduct, isPromo } from "@/lib/shop/badges";
-import { getPriceRange } from "@/lib/shop/price";
+import {
+  filterByColor,
+  filterByPriceBucket,
+  getAllCatalogColors,
+  sortProducts,
+} from "@/lib/shop/filters";
 import { getTranslations } from "next-intl/server";
 
 export default async function ShopHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    sort?: string;
+    price?: string;
+    color?: string;
+    q?: string;
+  }>;
 }) {
-  const { category } = await searchParams;
+  const { category, sort, price, color, q } = await searchParams;
   const [t, allProducts, categories] = await Promise.all([
     getTranslations("shop"),
     getActiveProducts(),
     getAllShopCategories(),
   ]);
 
-  const displayedProducts = category
+  let displayedProducts = category
     ? allProducts.filter((p) => p.categoryId === category)
     : allProducts;
+  if (q) {
+    const query = q.trim().toLowerCase();
+    displayedProducts = displayedProducts.filter((p) =>
+      p.name.toLowerCase().includes(query),
+    );
+  }
+  if (color) {
+    displayedProducts = filterByColor(displayedProducts, color);
+  }
+  if (price) {
+    displayedProducts = filterByPriceBucket(displayedProducts, price);
+  }
+  displayedProducts = sortProducts(displayedProducts, sort);
 
-  const bestSellers = allProducts.filter((p) => p.isFeatured).slice(0, 8);
-  const newArrivals = allProducts
-    .filter((p) => isNewProduct(p.createdAt))
-    .slice(0, 8);
-  const promos = allProducts
-    .filter((p) => {
-      const { min } = getPriceRange(p.variants, p.basePrice);
-      return isPromo(p.compareAtPrice, min);
-    })
-    .slice(0, 8);
+  const catalogColors = getAllCatalogColors(allProducts);
 
   return (
     <div className="flex flex-col gap-14">
       <HeroSection products={allProducts} />
 
-      <CategoryFilterBar categories={categories} activeCategoryId={category} />
-
-      <CategoryTiles categories={categories} />
-
-      <ProductShelf title={t("bestSellerBadge")} products={bestSellers} />
-      <ProductShelf title={t("newBadge")} products={newArrivals} />
-      <ProductShelf title={t("promoBadge")} products={promos} />
-
-      <TrustBadges />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <CategoryFilterBar categories={categories} activeCategoryId={category} />
+        <ProductFilters colors={catalogColors} categoryId={category} />
+      </div>
 
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="h-6 w-1.5 rounded-full bg-primary" />
-            <h2 className="text-xl font-semibold tracking-tight">
-              {t("allProductsTitle")}
-            </h2>
-          </div>
-          <CategorySelect categories={categories} activeCategoryId={category} />
+        <div className="flex items-center gap-3">
+          <span className="h-6 w-1.5 rounded-full bg-primary" />
+          <h2 className="text-xl font-semibold tracking-tight">
+            {t("allProductsTitle")}
+          </h2>
         </div>
 
         {displayedProducts.length === 0 ? (
@@ -73,6 +77,8 @@ export default async function ShopHomePage({
           </FavoritesSortedGrid>
         )}
       </div>
+
+      <TrustBadges />
     </div>
   );
 }

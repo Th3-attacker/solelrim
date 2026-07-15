@@ -3,12 +3,15 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { StockBadge } from "@/components/shop/stock-badge";
+import { FavoriteButton } from "@/components/shop/favorite-button";
+import { ShareButton } from "@/components/shop/share-button";
 import { getVariantStockStatus } from "@/lib/shop/stock";
+import { getSwatchColor } from "@/lib/shop/color-swatch";
 import { useCart } from "@/components/cart/cart-provider";
-import { formatPrice } from "@/lib/format/currency";
+import { cn } from "@/lib/utils";
 
 type PlainVariant = {
   id: string;
@@ -32,7 +35,7 @@ export function VariantPicker({
 }) {
   const t = useTranslations("products");
   const tCart = useTranslations("cart");
-  const tCommon = useTranslations("common");
+
   const { addItem } = useCart();
 
   const sizes = useMemo(
@@ -80,81 +83,106 @@ export function VariantPicker({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <p className="mb-2 text-sm font-medium">{t("size")}</p>
-        <div className="flex flex-wrap gap-2">
-          {sizes.map((size) => (
-            <Button
-              key={size}
-              type="button"
-              variant={selectedSize === size ? "default" : "outline"}
-              size="sm"
-              disabled={!isSizeAvailable(size)}
-              onClick={() => setSelectedSize(size)}
-            >
-              {size}
-            </Button>
-          ))}
+      {sizes.length > 1 && (
+        <div>
+          <p className="mb-2 text-sm font-medium">{t("size")}</p>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((size) => (
+              <Button
+                key={size}
+                type="button"
+                variant={selectedSize === size ? "default" : "outline"}
+                size="sm"
+                disabled={!isSizeAvailable(size)}
+                onClick={() => setSelectedSize(size)}
+              >
+                {size}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div>
-        <p className="mb-2 text-sm font-medium">{t("color")}</p>
-        <div className="flex flex-wrap gap-2">
-          {colors.map((color) => (
+      <div className="divide-y divide-border rounded-lg border">
+        {colors.length > 1 && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <p className="text-sm font-medium">{t("color")}</p>
+            <div className="flex items-center gap-2">
+              {colors.map((color) => {
+                const available = isColorAvailable(color);
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    title={color}
+                    aria-pressed={selectedColor === color}
+                    disabled={!available}
+                    onClick={() => setSelectedColor(color)}
+                    className={cn(
+                      "size-6 rounded-full ring-1 ring-offset-2 ring-offset-background transition-all",
+                      selectedColor === color
+                        ? "ring-2 ring-foreground"
+                        : "ring-inset ring-foreground/15",
+                      !available && "cursor-not-allowed opacity-30",
+                    )}
+                    style={{ backgroundColor: getSwatchColor(color) }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between px-4 py-3">
+          <p className="text-sm font-medium">{tCart("quantity")}</p>
+          <div className="flex items-center gap-3">
             <Button
-              key={color}
               type="button"
-              variant={selectedColor === color ? "default" : "outline"}
-              size="sm"
-              disabled={!isColorAvailable(color)}
-              onClick={() => setSelectedColor(color)}
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={quantity <= 1}
             >
-              {color}
+              <Minus className="size-3" />
             </Button>
-          ))}
+            <span className="w-4 text-center text-sm tabular-nums">{quantity}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={() =>
+                setQuantity((q) => Math.min(resolvedVariant?.stock ?? 1, q + 1))
+              }
+              disabled={!resolvedVariant || quantity >= resolvedVariant.stock}
+            >
+              <Plus className="size-3" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {resolvedVariant && (
-        <div className="flex items-center gap-3">
-          <p className="text-2xl font-bold text-primary">
-            {formatPrice(resolvedVariant.price, tCommon("currency"))}
-          </p>
-          <StockBadge
-            status={getVariantStockStatus(
-              resolvedVariant.stock,
-              resolvedVariant.lowStockThreshold,
-            )}
-          />
-        </div>
+        <StockBadge
+          status={getVariantStockStatus(
+            resolvedVariant.stock,
+            resolvedVariant.lowStockThreshold,
+          )}
+        />
       )}
 
-      <div className="flex items-center gap-3">
-        <Input
-          type="number"
-          min={1}
-          max={resolvedVariant?.stock ?? 1}
-          value={quantity}
-          onChange={(e) =>
-            setQuantity(
-              Math.max(
-                1,
-                Math.min(Number(e.target.value) || 1, resolvedVariant?.stock ?? 1),
-              ),
-            )
-          }
-          className="w-20"
-        />
-        <Button
-          type="button"
-          size="lg"
-          onClick={handleAddToCart}
-          disabled={!resolvedVariant || resolvedVariant.stock <= 0}
-          className="shadow-md shadow-primary/20"
-        >
-          {tCart("addToCart")}
-        </Button>
+      <Button
+        type="button"
+        size="lg"
+        className="w-full"
+        onClick={handleAddToCart}
+        disabled={!resolvedVariant || resolvedVariant.stock <= 0}
+      >
+        {tCart("addToCart")}
+      </Button>
+
+      <div className="flex items-center gap-2">
+        <FavoriteButton productId={productId} className="border" />
+        <ShareButton title={productName} />
       </div>
     </div>
   );
