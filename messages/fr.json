@@ -146,7 +146,8 @@
     "searchPlaceholder": "Rechercher un produit...",
     "closeSearch": "Fermer la recherche",
     "favoritesTitle": "Favoris",
-    "noFavorites": "Aucun favori pour le moment."
+    "noFavorites": "Aucun favori pour le moment.",
+    "categoriesLabel": "Catégories"
   },
   "cart": {
     "title": "Panier",

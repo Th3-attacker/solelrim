@@ -1,6 +1,7 @@
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
 import { HeroSection } from "@/components/shop/hero-section";
+import { MobileCategoryToggle } from "@/components/shop/mobile-category-toggle";
 import { ProductCard } from "@/components/shop/product-card";
 import { ProductFilters } from "@/components/shop/product-filters";
 import { TrustBadges } from "@/components/shop/trust-badges";
@@ -54,9 +55,17 @@ export default async function ShopHomePage({
     <div className="flex flex-col gap-14">
       <HeroSection products={allProducts} />
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="hidden items-center justify-between gap-4 md:flex">
         <CategoryFilterBar categories={categories} activeCategoryId={category} />
         <ProductFilters colors={catalogColors} categoryId={category} />
+      </div>
+
+      <div className="md:hidden">
+        <MobileCategoryToggle
+          filters={<ProductFilters colors={catalogColors} categoryId={category} />}
+        >
+          <CategoryFilterBar categories={categories} activeCategoryId={category} />
+        </MobileCategoryToggle>
       </div>
 
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">

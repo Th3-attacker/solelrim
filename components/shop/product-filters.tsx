@@ -2,20 +2,16 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { SlidersHorizontal } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-  SheetClose,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { getDirection } from "@/i18n/routing";
 import { getSwatchColor } from "@/lib/shop/color-swatch";
 import { formatPrice } from "@/lib/format/currency";
 import { PRICE_BUCKETS, SORT_OPTIONS } from "@/lib/shop/filters";
@@ -54,12 +50,11 @@ export function ProductFilters({
   const t = useTranslations("shop");
   const tProducts = useTranslations("products");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
-  const side = getDirection(locale) === "rtl" ? "left" : "right";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [open, setOpen] = useState(false);
   const [sort, setSort] = useState(searchParams.get("sort") ?? "default");
   const [price, setPrice] = useState(searchParams.get("price") ?? "all");
   const [color, setColor] = useState(searchParams.get("color") ?? "");
@@ -76,6 +71,7 @@ export function ProductFilters({
     if (next.color) params.set("color", next.color);
     const query = params.toString();
     router.push(`${pathname}${query ? `?${query}` : ""}#catalog`);
+    setOpen(false);
   }
 
   function handleReset() {
@@ -85,93 +81,120 @@ export function ProductFilters({
     navigate({ sort: "default", price: "all", color: "" });
   }
 
+  const sortOptions = (
+    <div className="flex flex-col gap-1">
+      {SORT_OPTIONS.map((option) => (
+        <OptionButton
+          key={option.value}
+          active={sort === option.value}
+          onClick={() => setSort(option.value)}
+        >
+          {t(option.labelKey)}
+        </OptionButton>
+      ))}
+    </div>
+  );
+
+  const priceOptions = (
+    <div className="flex flex-col gap-1">
+      <OptionButton active={price === "all"} onClick={() => setPrice("all")}>
+        {t("allCategories")}
+      </OptionButton>
+      {PRICE_BUCKETS.map((bucket) => (
+        <OptionButton
+          key={bucket.value}
+          active={price === bucket.value}
+          onClick={() => setPrice(bucket.value)}
+        >
+          <span dir="ltr">
+            {formatPrice(bucket.min, tCommon("currency"))}
+            {bucket.max === Infinity
+              ? "+"
+              : ` - ${formatPrice(bucket.max, tCommon("currency"))}`}
+          </span>
+        </OptionButton>
+      ))}
+    </div>
+  );
+
+  const colorOptions =
+    colors.length > 0 ? (
+      <div className="flex flex-col gap-1">
+        {colors.map((c) => (
+          <OptionButton
+            key={c}
+            active={color === c}
+            onClick={() => setColor(color === c ? "" : c)}
+          >
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full ring-1 ring-inset ring-foreground/15"
+              style={{ backgroundColor: getSwatchColor(c) }}
+            />
+            {c}
+          </OptionButton>
+        ))}
+      </div>
+    ) : null;
+
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <SlidersHorizontal className="size-4" />
-          {t("filters")}
-          {activeCount > 0 && (
-            <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-              {activeCount}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
-      <SheetContent side={side} className="flex flex-col gap-0">
-        <SheetHeader>
-          <SheetTitle>{t("filters")}</SheetTitle>
-        </SheetHeader>
+    <div>
+      <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
+        <SlidersHorizontal className="size-4" />
+        {t("filters")}
+        {activeCount > 0 && (
+          <span className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+            {activeCount}
+          </span>
+        )}
+      </Button>
 
-        <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4">
-          <div className="flex flex-col gap-1">
-            <h3 className="mb-1 text-sm font-medium">{t("sortBy")}</h3>
-            {SORT_OPTIONS.map((option) => (
-              <OptionButton
-                key={option.value}
-                active={sort === option.value}
-                onClick={() => setSort(option.value)}
-              >
-                {t(option.labelKey)}
-              </OptionButton>
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <h3 className="mb-1 text-sm font-medium">{tProducts("price")}</h3>
-            <OptionButton active={price === "all"} onClick={() => setPrice("all")}>
-              {t("allCategories")}
-            </OptionButton>
-            {PRICE_BUCKETS.map((bucket) => (
-              <OptionButton
-                key={bucket.value}
-                active={price === bucket.value}
-                onClick={() => setPrice(bucket.value)}
-              >
-                <span dir="ltr">
-                  {formatPrice(bucket.min, tCommon("currency"))}
-                  {bucket.max === Infinity
-                    ? "+"
-                    : ` - ${formatPrice(bucket.max, tCommon("currency"))}`}
-                </span>
-              </OptionButton>
-            ))}
-          </div>
-
-          {colors.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <h3 className="mb-1 text-sm font-medium">{tProducts("color")}</h3>
-              {colors.map((c) => (
-                <OptionButton
-                  key={c}
-                  active={color === c}
-                  onClick={() => setColor(color === c ? "" : c)}
-                >
-                  <span
-                    aria-hidden
-                    className="size-2.5 shrink-0 rounded-full ring-1 ring-inset ring-foreground/15"
-                    style={{ backgroundColor: getSwatchColor(c) }}
-                  />
-                  {c}
-                </OptionButton>
-              ))}
+      {open && (
+        <div className="animate-in fade-in slide-in-from-top-2 mt-4 rounded-lg border p-4 duration-200">
+          <div className="hidden md:grid md:grid-cols-3 md:gap-8">
+            <div>
+              <h3 className="mb-2 text-sm font-medium">{t("sortBy")}</h3>
+              {sortOptions}
             </div>
-          )}
-        </div>
+            <div>
+              <h3 className="mb-2 text-sm font-medium">{tProducts("price")}</h3>
+              {priceOptions}
+            </div>
+            {colorOptions && (
+              <div>
+                <h3 className="mb-2 text-sm font-medium">{tProducts("color")}</h3>
+                {colorOptions}
+              </div>
+            )}
+          </div>
 
-        <SheetFooter className="flex-row border-t">
-          <SheetClose asChild>
+          <Accordion type="single" collapsible defaultValue="sort" className="md:hidden">
+            <AccordionItem value="sort">
+              <AccordionTrigger>{t("sortBy")}</AccordionTrigger>
+              <AccordionContent>{sortOptions}</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="price">
+              <AccordionTrigger>{tProducts("price")}</AccordionTrigger>
+              <AccordionContent>{priceOptions}</AccordionContent>
+            </AccordionItem>
+            {colorOptions && (
+              <AccordionItem value="color">
+                <AccordionTrigger>{tProducts("color")}</AccordionTrigger>
+                <AccordionContent>{colorOptions}</AccordionContent>
+              </AccordionItem>
+            )}
+          </Accordion>
+
+          <div className="mt-4 flex gap-2 border-t pt-4">
             <Button variant="outline" className="flex-1" onClick={handleReset}>
               {t("resetFilters")}
             </Button>
-          </SheetClose>
-          <SheetClose asChild>
             <Button className="flex-1" onClick={() => navigate({ sort, price, color })}>
               {t("applyFilters")}
             </Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -146,7 +146,8 @@
     "searchPlaceholder": "Search products...",
     "closeSearch": "Close search",
     "favoritesTitle": "Favorites",
-    "noFavorites": "No favorites yet."
+    "noFavorites": "No favorites yet.",
+    "categoriesLabel": "Categories"
   },
   "cart": {
     "title": "Cart",

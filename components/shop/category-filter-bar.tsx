@@ -14,27 +14,59 @@ export async function CategoryFilterBar({
   const t = await getTranslations("shop");
 
   return (
-    <nav className="flex flex-wrap items-center gap-2 text-sm">
-      <Link
-        href="/"
-        className={cn(
-          "transition-colors",
-          !activeCategoryId
-            ? "font-medium text-primary"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        {t("allCategories")}
-      </Link>
-      {categories.map((category) => (
-        <span key={category.id} className="flex items-center gap-2">
-          <span aria-hidden className="text-border">
-            /
+    <>
+      {/* Desktop: breadcrumb */}
+      <nav className="hidden flex-wrap items-center gap-2 text-sm md:flex">
+        <Link
+          href="/"
+          className={cn(
+            "transition-colors",
+            !activeCategoryId
+              ? "font-medium text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t("allCategories")}
+        </Link>
+        {categories.map((category) => (
+          <span key={category.id} className="flex items-center gap-2">
+            <span aria-hidden className="text-border">
+              /
+            </span>
+            <Link
+              href={{ pathname: "/", query: { category: category.id } }}
+              className={cn(
+                "transition-colors",
+                activeCategoryId === category.id
+                  ? "font-medium text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {category.name}
+            </Link>
           </span>
+        ))}
+      </nav>
+
+      {/* Mobile: divided full-width rows */}
+      <div className="flex flex-col md:hidden">
+        <Link
+          href="/"
+          className={cn(
+            "border-b py-3 text-sm transition-colors",
+            !activeCategoryId
+              ? "font-medium text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t("allCategories")}
+        </Link>
+        {categories.map((category) => (
           <Link
+            key={category.id}
             href={{ pathname: "/", query: { category: category.id } }}
             className={cn(
-              "transition-colors",
+              "border-b py-3 text-sm transition-colors",
               activeCategoryId === category.id
                 ? "font-medium text-primary"
                 : "text-muted-foreground hover:text-foreground",
@@ -42,8 +74,8 @@ export async function CategoryFilterBar({
           >
             {category.name}
           </Link>
-        </span>
-      ))}
-    </nav>
+        ))}
+      </div>
+    </>
   );
 }

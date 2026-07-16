@@ -146,7 +146,8 @@
     "searchPlaceholder": "ابحث عن منتج...",
     "closeSearch": "إغلاق البحث",
     "favoritesTitle": "المفضلة",
-    "noFavorites": "لا توجد مفضلات بعد."
+    "noFavorites": "لا توجد مفضلات بعد.",
+    "categoriesLabel": "الفئات"
   },
   "cart": {
     "title": "السلة",
