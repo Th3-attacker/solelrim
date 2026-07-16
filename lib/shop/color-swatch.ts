@@ -1,6 +1,10 @@
+import type { CSSProperties } from "react";
+
 // Variant colors are free-text (e.g. "Noir", "Gris") rather than hex codes,
 // so swatches are a best-effort lookup — unmapped names fall back to a
-// neutral dot rather than guessing wrong.
+// neutral dot rather than guessing wrong. Compound names ("Black-White",
+// "Red-Black-White") are hyphen-separated and rendered as a multi-section
+// swatch, one segment per resolved part.
 const COLOR_MAP: Record<string, string> = {
   noir: "#18181b",
   black: "#18181b",
@@ -43,6 +47,33 @@ function normalize(name: string): string {
     .replace(/[̀-ͯ]/g, "");
 }
 
+function resolveOne(part: string): string {
+  return COLOR_MAP[normalize(part)] ?? FALLBACK_COLOR;
+}
+
+/** Resolves a possibly hyphen-compound color name into one hex per segment. */
+export function getSwatchColors(colorName: string): string[] {
+  const parts = colorName
+    .split("-")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts.map(resolveOne) : [FALLBACK_COLOR];
+}
+
 export function getSwatchColor(colorName: string): string {
-  return COLOR_MAP[normalize(colorName)] ?? FALLBACK_COLOR;
+  return getSwatchColors(colorName)[0];
+}
+
+/** Inline style for a swatch dot: solid fill for one color, an even
+ * conic-gradient split for compound names like "Black-White". */
+export function getSwatchStyle(colorName: string): CSSProperties {
+  const colors = getSwatchColors(colorName);
+  if (colors.length <= 1) {
+    return { backgroundColor: colors[0] };
+  }
+  const step = 100 / colors.length;
+  const stops = colors
+    .map((color, i) => `${color} ${i * step}% ${(i + 1) * step}%`)
+    .join(", ");
+  return { background: `conic-gradient(${stops})` };
 }

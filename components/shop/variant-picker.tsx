@@ -9,7 +9,7 @@ import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";
 import { ShareButton } from "@/components/shop/share-button";
 import { getVariantStockStatus } from "@/lib/shop/stock";
-import { getSwatchColor } from "@/lib/shop/color-swatch";
+import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import { useCart } from "@/components/cart/cart-provider";
 import { cn } from "@/lib/utils";
 
@@ -125,7 +125,7 @@ export function VariantPicker({
                         : "ring-inset ring-foreground/15",
                       !available && "cursor-not-allowed opacity-30",
                     )}
-                    style={{ backgroundColor: getSwatchColor(color) }}
+                    style={getSwatchStyle(color)}
                   />
                 );
               })}

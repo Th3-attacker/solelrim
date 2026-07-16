@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { getSwatchColor } from "@/lib/shop/color-swatch";
+import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import { formatPrice } from "@/lib/format/currency";
 import { PRICE_BUCKETS, SORT_OPTIONS } from "@/lib/shop/filters";
 import { cn } from "@/lib/utils";
@@ -113,7 +113,7 @@ export function FilterPanel({
             <span
               aria-hidden
               className="size-2.5 shrink-0 rounded-full ring-1 ring-inset ring-foreground/15"
-              style={{ backgroundColor: getSwatchColor(c) }}
+              style={getSwatchStyle(c)}
             />
             {c}
           </OptionButton>

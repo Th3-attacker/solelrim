@@ -9,7 +9,7 @@ import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getPriceRange } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { formatPrice } from "@/lib/format/currency";
-import { getSwatchColor } from "@/lib/shop/color-swatch";
+import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import type { getActiveProducts } from "@/lib/queries/shop";
 
 type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
@@ -115,7 +115,7 @@ export function ProductCard({ product }: { product: Product }) {
                   key={color}
                   title={color}
                   className="size-3.5 rounded-full ring-1 ring-inset ring-foreground/15"
-                  style={{ backgroundColor: getSwatchColor(color) }}
+                  style={getSwatchStyle(color)}
                 />
               ))}
               {colors.length > MAX_SWATCHES && (
