@@ -60,7 +60,19 @@
     "lowStock": "مخزون منخفض",
     "noLowStock": "لا توجد منتجات ذات مخزون منخفض.",
     "quantitySold": "الكمية المباعة",
-    "noBestSellers": "لا توجد مبيعات مسجلة بعد."
+    "noBestSellers": "لا توجد مبيعات مسجلة بعد.",
+    "trendUp": "في ارتفاع هذا الشهر",
+    "trendDown": "في انخفاض هذا الشهر",
+    "vsLastMonth": "مقارنة بالشهر الماضي",
+    "newClientsThisMonth": "{count} جديد هذا الشهر",
+    "lowStockCount": "{count} منتجات بمخزون منخفض",
+    "stockHealthy": "المخزون في حالة جيدة",
+    "totalClientsSubtitle": "إجمالي العملاء المسجلين",
+    "totalStockSubtitle": "إجمالي الوحدات المتاحة",
+    "revenueOverTimeSubtitle": "تطور الإيرادات بمرور الوقت",
+    "last7Days": "آخر 7 أيام",
+    "last30Days": "آخر 30 يومًا",
+    "last90Days": "آخر 3 أشهر"
   },
   "products": {
     "title": "المنتجات",

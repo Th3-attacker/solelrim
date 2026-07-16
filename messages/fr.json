@@ -60,7 +60,19 @@
     "lowStock": "Stock faible",
     "noLowStock": "Aucun produit en stock faible.",
     "quantitySold": "Quantité vendue",
-    "noBestSellers": "Aucune vente enregistrée pour le moment."
+    "noBestSellers": "Aucune vente enregistrée pour le moment.",
+    "trendUp": "En hausse ce mois-ci",
+    "trendDown": "En baisse ce mois-ci",
+    "vsLastMonth": "Comparé au mois précédent",
+    "newClientsThisMonth": "{count} nouveaux ce mois-ci",
+    "lowStockCount": "{count} produits en stock faible",
+    "stockHealthy": "Stock sain",
+    "totalClientsSubtitle": "Total des clients enregistrés",
+    "totalStockSubtitle": "Unités disponibles au total",
+    "revenueOverTimeSubtitle": "Évolution du chiffre d'affaires",
+    "last7Days": "7 derniers jours",
+    "last30Days": "30 derniers jours",
+    "last90Days": "3 derniers mois"
   },
   "products": {
     "title": "Produits",

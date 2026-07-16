@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getRevenueByDay(daysBack = 30) {
+export async function getRevenueByDay(daysBack = 90) {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - daysBack);
 
@@ -71,7 +71,18 @@ export async function getSummaryStats() {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const [revenueAgg, salesCount, activeClients, stockAgg] = await Promise.all([
+  const startOfLastMonth = new Date(startOfMonth);
+  startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+
+  const [
+    revenueAgg,
+    salesCount,
+    lastMonthRevenueAgg,
+    lastMonthSalesCount,
+    activeClients,
+    newClientsThisMonth,
+    stockAgg,
+  ] = await Promise.all([
     prisma.sale.aggregate({
       where: { status: "COMPLETED", createdAt: { gte: startOfMonth } },
       _sum: { total: true },
@@ -79,14 +90,31 @@ export async function getSummaryStats() {
     prisma.sale.count({
       where: { status: "COMPLETED", createdAt: { gte: startOfMonth } },
     }),
+    prisma.sale.aggregate({
+      where: {
+        status: "COMPLETED",
+        createdAt: { gte: startOfLastMonth, lt: startOfMonth },
+      },
+      _sum: { total: true },
+    }),
+    prisma.sale.count({
+      where: {
+        status: "COMPLETED",
+        createdAt: { gte: startOfLastMonth, lt: startOfMonth },
+      },
+    }),
     prisma.client.count(),
+    prisma.client.count({ where: { createdAt: { gte: startOfMonth } } }),
     prisma.productVariant.aggregate({ _sum: { stock: true } }),
   ]);
 
   return {
     revenueThisMonth: revenueAgg._sum.total?.toNumber() ?? 0,
+    revenueLastMonth: lastMonthRevenueAgg._sum.total?.toNumber() ?? 0,
     salesThisMonth: salesCount,
+    salesLastMonth: lastMonthSalesCount,
     activeClients,
+    newClientsThisMonth,
     unitsInStock: stockAgg._sum.stock ?? 0,
   };
 }

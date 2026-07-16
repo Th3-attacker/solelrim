@@ -60,7 +60,19 @@
     "lowStock": "Low stock",
     "noLowStock": "No products are low on stock.",
     "quantitySold": "Quantity sold",
-    "noBestSellers": "No sales recorded yet."
+    "noBestSellers": "No sales recorded yet.",
+    "trendUp": "Trending up this month",
+    "trendDown": "Trending down this month",
+    "vsLastMonth": "Compared to last month",
+    "newClientsThisMonth": "{count} new this month",
+    "lowStockCount": "{count} products low on stock",
+    "stockHealthy": "Stock levels are healthy",
+    "totalClientsSubtitle": "Total registered clients",
+    "totalStockSubtitle": "Total units available",
+    "revenueOverTimeSubtitle": "Revenue trend over time",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "last90Days": "Last 3 months"
   },
   "products": {
     "title": "Products",

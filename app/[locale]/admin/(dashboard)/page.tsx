@@ -1,3 +1,4 @@
+import { TrendingDown, TrendingUp, AlertTriangle, UserPlus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import {
   getRevenueByDay,
@@ -5,8 +6,9 @@ import {
   getLowStockVariants,
   getSummaryStats,
 } from "@/lib/queries/dashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { formatPrice } from "@/lib/format/currency";
 import {
@@ -17,6 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+function percentChange(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
+}
 
 export default async function DashboardPage() {
   const [t, tProducts, tCommon, revenue, bestSellers, lowStock, summary] =
@@ -30,56 +37,114 @@ export default async function DashboardPage() {
       getSummaryStats(),
     ]);
 
+  const revenueTrend = percentChange(summary.revenueThisMonth, summary.revenueLastMonth);
+  const salesTrend = percentChange(summary.salesThisMonth, summary.salesLastMonth);
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              {t("revenueThisMonth")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {formatPrice(summary.revenueThisMonth, tCommon("currency"))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              {t("salesThisMonth")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary.salesThisMonth}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              {t("activeClients")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary.activeClients}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-normal text-muted-foreground">
-              {t("unitsInStock")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary.unitsInStock}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label={t("revenueThisMonth")}
+          value={formatPrice(summary.revenueThisMonth, tCommon("currency"))}
+          badge={
+            revenueTrend !== null && (
+              <Badge variant="outline" className="gap-1">
+                {revenueTrend >= 0 ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {revenueTrend >= 0 ? "+" : ""}
+                {revenueTrend.toFixed(1)}%
+              </Badge>
+            )
+          }
+          description={
+            <>
+              {revenueTrend !== null && revenueTrend >= 0
+                ? t("trendUp")
+                : t("trendDown")}
+              {revenueTrend !== null &&
+                (revenueTrend >= 0 ? (
+                  <TrendingUp className="size-4" />
+                ) : (
+                  <TrendingDown className="size-4" />
+                ))}
+            </>
+          }
+          subtitle={t("vsLastMonth")}
+        />
+
+        <StatCard
+          label={t("salesThisMonth")}
+          value={summary.salesThisMonth}
+          badge={
+            salesTrend !== null && (
+              <Badge variant="outline" className="gap-1">
+                {salesTrend >= 0 ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {salesTrend >= 0 ? "+" : ""}
+                {salesTrend.toFixed(1)}%
+              </Badge>
+            )
+          }
+          description={
+            <>
+              {salesTrend !== null && salesTrend >= 0 ? t("trendUp") : t("trendDown")}
+              {salesTrend !== null &&
+                (salesTrend >= 0 ? (
+                  <TrendingUp className="size-4" />
+                ) : (
+                  <TrendingDown className="size-4" />
+                ))}
+            </>
+          }
+          subtitle={t("vsLastMonth")}
+        />
+
+        <StatCard
+          label={t("activeClients")}
+          value={summary.activeClients}
+          badge={
+            summary.newClientsThisMonth > 0 && (
+              <Badge variant="outline" className="gap-1">
+                <UserPlus className="size-3" />+{summary.newClientsThisMonth}
+              </Badge>
+            )
+          }
+          description={t("newClientsThisMonth", { count: summary.newClientsThisMonth })}
+          subtitle={t("totalClientsSubtitle")}
+        />
+
+        <StatCard
+          label={t("unitsInStock")}
+          value={summary.unitsInStock}
+          badge={
+            lowStock.length > 0 && (
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="size-3" />
+                {lowStock.length}
+              </Badge>
+            )
+          }
+          description={
+            lowStock.length > 0
+              ? t("lowStockCount", { count: lowStock.length })
+              : t("stockHealthy")
+          }
+          subtitle={t("totalStockSubtitle")}
+        />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>{t("revenueOverTime")}</CardTitle>
+          <CardDescription>{t("revenueOverTimeSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <RevenueChart data={revenue} />
