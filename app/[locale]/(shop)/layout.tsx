@@ -6,6 +6,8 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartTrigger } from "@/components/cart/cart-trigger";
+import { CheckoutDrawerProvider } from "@/components/checkout/checkout-drawer-provider";
+import { CheckoutDrawer } from "@/components/checkout/checkout-drawer";
 import { FavoritesProvider } from "@/components/shop/favorites-provider";
 import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { SearchTrigger } from "@/components/shop/search-trigger";
@@ -68,73 +70,76 @@ export default async function ShopLayout({
   return (
     <FavoritesProvider>
       <CartProvider>
-        <div className="shop-theme flex min-h-screen flex-col">
-          <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
-            {announcementText}
-          </div>
-          <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground"
-              >
-                {logoUrl && (
-                  <Image
-                    src={logoUrl}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="size-8 shrink-0 object-contain"
-                  />
-                )}
-                {siteName}
-              </Link>
-              <div className="flex items-center gap-1">
-                <SearchTrigger />
-                <FavoritesTrigger products={favoriteCandidates} />
-                <CartTrigger />
-                <LanguageSwitcher />
-                <ModeToggle />
-              </div>
+        <CheckoutDrawerProvider>
+          <div className="shop-theme flex min-h-screen flex-col">
+            <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
+              {announcementText}
             </div>
-          </header>
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 md:py-10">
-            {children}
-          </main>
-          <footer className="border-t bg-muted/30">
-            <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
-              {(whatsappHref || socialLinks.length > 0) && (
-                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-                  {whatsappHref && (
-                    <a
-                      href={whatsappHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 transition-colors hover:text-foreground"
-                    >
-                      <MessageCircle className="size-4" />
-                      {t("contactWhatsapp")}
-                    </a>
+            <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
+              <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground"
+                >
+                  {logoUrl && (
+                    <Image
+                      src={logoUrl}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="size-8 shrink-0 object-contain"
+                    />
                   )}
-                  {socialLinks.map((social) => (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="transition-colors hover:text-foreground"
-                    >
-                      {social.label}
-                    </a>
-                  ))}
+                  {siteName}
+                </Link>
+                <div className="flex items-center gap-1">
+                  <SearchTrigger />
+                  <FavoritesTrigger products={favoriteCandidates} />
+                  <CartTrigger />
+                  <LanguageSwitcher />
+                  <ModeToggle />
                 </div>
-              )}
-              <span>
-                © {new Date().getFullYear()} {siteName}
-              </span>
-            </div>
-          </footer>
-        </div>
+              </div>
+            </header>
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 md:py-10">
+              {children}
+            </main>
+            <footer className="border-t bg-muted/30">
+              <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
+                {(whatsappHref || socialLinks.length > 0) && (
+                  <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                    {whatsappHref && (
+                      <a
+                        href={whatsappHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+                      >
+                        <MessageCircle className="size-4" />
+                        {t("contactWhatsapp")}
+                      </a>
+                    )}
+                    {socialLinks.map((social) => (
+                      <a
+                        key={social.label}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors hover:text-foreground"
+                      >
+                        {social.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+                <span>
+                  © {new Date().getFullYear()} {siteName}
+                </span>
+              </div>
+            </footer>
+          </div>
+          <CheckoutDrawer settings={settings} />
+        </CheckoutDrawerProvider>
       </CartProvider>
     </FavoritesProvider>
   );

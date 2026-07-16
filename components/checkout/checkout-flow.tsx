@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "@/i18n/navigation";
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
@@ -28,11 +27,18 @@ type Settings = {
 
 type Step = 1 | 2 | 3 | "success";
 
-export function CheckoutFlow({ settings }: { settings: Settings }) {
+export function CheckoutFlow({
+  settings,
+  open,
+  onClose,
+}: {
+  settings: Settings;
+  open: boolean;
+  onClose: () => void;
+}) {
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const cart = useCart();
 
   const [step, setStep] = useState<Step>(1);
@@ -52,12 +58,24 @@ export function CheckoutFlow({ settings }: { settings: Settings }) {
     customer: CheckoutCustomerInput;
   } | null>(null);
 
+  // The drawer stays mounted across opens, so a fresh order after a
+  // previous success shouldn't reopen straight onto the success screen.
   useEffect(() => {
-    if (cart.hydrated && cart.items.length === 0 && step !== "success") {
-      router.push("/");
+    if (open && step === "success") {
+      setStep(1);
+      setCustomerInfo(null);
+      setFile(null);
+      setReference(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cart.hydrated, cart.items.length, step]);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && cart.hydrated && cart.items.length === 0 && step !== "success") {
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, cart.hydrated, cart.items.length, step]);
 
   const {
     register,
@@ -133,7 +151,7 @@ export function CheckoutFlow({ settings }: { settings: Settings }) {
 
   if (step === "success") {
     return (
-      <Card className="mx-auto max-w-md">
+      <Card className="border-none shadow-none">
         <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
           <h1 className="text-xl font-semibold">{t("successTitle")}</h1>
           <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
@@ -141,7 +159,7 @@ export function CheckoutFlow({ settings }: { settings: Settings }) {
           <Button onClick={handleSendWhatsApp} className="w-full">
             {t("sendWhatsApp")}
           </Button>
-          <Button variant="outline" className="w-full" onClick={() => router.push("/")}>
+          <Button variant="outline" className="w-full" onClick={onClose}>
             {t("backToCatalog")}
           </Button>
         </CardContent>
@@ -150,9 +168,7 @@ export function CheckoutFlow({ settings }: { settings: Settings }) {
   }
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-6">
-      <h1 className="text-xl font-semibold">{t("title")}</h1>
-
+    <div className="flex flex-col gap-6">
       {step === 1 && (
         <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
           <h2 className="text-sm font-medium">{t("step1Title")}</h2>

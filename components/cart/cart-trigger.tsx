@@ -13,10 +13,10 @@ import {
   SheetClose,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { useCart } from "@/components/cart/cart-provider";
+import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { formatPrice } from "@/lib/format/currency";
 
 export function CartTrigger() {
@@ -26,6 +26,7 @@ export function CartTrigger() {
   const side = getDirection(locale) === "rtl" ? "left" : "right";
   const { items, hydrated, itemCount, subtotal, updateQuantity, removeItem } =
     useCart();
+  const { openCheckout } = useCheckoutDrawer();
 
   return (
     <Sheet>
@@ -123,8 +124,8 @@ export function CartTrigger() {
               <span>{formatPrice(subtotal, tCommon("currency"))}</span>
             </div>
             <SheetClose asChild>
-              <Button asChild className="w-full">
-                <Link href="/checkout">{t("checkoutButton")}</Link>
+              <Button type="button" className="w-full" onClick={openCheckout}>
+                {t("checkoutButton")}
               </Button>
             </SheetClose>
           </SheetFooter>
