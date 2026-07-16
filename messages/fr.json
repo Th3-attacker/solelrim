@@ -15,7 +15,8 @@
     "error": "Une erreur est survenue.",
     "requiredField": "Ce champ est requis.",
     "optional": "optionnel",
-    "currency": "MRU"
+    "currency": "MRU",
+    "close": "Fermer"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -229,6 +230,19 @@
     "instagramUrl": "Lien Instagram",
     "facebookUrl": "Lien Facebook",
     "tiktokUrl": "Lien TikTok"
+  },
+  "orderProcedure": {
+    "trigger": "Comment commander ?",
+    "title": "Comment commander",
+    "description": "Suivez ces étapes simples pour recevoir votre commande.",
+    "step1Title": "Choisissez vos articles",
+    "step1Description": "Parcourez le catalogue et ajoutez vos produits au panier.",
+    "step2Title": "Renseignez vos informations",
+    "step2Description": "Indiquez votre nom, votre numéro et votre ville de livraison.",
+    "step3Title": "Effectuez le paiement",
+    "step3Description": "Payez via Bankily ou Masrivi puis envoyez la capture d'écran du paiement.",
+    "step4Title": "Recevez la confirmation",
+    "step4Description": "Notre équipe vérifie votre commande et vous confirme par WhatsApp."
   },
   "sales": {
     "title": "Ventes",

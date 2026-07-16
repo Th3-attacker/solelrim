@@ -15,7 +15,8 @@
     "error": "حدث خطأ ما.",
     "requiredField": "هذا الحقل مطلوب.",
     "optional": "اختياري",
-    "currency": "أوقية"
+    "currency": "أوقية",
+    "close": "إغلاق"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -229,6 +230,19 @@
     "instagramUrl": "رابط إنستغرام",
     "facebookUrl": "رابط فيسبوك",
     "tiktokUrl": "رابط تيك توك"
+  },
+  "orderProcedure": {
+    "trigger": "كيف يتم الطلب؟",
+    "title": "كيفية الطلب",
+    "description": "اتبع هذه الخطوات البسيطة لاستلام طلبك.",
+    "step1Title": "اختر منتجاتك",
+    "step1Description": "تصفح الكتالوج وأضف المنتجات إلى سلتك.",
+    "step2Title": "أدخل معلوماتك",
+    "step2Description": "أدخل اسمك ورقم هاتفك ومدينة التوصيل.",
+    "step3Title": "قم بالدفع",
+    "step3Description": "ادفع عبر بنكيلي أو مصرفي ثم أرسل لقطة شاشة لإثبات الدفع.",
+    "step4Title": "احصل على التأكيد",
+    "step4Description": "يتحقق فريقنا من طلبك ويؤكده عبر واتساب."
   },
   "sales": {
     "title": "المبيعات",
