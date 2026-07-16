@@ -147,7 +147,8 @@
     "closeSearch": "Close search",
     "favoritesTitle": "Favorites",
     "noFavorites": "No favorites yet.",
-    "categoriesLabel": "Categories"
+    "categoriesLabel": "Categories",
+    "contactWhatsapp": "Contact us on WhatsApp"
   },
   "cart": {
     "title": "Cart",
@@ -216,7 +217,18 @@
     "bankilyNumber": "Bankily number",
     "masrivyNumber": "Masrivi number",
     "adminWhatsappNumber": "Store WhatsApp number",
-    "paymentInstructions": "Payment instructions"
+    "paymentInstructions": "Payment instructions",
+    "logo": "Logo",
+    "brandingSection": "Store",
+    "siteName": "Site name",
+    "announcementText": "Announcement bar text",
+    "seoSection": "SEO",
+    "seoTitle": "Page title",
+    "seoDescription": "Description",
+    "socialSection": "Social media",
+    "instagramUrl": "Instagram link",
+    "facebookUrl": "Facebook link",
+    "tiktokUrl": "TikTok link"
   },
   "sales": {
     "title": "Sales",

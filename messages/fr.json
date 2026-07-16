@@ -147,7 +147,8 @@
     "closeSearch": "Fermer la recherche",
     "favoritesTitle": "Favoris",
     "noFavorites": "Aucun favori pour le moment.",
-    "categoriesLabel": "Catégories"
+    "categoriesLabel": "Catégories",
+    "contactWhatsapp": "Contactez-nous sur WhatsApp"
   },
   "cart": {
     "title": "Panier",
@@ -216,7 +217,18 @@
     "bankilyNumber": "Numéro Bankily",
     "masrivyNumber": "Numéro Masrivi",
     "adminWhatsappNumber": "Numéro WhatsApp de la boutique",
-    "paymentInstructions": "Instructions de paiement"
+    "paymentInstructions": "Instructions de paiement",
+    "logo": "Logo",
+    "brandingSection": "Boutique",
+    "siteName": "Nom du site",
+    "announcementText": "Texte du bandeau d'annonce",
+    "seoSection": "Référencement (SEO)",
+    "seoTitle": "Titre de la page",
+    "seoDescription": "Description",
+    "socialSection": "Réseaux sociaux",
+    "instagramUrl": "Lien Instagram",
+    "facebookUrl": "Lien Facebook",
+    "tiktokUrl": "Lien TikTok"
   },
   "sales": {
     "title": "Ventes",

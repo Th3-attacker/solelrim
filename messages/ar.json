@@ -147,7 +147,8 @@
     "closeSearch": "إغلاق البحث",
     "favoritesTitle": "المفضلة",
     "noFavorites": "لا توجد مفضلات بعد.",
-    "categoriesLabel": "الفئات"
+    "categoriesLabel": "الفئات",
+    "contactWhatsapp": "تواصل معنا عبر واتساب"
   },
   "cart": {
     "title": "السلة",
@@ -216,7 +217,18 @@
     "bankilyNumber": "رقم بنكيلي",
     "masrivyNumber": "رقم مصرفي",
     "adminWhatsappNumber": "رقم واتساب المتجر",
-    "paymentInstructions": "تعليمات الدفع"
+    "paymentInstructions": "تعليمات الدفع",
+    "logo": "الشعار",
+    "brandingSection": "المتجر",
+    "siteName": "اسم الموقع",
+    "announcementText": "نص شريط الإعلانات",
+    "seoSection": "تحسين محركات البحث (SEO)",
+    "seoTitle": "عنوان الصفحة",
+    "seoDescription": "الوصف",
+    "socialSection": "وسائل التواصل الاجتماعي",
+    "instagramUrl": "رابط إنستغرام",
+    "facebookUrl": "رابط فيسبوك",
+    "tiktokUrl": "رابط تيك توك"
   },
   "sales": {
     "title": "المبيعات",

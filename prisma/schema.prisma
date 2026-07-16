@@ -57,19 +57,19 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id                String     @id @default(cuid())
+  id                String      @id @default(cuid())
   productId         String
-  product           Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product           Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   size              String
   color             String
-  sku               String     @unique
-  price             Decimal?   @db.Decimal(10, 2)
-  stock             Int        @default(0)
-  lowStockThreshold Int        @default(5)
+  sku               String      @unique
+  price             Decimal?    @db.Decimal(10, 2)
+  stock             Int         @default(0)
+  lowStockThreshold Int         @default(5)
   saleItems         SaleItem[]
   orderItems        OrderItem[]
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@unique([productId, size, color])
   @@index([productId])
@@ -159,5 +159,13 @@ model StoreSettings {
   masrivyNumber       String?
   adminWhatsappNumber String?
   paymentInstructions String?
+  siteName            String?
+  logoStoragePath     String?
+  announcementText    String?
+  seoTitle            String?
+  seoDescription      String?
+  instagramUrl        String?
+  facebookUrl         String?
+  tiktokUrl           String?
   updatedAt           DateTime @updatedAt
 }

@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { MessageCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -8,17 +11,31 @@ import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts } from "@/lib/queries/shop";
+import { getStoreSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
-import { getProductImageUrl } from "@/lib/supabase/storage";
+import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, settings] = await Promise.all([
+    getTranslations("shop"),
+    getStoreSettings(),
+  ]);
+  const siteName = settings.siteName?.trim() || t("siteName");
+  return {
+    title: settings.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`,
+    description: settings.seoDescription?.trim() || t("heroSubtitle"),
+  };
+}
 
 export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [t, allProducts] = await Promise.all([
+  const [t, allProducts, settings] = await Promise.all([
     getTranslations("shop"),
     getActiveProducts(),
+    getStoreSettings(),
   ]);
 
   const favoriteCandidates = allProducts.map((product) => ({
@@ -30,20 +47,47 @@ export default async function ShopLayout({
     price: getPriceRange(product.variants, product.basePrice).min,
   }));
 
+  const siteName = settings.siteName?.trim() || t("siteName");
+  const logoUrl = settings.logoStoragePath
+    ? getStoreLogoUrl(settings.logoStoragePath)
+    : null;
+  const announcementText = settings.announcementText?.trim() || t("announcementBar");
+
+  const socialLinks = [
+    { href: settings.instagramUrl?.trim(), label: "Instagram" },
+    { href: settings.facebookUrl?.trim(), label: "Facebook" },
+    { href: settings.tiktokUrl?.trim(), label: "TikTok" },
+  ].filter((social): social is { href: string; label: string } =>
+    Boolean(social.href),
+  );
+
+  const whatsappHref = settings.adminWhatsappNumber
+    ? `https://wa.me/${settings.adminWhatsappNumber.replace(/\D/g, "")}`
+    : null;
+
   return (
     <FavoritesProvider>
       <CartProvider>
         <div className="shop-theme flex min-h-screen flex-col">
           <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
-            {t("announcementBar")}
+            {announcementText}
           </div>
           <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
               <Link
                 href="/"
-                className="text-lg font-bold tracking-tight text-foreground"
+                className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground"
               >
-                Sol<span className="text-primary">elrim</span>
+                {logoUrl && (
+                  <Image
+                    src={logoUrl}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="size-8 shrink-0 object-contain"
+                  />
+                )}
+                {siteName}
               </Link>
               <div className="flex items-center gap-1">
                 <SearchTrigger />
@@ -58,8 +102,36 @@ export default async function ShopLayout({
             {children}
           </main>
           <footer className="border-t bg-muted/30">
-            <div className="mx-auto max-w-7xl px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
-              © {new Date().getFullYear()} Solelrim
+            <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
+              {(whatsappHref || socialLinks.length > 0) && (
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                  {whatsappHref && (
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+                    >
+                      <MessageCircle className="size-4" />
+                      {t("contactWhatsapp")}
+                    </a>
+                  )}
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+              <span>
+                © {new Date().getFullYear()} {siteName}
+              </span>
             </div>
           </footer>
         </div>
