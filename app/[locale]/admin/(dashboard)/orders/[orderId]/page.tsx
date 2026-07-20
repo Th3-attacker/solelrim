@@ -5,6 +5,7 @@ import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
+import { OrderProgressActions } from "@/components/orders/order-progress-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -61,12 +62,42 @@ export default async function OrderDetailPage({
                 {t("printLabel")}
               </Link>
             </Button>
+            <OrderProgressActions orderId={order.id} status="CONFIRMED" />
           </div>
+        )}
+        {order.status === "SHIPPING" && (
+          <div className="flex items-center gap-3">
+            {order.shippedAt && (
+              <p className="text-sm text-muted-foreground">
+                {order.shippedAt.toLocaleString()}
+              </p>
+            )}
+            <OrderProgressActions orderId={order.id} status="SHIPPING" />
+          </div>
+        )}
+        {order.status === "DELIVERED" && order.deliveredAt && (
+          <p className="text-sm text-muted-foreground">
+            {order.deliveredAt.toLocaleString()}
+          </p>
         )}
         {order.status === "REJECTED" && order.rejectedAt && (
           <p className="text-sm text-muted-foreground">
             {order.rejectedAt.toLocaleString()}
           </p>
+        )}
+        {order.status === "CANCELLED" && (
+          <div className="text-end">
+            {order.cancelledAt && (
+              <p className="text-sm text-muted-foreground">
+                {order.cancelledAt.toLocaleString()}
+              </p>
+            )}
+            {order.cancelReason && (
+              <p className="text-sm text-muted-foreground">
+                {t("cancelReasonLabel")}: {order.cancelReason}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

@@ -12,12 +12,12 @@ export async function HeroSection({ products }: { products: Product[] }) {
   const t = await getTranslations("shop");
 
   // Only products with a real photo can headline the hero — a placeholder
-  // "Solelrim" tile would look broken blown up this large. Feature the
-  // catalog's best-sellers first, most recent otherwise.
+  // "Solelrim" tile would look broken blown up this large. `products` is
+  // already ordered newest-first (getActiveProducts), so filtering keeps
+  // that order — the 3 most recently added photographed products.
   const spotlight = products
     .filter((product) => product.images.length > 0)
-    .sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured))
-    .slice(0, 5);
+    .slice(0, 3);
 
   if (spotlight.length === 0) {
     return (

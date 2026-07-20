@@ -14,3 +14,7 @@ export const orderItemInputSchema = z.object({
 });
 
 export const orderItemsSchema = z.array(orderItemInputSchema).min(1);
+
+export const cancelReasonSchema = z.object({
+  reason: z.string().min(1),
+});

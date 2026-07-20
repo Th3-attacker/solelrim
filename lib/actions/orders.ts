@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  cancelReasonSchema,
   checkoutCustomerSchema,
   orderItemsSchema,
 } from "@/lib/validation/order";
@@ -199,5 +200,131 @@ export async function rejectOrder(
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
+  return {};
+}
+
+export async function shipOrder(
+  orderId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const updated = await prisma.order.updateMany({
+    where: { id: orderId, status: "CONFIRMED" },
+    data: { status: "SHIPPING", shippedAt: new Date() },
+  });
+  if (updated.count === 0) {
+    return { error: "invalidTransition" };
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  return {};
+}
+
+// Best-sellers on the storefront (Product.isFeatured) are recalculated from
+// scratch every time an order is delivered, rather than left as a manual
+// admin checkbox — the top N products by total delivered quantity become
+// the featured set, everyone else loses the badge.
+const BEST_SELLER_COUNT = 5;
+
+export async function deliverOrder(
+  orderId: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.order.updateMany({
+        where: { id: orderId, status: "SHIPPING" },
+        data: { status: "DELIVERED", deliveredAt: new Date() },
+      });
+      if (updated.count === 0) throw new Error("invalidTransition");
+
+      const topProducts = await tx.$queryRaw<{ productId: string }[]>`
+        SELECT pv."productId" AS "productId", SUM(oi.quantity) AS total
+        FROM "OrderItem" oi
+        JOIN "ProductVariant" pv ON pv.id = oi."variantId"
+        JOIN "Order" o ON o.id = oi."orderId"
+        WHERE o.status = 'DELIVERED'
+        GROUP BY pv."productId"
+        ORDER BY total DESC
+        LIMIT ${BEST_SELLER_COUNT}
+      `;
+      const topIds = topProducts.map((p) => p.productId);
+
+      await tx.product.updateMany({ data: { isFeatured: false } });
+      if (topIds.length > 0) {
+        await tx.product.updateMany({
+          where: { id: { in: topIds } },
+          data: { isFeatured: true },
+        });
+      }
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "invalidTransition") {
+      return { error: "invalidTransition" };
+    }
+    throw err;
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/");
+  return {};
+}
+
+export async function cancelOrder(
+  orderId: string,
+  reason: string,
+): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  const parsed = cancelReasonSchema.safeParse({ reason });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      });
+      if (!order) throw new Error("notFound");
+      if (order.status !== "CONFIRMED" && order.status !== "SHIPPING") {
+        throw new Error("invalidTransition");
+      }
+
+      // Stock was decremented at confirmation time — give it back since
+      // these items are no longer being fulfilled.
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelReason: parsed.data.reason,
+        },
+      });
+    });
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      ["notFound", "invalidTransition"].includes(err.message)
+    ) {
+      return { error: err.message };
+    }
+    throw err;
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/");
   return {};
 }
