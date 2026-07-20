@@ -1,15 +1,6 @@
 "use client";
 
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Users,
-  ClipboardList,
-  Settings,
-} from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -21,6 +12,15 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
+import {
+  ClipboardList,
+  LayoutDashboard,
+  Package,
+  Settings,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 export function AppSidebar() {
   const t = useTranslations("nav");
@@ -40,7 +40,9 @@ export function AppSidebar() {
   return (
     <Sidebar side={side}>
       <SidebarHeader>
-        <div className="px-2 py-1.5 text-sm font-semibold">Solelrim</div>
+        <div className="px-2 py-1.5 text-sm font-semibold">
+          <Link href="/">Solelrim</Link>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
