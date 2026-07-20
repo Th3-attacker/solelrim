@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";
+import { Price } from "@/components/shop/price";
 import { Badge } from "@/components/ui/badge";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
@@ -118,22 +119,20 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          {/* Prices mix Latin digits and the MRU currency code, which stay
-              left-to-right even on the Arabic page — isolating direction
-              here stops two adjacent amounts from getting bidi-reordered
-              into an unreadable jumble. */}
-          <span dir="ltr" className="flex items-baseline gap-1.5 text-sm">
+          <span className="flex items-baseline gap-1.5 text-sm">
             {isRange && (
               <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
             {promo && product.compareAtPrice && (
-              <span className="text-muted-foreground line-through">
+              // Mixes Latin digits and the MRU currency code, which stay
+              // left-to-right even on the Arabic page — isolating direction
+              // here stops two adjacent amounts from getting bidi-reordered
+              // into an unreadable jumble.
+              <span dir="ltr" className="text-muted-foreground line-through">
                 {formatPrice(product.compareAtPrice, tCommon("currency"))}
               </span>
             )}
-            <span className="font-semibold text-foreground">
-              {formatPrice(min, tCommon("currency"))}
-            </span>
+            <Price value={min} currency={tCommon("currency")} />
           </span>
           <StockBadge status={status} />
         </div>

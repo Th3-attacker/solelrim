@@ -11,9 +11,12 @@ function toNumber(value: PriceValue): number {
 // comma/space grouping next-intl's locale formatting would otherwise pick.
 // The currency label itself varies by language (e.g. "أوقية" in Arabic), so
 // callers pass it in — see the `common.currency` translation key.
-export function formatPrice(value: PriceValue, currency: string): string {
-  const grouped = Math.round(toNumber(value))
+export function formatPriceNumber(value: PriceValue): string {
+  return Math.round(toNumber(value))
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `${grouped} ${currency}`;
+}
+
+export function formatPrice(value: PriceValue, currency: string): string {
+  return `${formatPriceNumber(value)} ${currency}`;
 }

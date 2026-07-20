@@ -5,9 +5,9 @@ import { getActiveProductById, getAdjacentProductIds } from "@/lib/queries/shop"
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
-import { formatPrice } from "@/lib/format/currency";
 import { VariantPicker } from "@/components/shop/variant-picker";
 import { ProductGallery } from "@/components/shop/product-gallery";
+import { Price } from "@/components/shop/price";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -106,13 +106,13 @@ export default async function ProductDetailPage({
             </div>
           )}
 
-          <p className="text-xl font-semibold">
+          <p className="flex items-baseline gap-1">
             {isRange && (
-              <span className="me-1 text-sm font-normal text-muted-foreground">
+              <span className="text-sm font-normal text-muted-foreground">
                 {t("startingFrom")}
               </span>
             )}
-            {formatPrice(min, tCommon("currency"))}
+            <Price value={min} currency={tCommon("currency")} size="lg" />
           </p>
 
           {product.description && (
