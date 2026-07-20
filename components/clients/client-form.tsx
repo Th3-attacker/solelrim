@@ -72,7 +72,10 @@ export function ClientForm({
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="phone">{t("phone")}</Label>
-            <Input id="phone" {...register("phone")} />
+            <Input id="phone" inputMode="numeric" {...register("phone")} />
+            {errors.phone && (
+              <p className="text-sm text-destructive">{tCommon("invalidPhone")}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">

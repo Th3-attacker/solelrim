@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const checkoutCustomerSchema = z.object({
   customerName: z.string().min(1),
-  customerPhone: z.string().min(1),
+  customerPhone: z.string().regex(/^\d{6,15}$/, "invalidPhone"),
   customerCity: z.string().min(1),
 });
 

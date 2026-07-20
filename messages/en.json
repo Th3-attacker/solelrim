@@ -16,7 +16,8 @@
     "requiredField": "This field is required.",
     "optional": "optional",
     "currency": "MRU",
-    "close": "Close"
+    "close": "Close",
+    "invalidPhone": "Invalid number (digits only, 6 to 15 characters)."
   },
   "nav": {
     "dashboard": "Dashboard",

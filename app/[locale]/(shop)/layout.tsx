@@ -76,10 +76,10 @@ export default async function ShopLayout({
               {announcementText}
             </div>
             <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-              <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+              <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground"
+                  className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
                 >
                   {logoUrl && (
                     <Image

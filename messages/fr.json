@@ -16,7 +16,8 @@
     "requiredField": "Ce champ est requis.",
     "optional": "optionnel",
     "currency": "MRU",
-    "close": "Fermer"
+    "close": "Fermer",
+    "invalidPhone": "Numéro invalide (chiffres uniquement, 6 à 15 caractères)."
   },
   "nav": {
     "dashboard": "Tableau de bord",

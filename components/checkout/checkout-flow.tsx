@@ -181,7 +181,11 @@ export function CheckoutFlow({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
-            <Input id="customerPhone" {...register("customerPhone")} />
+            <Input
+              id="customerPhone"
+              inputMode="numeric"
+              {...register("customerPhone")}
+            />
             {errors.customerPhone && (
               <p className="text-sm text-destructive">{t("validationError")}</p>
             )}

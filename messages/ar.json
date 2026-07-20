@@ -16,7 +16,8 @@
     "requiredField": "هذا الحقل مطلوب.",
     "optional": "اختياري",
     "currency": "أوقية",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "invalidPhone": "رقم غير صالح (أرقام فقط، من 6 إلى 15 خانة)."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
