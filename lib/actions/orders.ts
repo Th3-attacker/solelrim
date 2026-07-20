@@ -11,8 +11,16 @@ import {
 } from "@/lib/validation/order";
 import { buildOrderReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
+import { routing } from "@/i18n/routing";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
+
+function resolveOrderLocale(value: FormDataEntryValue | null): string {
+  const locales: readonly string[] = routing.locales;
+  return typeof value === "string" && locales.includes(value)
+    ? value
+    : routing.defaultLocale;
+}
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -39,6 +47,7 @@ export async function submitOrder(
   if (!customerParsed.success) {
     return { error: "invalid" };
   }
+  const locale = resolveOrderLocale(formData.get("locale"));
 
   let rawItems: unknown;
   try {
@@ -111,6 +120,7 @@ export async function submitOrder(
           subtotal,
           total,
           paymentProofPath: storagePath,
+          locale,
           items: {
             create: orderItems.map((i) => ({
               variantId: i.variantId,
@@ -187,12 +197,22 @@ export async function confirmOrder(
 
 export async function rejectOrder(
   orderId: string,
+  reason: string,
 ): Promise<{ error?: string }> {
   await requireAdmin();
 
+  const parsed = cancelReasonSchema.safeParse({ reason });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
   const updated = await prisma.order.updateMany({
     where: { id: orderId, status: "PENDING" },
-    data: { status: "REJECTED", rejectedAt: new Date() },
+    data: {
+      status: "REJECTED",
+      rejectedAt: new Date(),
+      rejectReason: parsed.data.reason,
+    },
   });
   if (updated.count === 0) {
     return { error: "notPending" };

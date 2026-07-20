@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export function CheckoutFlow({
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const cart = useCart();
 
   const [step, setStep] = useState<Step>(1);
@@ -99,6 +100,7 @@ export function CheckoutFlow({
     formData.set("customerName", customerInfo.customerName);
     formData.set("customerPhone", customerInfo.customerPhone);
     formData.set("customerCity", customerInfo.customerCity);
+    formData.set("locale", locale);
     formData.set(
       "items",
       JSON.stringify(

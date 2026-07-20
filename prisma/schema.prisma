@@ -134,9 +134,11 @@ model Order {
   total            Decimal     @db.Decimal(10, 2)
   status           OrderStatus @default(PENDING)
   paymentProofPath String
+  locale           String?
   createdAt        DateTime    @default(now())
   confirmedAt      DateTime?
   rejectedAt       DateTime?
+  rejectReason     String?
   shippedAt        DateTime?
   deliveredAt      DateTime?
   cancelledAt      DateTime?

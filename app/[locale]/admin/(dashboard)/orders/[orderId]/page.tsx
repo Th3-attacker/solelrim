@@ -6,6 +6,7 @@ import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
 import { OrderProgressActions } from "@/components/orders/order-progress-actions";
+import { ClientMessageButton } from "@/components/orders/client-message-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -62,6 +63,14 @@ export default async function OrderDetailPage({
                 {t("printLabel")}
               </Link>
             </Button>
+            <ClientMessageButton
+              type="confirmation"
+              locale={order.locale}
+              customerName={order.customerName}
+              customerPhone={order.customerPhone}
+              reference={order.reference}
+              total={order.total.toNumber()}
+            />
             <OrderProgressActions orderId={order.id} status="CONFIRMED" />
           </div>
         )}
@@ -80,10 +89,31 @@ export default async function OrderDetailPage({
             {order.deliveredAt.toLocaleString()}
           </p>
         )}
-        {order.status === "REJECTED" && order.rejectedAt && (
-          <p className="text-sm text-muted-foreground">
-            {order.rejectedAt.toLocaleString()}
-          </p>
+        {order.status === "REJECTED" && (
+          <div className="flex items-center gap-3">
+            <div className="text-end">
+              {order.rejectedAt && (
+                <p className="text-sm text-muted-foreground">
+                  {order.rejectedAt.toLocaleString()}
+                </p>
+              )}
+              {order.rejectReason && (
+                <p className="text-sm text-muted-foreground">
+                  {t("cancelReasonLabel")}: {order.rejectReason}
+                </p>
+              )}
+            </div>
+            {order.rejectReason && (
+              <ClientMessageButton
+                type="rejection"
+                locale={order.locale}
+                customerName={order.customerName}
+                customerPhone={order.customerPhone}
+                reference={order.reference}
+                reason={order.rejectReason}
+              />
+            )}
+          </div>
         )}
         {order.status === "CANCELLED" && (
           <div className="text-end">
