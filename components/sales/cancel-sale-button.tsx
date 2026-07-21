@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,7 +55,7 @@ export function CancelSaleButton({ saleId }: { saleId: string }) {
         <AlertDialogFooter>
           <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={handleCancel} disabled={pending}>
-            {pending ? <Loader2 className="animate-spin" /> : tCommon("confirm")}
+            {pending ? <Spinner /> : tCommon("confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -275,10 +275,11 @@ export function CheckoutFlow({
             </Button>
             <Button
               onClick={handleFinalSubmit}
-              disabled={!file || submitting}
+              loading={submitting}
+              disabled={!file}
               className="flex-1"
             >
-              {submitting ? t("submitting") : t("submitOrder")}
+              {t("submitOrder")}
             </Button>
           </div>
         </div>

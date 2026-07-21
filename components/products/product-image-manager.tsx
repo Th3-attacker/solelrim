@@ -2,10 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { X, Upload, Loader2 } from "lucide-react";
+import { X, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { uploadProductImage, deleteProductImage } from "@/lib/actions/products";
 
@@ -68,11 +69,7 @@ export function ProductImageManager({
               disabled={pending}
               className="absolute top-1 end-1 rounded-full bg-background/90 p-1 opacity-0 transition-opacity group-hover:opacity-100"
             >
-              {pending ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : (
-                <X className="size-3" />
-              )}
+              {pending ? <Spinner className="size-3" /> : <X className="size-3" />}
             </button>
           </div>
         ))}
