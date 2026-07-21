@@ -4,7 +4,7 @@ export const clientSchema = z.object({
   fullName: z.string().min(1),
   phone: z
     .string()
-    .regex(/^\d{6,15}$/, "invalidPhone")
+    .regex(/^[234]\d{7}$/, "invalidPhone")
     .optional()
     .or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),

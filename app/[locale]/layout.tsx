@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -10,8 +10,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { routing, getDirection } from "@/i18n/routing";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+// Body/heading font is the native OS UI font stack (SF Pro on Apple
+// devices) defined in globals.css's --font-sans — no webfont to load here.
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export function generateStaticParams() {
@@ -43,14 +43,7 @@ export default async function LocaleLayout({
       lang={locale}
       dir={direction}
       suppressHydrationWarning
-      className={cn(
-        "h-full",
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable,
-      )}
+      className={cn("h-full", "antialiased", geistMono.variable, "font-sans")}
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>

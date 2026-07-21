@@ -17,7 +17,7 @@
     "optional": "optionnel",
     "currency": "MRU",
     "close": "Fermer",
-    "invalidPhone": "Numéro invalide (chiffres uniquement, 6 à 15 caractères)."
+    "invalidPhone": "Numéro invalide (8 chiffres, doit commencer par 2, 3 ou 4)."
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -162,6 +162,8 @@
     "favoritesTitle": "Favoris",
     "noFavorites": "Aucun favori pour le moment.",
     "categoriesLabel": "Catégories",
+    "quickLinks": "Liens rapides",
+    "suggestedLinks": "Liens suggérés",
     "contactWhatsapp": "Contactez-nous sur WhatsApp"
   },
   "cart": {

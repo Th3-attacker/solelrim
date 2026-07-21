@@ -17,7 +17,7 @@
     "optional": "اختياري",
     "currency": "أوقية",
     "close": "إغلاق",
-    "invalidPhone": "رقم غير صالح (أرقام فقط، من 6 إلى 15 خانة)."
+    "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4)."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -162,6 +162,8 @@
     "favoritesTitle": "المفضلة",
     "noFavorites": "لا توجد مفضلات بعد.",
     "categoriesLabel": "الفئات",
+    "quickLinks": "روابط سريعة",
+    "suggestedLinks": "روابط مقترحة",
     "contactWhatsapp": "تواصل معنا عبر واتساب"
   },
   "cart": {

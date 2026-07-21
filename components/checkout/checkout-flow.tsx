@@ -186,6 +186,7 @@ export function CheckoutFlow({
             <Input
               id="customerPhone"
               inputMode="numeric"
+              maxLength={8}
               {...register("customerPhone")}
             />
             {errors.customerPhone && (

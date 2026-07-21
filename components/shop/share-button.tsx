@@ -1,11 +1,17 @@
 "use client";
 
-import { Share2 } from "lucide-react";
+import { Share } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function ShareButton({ title }: { title: string }) {
+export function ShareButton({
+  title,
+  className,
+}: {
+  title: string;
+  className?: string;
+}) {
   const t = useTranslations("shop");
 
   async function handleShare() {
@@ -23,9 +29,16 @@ export function ShareButton({ title }: { title: string }) {
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={handleShare}>
-      <Share2 className="size-4" />
-      {t("share")}
-    </Button>
+    <button
+      type="button"
+      aria-label={t("share")}
+      onClick={handleShare}
+      className={cn(
+        "flex size-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-sm transition-transform hover:scale-110",
+        className,
+      )}
+    >
+      <Share className="size-4" />
+    </button>
   );
 }

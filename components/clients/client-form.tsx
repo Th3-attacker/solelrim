@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { clientSchema, type ClientInput } from "@/lib/validation/client";
+import { useRouter } from "@/i18n/navigation";
 import { createClientRecord, updateClientRecord } from "@/lib/actions/clients";
+import { clientSchema, type ClientInput } from "@/lib/validation/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { toast } from "sonner";
 
 export function ClientForm({
   defaultValues,
@@ -66,15 +66,31 @@ export function ClientForm({
             <Label htmlFor="fullName">{t("fullName")}</Label>
             <Input id="fullName" {...register("fullName")} />
             {errors.fullName && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <p className="text-sm text-destructive">
+                {tCommon("requiredField")}
+              </p>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="phone">{t("phone")}</Label>
-            <Input id="phone" inputMode="numeric" {...register("phone")} />
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="numeric"
+              maxLength={8}
+              {...register("phone")}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /\D/g,
+                  "",
+                );
+              }}
+            />
             {errors.phone && (
-              <p className="text-sm text-destructive">{tCommon("invalidPhone")}</p>
+              <p className="text-sm text-destructive">
+                {tCommon("invalidPhone")}
+              </p>
             )}
           </div>
 
@@ -82,7 +98,9 @@ export function ClientForm({
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" {...register("email")} />
             {errors.email && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <p className="text-sm text-destructive">
+                {tCommon("requiredField")}
+              </p>
             )}
           </div>
 

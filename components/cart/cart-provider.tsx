@@ -101,7 +101,6 @@ type CartContextValue = {
   updateQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
   clear: () => void;
-  itemCount: number;
   subtotal: number;
 };
 
@@ -129,7 +128,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [state.items, state.hydrated]);
 
   const value = useMemo<CartContextValue>(() => {
-    const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
     const subtotal = state.items.reduce(
       (sum, i) => sum + i.unitPrice * i.quantity,
       0,
@@ -143,7 +141,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "UPDATE_QUANTITY", variantId, quantity }),
       removeItem: (variantId) => dispatch({ type: "REMOVE_ITEM", variantId }),
       clear: () => dispatch({ type: "CLEAR" }),
-      itemCount,
       subtotal,
     };
   }, [state]);

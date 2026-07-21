@@ -12,7 +12,7 @@ import { FavoritesProvider } from "@/components/shop/favorites-provider";
 import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
-import { getActiveProducts } from "@/lib/queries/shop";
+import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getStoreSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
@@ -34,9 +34,10 @@ export default async function ShopLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [t, allProducts, settings] = await Promise.all([
+  const [t, allProducts, categories, settings] = await Promise.all([
     getTranslations("shop"),
     getActiveProducts(),
+    getAllShopCategories(),
     getStoreSettings(),
   ]);
 
@@ -47,6 +48,11 @@ export default async function ShopLayout({
       ? getProductImageUrl(product.images[0].storagePath)
       : null,
     price: getPriceRange(product.variants, product.basePrice).min,
+  }));
+
+  const searchProducts = allProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
   }));
 
   const siteName = settings.siteName?.trim() || t("siteName");
@@ -93,7 +99,7 @@ export default async function ShopLayout({
                   {siteName}
                 </Link>
                 <div className="flex items-center gap-1">
-                  <SearchTrigger />
+                  <SearchTrigger categories={categories} products={searchProducts} />
                   <FavoritesTrigger products={favoriteCandidates} />
                   <CartTrigger />
                   <LanguageSwitcher />

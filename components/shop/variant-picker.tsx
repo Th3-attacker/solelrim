@@ -182,7 +182,7 @@ export function VariantPicker({
 
       <div className="flex items-center gap-2">
         <FavoriteButton productId={productId} className="border" />
-        <ShareButton title={productName} />
+        <ShareButton title={productName} className="border" />
       </div>
     </div>
   );

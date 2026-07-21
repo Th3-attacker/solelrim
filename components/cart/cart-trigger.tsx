@@ -24,8 +24,7 @@ export function CartTrigger() {
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const side = getDirection(locale) === "rtl" ? "left" : "right";
-  const { items, hydrated, itemCount, subtotal, updateQuantity, removeItem } =
-    useCart();
+  const { items, hydrated, subtotal, updateQuantity, removeItem } = useCart();
   const { openCheckout } = useCheckoutDrawer();
 
   return (
@@ -33,9 +32,9 @@ export function CartTrigger() {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="size-4" />
-          {hydrated && itemCount > 0 && (
+          {hydrated && items.length > 0 && (
             <span className="absolute -top-1 -end-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-              {itemCount}
+              {items.length}
             </span>
           )}
         </Button>
