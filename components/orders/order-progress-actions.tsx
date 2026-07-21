@@ -62,7 +62,7 @@ export function OrderProgressActions({
 
   return (
     <div className="flex gap-2">
-      <Button disabled={pending} onClick={handleAdvance}>
+      <Button loading={pending} onClick={handleAdvance}>
         {status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
       </Button>
 
@@ -93,7 +93,8 @@ export function OrderProgressActions({
             <Button
               type="button"
               variant="destructive"
-              disabled={pending || !reason.trim()}
+              loading={pending}
+              disabled={!reason.trim()}
               onClick={handleCancel}
             >
               {tCommon("confirm")}

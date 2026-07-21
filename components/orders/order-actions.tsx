@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
@@ -47,6 +48,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reasonPreset, setReasonPreset] = useState<string>(REJECT_REASON_PRESETS[0]);
   const [customReason, setCustomReason] = useState("");
@@ -54,7 +56,8 @@ export function OrderActions({ orderId }: { orderId: string }) {
   const isOther = reasonPreset === "other";
   const finalReason = isOther ? customReason.trim() : reasonPreset;
 
-  function handleConfirm() {
+  function handleConfirm(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
     startTransition(async () => {
       const result = await confirmOrder(orderId);
       if (result.error) {
@@ -65,6 +68,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
         );
         return;
       }
+      setConfirmOpen(false);
       router.refresh();
       toast.success(t("confirmAction"));
     });
@@ -88,7 +92,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
 
   return (
     <div className="flex gap-2">
-      <AlertDialog>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogTrigger asChild>
           <Button disabled={pending}>{t("confirmAction")}</Button>
         </AlertDialogTrigger>
@@ -101,8 +105,8 @@ export function OrderActions({ orderId }: { orderId: string }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
-              {tCommon("confirm")}
+            <AlertDialogAction onClick={handleConfirm} disabled={pending}>
+              {pending ? <Loader2 className="animate-spin" /> : tCommon("confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -153,7 +157,8 @@ export function OrderActions({ orderId }: { orderId: string }) {
             <Button
               type="button"
               variant="destructive"
-              disabled={pending || !finalReason}
+              loading={pending}
+              disabled={!finalReason}
               onClick={handleReject}
             >
               {tCommon("confirm")}

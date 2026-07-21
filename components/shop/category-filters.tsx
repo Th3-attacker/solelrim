@@ -81,7 +81,10 @@ export function CategoryFilters({
       </div>
 
       {categoriesOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 w-full duration-200 md:hidden">
+        <div
+          onClick={() => setCategoriesOpen(false)}
+          className="animate-in fade-in slide-in-from-top-2 w-full duration-200 md:hidden"
+        >
           {categoryBreadcrumb}
         </div>
       )}

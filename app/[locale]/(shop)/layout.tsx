@@ -75,8 +75,8 @@ export default async function ShopLayout({
             <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
               {announcementText}
             </div>
-            <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-              <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+            <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
+              <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
                 <Link
                   href="/"
                   className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"

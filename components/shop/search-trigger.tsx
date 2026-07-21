@@ -6,8 +6,14 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 
 export function SearchTrigger() {
   const t = useTranslations("shop");
@@ -25,6 +31,35 @@ export function SearchTrigger() {
     setQuery("");
   }
 
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button type="button" variant="ghost" size="icon" aria-label={t("search")}>
+            <Search className="size-4" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>{t("search")}</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 pb-4">
+            <Input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="flex-1"
+            />
+            <Button type="submit" size="icon" aria-label={t("search")}>
+              <Search className="size-4" />
+            </Button>
+          </form>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   if (!open) {
     return (
       <Button
@@ -40,23 +75,13 @@ export function SearchTrigger() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn(
-        "flex items-center gap-1",
-        // On mobile the inline-expanding input has nowhere to grow — it was
-        // colliding with the site name and forcing the header to overflow
-        // horizontally. Taking over the full header row avoids that instead
-        // of squeezing everything into the same line.
-        isMobile && "absolute inset-0 z-20 bg-background px-4",
-      )}
-    >
+    <form onSubmit={handleSubmit} className="flex items-center gap-1">
       <Input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={t("searchPlaceholder")}
-        className={cn("h-8", isMobile ? "flex-1" : "w-32 sm:w-48")}
+        className="h-8 w-32 sm:w-48"
       />
       <Button
         type="button"

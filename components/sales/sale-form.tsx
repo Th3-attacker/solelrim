@@ -232,7 +232,7 @@ export function SaleForm({
       </Card>
 
       <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" loading={submitting}>
           {tCommon("save")}
         </Button>
       </div>

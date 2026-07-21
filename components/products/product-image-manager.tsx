@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,11 @@ export function ProductImageManager({
               disabled={pending}
               className="absolute top-1 end-1 rounded-full bg-background/90 p-1 opacity-0 transition-opacity group-hover:opacity-100"
             >
-              <X className="size-3" />
+              {pending ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <X className="size-3" />
+              )}
             </button>
           </div>
         ))}
@@ -85,7 +89,7 @@ export function ProductImageManager({
         type="button"
         variant="outline"
         size="sm"
-        disabled={pending}
+        loading={pending}
         onClick={() => inputRef.current?.click()}
         className="w-fit"
       >

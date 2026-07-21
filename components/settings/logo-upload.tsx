@@ -68,7 +68,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
           type="button"
           variant="outline"
           size="sm"
-          disabled={pending}
+          loading={pending}
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="size-4" />
@@ -79,7 +79,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
             type="button"
             variant="ghost"
             size="sm"
-            disabled={pending}
+            loading={pending}
             onClick={handleRemove}
           >
             <Trash2 className="size-4" />

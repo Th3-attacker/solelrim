@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
@@ -27,6 +28,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const locale = useLocale();
   const side = getDirection(locale) === "rtl" ? "right" : "left";
+  const { setOpenMobile } = useSidebar();
 
   const items = [
     { href: "/admin", label: t("dashboard"), icon: LayoutDashboard },
@@ -56,7 +58,7 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={() => setOpenMobile(false)}>
                         <item.icon />
                         <span>{item.label}</span>
                       </Link>
