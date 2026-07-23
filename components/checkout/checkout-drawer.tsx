@@ -54,6 +54,9 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
             ? visualViewportStyle(viewportRect)
             : undefined
         }
+        overlayClassName={
+          side === "bottom" && keyboardOpen ? "bg-popover" : undefined
+        }
         className={cn(
           "flex flex-col gap-0",
           side === "bottom" && "rounded-t-2xl",
