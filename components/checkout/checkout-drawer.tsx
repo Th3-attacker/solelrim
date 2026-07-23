@@ -60,7 +60,7 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         className={cn(
           "flex flex-col gap-0",
           side === "bottom" && "rounded-t-2xl",
-          side === "bottom" && !keyboardOpen && "max-h-[90dvh]",
+          side === "bottom" && !keyboardOpen && "max-h-[90svh]",
         )}
       >
         <SheetHeader>

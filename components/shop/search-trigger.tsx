@@ -133,7 +133,7 @@ export function SearchTrigger({
             overlayClassName={keyboardOpen ? "bg-popover" : undefined}
             className={cn(
               "flex flex-col gap-0 rounded-t-2xl",
-              !keyboardOpen && "max-h-[88dvh]",
+              !keyboardOpen && "max-h-[88svh]",
             )}
           >
             <SheetHeader className="pb-2">

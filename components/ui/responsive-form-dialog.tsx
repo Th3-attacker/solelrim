@@ -86,7 +86,7 @@ export function ResponsiveFormDialog({
         overlayClassName={keyboardOpen ? "bg-popover" : undefined}
         className={cn(
           "flex flex-col gap-0 rounded-t-2xl",
-          !keyboardOpen && "max-h-[90dvh]",
+          !keyboardOpen && "max-h-[90svh]",
         )}
       >
         <SheetHeader>
