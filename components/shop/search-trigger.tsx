@@ -117,7 +117,7 @@ export function SearchTrigger({
       </Button>
       <Sheet open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
         {isMobile ? (
-          <SheetContent side="bottom" className="h-[88vh] gap-0 rounded-t-2xl">
+          <SheetContent side="bottom" className="flex max-h-[88dvh] flex-col gap-0 rounded-t-2xl">
             <SheetHeader className="pb-2">
               <SheetTitle className="sr-only">{t("search")}</SheetTitle>
               {searchInput}

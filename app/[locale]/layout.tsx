@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -17,6 +17,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+// Shrinks the actual layout viewport (not just the visual one) when the
+// on-screen keyboard opens, so `position: fixed` bottom sheets and their
+// dvh-based heights resize to sit flush above the keyboard instead of
+// floating above it (iOS Safari 16.4+ / Android Chrome 108+).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");

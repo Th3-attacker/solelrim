@@ -76,7 +76,7 @@ export function OrderProcedure({
   if (asSheet) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-2xl">
+        <SheetContent side="bottom" className="max-h-[85dvh] rounded-t-2xl">
           <SheetHeader>
             <SheetTitle>{heading}</SheetTitle>
             <SheetDescription>{t("description")}</SheetDescription>

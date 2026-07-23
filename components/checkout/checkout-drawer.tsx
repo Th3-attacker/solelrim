@@ -33,7 +33,7 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         side={side}
         className={
           side === "bottom"
-            ? "flex max-h-[90vh] flex-col gap-0 rounded-t-2xl"
+            ? "flex max-h-[90dvh] flex-col gap-0 rounded-t-2xl"
             : "flex flex-col gap-0"
         }
       >
