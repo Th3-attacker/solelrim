@@ -155,6 +155,10 @@ export function SearchTrigger({
               </p>
               {linksList}
             </div>
+            {/* The iOS keyboard is translucent — extend our own background
+                below the sheet's visible edge so it blurs through to this
+                instead of the page behind. */}
+            <div aria-hidden className="absolute inset-x-0 top-full h-screen bg-popover" />
           </SheetContent>
         ) : (
           <SheetContent

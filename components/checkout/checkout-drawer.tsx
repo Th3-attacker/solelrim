@@ -74,6 +74,12 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         <div className="flex-1 overflow-y-auto px-4 pb-6">
           <CheckoutFlow settings={settings} open={open} onClose={closeCheckout} />
         </div>
+        {/* The iOS keyboard is translucent — extend our own background
+            below the sheet's visible edge so it blurs through to this
+            instead of the page behind. */}
+        {side === "bottom" && (
+          <div aria-hidden className="absolute inset-x-0 top-full h-screen bg-popover" />
+        )}
       </SheetContent>
     </Sheet>
   );
