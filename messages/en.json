@@ -164,7 +164,28 @@
     "categoriesLabel": "Categories",
     "quickLinks": "Quick Links",
     "suggestedLinks": "Suggested Links",
-    "contactWhatsapp": "Contact us on WhatsApp"
+    "contactWhatsapp": "Contact us on WhatsApp",
+    "aboutLink": "About"
+  },
+  "about": {
+    "metaTitle": "About",
+    "metaDescription": "Solelrim offers sportswear and gear selected for quality, with local payment methods and a real person behind every order.",
+    "eyebrow": "Our story",
+    "heroTitle": "Sport gear, without compromising on quality",
+    "heroSubtitle": "Sportswear and accessories selected to last, at accessible prices, with a real person behind every order.",
+    "missionEyebrow": "Our mission",
+    "missionTitle": "Making sport accessible, without cutting corners",
+    "missionBody": "We choose every product for how it holds up in real use, not to chase a trend. And behind every order, there's a team that checks, confirms, and replies — not a bot.",
+    "makeEyebrow": "What we make",
+    "makeTitle": "A selection built for training",
+    "makeBody": "Clothing, shoes, and gear chosen to hold up to real sports use.",
+    "workEyebrow": "How we work",
+    "workTitle": "Service you can follow, human to human",
+    "findEyebrow": "Find us",
+    "findTitle": "A question? Let's talk directly",
+    "findBody": "No impersonal contact form — we answer directly on WhatsApp.",
+    "ctaTitle": "Ready to get started?",
+    "ctaButton": "Browse the shop"
   },
   "cart": {
     "title": "Cart",

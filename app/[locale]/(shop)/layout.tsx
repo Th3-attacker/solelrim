@@ -112,32 +112,33 @@ export default async function ShopLayout({
             </main>
             <footer className="border-t bg-muted/30">
               <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
-                {(whatsappHref || socialLinks.length > 0) && (
-                  <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-                    {whatsappHref && (
-                      <a
-                        href={whatsappHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 transition-colors hover:text-foreground"
-                      >
-                        <MessageCircle className="size-4" />
-                        {t("contactWhatsapp")}
-                      </a>
-                    )}
-                    {socialLinks.map((social) => (
-                      <a
-                        key={social.label}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="transition-colors hover:text-foreground"
-                      >
-                        {social.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                  <Link href="/about" className="transition-colors hover:text-foreground">
+                    {t("aboutLink")}
+                  </Link>
+                  {whatsappHref && (
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+                    >
+                      <MessageCircle className="size-4" />
+                      {t("contactWhatsapp")}
+                    </a>
+                  )}
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
                 <span>
                   © {new Date().getFullYear()} {siteName}
                 </span>
