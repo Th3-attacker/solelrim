@@ -83,10 +83,9 @@ export function ResponsiveFormDialog({
         onOpenAutoFocus={(event) => event.preventDefault()}
         side="bottom"
         style={keyboardOpen ? visualViewportStyle(viewportRect) : undefined}
-        overlayClassName={keyboardOpen ? "bg-popover" : undefined}
         className={cn(
-          "flex flex-col gap-0 rounded-t-2xl",
-          !keyboardOpen && "max-h-[90svh]",
+          "flex flex-col gap-0",
+          keyboardOpen ? "rounded-none" : "max-h-[90svh] rounded-t-2xl",
         )}
       >
         <SheetHeader>
