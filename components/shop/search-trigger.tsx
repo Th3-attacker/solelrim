@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
+import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
 import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
@@ -35,6 +36,7 @@ export function SearchTrigger({
   const [query, setQuery] = useState("");
   const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
     useFocusWithin<HTMLDivElement>();
+  const viewportRect = useVisualViewport(keyboardOpen);
 
   const suggestions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
@@ -127,9 +129,9 @@ export function SearchTrigger({
             onFocus={onFocus}
             onBlur={onBlur}
             side="bottom"
-            style={keyboardOpen ? { height: "100dvh" } : undefined}
+            style={keyboardOpen ? visualViewportStyle(viewportRect) : undefined}
             className={cn(
-              "flex flex-col gap-0 rounded-t-2xl transition-[height]",
+              "flex flex-col gap-0 rounded-t-2xl",
               !keyboardOpen && "max-h-[88dvh]",
             )}
           >

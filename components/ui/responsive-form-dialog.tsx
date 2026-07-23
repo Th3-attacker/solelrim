@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
+import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,8 @@ import {
 // Renders as a centered Dialog on desktop and a bottom Sheet on mobile.
 // The Sheet starts compact (sized to its content) and expands to fill the
 // full viewport the moment a text field inside it gains focus, tracking
-// the on-screen keyboard via dvh — see hooks/use-focus-within.ts.
+// the on-screen keyboard live via the VisualViewport API — see
+// hooks/use-focus-within.ts and hooks/use-visual-viewport.ts.
 export function ResponsiveFormDialog({
   open,
   onOpenChange,
@@ -47,6 +49,7 @@ export function ResponsiveFormDialog({
   const isMobile = useIsMobile();
   const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
     useFocusWithin<HTMLDivElement>();
+  const viewportRect = useVisualViewport(keyboardOpen);
 
   if (!isMobile) {
     return (
@@ -79,9 +82,9 @@ export function ResponsiveFormDialog({
         onBlur={onBlur}
         onOpenAutoFocus={(event) => event.preventDefault()}
         side="bottom"
-        style={keyboardOpen ? { height: "100dvh" } : undefined}
+        style={keyboardOpen ? visualViewportStyle(viewportRect) : undefined}
         className={cn(
-          "flex flex-col gap-0 rounded-t-2xl transition-[height]",
+          "flex flex-col gap-0 rounded-t-2xl",
           !keyboardOpen && "max-h-[90dvh]",
         )}
       >

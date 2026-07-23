@@ -10,6 +10,7 @@ import {
 import { getDirection } from "@/i18n/routing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
+import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
 import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
   const { open, closeCheckout } = useCheckoutDrawer();
   const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
     useFocusWithin<HTMLDivElement>();
+  const viewportRect = useVisualViewport(keyboardOpen);
 
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
 
@@ -47,9 +49,13 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         onBlur={onBlur}
         onOpenAutoFocus={(event) => event.preventDefault()}
         side={side}
-        style={side === "bottom" && keyboardOpen ? { height: "100dvh" } : undefined}
+        style={
+          side === "bottom" && keyboardOpen
+            ? visualViewportStyle(viewportRect)
+            : undefined
+        }
         className={cn(
-          "flex flex-col gap-0 transition-[height]",
+          "flex flex-col gap-0",
           side === "bottom" && "rounded-t-2xl",
           side === "bottom" && !keyboardOpen && "max-h-[90dvh]",
         )}
