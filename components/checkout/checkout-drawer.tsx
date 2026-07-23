@@ -9,8 +9,10 @@ import {
 } from "@/components/ui/sheet";
 import { getDirection } from "@/i18n/routing";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useFocusWithin } from "@/hooks/use-focus-within";
 import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
+import { cn } from "@/lib/utils";
 
 type Settings = {
   bankilyNumber: string | null;
@@ -24,18 +26,33 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
   const locale = useLocale();
   const isMobile = useIsMobile();
   const { open, closeCheckout } = useCheckoutDrawer();
+  const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
+    useFocusWithin<HTMLDivElement>();
 
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
 
   return (
-    <Sheet open={open} onOpenChange={(next) => !next && closeCheckout()}>
-      <SheetContent
-        side={side}
-        className={
-          side === "bottom"
-            ? "flex max-h-[90dvh] flex-col gap-0 rounded-t-2xl"
-            : "flex flex-col gap-0"
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          closeCheckout();
+          reset();
         }
+      }}
+    >
+      <SheetContent
+        ref={ref}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        side={side}
+        style={side === "bottom" && keyboardOpen ? { height: "100dvh" } : undefined}
+        className={cn(
+          "flex flex-col gap-0 transition-[height]",
+          side === "bottom" && "rounded-t-2xl",
+          side === "bottom" && !keyboardOpen && "max-h-[90dvh]",
+        )}
       >
         <SheetHeader>
           <SheetTitle>{t("title")}</SheetTitle>

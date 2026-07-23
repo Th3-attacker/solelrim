@@ -25,15 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { confirmOrder, rejectOrder } from "@/lib/actions/orders";
 import { REJECT_REASON_PRESETS } from "@/lib/shop/client-messages";
 
@@ -112,41 +104,18 @@ export function OrderActions({ orderId }: { orderId: string }) {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <DialogTrigger asChild>
+      <ResponsiveFormDialog
+        open={rejectOpen}
+        onOpenChange={setRejectOpen}
+        trigger={
           <Button variant="outline" disabled={pending}>
             {t("rejectAction")}
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("rejectAction")}</DialogTitle>
-            <DialogDescription>{t("rejectReasonLabel")}</DialogDescription>
-          </DialogHeader>
-
-          <Select value={reasonPreset} onValueChange={setReasonPreset}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("selectReasonPlaceholder")} />
-            </SelectTrigger>
-            <SelectContent>
-              {REJECT_REASON_PRESETS.map((preset) => (
-                <SelectItem key={preset} value={preset}>
-                  {t(REASON_LABEL_KEYS[preset])}
-                </SelectItem>
-              ))}
-              <SelectItem value="other">{t("reasonOther")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {isOther && (
-            <Textarea
-              value={customReason}
-              onChange={(e) => setCustomReason(e.target.value)}
-              placeholder={t("reasonOtherPlaceholder")}
-            />
-          )}
-
-          <DialogFooter>
+        }
+        title={t("rejectAction")}
+        description={t("rejectReasonLabel")}
+        footer={
+          <>
             <Button
               type="button"
               variant="outline"
@@ -163,9 +132,31 @@ export function OrderActions({ orderId }: { orderId: string }) {
             >
               {tCommon("confirm")}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        }
+      >
+        <Select value={reasonPreset} onValueChange={setReasonPreset}>
+          <SelectTrigger>
+            <SelectValue placeholder={t("selectReasonPlaceholder")} />
+          </SelectTrigger>
+          <SelectContent>
+            {REJECT_REASON_PRESETS.map((preset) => (
+              <SelectItem key={preset} value={preset}>
+                {t(REASON_LABEL_KEYS[preset])}
+              </SelectItem>
+            ))}
+            <SelectItem value="other">{t("reasonOther")}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {isOther && (
+          <Textarea
+            value={customReason}
+            onChange={(e) => setCustomReason(e.target.value)}
+            placeholder={t("reasonOtherPlaceholder")}
+          />
+        )}
+      </ResponsiveFormDialog>
     </div>
   );
 }

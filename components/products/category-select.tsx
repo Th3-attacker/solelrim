@@ -13,14 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { createCategory } from "@/lib/actions/categories";
 
 type Category = { id: string; name: string };
@@ -67,35 +60,34 @@ export function CategorySelect({
           ))}
         </SelectContent>
       </Select>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
+      <ResponsiveFormDialog
+        open={open}
+        onOpenChange={setOpen}
+        trigger={
           <Button type="button" variant="outline" size="icon">
             <Plus className="size-4" />
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("category")}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="new-category-name">{t("name")}</Label>
-            <Input
-              id="new-category-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              disabled={!name || pending}
-              onClick={handleCreate}
-            >
-              {tCommon("create")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+        title={t("category")}
+        footer={
+          <Button
+            type="button"
+            disabled={!name || pending}
+            onClick={handleCreate}
+          >
+            {tCommon("create")}
+          </Button>
+        }
+      >
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="new-category-name">{t("name")}</Label>
+          <Input
+            id="new-category-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </ResponsiveFormDialog>
     </div>
   );
 }

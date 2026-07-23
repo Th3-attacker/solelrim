@@ -6,15 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { shipOrder, deliverOrder, cancelOrder } from "@/lib/actions/orders";
 
 export function OrderProgressActions({
@@ -66,23 +58,18 @@ export function OrderProgressActions({
         {status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
       </Button>
 
-      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <DialogTrigger asChild>
+      <ResponsiveFormDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        trigger={
           <Button variant="outline" disabled={pending}>
             {t("cancelAction")}
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("cancelActionConfirmTitle")}</DialogTitle>
-            <DialogDescription>{t("cancelReasonHint")}</DialogDescription>
-          </DialogHeader>
-          <Textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={t("cancelReasonPlaceholder")}
-          />
-          <DialogFooter>
+        }
+        title={t("cancelActionConfirmTitle")}
+        description={t("cancelReasonHint")}
+        footer={
+          <>
             <Button
               type="button"
               variant="outline"
@@ -99,9 +86,15 @@ export function OrderProgressActions({
             >
               {tCommon("confirm")}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        }
+      >
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={t("cancelReasonPlaceholder")}
+        />
+      </ResponsiveFormDialog>
     </div>
   );
 }

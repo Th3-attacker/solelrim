@@ -12,6 +12,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useFocusWithin } from "@/hooks/use-focus-within";
+import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
 type SearchProduct = { id: string; name: string };
@@ -31,6 +33,8 @@ export function SearchTrigger({
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
+    useFocusWithin<HTMLDivElement>();
 
   const suggestions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
@@ -43,6 +47,7 @@ export function SearchTrigger({
   function close() {
     setOpen(false);
     setQuery("");
+    reset();
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -117,7 +122,17 @@ export function SearchTrigger({
       </Button>
       <Sheet open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
         {isMobile ? (
-          <SheetContent side="bottom" className="flex max-h-[88dvh] flex-col gap-0 rounded-t-2xl">
+          <SheetContent
+            ref={ref}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            side="bottom"
+            style={keyboardOpen ? { height: "100dvh" } : undefined}
+            className={cn(
+              "flex flex-col gap-0 rounded-t-2xl transition-[height]",
+              !keyboardOpen && "max-h-[88dvh]",
+            )}
+          >
             <SheetHeader className="pb-2">
               <SheetTitle className="sr-only">{t("search")}</SheetTitle>
               {searchInput}
