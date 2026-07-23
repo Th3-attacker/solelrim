@@ -85,7 +85,7 @@ export default async function ShopLayout({
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:px-6">
                 <div className="flex min-w-0 items-center gap-1">
-                  <MobileNav />
+                  <MobileNav categories={categories} products={searchProducts} />
                   <Link
                     href="/"
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
@@ -117,10 +117,14 @@ export default async function ShopLayout({
                   </Link>
                 </nav>
                 <div className="flex items-center justify-end gap-1">
-                  <SearchTrigger categories={categories} products={searchProducts} />
+                  <div className="hidden md:block">
+                    <SearchTrigger categories={categories} products={searchProducts} />
+                  </div>
                   <FavoritesTrigger products={favoriteCandidates} />
                   <CartTrigger />
-                  <LanguageSwitcher />
+                  <div className="hidden md:block">
+                    <LanguageSwitcher />
+                  </div>
                   <ModeToggle />
                 </div>
               </div>
