@@ -49,6 +49,12 @@
 }
 
 :root {
+  /* Without this, native browser chrome (scrollbars, form controls, and
+     critically the iOS on-screen keyboard) follows the device's system
+     light/dark setting instead of the page's own active theme — causing
+     a white page to show a dark native keyboard underneath it whenever
+     the phone itself is in system dark mode, regardless of our theme. */
+  color-scheme: light;
   /* SF Pro is Apple-licensed and can't be embedded as a webfont — this is
      the standard "system UI font" stack instead: -apple-system/
      BlinkMacSystemFont resolve to San Francisco on macOS/iOS automatically
@@ -93,6 +99,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
