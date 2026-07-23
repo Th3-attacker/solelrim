@@ -31,12 +31,17 @@ export function useVisualViewport(active: boolean) {
   return rect
 }
 
+// Leaves a sliver of the (blurred) page visible above the sheet instead of
+// going fully edge-to-edge, matching the reference bottom-sheet pattern.
+export const SHEET_PEEK_INSET = 24
+
 // Falls back to the dvh unit only until the first real measurement lands
 // (or on browsers without VisualViewport support).
 export function visualViewportStyle(
   rect: { height: number; top: number } | null,
+  topInset = 0,
 ): React.CSSProperties {
   return rect
-    ? { height: `${rect.height}px`, top: `${rect.top}px` }
-    : { height: "100dvh" }
+    ? { height: `${rect.height - topInset}px`, top: `${rect.top + topInset}px` }
+    : { height: `calc(100dvh - ${topInset}px)`, top: `${topInset}px` }
 }

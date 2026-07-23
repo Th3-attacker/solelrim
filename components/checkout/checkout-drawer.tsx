@@ -10,7 +10,11 @@ import {
 import { getDirection } from "@/i18n/routing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
-import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
+import {
+  useVisualViewport,
+  visualViewportStyle,
+  SHEET_PEEK_INSET,
+} from "@/hooks/use-visual-viewport";
 import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { cn } from "@/lib/utils";
@@ -49,15 +53,19 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         onBlur={onBlur}
         onOpenAutoFocus={(event) => event.preventDefault()}
         side={side}
+        showHandle={side === "bottom"}
+        overlayClassName={
+          side === "bottom" ? "bg-background/50 supports-backdrop-filter:backdrop-blur-lg" : undefined
+        }
         style={
           side === "bottom" && keyboardOpen
-            ? visualViewportStyle(viewportRect)
+            ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
             : undefined
         }
         className={cn(
           "flex flex-col gap-0",
-          side === "bottom" &&
-            (keyboardOpen ? "rounded-none" : "max-h-[90svh] rounded-t-2xl"),
+          side === "bottom" && "rounded-t-2xl",
+          side === "bottom" && !keyboardOpen && "max-h-[90svh]",
         )}
       >
         <SheetHeader>

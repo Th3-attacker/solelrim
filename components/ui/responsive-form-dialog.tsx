@@ -4,7 +4,11 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
-import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
+import {
+  useVisualViewport,
+  visualViewportStyle,
+  SHEET_PEEK_INSET,
+} from "@/hooks/use-visual-viewport";
 import {
   Dialog,
   DialogContent,
@@ -25,10 +29,11 @@ import {
 } from "@/components/ui/sheet";
 
 // Renders as a centered Dialog on desktop and a bottom Sheet on mobile.
-// The Sheet starts compact (sized to its content) and expands to fill the
-// full viewport the moment a text field inside it gains focus, tracking
-// the on-screen keyboard live via the VisualViewport API — see
-// hooks/use-focus-within.ts and hooks/use-visual-viewport.ts.
+// The Sheet starts compact (sized to its content) and expands to fill
+// almost the full viewport (leaving a small blurred peek at the top) the
+// moment a text field inside it gains focus, tracking the on-screen
+// keyboard live via the VisualViewport API — see hooks/use-focus-within.ts
+// and hooks/use-visual-viewport.ts.
 export function ResponsiveFormDialog({
   open,
   onOpenChange,
@@ -82,10 +87,16 @@ export function ResponsiveFormDialog({
         onBlur={onBlur}
         onOpenAutoFocus={(event) => event.preventDefault()}
         side="bottom"
-        style={keyboardOpen ? visualViewportStyle(viewportRect) : undefined}
+        showHandle
+        overlayClassName="bg-background/50 supports-backdrop-filter:backdrop-blur-lg"
+        style={
+          keyboardOpen
+            ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
+            : undefined
+        }
         className={cn(
-          "flex flex-col gap-0",
-          keyboardOpen ? "rounded-none" : "max-h-[90svh] rounded-t-2xl",
+          "flex flex-col gap-0 rounded-t-2xl",
+          !keyboardOpen && "max-h-[90svh]",
         )}
       >
         <SheetHeader>

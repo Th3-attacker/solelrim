@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
-import { useVisualViewport, visualViewportStyle } from "@/hooks/use-visual-viewport";
+import {
+  useVisualViewport,
+  visualViewportStyle,
+  SHEET_PEEK_INSET,
+} from "@/hooks/use-visual-viewport";
 import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
@@ -129,10 +133,16 @@ export function SearchTrigger({
             onFocus={onFocus}
             onBlur={onBlur}
             side="bottom"
-            style={keyboardOpen ? visualViewportStyle(viewportRect) : undefined}
+            showHandle
+            overlayClassName="bg-background/50 supports-backdrop-filter:backdrop-blur-lg"
+            style={
+              keyboardOpen
+                ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
+                : undefined
+            }
             className={cn(
-              "flex flex-col gap-0",
-              keyboardOpen ? "rounded-none" : "max-h-[88svh] rounded-t-2xl",
+              "flex flex-col gap-0 rounded-t-2xl",
+              !keyboardOpen && "max-h-[88svh]",
             )}
           >
             <SheetHeader className="pb-2">
