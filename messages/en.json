@@ -165,7 +165,23 @@
     "quickLinks": "Quick Links",
     "suggestedLinks": "Suggested Links",
     "contactWhatsapp": "Contact us on WhatsApp",
-    "aboutLink": "About"
+    "aboutLink": "About",
+    "contactLink": "Contact",
+    "menu": "Menu"
+  },
+  "contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Contact Solelrim directly on WhatsApp for any question about an order, a product, or anything else.",
+    "title": "Contact us",
+    "subtitle": "No form, no wait — a real person replies directly.",
+    "whatsappTitle": "WhatsApp",
+    "whatsappDesc": "The fastest way to reach us — message us directly, we reply to every message personally.",
+    "whatsappCta": "Open WhatsApp",
+    "orderTitle": "Question about an order",
+    "orderDesc": "An issue or question about an order in progress? Message us, we'll take care of it.",
+    "orderCta": "Message about an order",
+    "socialTitle": "Social media",
+    "socialDesc": "Follow us and message us directly on our channels."
   },
   "about": {
     "metaTitle": "About",

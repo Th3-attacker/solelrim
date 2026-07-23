@@ -10,6 +10,7 @@ import { CheckoutDrawerProvider } from "@/components/checkout/checkout-drawer-pr
 import { CheckoutDrawer } from "@/components/checkout/checkout-drawer";
 import { FavoritesProvider } from "@/components/shop/favorites-provider";
 import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
+import { MobileNav } from "@/components/shop/mobile-nav";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
@@ -82,23 +83,40 @@ export default async function ShopLayout({
               {announcementText}
             </div>
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
-              <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-                <Link
-                  href="/"
-                  className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
-                >
-                  {logoUrl && (
-                    <Image
-                      src={logoUrl}
-                      alt=""
-                      width={32}
-                      height={32}
-                      className="size-8 shrink-0 object-contain"
-                    />
-                  )}
-                  {siteName}
-                </Link>
-                <div className="flex items-center gap-1">
+              <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:px-6">
+                <div className="flex min-w-0 items-center gap-1">
+                  <MobileNav />
+                  <Link
+                    href="/"
+                    className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
+                  >
+                    {logoUrl && (
+                      <Image
+                        src={logoUrl}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="size-8 shrink-0 object-contain"
+                      />
+                    )}
+                    {siteName}
+                  </Link>
+                </div>
+                <nav className="hidden items-center justify-center gap-6 md:flex">
+                  <Link
+                    href="/about"
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {t("aboutLink")}
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {t("contactLink")}
+                  </Link>
+                </nav>
+                <div className="flex items-center justify-end gap-1">
                   <SearchTrigger categories={categories} products={searchProducts} />
                   <FavoritesTrigger products={favoriteCandidates} />
                   <CartTrigger />
@@ -115,6 +133,9 @@ export default async function ShopLayout({
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                   <Link href="/about" className="transition-colors hover:text-foreground">
                     {t("aboutLink")}
+                  </Link>
+                  <Link href="/contact" className="transition-colors hover:text-foreground">
+                    {t("contactLink")}
                   </Link>
                   {whatsappHref && (
                     <a

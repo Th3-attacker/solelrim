@@ -165,7 +165,23 @@
     "quickLinks": "Liens rapides",
     "suggestedLinks": "Liens suggérés",
     "contactWhatsapp": "Contactez-nous sur WhatsApp",
-    "aboutLink": "À propos"
+    "aboutLink": "À propos",
+    "contactLink": "Contact",
+    "menu": "Menu"
+  },
+  "contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Contactez Solelrim directement sur WhatsApp pour toute question sur une commande, un produit, ou autre chose.",
+    "title": "Contactez-nous",
+    "subtitle": "Pas de formulaire, pas d'attente — un vrai humain vous répond directement.",
+    "whatsappTitle": "WhatsApp",
+    "whatsappDesc": "La réponse la plus rapide — écrivez-nous directement, on répond personnellement à chaque message.",
+    "whatsappCta": "Ouvrir WhatsApp",
+    "orderTitle": "Question sur une commande",
+    "orderDesc": "Un souci ou une question sur une commande en cours ? Écrivez-nous, on s'en occupe.",
+    "orderCta": "Écrire au sujet d'une commande",
+    "socialTitle": "Réseaux sociaux",
+    "socialDesc": "Suivez-nous et écrivez-nous directement sur nos réseaux."
   },
   "about": {
     "metaTitle": "À propos",
