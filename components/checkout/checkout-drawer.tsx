@@ -55,7 +55,7 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         side={side}
         showHandle={side === "bottom"}
         overlayClassName={
-          side === "bottom" ? "bg-background/50 supports-backdrop-filter:backdrop-blur-lg" : undefined
+          side === "bottom" ? "bg-popover/50 supports-backdrop-filter:backdrop-blur-lg" : undefined
         }
         style={
           side === "bottom" && keyboardOpen
@@ -64,7 +64,7 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         }
         className={cn(
           "flex flex-col gap-0",
-          side === "bottom" && "rounded-t-2xl",
+          side === "bottom" && "rounded-t-2xl transition-all duration-150 ease-out",
           side === "bottom" && !keyboardOpen && "max-h-[90svh]",
         )}
       >

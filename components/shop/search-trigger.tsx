@@ -134,14 +134,14 @@ export function SearchTrigger({
             onBlur={onBlur}
             side="bottom"
             showHandle
-            overlayClassName="bg-background/50 supports-backdrop-filter:backdrop-blur-lg"
+            overlayClassName="bg-popover/50 supports-backdrop-filter:backdrop-blur-lg"
             style={
               keyboardOpen
                 ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
                 : undefined
             }
             className={cn(
-              "flex flex-col gap-0 rounded-t-2xl",
+              "flex flex-col gap-0 rounded-t-2xl transition-all duration-150 ease-out",
               !keyboardOpen && "max-h-[88svh]",
             )}
           >
