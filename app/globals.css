@@ -43,6 +43,11 @@
   --color-warning: var(--warning);
   --color-info: var(--info);
 
+  /* Shop-only "desktop" breakpoint (960px) for the design system's grid
+     spec — additive, not a redefinition of sm/md/lg/xl/2xl, so admin
+     layout (which uses lg:/sidebar's md: directly) is unaffected. */
+  --breakpoint-desktop: 60rem;
+
   /* Typography scale — Heading (600), Label (500), Paragraph (400).
      Each --text-* pairs with --line-height/--letter-spacing/--font-weight,
      so one utility class (e.g. text-heading-md) sets all four at once. */

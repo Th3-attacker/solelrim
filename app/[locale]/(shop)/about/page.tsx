@@ -67,7 +67,7 @@ export default async function AboutPage() {
             </div>
           </div>
           <p className="max-w-xl text-paragraph-md text-muted-foreground">{t("makeBody")}</p>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 desktop:gap-4 sm:grid-cols-3">
             {spotlight.map((product) => (
               <Link
                 key={product.id}

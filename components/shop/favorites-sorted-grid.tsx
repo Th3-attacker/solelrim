@@ -22,7 +22,7 @@ export function FavoritesSortedGrid({
   }, [ids, children, hydrated, isFavorite]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
       {ordered.map((item) => (
         <div key={item.id}>{item.node}</div>
       ))}

@@ -83,7 +83,7 @@ export default async function ShopLayout({
               {announcementText}
             </div>
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
-              <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:px-6">
+              <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
                   <MobileNav categories={categories} products={searchProducts} />
                   <Link
@@ -129,11 +129,11 @@ export default async function ShopLayout({
                 </div>
               </div>
             </header>
-            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 md:py-10">
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 desktop:px-8 md:py-10">
               {children}
             </main>
             <footer className="border-t bg-muted/30">
-              <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
+              <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground desktop:px-8">
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                   <Link href="/about" className="transition-colors hover:text-foreground">
                     {t("aboutLink")}

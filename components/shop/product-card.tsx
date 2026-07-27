@@ -1,18 +1,17 @@
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";
 import { Price } from "@/components/shop/price";
+import { StockBadge } from "@/components/shop/stock-badge";
 import { Badge } from "@/components/ui/badge";
-import { getProductImageUrl } from "@/lib/supabase/storage";
-import { getAggregateStockStatus } from "@/lib/shop/stock";
-import { getPriceRange } from "@/lib/shop/price";
-import { isNewProduct, isPromo } from "@/lib/shop/badges";
-import { formatPrice } from "@/lib/format/currency";
-import { getSwatchStyle } from "@/lib/shop/color-swatch";
-import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 import type { getActiveProducts } from "@/lib/queries/shop";
+import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { getSwatchStyle } from "@/lib/shop/color-swatch";
+import { getPriceRange } from "@/lib/shop/price";
+import { getAggregateStockStatus } from "@/lib/shop/stock";
+import { getProductImageUrl } from "@/lib/supabase/storage";
+import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 
@@ -124,13 +123,7 @@ export function ProductCard({ product }: { product: Product }) {
               <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
             {promo && product.compareAtPrice && (
-              // Mixes Latin digits and the MRU currency code, which stay
-              // left-to-right even on the Arabic page — isolating direction
-              // here stops two adjacent amounts from getting bidi-reordered
-              // into an unreadable jumble.
-              <span dir="ltr" className="text-muted-foreground line-through">
-                {formatPrice(product.compareAtPrice, tCommon("currency"))}
-              </span>
+              <Price value={product.compareAtPrice} strikethrough />
             )}
             <Price value={min} currency={tCommon("currency")} />
           </span>

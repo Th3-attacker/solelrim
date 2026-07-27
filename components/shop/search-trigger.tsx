@@ -166,7 +166,7 @@ export function SearchTrigger({
             style={{ top: "4rem" }}
             className="gap-0 rounded-b-2xl border-t-0"
           >
-            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+            <div className="mx-auto w-full max-w-7xl px-4 desktop:px-8">
               <SheetHeader className="px-0 pb-2">
                 <SheetTitle className="sr-only">{t("search")}</SheetTitle>
                 <div className="max-w-md">{searchInput}</div>
