@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { useFavorites } from "@/components/shop/favorites-provider";
 import { formatPrice } from "@/lib/format/currency";
+import { cn } from "@/lib/utils";
 
 export type FavoriteProductSummary = {
   id: string;
@@ -32,7 +34,8 @@ export function FavoritesTrigger({
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const side = getDirection(locale) === "rtl" ? "left" : "right";
+  const isMobile = useIsMobile();
+  const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
 
   const favoriteProducts = products.filter((p) => ids.includes(p.id));
@@ -49,7 +52,14 @@ export function FavoritesTrigger({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side={side} className="flex flex-col gap-0">
+      <SheetContent
+        side={side}
+        showHandle={side === "bottom"}
+        className={cn(
+          "flex flex-col gap-0",
+          side === "bottom" && "max-h-[85svh] rounded-t-2xl",
+        )}
+      >
         <SheetHeader>
           <SheetTitle>{t("favoritesTitle")}</SheetTitle>
         </SheetHeader>

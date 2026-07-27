@@ -97,7 +97,9 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-header"
-      className={cn("flex flex-col gap-1.5 p-4", className)}
+      // pe-12 clears the close button (absolute, end-4 + size-8 = 48px reach)
+      // so header content never renders underneath it.
+      className={cn("flex flex-col gap-1.5 p-4 pe-12", className)}
       {...props}
     />
   )

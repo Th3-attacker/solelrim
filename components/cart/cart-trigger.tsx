@@ -14,16 +14,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { getDirection } from "@/i18n/routing";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { useCart } from "@/components/cart/cart-provider";
 import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { formatPrice } from "@/lib/format/currency";
+import { cn } from "@/lib/utils";
 
 export function CartTrigger() {
   const t = useTranslations("cart");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const side = getDirection(locale) === "rtl" ? "left" : "right";
+  const isMobile = useIsMobile();
+  const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { items, hydrated, subtotal, updateQuantity, removeItem } = useCart();
   const { openCheckout } = useCheckoutDrawer();
 
@@ -39,7 +42,14 @@ export function CartTrigger() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side={side} className="flex flex-col gap-0">
+      <SheetContent
+        side={side}
+        showHandle={side === "bottom"}
+        className={cn(
+          "flex flex-col gap-0",
+          side === "bottom" && "max-h-[85svh] rounded-t-2xl",
+        )}
+      >
         <SheetHeader>
           <SheetTitle>{t("title")}</SheetTitle>
         </SheetHeader>

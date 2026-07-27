@@ -89,7 +89,9 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2", className)}
+      // DialogContent already has p-6; pe-6 adds the rest of the clearance
+      // the close button needs (absolute, end-4 + size-8 = 48px reach).
+      className={cn("flex flex-col gap-2 pe-6", className)}
       {...props}
     />
   )
