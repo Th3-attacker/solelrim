@@ -39,6 +39,72 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  /* Typography scale — Heading (600), Label (500), Paragraph (400).
+     Each --text-* pairs with --line-height/--letter-spacing/--font-weight,
+     so one utility class (e.g. text-heading-md) sets all four at once. */
+  --text-heading-xl: 2.5rem;
+  --text-heading-xl--line-height: 3.25rem;
+  --text-heading-xl--letter-spacing: -0.5px;
+  --text-heading-xl--font-weight: 600;
+  --text-heading-lg: 2.25rem;
+  --text-heading-lg--line-height: 2.75rem;
+  --text-heading-lg--letter-spacing: -0.25px;
+  --text-heading-lg--font-weight: 600;
+  --text-heading-md: 1.75rem;
+  --text-heading-md--line-height: 2.25rem;
+  --text-heading-md--letter-spacing: -0.25px;
+  --text-heading-md--font-weight: 600;
+  --text-heading-sm: 1.5rem;
+  --text-heading-sm--line-height: 2rem;
+  --text-heading-sm--letter-spacing: -0.25px;
+  --text-heading-sm--font-weight: 600;
+  --text-heading-xs: 1.25rem;
+  --text-heading-xs--line-height: 1.75rem;
+  --text-heading-xs--letter-spacing: 0px;
+  --text-heading-xs--font-weight: 600;
+
+  --text-label-xl: 2.5rem;
+  --text-label-xl--line-height: 3.25rem;
+  --text-label-xl--letter-spacing: -0.5px;
+  --text-label-xl--font-weight: 500;
+  --text-label-lg: 2.25rem;
+  --text-label-lg--line-height: 2.75rem;
+  --text-label-lg--letter-spacing: -0.25px;
+  --text-label-lg--font-weight: 500;
+  --text-label-md: 1.75rem;
+  --text-label-md--line-height: 2.25rem;
+  --text-label-md--letter-spacing: -0.25px;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 1.5rem;
+  --text-label-sm--line-height: 2rem;
+  --text-label-sm--letter-spacing: -0.25px;
+  --text-label-sm--font-weight: 500;
+  --text-label-xs: 1.25rem;
+  --text-label-xs--line-height: 1.75rem;
+  --text-label-xs--letter-spacing: 0px;
+  --text-label-xs--font-weight: 500;
+
+  --text-paragraph-lg: 1.125rem;
+  --text-paragraph-lg--line-height: 1.5rem;
+  --text-paragraph-lg--letter-spacing: 0px;
+  --text-paragraph-lg--font-weight: 400;
+  --text-paragraph-md: 1rem;
+  --text-paragraph-md--line-height: 1.625rem;
+  --text-paragraph-md--letter-spacing: 0px;
+  --text-paragraph-md--font-weight: 400;
+  --text-paragraph-sm: 0.875rem;
+  --text-paragraph-sm--line-height: 1.125rem;
+  --text-paragraph-sm--letter-spacing: 0px;
+  --text-paragraph-sm--font-weight: 400;
+  --text-paragraph-xs: 0.75rem;
+  --text-paragraph-xs--line-height: 1.125rem;
+  --text-paragraph-xs--letter-spacing: 0px;
+  --text-paragraph-xs--font-weight: 400;
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -79,6 +145,9 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.627 0.194 149.214);
+  --warning: oklch(0.666 0.179 58.318);
+  --info: oklch(0.546 0.245 262.881);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -115,6 +184,9 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.792 0.209 151.711);
+  --warning: oklch(0.828 0.189 84.429);
+  --info: oklch(0.707 0.165 254.624);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);

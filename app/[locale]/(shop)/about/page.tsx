@@ -35,20 +35,24 @@ export default async function AboutPage() {
         <span className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
           {t("eyebrow")}
         </span>
-        <h1 className="max-w-2xl text-4xl font-black tracking-tight text-balance sm:text-5xl">
+        <h1 className="max-w-2xl text-heading-lg text-balance sm:text-heading-xl">
           {t("heroTitle")}
         </h1>
-        <p className="max-w-lg text-muted-foreground sm:text-lg">{t("heroSubtitle")}</p>
+        <p className="max-w-lg text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
+          {t("heroSubtitle")}
+        </p>
       </div>
 
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
         <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
           {t("missionEyebrow")}
         </span>
-        <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+        <h2 className="text-heading-sm text-balance sm:text-heading-md">
           {t("missionTitle")}
         </h2>
-        <p className="text-muted-foreground sm:text-lg">{t("missionBody")}</p>
+        <p className="text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
+          {t("missionBody")}
+        </p>
       </div>
 
       {spotlight.length > 0 && (
@@ -59,10 +63,10 @@ export default async function AboutPage() {
               <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 {t("makeEyebrow")}
               </p>
-              <h2 className="text-xl font-semibold tracking-tight">{t("makeTitle")}</h2>
+              <h2 className="text-heading-xs">{t("makeTitle")}</h2>
             </div>
           </div>
-          <p className="max-w-xl text-muted-foreground">{t("makeBody")}</p>
+          <p className="max-w-xl text-paragraph-md text-muted-foreground">{t("makeBody")}</p>
           <div className="grid gap-4 sm:grid-cols-3">
             {spotlight.map((product) => (
               <Link
@@ -98,7 +102,7 @@ export default async function AboutPage() {
             <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
               {t("workEyebrow")}
             </p>
-            <h2 className="text-xl font-semibold tracking-tight">{t("workTitle")}</h2>
+            <h2 className="text-heading-xs">{t("workTitle")}</h2>
           </div>
         </div>
         <TrustBadges />
@@ -109,8 +113,8 @@ export default async function AboutPage() {
           <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
             {t("findEyebrow")}
           </span>
-          <h2 className="text-2xl font-semibold tracking-tight">{t("findTitle")}</h2>
-          <p className="max-w-sm text-muted-foreground">{t("findBody")}</p>
+          <h2 className="text-heading-sm">{t("findTitle")}</h2>
+          <p className="max-w-sm text-paragraph-md text-muted-foreground">{t("findBody")}</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {whatsappHref && (

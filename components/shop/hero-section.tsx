@@ -36,11 +36,13 @@ export async function HeroSection({ products }: { products: Product[] }) {
           <span className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
             {t("siteName")}
           </span>
-          <h1 className="max-w-2xl text-4xl font-black tracking-tight text-balance text-white sm:text-6xl">
+          <h1 className="max-w-2xl text-heading-lg text-balance text-white sm:text-heading-xl">
             {t("heroTitle")}
           </h1>
-          <p className="max-w-md text-white/70 sm:text-lg">{t("heroSubtitle")}</p>
-          <Button asChild size="lg" className="mt-2 h-12 px-8 text-base shadow-lg shadow-primary/30">
+          <p className="max-w-md text-paragraph-md text-white/70 sm:text-paragraph-lg">
+            {t("heroSubtitle")}
+          </p>
+          <Button asChild size="lg" className="mt-2">
             <a href="#catalog">{t("heroCta")}</a>
           </Button>
         </div>
@@ -54,16 +56,16 @@ export async function HeroSection({ products }: { products: Product[] }) {
         <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
           {product.category.name}
         </span>
-        <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
+        <h1 className="text-heading-md text-balance sm:text-heading-lg md:text-heading-xl">
           {product.name}
         </h1>
         {product.description && (
-          <p className="max-w-sm text-sm text-muted-foreground sm:text-base">
+          <p className="max-w-sm text-paragraph-sm text-muted-foreground sm:text-paragraph-md">
             {product.description}
           </p>
         )}
         <div>
-          <Button asChild size="lg" className="rounded-full px-8">
+          <Button asChild size="lg">
             <Link href={`/products/${product.id}`}>{t("heroShopProduct")}</Link>
           </Button>
         </div>

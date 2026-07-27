@@ -31,10 +31,12 @@ export default async function ContactPage() {
   return (
     <div className="flex flex-col gap-10 py-6">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+        <h1 className="text-heading-md text-balance sm:text-heading-lg">
           {t("title")}
         </h1>
-        <p className="max-w-md text-muted-foreground sm:text-lg">{t("subtitle")}</p>
+        <p className="max-w-md text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
+          {t("subtitle")}
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -46,8 +48,8 @@ export default async function ContactPage() {
             className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center transition-colors hover:bg-muted/70"
           >
             <MessageCircle className="size-8 text-primary" />
-            <p className="font-semibold">{t("whatsappTitle")}</p>
-            <p className="text-sm text-muted-foreground">{t("whatsappDesc")}</p>
+            <p className="text-heading-xs">{t("whatsappTitle")}</p>
+            <p className="text-paragraph-sm text-muted-foreground">{t("whatsappDesc")}</p>
           </a>
         )}
 
@@ -59,16 +61,16 @@ export default async function ContactPage() {
             className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center transition-colors hover:bg-muted/70"
           >
             <Package className="size-8 text-primary" />
-            <p className="font-semibold">{t("orderTitle")}</p>
-            <p className="text-sm text-muted-foreground">{t("orderDesc")}</p>
+            <p className="text-heading-xs">{t("orderTitle")}</p>
+            <p className="text-paragraph-sm text-muted-foreground">{t("orderDesc")}</p>
           </a>
         )}
 
         {socialLinks.length > 0 && (
           <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center">
             <Share2 className="size-8 text-primary" />
-            <p className="font-semibold">{t("socialTitle")}</p>
-            <p className="text-sm text-muted-foreground">{t("socialDesc")}</p>
+            <p className="text-heading-xs">{t("socialTitle")}</p>
+            <p className="text-paragraph-sm text-muted-foreground">{t("socialDesc")}</p>
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-1">
               {socialLinks.map((social) => (
                 <a

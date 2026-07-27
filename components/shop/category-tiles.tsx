@@ -12,7 +12,7 @@ export async function CategoryTiles({ categories }: { categories: Category[] }) 
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold tracking-tight">
+      <h2 className="text-heading-xs">
         {t("shopByCategory")}
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">

@@ -173,7 +173,7 @@ export function CheckoutFlow({
     <div className="flex flex-col gap-6">
       {step === 1 && (
         <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
-          <h2 className="text-sm font-medium">{t("step1Title")}</h2>
+          <h2 className="text-label-xs">{t("step1Title")}</h2>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerName">{t("customerName")}</Label>
             <Input id="customerName" {...register("customerName")} />
@@ -206,7 +206,7 @@ export function CheckoutFlow({
 
       {step === 2 && customerInfo && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-sm font-medium">{t("step2Title")}</h2>
+          <h2 className="text-label-xs">{t("step2Title")}</h2>
           <div className="flex flex-col gap-2">
             {cart.items.map((line) => (
               <div key={line.variantId} className="flex justify-between text-sm">
@@ -236,7 +236,7 @@ export function CheckoutFlow({
 
       {step === 3 && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-sm font-medium">{t("step3Title")}</h2>
+          <h2 className="text-label-xs">{t("step3Title")}</h2>
           <div className="flex flex-col gap-1 text-sm">
             <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
             {settings.bankilyNumber && (

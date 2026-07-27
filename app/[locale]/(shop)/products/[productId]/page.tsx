@@ -88,7 +88,7 @@ export default async function ProductDetailPage({
         <ProductGallery images={images} productName={product.name} />
 
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+          <h1 className="text-heading-sm">{product.name}</h1>
 
           {(promo || isNewProduct(product.createdAt) || product.isFeatured) && (
             <div className="flex flex-wrap gap-1">
@@ -116,7 +116,7 @@ export default async function ProductDetailPage({
           </p>
 
           {product.description && (
-            <p className="text-sm text-muted-foreground">{product.description}</p>
+            <p className="text-paragraph-sm text-muted-foreground">{product.description}</p>
           )}
 
           <div className="mt-4">

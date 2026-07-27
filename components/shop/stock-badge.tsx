@@ -11,12 +11,5 @@ export function StockBadge({ status }: { status: StockStatus }) {
     return <Badge variant="destructive">{t("outOfStock")}</Badge>;
   }
 
-  return (
-    <Badge
-      variant="outline"
-      className="border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-400"
-    >
-      {t("lowStock")}
-    </Badge>
-  );
+  return <Badge variant="warning">{t("lowStock")}</Badge>;
 }

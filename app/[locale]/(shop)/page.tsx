@@ -65,13 +65,13 @@ export default async function ShopHomePage({
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
         <div className="flex items-center gap-3">
           <span className="h-6 w-1.5 rounded-full bg-primary" />
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-heading-xs">
             {t("allProductsTitle")}
           </h2>
         </div>
 
         {displayedProducts.length === 0 ? (
-          <p className="text-muted-foreground">{t("noProducts")}</p>
+          <p className="text-paragraph-md text-muted-foreground">{t("noProducts")}</p>
         ) : (
           <FavoritesSortedGrid ids={displayedProducts.map((p) => p.id)}>
             {displayedProducts.map((product) => (
