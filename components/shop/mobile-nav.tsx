@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Menu } from "lucide-react";
+import { useRef, useState } from "react";
+import { Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -22,6 +22,18 @@ export function MobileNav({
   const t = useTranslations("shop");
   const tLanguage = useTranslations("language");
   const [open, setOpen] = useState(false);
+  const searchTriggerRef = useRef<HTMLDivElement>(null);
+
+  // The real SearchTrigger lives outside the nav Sheet on purpose: Radix
+  // unmounts a Sheet's content (and everything nested inside it) once its
+  // close animation finishes, which would tear down SearchTrigger's own
+  // state and close its dialog right along with the nav sheet. Keeping it
+  // as a sibling means it survives the nav sheet closing, so this row just
+  // closes the nav and forwards the tap to the real (hidden) trigger.
+  function handleSearchRowClick() {
+    setOpen(false);
+    searchTriggerRef.current?.querySelector("button")?.click();
+  }
 
   return (
     <>
@@ -35,18 +47,23 @@ export function MobileNav({
       >
         <Menu className="size-4" />
       </Button>
+      <div ref={searchTriggerRef} className="hidden">
+        <SearchTrigger categories={categories} products={products} />
+      </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" showHandle className="rounded-t-2xl">
           <SheetHeader className="sr-only">
             <SheetTitle>{t("menu")}</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-1 px-2 pb-4">
-            <div
-              className="flex items-center justify-between rounded-lg px-4 py-1 text-sm font-medium transition-colors hover:bg-muted"
+            <button
+              type="button"
+              onClick={handleSearchRowClick}
+              className="flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               <span>{t("search")}</span>
-              <SearchTrigger categories={categories} products={products} />
-            </div>
+              <Search className="size-4 text-muted-foreground" />
+            </button>
             <div className="flex items-center justify-between rounded-lg px-4 py-1 text-sm font-medium transition-colors hover:bg-muted">
               <span>{tLanguage("label")}</span>
               <LanguageSwitcher />
