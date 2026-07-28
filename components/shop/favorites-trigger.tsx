@@ -57,7 +57,7 @@ export function FavoritesTrigger({
         showHandle={side === "bottom"}
         className={cn(
           "flex flex-col gap-0",
-          side === "bottom" && "max-h-[85svh] rounded-t-2xl",
+          side === "bottom" && "max-h-[85svh] rounded-t-2xl py-4",
         )}
       >
         <SheetHeader>

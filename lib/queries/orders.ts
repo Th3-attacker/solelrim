@@ -1,7 +1,32 @@
 import { prisma } from "@/lib/prisma";
+import type { OrderStatus } from "@/lib/generated/prisma/client";
 
-export function getAllOrders() {
+export type OrderListFilters = {
+  status?: OrderStatus;
+  search?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+};
+
+export function getAllOrders(filters: OrderListFilters = {}) {
+  const { status, search, dateFrom, dateTo } = filters;
+
   return prisma.order.findMany({
+    where: {
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { reference: { contains: search, mode: "insensitive" } },
+          { customerPhone: { contains: search } },
+        ],
+      }),
+      ...((dateFrom || dateTo) && {
+        createdAt: {
+          ...(dateFrom && { gte: dateFrom }),
+          ...(dateTo && { lte: dateTo }),
+        },
+      }),
+    },
     include: {
       items: {
         include: {

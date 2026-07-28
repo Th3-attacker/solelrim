@@ -284,7 +284,16 @@
     "itemsTitle": "العناصر المطلوبة",
     "printLabel": "طباعة الملصق",
     "labelReminder": "تحقق من المحتوى قبل تسليمه للعميل.",
-    "labelConfirmedOn": "تم تأكيد الطلب في"
+    "labelConfirmedOn": "تم تأكيد الطلب في",
+    "allStatuses": "كل الحالات",
+    "searchPlaceholder": "الهاتف أو المرجع...",
+    "dateRangeHint": "15 يومًا كحد أقصى",
+    "resetFilters": "إعادة تعيين",
+    "applyFilter": "تطبيق الفلتر",
+    "presetToday": "اليوم",
+    "presetYesterday": "أمس",
+    "presetLast7Days": "آخر 7 أيام",
+    "presetLast15Days": "آخر 15 يومًا"
   },
   "settings": {
     "title": "الإعدادات",
