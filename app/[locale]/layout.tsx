@@ -7,6 +7,7 @@ import { DirectionProvider } from "@radix-ui/react-direction";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
 import { Toaster } from "@/components/ui/sonner";
 import { routing, getDirection } from "@/i18n/routing";
 
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
               enableSystem
               disableTransitionOnChange
             >
+              <ServiceWorkerCleanup />
               {children}
               <Toaster />
             </ThemeProvider>
