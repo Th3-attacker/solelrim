@@ -112,7 +112,7 @@ export function ProductCard({
             </span>
           ) : (
             <Link
-              href={`/products/${product.id}`}
+              href={`/products/${product.slug}`}
               className="truncate text-sm text-foreground after:absolute after:inset-0 after:content-['']"
             >
               {product.name}

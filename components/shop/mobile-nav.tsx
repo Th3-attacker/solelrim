@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 type SearchCategory = { id: string; name: string };
-type SearchProduct = { id: string; name: string };
+type SearchProduct = { id: string; slug: string; name: string };
 
 export function MobileNav({
   categories,
