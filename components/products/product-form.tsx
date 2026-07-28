@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import type { z } from "zod";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";

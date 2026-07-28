@@ -8,7 +8,7 @@ import "../globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toast";
 import { routing, getDirection } from "@/i18n/routing";
 
 // Body/heading font is the native OS UI font stack (SF Pro on Apple

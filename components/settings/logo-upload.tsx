@@ -4,7 +4,7 @@ import { useRef, useTransition } from "react";
 import Image from "next/image";
 import { ImageIcon, Trash2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { uploadStoreLogo, removeStoreLogo } from "@/lib/actions/settings";
 
