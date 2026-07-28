@@ -74,8 +74,8 @@ export default async function ShopHomePage({
           <p className="text-paragraph-md text-muted-foreground">{t("noProducts")}</p>
         ) : (
           <FavoritesSortedGrid ids={displayedProducts.map((p) => p.id)}>
-            {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {displayedProducts.map((product, index) => (
+              <ProductCard key={product.id} product={product} priority={index < 4} />
             ))}
           </FavoritesSortedGrid>
         )}
