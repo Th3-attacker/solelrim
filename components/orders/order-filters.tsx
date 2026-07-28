@@ -181,21 +181,21 @@ export function OrderFilters() {
   const today = startOfDay(new Date());
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="relative min-w-56 flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="relative min-w-56 flex">
         <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           aria-label={t("searchPlaceholder")}
           value={filters.search}
           onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
           placeholder={t("searchPlaceholder")}
-          className="rounded-full ps-9"
+          className="rounded-md ps-9"
         />
       </div>
 
       <Popover open={statusOpen} onOpenChange={handleStatusOpenChange}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button variant="outline" size="sm" className="rounded-md">
             <ListFilter className="size-3.5 text-muted-foreground" />
             {filters.status ? t(STATUS_LABEL_KEY[filters.status as OrderStatus]) : t("status")}
           </Button>
@@ -226,7 +226,7 @@ export function OrderFilters() {
 
       <Popover open={dateOpen} onOpenChange={handleDateOpenChange}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button variant="outline" size="sm" className="rounded-md">
             <CalendarIcon className="size-3.5 text-muted-foreground" />
             {dateLabel}
           </Button>
