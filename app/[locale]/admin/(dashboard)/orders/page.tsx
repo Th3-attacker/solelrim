@@ -2,8 +2,11 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
+import { parseOrderDateFilters } from "@/lib/orders/filters";
+import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { OrderFilters } from "@/components/orders/order-filters";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -14,19 +17,42 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function AdminOrdersPage() {
+const ORDER_STATUSES: readonly string[] = Object.values(OrderStatus);
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const rawStatus = typeof params.status === "string" ? params.status : undefined;
+  const status = rawStatus && ORDER_STATUSES.includes(rawStatus)
+    ? (rawStatus as OrderStatus)
+    : undefined;
+  const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
+  const { dateFrom, dateTo } = parseOrderDateFilters({
+    date: typeof params.date === "string" ? params.date : undefined,
+    from: typeof params.from === "string" ? params.from : undefined,
+    to: typeof params.to === "string" ? params.to : undefined,
+  });
+  const hasFilters = Boolean(status || search || dateFrom || dateTo);
+
   const [t, tCommon, orders] = await Promise.all([
     getTranslations("orders"),
     getTranslations("common"),
-    getAllOrders(),
+    getAllOrders({ status, search, dateFrom, dateTo }),
   ]);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
+      <OrderFilters />
+
       {orders.length === 0 ? (
-        <p className="text-muted-foreground">{t("noOrders")}</p>
+        <p className="text-muted-foreground">
+          {hasFilters ? tCommon("noResults") : t("noOrders")}
+        </p>
       ) : (
         <Table>
           <TableHeader>

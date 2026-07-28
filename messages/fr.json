@@ -284,7 +284,15 @@
     "itemsTitle": "Articles commandés",
     "printLabel": "Imprimer l'étiquette",
     "labelReminder": "Vérifiez le contenu avant de remettre au client.",
-    "labelConfirmedOn": "Commande confirmée le"
+    "labelConfirmedOn": "Commande confirmée le",
+    "allStatuses": "Tous les statuts",
+    "searchPlaceholder": "Téléphone ou référence...",
+    "dateModeRange": "Période",
+    "dateModeExact": "Date précise",
+    "dateFrom": "Du",
+    "dateTo": "Au",
+    "dateRangeHint": "15 jours maximum",
+    "resetFilters": "Réinitialiser"
   },
   "settings": {
     "title": "Paramètres",
