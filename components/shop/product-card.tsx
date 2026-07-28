@@ -17,7 +17,13 @@ type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 
 const MAX_SWATCHES = 4;
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  priority?: boolean;
+}) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const image = product.images[0];
@@ -60,6 +66,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={getProductImageUrl(image.storagePath)}
             alt={product.name}
             fill
+            priority={priority}
             className={cn(
               "object-contain p-4 transition-transform duration-500",
               isOutOfStock ? "grayscale" : "group-hover:scale-105",
@@ -105,7 +112,7 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           ) : (
             <Link
-              href={`/products/${product.id}`}
+              href={`/products/${product.slug}`}
               className="truncate text-sm text-foreground after:absolute after:inset-0 after:content-['']"
             >
               {product.name}

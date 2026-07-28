@@ -7,7 +7,8 @@ import { DirectionProvider } from "@radix-ui/react-direction";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
+import { Toaster } from "@/components/ui/toast";
 import { routing, getDirection } from "@/i18n/routing";
 
 // Body/heading font is the native OS UI font stack (SF Pro on Apple
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
               enableSystem
               disableTransitionOnChange
             >
+              <ServiceWorkerCleanup />
               {children}
               <Toaster />
             </ThemeProvider>

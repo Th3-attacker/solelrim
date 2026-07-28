@@ -44,6 +44,7 @@ export default async function ShopLayout({
 
   const favoriteCandidates = allProducts.map((product) => ({
     id: product.id,
+    slug: product.slug,
     name: product.name,
     imageUrl: product.images[0]
       ? getProductImageUrl(product.images[0].storagePath)
@@ -53,6 +54,7 @@ export default async function ShopLayout({
 
   const searchProducts = allProducts.map((product) => ({
     id: product.id,
+    slug: product.slug,
     name: product.name,
   }));
 

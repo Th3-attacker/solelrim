@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StockBadge } from "@/components/shop/stock-badge";

@@ -1,16 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Menu, Search } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SearchTrigger } from "@/components/shop/search-trigger";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
+import { Menu, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useRef, useState } from "react";
 
 type SearchCategory = { id: string; name: string };
-type SearchProduct = { id: string; name: string };
+type SearchProduct = { id: string; slug: string; name: string };
 
 export function MobileNav({
   categories,
@@ -55,7 +60,7 @@ export function MobileNav({
           <SheetHeader className="sr-only">
             <SheetTitle>{t("menu")}</SheetTitle>
           </SheetHeader>
-          <nav className="flex flex-col gap-1 px-2 pb-4">
+          <nav className="flex flex-col gap-1 px-4 py-4">
             <button
               type="button"
               onClick={handleSearchRowClick}
@@ -64,7 +69,7 @@ export function MobileNav({
               <span>{t("search")}</span>
               <Search className="size-4 text-muted-foreground" />
             </button>
-            <div className="flex items-center justify-between rounded-lg px-4 py-1 text-sm font-medium transition-colors hover:bg-muted">
+            <div className="flex items-center justify-between rounded-lg pl-4 pr-1.5  py-3 text-sm font-medium transition-colors hover:bg-muted">
               <span>{tLanguage("label")}</span>
               <LanguageSwitcher />
             </div>

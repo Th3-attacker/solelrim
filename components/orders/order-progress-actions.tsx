@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,12 +19,13 @@ export function OrderProgressActions({
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [advancePending, startAdvanceTransition] = useTransition();
+  const [cancelPending, startCancelTransition] = useTransition();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState("");
 
   function handleAdvance() {
-    startTransition(async () => {
+    startAdvanceTransition(async () => {
       const action = status === "CONFIRMED" ? shipOrder : deliverOrder;
       const result = await action(orderId);
       if (result.error) {
@@ -39,7 +40,7 @@ export function OrderProgressActions({
   function handleCancel() {
     const trimmed = reason.trim();
     if (!trimmed) return;
-    startTransition(async () => {
+    startCancelTransition(async () => {
       const result = await cancelOrder(orderId, trimmed);
       if (result.error) {
         toast.error(t("alreadyProcessed"));
@@ -54,7 +55,7 @@ export function OrderProgressActions({
 
   return (
     <div className="flex gap-2">
-      <Button loading={pending} onClick={handleAdvance}>
+      <Button loading={advancePending} disabled={cancelPending} onClick={handleAdvance}>
         {status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
       </Button>
 
@@ -62,7 +63,7 @@ export function OrderProgressActions({
         open={cancelOpen}
         onOpenChange={setCancelOpen}
         trigger={
-          <Button variant="outline" disabled={pending}>
+          <Button variant="outline" disabled={advancePending || cancelPending}>
             {t("cancelAction")}
           </Button>
         }
@@ -80,7 +81,7 @@ export function OrderProgressActions({
             <Button
               type="button"
               variant="destructive"
-              loading={pending}
+              loading={cancelPending}
               disabled={!reason.trim()}
               onClick={handleCancel}
             >

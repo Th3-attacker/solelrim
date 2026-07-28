@@ -33,6 +33,7 @@ model Category {
 model Product {
   id             String           @id @default(cuid())
   name           String
+  slug           String           @unique
   description    String?
   basePrice      Decimal          @db.Decimal(10, 2)
   compareAtPrice Decimal?         @db.Decimal(10, 2)

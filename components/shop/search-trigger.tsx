@@ -21,7 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
-type SearchProduct = { id: string; name: string };
+type SearchProduct = { id: string; slug: string; name: string };
 
 const MAX_SUGGESTIONS = 8;
 
@@ -72,7 +72,7 @@ export function SearchTrigger({
         {suggestions.map((product) => (
           <Link
             key={product.id}
-            href={`/products/${product.id}`}
+            href={`/products/${product.slug}`}
             onClick={close}
             className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
           >
