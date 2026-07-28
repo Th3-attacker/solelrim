@@ -287,12 +287,13 @@
     "labelConfirmedOn": "Order confirmed on",
     "allStatuses": "All statuses",
     "searchPlaceholder": "Phone or reference...",
-    "dateModeRange": "Range",
-    "dateModeExact": "Exact date",
-    "dateFrom": "From",
-    "dateTo": "To",
     "dateRangeHint": "15 days max",
-    "resetFilters": "Reset"
+    "resetFilters": "Reset",
+    "applyFilter": "Apply filter",
+    "presetToday": "Today",
+    "presetYesterday": "Yesterday",
+    "presetLast7Days": "Last 7 days",
+    "presetLast15Days": "Last 15 days"
   },
   "settings": {
     "title": "Settings",

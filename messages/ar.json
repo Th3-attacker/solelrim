@@ -287,12 +287,13 @@
     "labelConfirmedOn": "تم تأكيد الطلب في",
     "allStatuses": "كل الحالات",
     "searchPlaceholder": "الهاتف أو المرجع...",
-    "dateModeRange": "فترة",
-    "dateModeExact": "تاريخ محدد",
-    "dateFrom": "من",
-    "dateTo": "إلى",
     "dateRangeHint": "15 يومًا كحد أقصى",
-    "resetFilters": "إعادة تعيين"
+    "resetFilters": "إعادة تعيين",
+    "applyFilter": "تطبيق الفلتر",
+    "presetToday": "اليوم",
+    "presetYesterday": "أمس",
+    "presetLast7Days": "آخر 7 أيام",
+    "presetLast15Days": "آخر 15 يومًا"
   },
   "settings": {
     "title": "الإعدادات",

@@ -8,19 +8,14 @@ export function parseOrderDateParam(value?: string): Date | undefined {
   return isValid(parsed) ? parsed : undefined;
 }
 
-// "date" (exact day) takes priority over "from"/"to" (range). In range mode,
-// the span is capped to MAX_ORDER_DATE_RANGE_DAYS even if the URL is edited
-// by hand past what the UI allows.
+// A single day is just a "from"/"to" pair pointing at the same date — there's
+// no separate exact-date param. The span is capped to
+// MAX_ORDER_DATE_RANGE_DAYS even if the URL is edited by hand past what the
+// calendar itself allows.
 export function parseOrderDateFilters(params: {
-  date?: string;
   from?: string;
   to?: string;
 }): { dateFrom?: Date; dateTo?: Date } {
-  const exact = parseOrderDateParam(params.date);
-  if (exact) {
-    return { dateFrom: startOfDay(exact), dateTo: endOfDay(exact) };
-  }
-
   const from = parseOrderDateParam(params.from);
   const to = parseOrderDateParam(params.to);
   if (!from && !to) return {};

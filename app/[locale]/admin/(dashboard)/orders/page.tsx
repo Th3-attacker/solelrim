@@ -31,7 +31,6 @@ export default async function AdminOrdersPage({
     : undefined;
   const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
   const { dateFrom, dateTo } = parseOrderDateFilters({
-    date: typeof params.date === "string" ? params.date : undefined,
     from: typeof params.from === "string" ? params.from : undefined,
     to: typeof params.to === "string" ? params.to : undefined,
   });

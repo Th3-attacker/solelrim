@@ -287,12 +287,13 @@
     "labelConfirmedOn": "Commande confirmée le",
     "allStatuses": "Tous les statuts",
     "searchPlaceholder": "Téléphone ou référence...",
-    "dateModeRange": "Période",
-    "dateModeExact": "Date précise",
-    "dateFrom": "Du",
-    "dateTo": "Au",
     "dateRangeHint": "15 jours maximum",
-    "resetFilters": "Réinitialiser"
+    "resetFilters": "Réinitialiser",
+    "applyFilter": "Appliquer le filtre",
+    "presetToday": "Aujourd'hui",
+    "presetYesterday": "Hier",
+    "presetLast7Days": "7 derniers jours",
+    "presetLast15Days": "15 derniers jours"
   },
   "settings": {
     "title": "Paramètres",
