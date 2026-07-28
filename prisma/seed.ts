@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../lib/generated/prisma/client";
+import { slugify } from "../lib/shop/slug";
 import { config } from "dotenv";
 
 config({ path: ".env.local", quiet: true });
@@ -40,6 +41,7 @@ async function upsertProduct(data: {
     update: rest,
     create: {
       id,
+      slug: slugify(rest.name),
       ...rest,
       variants: {
         create: variants.map((v) => ({

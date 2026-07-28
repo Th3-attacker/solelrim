@@ -72,7 +72,8 @@ export function CategorySelect({
         footer={
           <Button
             type="button"
-            disabled={!name || pending}
+            disabled={!name}
+            loading={pending}
             onClick={handleCreate}
           >
             {tCommon("create")}

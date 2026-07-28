@@ -57,7 +57,7 @@ export function CartTrigger() {
         {items.length === 0 ? (
           <p className="px-4 text-sm text-muted-foreground">{t("empty")}</p>
         ) : (
-          <div className="flex-1 overflow-y-auto px-4">
+          <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="flex flex-col gap-4">
               {items.map((line) => (
                 <div key={line.variantId} className="flex gap-3">
@@ -127,7 +127,7 @@ export function CartTrigger() {
         )}
 
         {items.length > 0 && (
-          <SheetFooter className="border-t pt-4">
+          <SheetFooter className="border-t py-6">
             <div className="flex items-center justify-between text-sm font-medium">
               <span>{t("subtotal")}</span>
               <span>{formatPrice(subtotal, tCommon("currency"))}</span>

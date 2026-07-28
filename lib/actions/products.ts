@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
+import { slugify } from "@/lib/shop/slug";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -19,6 +20,19 @@ async function requireAdmin() {
 
 export type ProductActionResult = { error?: string; productId?: string };
 
+// Slug is generated once at creation and never touched again, so an already
+// shared/bookmarked product URL never breaks from a later name edit.
+async function generateUniqueSlug(name: string): Promise<string> {
+  const base = slugify(name);
+  let slug = base;
+  let suffix = 2;
+  while (await prisma.product.findUnique({ where: { slug }, select: { id: true } })) {
+    slug = `${base}-${suffix}`;
+    suffix++;
+  }
+  return slug;
+}
+
 export async function createProduct(
   input: ProductInput,
 ): Promise<ProductActionResult> {
@@ -28,11 +42,13 @@ export async function createProduct(
     return { error: "invalid" };
   }
   const { variants, ...product } = parsed.data;
+  const slug = await generateUniqueSlug(product.name);
 
   try {
     const created = await prisma.product.create({
       data: {
         ...product,
+        slug,
         variants: {
           create: variants.map(({ id: _id, ...variant }) => variant),
         },
@@ -64,8 +80,8 @@ export async function updateProduct(
   const { variants, ...product } = parsed.data;
 
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.product.update({ where: { id: productId }, data: product });
+    const slug = await prisma.$transaction(async (tx) => {
+      const updated = await tx.product.update({ where: { id: productId }, data: product });
 
       const existing = await tx.productVariant.findMany({
         where: { productId },
@@ -91,12 +107,14 @@ export async function updateProduct(
           await tx.productVariant.create({ data: { ...data, productId } });
         }
       }
+
+      return updated.slug;
     });
 
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
     revalidatePath("/");
-    revalidatePath(`/products/${productId}`);
+    revalidatePath(`/products/${slug}`);
     return { productId };
   } catch (err) {
     if (
@@ -168,10 +186,16 @@ export async function uploadProductImage(
     return { error: "uploadFailed" };
   }
 
-  const maxPosition = await prisma.productImage.aggregate({
-    where: { productId },
-    _max: { position: true },
-  });
+  const [maxPosition, product] = await Promise.all([
+    prisma.productImage.aggregate({
+      where: { productId },
+      _max: { position: true },
+    }),
+    prisma.product.findUniqueOrThrow({
+      where: { id: productId },
+      select: { slug: true },
+    }),
+  ]);
 
   await prisma.productImage.create({
     data: {
@@ -182,7 +206,7 @@ export async function uploadProductImage(
   });
 
   revalidatePath(`/admin/products/${productId}`);
-  revalidatePath(`/products/${productId}`);
+  revalidatePath(`/products/${product.slug}`);
   return {};
 }
 
@@ -193,6 +217,7 @@ export async function deleteProductImage(
 
   const image = await prisma.productImage.findUnique({
     where: { id: imageId },
+    include: { product: { select: { slug: true } } },
   });
   if (!image) {
     return { error: "notFound" };
@@ -205,7 +230,7 @@ export async function deleteProductImage(
   await prisma.productImage.delete({ where: { id: imageId } });
 
   revalidatePath(`/admin/products/${image.productId}`);
-  revalidatePath(`/products/${image.productId}`);
+  revalidatePath(`/products/${image.product.slug}`);
   return {};
 }
 

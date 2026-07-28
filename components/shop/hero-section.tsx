@@ -66,7 +66,7 @@ export async function HeroSection({ products }: { products: Product[] }) {
         )}
         <div>
           <Button asChild size="lg">
-            <Link href={`/products/${product.id}`}>{t("heroShopProduct")}</Link>
+            <Link href={`/products/${product.slug}`}>{t("heroShopProduct")}</Link>
           </Button>
         </div>
       </div>
