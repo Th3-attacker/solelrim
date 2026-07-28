@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
@@ -104,6 +105,7 @@ export function OrderFilters() {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState<Filters>(() => readFilters(searchParams));
+  const [isSyncing, startSyncTransition] = useTransition();
   const isFirstRender = useRef(true);
 
   const [statusOpen, setStatusOpen] = useState(false);
@@ -128,7 +130,9 @@ export function OrderFilters() {
       if (filters.fromDate) params.set("from", filters.fromDate);
       if (filters.toDate) params.set("to", filters.toDate);
       const query = params.toString();
-      router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+      startSyncTransition(() => {
+        router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+      });
     }, SYNC_DEBOUNCE_MS);
     return () => clearTimeout(handle);
   }, [filters, pathname, router]);
@@ -183,7 +187,11 @@ export function OrderFilters() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative min-w-56 flex">
-        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        {isSyncing ? (
+          <Spinner className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        ) : (
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        )}
         <Input
           aria-label={t("searchPlaceholder")}
           value={filters.search}
