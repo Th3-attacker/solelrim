@@ -1,11 +1,11 @@
 "use server";
 
-import { format } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
+import { buildSaleReference } from "@/lib/shop/reference";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -13,12 +13,6 @@ async function requireAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("unauthorized");
-}
-
-function buildSaleReference(): string {
-  const datePart = format(new Date(), "yyyyMMdd");
-  const randomPart = Math.floor(1000 + Math.random() * 9000);
-  return `INV-${datePart}-${randomPart}`;
 }
 
 export type SaleActionResult = { error?: string; saleId?: string };

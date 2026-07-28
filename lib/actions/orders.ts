@@ -9,7 +9,7 @@ import {
   checkoutCustomerSchema,
   orderItemsSchema,
 } from "@/lib/validation/order";
-import { buildOrderReference } from "@/lib/shop/reference";
+import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
 
@@ -279,16 +279,60 @@ export async function deliverOrder(
           data: { isFeatured: true },
         });
       }
+
+      // Delivered online orders otherwise never show up as revenue: the
+      // dashboard's stats/best-sellers are computed from Sale, not Order.
+      // Stock was already decremented at confirmOrder, so this only
+      // records the sale — it must never touch stock itself.
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: { items: true },
+      });
+
+      let attempt = 0;
+      while (attempt < 3) {
+        const reference = buildSaleReference();
+        try {
+          await tx.sale.create({
+            data: {
+              reference,
+              subtotal: order.subtotal,
+              total: order.total,
+              notes: `Commande en ligne ${order.reference}`,
+              items: {
+                create: order.items.map((item) => ({
+                  variantId: item.variantId,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  lineTotal: item.lineTotal,
+                })),
+              },
+            },
+          });
+          break;
+        } catch (err) {
+          if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
+            attempt++;
+            continue;
+          }
+          throw err;
+        }
+      }
+      if (attempt >= 3) throw new Error("referenceCollision");
     });
   } catch (err) {
-    if (err instanceof Error && err.message === "invalidTransition") {
-      return { error: "invalidTransition" };
+    if (
+      err instanceof Error &&
+      ["invalidTransition", "referenceCollision"].includes(err.message)
+    ) {
+      return { error: err.message };
     }
     throw err;
   }
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/admin/sales");
   revalidatePath("/");
   return {};
 }
