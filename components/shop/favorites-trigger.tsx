@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 export type FavoriteProductSummary = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string | null;
   price: number;
@@ -85,7 +86,7 @@ export function FavoritesTrigger({
                   <div className="flex flex-1 flex-col justify-center gap-1">
                     <SheetClose asChild>
                       <Link
-                        href={`/products/${product.id}`}
+                        href={`/products/${product.slug}`}
                         className="text-sm font-medium hover:underline"
                       >
                         {product.name}

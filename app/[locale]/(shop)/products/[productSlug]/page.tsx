@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getActiveProductById, getAdjacentProductIds } from "@/lib/queries/shop";
+import {
+  getActiveProductBySlug,
+  getAdjacentProductSlugs,
+  getProductSlugById,
+} from "@/lib/queries/shop";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
@@ -10,25 +14,32 @@ import { ProductGallery } from "@/components/shop/product-gallery";
 import { Price } from "@/components/shop/price";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ productId: string }>;
+  params: Promise<{ productSlug: string }>;
 }) {
-  const { productId } = await params;
+  const { productSlug } = await params;
   const [t, tCommon, product] = await Promise.all([
     getTranslations("shop"),
     getTranslations("common"),
-    getActiveProductById(productId),
+    getActiveProductBySlug(productSlug),
   ]);
 
   if (!product) {
+    // Pre-slug links shared as the raw cuid still land here — redirect to
+    // the canonical slug URL instead of a dead end.
+    const legacy = await getProductSlugById(productSlug);
+    if (legacy) {
+      const locale = await getLocale();
+      redirect({ href: `/products/${legacy.slug}`, locale });
+    }
     notFound();
   }
 
-  const { prevId, nextId } = await getAdjacentProductIds(
+  const { prevSlug, nextSlug } = await getAdjacentProductSlugs(
     product.categoryId,
     product.id,
   );
@@ -59,9 +70,9 @@ export default async function ProductDetailPage({
         </div>
 
         <div className="flex items-center gap-1">
-          {prevId ? (
+          {prevSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link href={`/products/${prevId}`} aria-label={t("previousProduct")}>
+              <Link href={`/products/${prevSlug}`} aria-label={t("previousProduct")}>
                 <ChevronLeft className="rtl:rotate-180" />
               </Link>
             </Button>
@@ -70,9 +81,9 @@ export default async function ProductDetailPage({
               <ChevronLeft className="rtl:rotate-180" />
             </Button>
           )}
-          {nextId ? (
+          {nextSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link href={`/products/${nextId}`} aria-label={t("nextProduct")}>
+              <Link href={`/products/${nextSlug}`} aria-label={t("nextProduct")}>
                 <ChevronRight className="rtl:rotate-180" />
               </Link>
             </Button>

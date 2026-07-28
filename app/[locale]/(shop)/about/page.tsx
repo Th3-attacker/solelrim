@@ -71,7 +71,7 @@ export default async function AboutPage() {
             {spotlight.map((product) => (
               <Link
                 key={product.id}
-                href={`/products/${product.id}`}
+                href={`/products/${product.slug}`}
                 className="group flex flex-col gap-2"
               >
                 <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">

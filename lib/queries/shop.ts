@@ -16,9 +16,9 @@ export function getAllShopCategories() {
   return prisma.category.findMany({ orderBy: { name: "asc" } });
 }
 
-export function getActiveProductById(id: string) {
+export function getActiveProductBySlug(slug: string) {
   return prisma.product.findFirst({
-    where: { id, isActive: true },
+    where: { slug, isActive: true },
     include: {
       category: true,
       images: { orderBy: { position: "asc" } },
@@ -27,21 +27,29 @@ export function getActiveProductById(id: string) {
   });
 }
 
+// Legacy links shared before the slug migration still use the raw id —
+// looked up regardless of isActive so an old link to a product that's since
+// been deactivated still redirects to its (now 404-ing) canonical URL
+// instead of a generic not-found with no further context.
+export function getProductSlugById(id: string) {
+  return prisma.product.findUnique({ where: { id }, select: { slug: true } });
+}
+
 // Walks the same order as the catalog grid (getActiveProducts) so "next" on
 // the detail page matches what the customer would hit browsing the grid.
-export async function getAdjacentProductIds(
+export async function getAdjacentProductSlugs(
   categoryId: string,
   currentProductId: string,
-): Promise<{ prevId: string | null; nextId: string | null }> {
+): Promise<{ prevSlug: string | null; nextSlug: string | null }> {
   const siblings = await prisma.product.findMany({
     where: { isActive: true, categoryId },
-    select: { id: true },
+    select: { id: true, slug: true },
     orderBy: { createdAt: "desc" },
   });
   const index = siblings.findIndex((p) => p.id === currentProductId);
-  if (index === -1) return { prevId: null, nextId: null };
+  if (index === -1) return { prevSlug: null, nextSlug: null };
   return {
-    prevId: siblings[index - 1]?.id ?? null,
-    nextId: siblings[index + 1]?.id ?? null,
+    prevSlug: siblings[index - 1]?.slug ?? null,
+    nextSlug: siblings[index + 1]?.slug ?? null,
   };
 }
