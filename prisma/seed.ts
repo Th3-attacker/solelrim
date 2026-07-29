@@ -62,6 +62,7 @@ async function main() {
   const fitness = await upsertCategory("Fitness");
   const basketball = await upsertCategory("Basketball");
   const accessoires = await upsertCategory("Accessoires");
+  const vetements = await upsertCategory("Vêtements");
 
   await upsertProduct({
     id: "seed-product-1",
@@ -214,6 +215,169 @@ async function main() {
     compareAtPrice: 15.0,
     categoryId: accessoires.id,
     variants: [{ size: "Unique", color: "Noir", sku: "CS-U-BLK", stock: 30 }],
+  });
+
+  // Catalogue additionnel — style aligné sur les produits réels déjà en
+  // base (prix ronds en MRU, couleurs en majuscules) plutôt que sur les
+  // seed-product-1..12 ci-dessus. Stocks volontairement variés (normal /
+  // faible / rupture) pour continuer à couvrir le badge de stock.
+  await upsertProduct({
+    id: "seed-product-13",
+    name: "Ultraboost Runner",
+    description: "Adidas Ultraboost running shoes - confort maximal",
+    basePrice: 3200,
+    compareAtPrice: 3800,
+    isFeatured: true,
+    categoryId: running.id,
+    variants: [
+      { size: "40", color: "BLACK", sku: "UB-40-BLK", stock: 8, lowStockThreshold: 3 },
+      { size: "41", color: "BLACK", sku: "UB-41-BLK", stock: 8, lowStockThreshold: 3 },
+      { size: "42", color: "WHITE", sku: "UB-42-WHT", stock: 2, lowStockThreshold: 3 },
+      { size: "43", color: "WHITE", sku: "UB-43-WHT", stock: 0, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-14",
+    name: "Air Max City",
+    description: "Nike Air Max, amorti quotidien",
+    basePrice: 2400,
+    categoryId: running.id,
+    variants: [
+      { size: "40", color: "BLACK-WHITE", sku: "AMC-40-BW", stock: 6, lowStockThreshold: 3 },
+      { size: "41", color: "BLACK-WHITE", sku: "AMC-41-BW", stock: 6, lowStockThreshold: 3 },
+      { size: "42", color: "GREY", sku: "AMC-42-GRY", stock: 4, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-15",
+    name: "Maillot Domicile FC",
+    description: "Maillot officiel réplique, respirant",
+    basePrice: 900,
+    compareAtPrice: 1200,
+    isFeatured: true,
+    categoryId: football.id,
+    variants: [
+      { size: "S", color: "RED", sku: "MDF-S-RED", stock: 10, lowStockThreshold: 4 },
+      { size: "M", color: "RED", sku: "MDF-M-RED", stock: 12, lowStockThreshold: 4 },
+      { size: "L", color: "RED", sku: "MDF-L-RED", stock: 3, lowStockThreshold: 4 },
+      { size: "XL", color: "RED", sku: "MDF-XL-RED", stock: 0, lowStockThreshold: 4 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-16",
+    name: "Ballon Match Pro",
+    description: "Ballon de match taille 5, cousu main",
+    basePrice: 700,
+    categoryId: football.id,
+    variants: [
+      { size: "Unique", color: "WHITE-BLACK", sku: "BMP-U-WB", stock: 15, lowStockThreshold: 5 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-17",
+    name: "Short Basketball Pro",
+    description: "Short technique léger, poches zippées",
+    basePrice: 650,
+    categoryId: basketball.id,
+    variants: [
+      { size: "M", color: "BLACK", sku: "SBP-M-BLK", stock: 9, lowStockThreshold: 3 },
+      { size: "L", color: "BLACK", sku: "SBP-L-BLK", stock: 9, lowStockThreshold: 3 },
+      { size: "XL", color: "BLACK", sku: "SBP-XL-BLK", stock: 1, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-18",
+    name: "Maillot Basketball Legend",
+    description: "Maillot sans manches, coupe ample",
+    basePrice: 800,
+    compareAtPrice: 950,
+    categoryId: basketball.id,
+    variants: [
+      { size: "M", color: "RED-WHITE", sku: "MBL-M-RW", stock: 6, lowStockThreshold: 3 },
+      { size: "L", color: "RED-WHITE", sku: "MBL-L-RW", stock: 6, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-19",
+    name: "Legging Fitness Pro",
+    description: "Legging taille haute, tissu extensible",
+    basePrice: 550,
+    isFeatured: true,
+    categoryId: fitness.id,
+    variants: [
+      { size: "S", color: "BLACK", sku: "LFP-S-BLK", stock: 14, lowStockThreshold: 4 },
+      { size: "M", color: "BLACK", sku: "LFP-M-BLK", stock: 14, lowStockThreshold: 4 },
+      { size: "L", color: "BLACK", sku: "LFP-L-BLK", stock: 2, lowStockThreshold: 4 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-20",
+    name: "Brassière de Sport",
+    description: "Brassière maintien fort, dos nageur",
+    basePrice: 400,
+    categoryId: fitness.id,
+    variants: [
+      { size: "S", color: "BLACK", sku: "BDS-S-BLK", stock: 8, lowStockThreshold: 3 },
+      { size: "M", color: "BLACK", sku: "BDS-M-BLK", stock: 8, lowStockThreshold: 3 },
+      { size: "L", color: "GREY", sku: "BDS-L-GRY", stock: 0, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-21",
+    name: "Bandes de Résistance (Set)",
+    description: "Set de 5 bandes élastiques, intensités variées",
+    basePrice: 300,
+    categoryId: fitness.id,
+    variants: [
+      { size: "Unique", color: "MULTICOLOR", sku: "BDR-U-MLT", stock: 20, lowStockThreshold: 5 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-22",
+    name: "Hoodie Training",
+    description: "Sweat à capuche molleton, coupe droite",
+    basePrice: 850,
+    compareAtPrice: 1000,
+    categoryId: vetements.id,
+    variants: [
+      { size: "M", color: "BLACK", sku: "HDT-M-BLK", stock: 7, lowStockThreshold: 3 },
+      { size: "L", color: "BLACK", sku: "HDT-L-BLK", stock: 7, lowStockThreshold: 3 },
+      { size: "XL", color: "GREY", sku: "HDT-XL-GRY", stock: 1, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-23",
+    name: "Casquette Performance",
+    description: "Casquette ajustable, tissu respirant",
+    basePrice: 200,
+    categoryId: accessoires.id,
+    variants: [
+      { size: "Unique", color: "BLACK", sku: "CQP-U-BLK", stock: 25, lowStockThreshold: 5 },
+      { size: "Unique", color: "WHITE", sku: "CQP-U-WHT", stock: 3, lowStockThreshold: 5 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-product-24",
+    name: "Sac de Sport Compact",
+    description: "Sac de sport avec compartiment chaussures",
+    basePrice: 550,
+    isFeatured: true,
+    categoryId: accessoires.id,
+    variants: [
+      { size: "Unique", color: "BLACK", sku: "SSC-U-BLK", stock: 5, lowStockThreshold: 3 },
+      { size: "Unique", color: "GREY", sku: "SSC-U-GRY", stock: 0, lowStockThreshold: 3 },
+    ],
   });
 
   console.log("Seed complete.");

@@ -7,6 +7,9 @@
     "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "prepare": "husky"
@@ -52,6 +55,8 @@
     "husky": "^9.1.7",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10",
+    "vitest-mock-extended": "^5.1.0"
   }
 }

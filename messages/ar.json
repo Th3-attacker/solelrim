@@ -134,6 +134,8 @@
     "heroShopProduct": "اكتشف",
     "shopByCategory": "تسوّق حسب الفئة",
     "allProductsTitle": "جميع المنتجات",
+    "loadMore": "عرض المزيد",
+    "featuredShowcaseTitle": "الأكثر مبيعًا لدينا",
     "announcementBar": "دفع آمن عبر الهاتف · تأكيد فوري عبر واتساب",
     "trustPaymentTitle": "دفع عبر الهاتف",
     "trustPaymentDesc": "ادفع بسهولة عبر بنكيلي أو مصرفي.",
@@ -167,7 +169,10 @@
     "contactWhatsapp": "تواصل معنا عبر واتساب",
     "aboutLink": "من نحن",
     "contactLink": "تواصل معنا",
-    "menu": "القائمة"
+    "menu": "القائمة",
+    "footerShopTitle": "المتجر",
+    "footerHelpTitle": "المساعدة",
+    "footerFollowTitle": "تابعنا"
   },
   "contact": {
     "metaTitle": "تواصل معنا",
@@ -238,7 +243,8 @@
     "backToCatalog": "العودة إلى الكتالوج",
     "validationError": "يرجى التحقق من المعلومات المدخلة.",
     "missingScreenshotError": "يرجى إضافة لقطة شاشة للدفع.",
-    "insufficientStockError": "المخزون غير كافٍ لأحد عناصر طلبك."
+    "insufficientStockError": "المخزون غير كافٍ لأحد عناصر طلبك.",
+    "rateLimitedError": "عدد كبير جدًا من المحاولات. يرجى المحاولة مرة أخرى بعد بضع دقائق."
   },
   "orders": {
     "title": "الطلبات",
@@ -353,5 +359,14 @@
     "noSales": "لا توجد مبيعات بعد.",
     "invoiceTitle": "الفاتورة",
     "printInvoice": "طباعة الفاتورة"
+  },
+  "errors": {
+    "notFoundTitle": "الصفحة غير موجودة",
+    "notFoundMessage": "هذه الصفحة غير موجودة أو لم تعد متاحة.",
+    "backToShop": "العودة إلى المتجر",
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "errorTitle": "حدث خطأ ما",
+    "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
+    "retry": "إعادة المحاولة"
   }
 }

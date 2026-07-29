@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, staging, master]
+
+jobs:
+  checks:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+  pr-title:
+    name: PR title (Conventional Commits)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      # Squash-merges use the PR title as the final commit message — the
+      # commit-msg hook (husky + commitlint) only runs on local commits, so
+      # this is what actually catches a malformed title before it lands.
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            perf
+            style
+            test
+            docs
+            build
+            ci
+            chore
+            revert
