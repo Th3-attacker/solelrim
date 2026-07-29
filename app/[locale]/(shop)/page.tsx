@@ -1,10 +1,8 @@
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategoryFilters } from "@/components/shop/category-filters";
 import { FavoritesSortedGrid } from "@/components/shop/favorites-sorted-grid";
-import { FeaturedShowcase } from "@/components/shop/featured-showcase";
 import { HeroSection } from "@/components/shop/hero-section";
 import { ProductCard } from "@/components/shop/product-card";
-import { SectionTitle } from "@/components/shop/section-title";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import {
@@ -51,7 +49,6 @@ export default async function ShopHomePage({
   displayedProducts = sortProducts(displayedProducts, sort);
 
   const catalogColors = getAllCatalogColors(allProducts);
-  const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 5);
 
   return (
     <div className="flex flex-col gap-14">
@@ -66,7 +63,12 @@ export default async function ShopHomePage({
       />
 
       <div id="catalog" className="flex scroll-mt-20 flex-col gap-6">
-        <SectionTitle>{t("allProductsTitle")}</SectionTitle>
+        <div className="flex items-center gap-3">
+          <span className="h-6 w-1.5 rounded-full bg-primary" />
+          <h2 className="text-heading-xs">
+            {t("allProductsTitle")}
+          </h2>
+        </div>
 
         {displayedProducts.length === 0 ? (
           <p className="text-paragraph-md text-muted-foreground">{t("noProducts")}</p>
@@ -78,8 +80,6 @@ export default async function ShopHomePage({
           </FavoritesSortedGrid>
         )}
       </div>
-
-      <FeaturedShowcase products={featuredProducts} />
 
       <TrustBadges />
     </div>
