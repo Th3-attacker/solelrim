@@ -112,3 +112,18 @@ gh pr create \
 - Le titre suit le même format que les commits (voir avertissement ci-dessus).
 - `Closes #<numero>` dans la description ferme automatiquement l'issue liée au merge.
 - Une fois mergée, supprimer la branche (`gh pr merge --delete-branch` ou depuis l'UI).
+
+### 5. Intégration continue (CI)
+
+Chaque PR vers `dev`, `staging` ou `master` déclenche automatiquement (`.github/workflows/ci.yml`) :
+
+- **Lint, typecheck, tests** — `npm run lint`, `npm run typecheck` (`tsc --noEmit`) et `npm test`. Une PR qui casse l'un des trois est bloquée.
+- **Format du titre de la PR** — vérifié indépendamment des commits, puisque c'est ce titre que GitHub reprend comme message de commit lors d'un squash-merge (voir l'avertissement à la section Commits ci-dessus).
+
+Pour reproduire les mêmes vérifications en local avant de pousser :
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+```

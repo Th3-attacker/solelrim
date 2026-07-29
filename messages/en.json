@@ -134,6 +134,8 @@
     "heroShopProduct": "Discover",
     "shopByCategory": "Shop by category",
     "allProductsTitle": "All products",
+    "loadMore": "Show more",
+    "featuredShowcaseTitle": "Our best sellers",
     "announcementBar": "Secure mobile payment · Instant WhatsApp confirmation",
     "trustPaymentTitle": "Mobile payment",
     "trustPaymentDesc": "Pay easily via Bankily or Masrivi.",
@@ -167,7 +169,10 @@
     "contactWhatsapp": "Contact us on WhatsApp",
     "aboutLink": "About",
     "contactLink": "Contact",
-    "menu": "Menu"
+    "menu": "Menu",
+    "footerShopTitle": "Shop",
+    "footerHelpTitle": "Support",
+    "footerFollowTitle": "Follow us"
   },
   "contact": {
     "metaTitle": "Contact",
@@ -238,7 +243,8 @@
     "backToCatalog": "Back to catalog",
     "validationError": "Please check the information entered.",
     "missingScreenshotError": "Please add a payment screenshot.",
-    "insufficientStockError": "Insufficient stock for one of the items in your order."
+    "insufficientStockError": "Insufficient stock for one of the items in your order.",
+    "rateLimitedError": "Too many attempts. Please try again in a few minutes."
   },
   "orders": {
     "title": "Orders",
@@ -353,5 +359,14 @@
     "noSales": "No sales yet.",
     "invoiceTitle": "Invoice",
     "printInvoice": "Print invoice"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundMessage": "This page doesn't exist or is no longer available.",
+    "backToShop": "Back to the shop",
+    "backToDashboard": "Back to dashboard",
+    "errorTitle": "Something went wrong",
+    "errorMessage": "Something broke on our end. Try again, or come back a little later.",
+    "retry": "Try again"
   }
 }

@@ -163,6 +163,17 @@ model OrderItem {
   @@index([variantId])
 }
 
+// Sliding-window rate limiting: one row per request that counted against a
+// key (e.g. "order:<ip>"). checkRateLimit() (lib/rate-limit.ts) counts rows
+// newer than the window and prunes older ones on every call.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
 model StoreSettings {
   id                  String   @id @default("singleton")
   bankilyNumber       String?

@@ -124,7 +124,7 @@ export function ProductCard({
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <span className="flex items-baseline gap-1.5 text-sm">
             {isRange && (
               <span className="text-muted-foreground">{t("startingFrom")}</span>

@@ -1,5 +1,7 @@
 import * as React from "react"
 
+type ViewportRect = { height: number; top: number } | null
+
 // Measures the real visible area via the VisualViewport API instead of
 // trusting CSS dvh, which on iOS Safari can lag by a frame on the very
 // first on-screen-keyboard invocation after a page load (subsequent opens
@@ -7,28 +9,40 @@ import * as React from "react"
 // viewport and overflowing behind the keyboard. Only measures while
 // `active`, since visualViewport keeps firing on page scroll too.
 export function useVisualViewport(active: boolean) {
-  const [rect, setRect] = React.useState<{ height: number; top: number } | null>(null)
+  const cacheRef = React.useRef<ViewportRect>(null)
 
-  React.useEffect(() => {
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void) => {
+      const vv = window.visualViewport
+      if (!active || !vv) return () => {}
+      vv.addEventListener("resize", onStoreChange)
+      vv.addEventListener("scroll", onStoreChange)
+      return () => {
+        vv.removeEventListener("resize", onStoreChange)
+        vv.removeEventListener("scroll", onStoreChange)
+      }
+    },
+    [active]
+  )
+
+  const getSnapshot = React.useCallback((): ViewportRect => {
     const vv = window.visualViewport
     if (!active || !vv) {
-      setRect(null)
-      return
+      cacheRef.current = null
+      return null
     }
-
-    function update() {
-      setRect({ height: vv!.height, top: vv!.offsetTop })
+    const next = { height: vv.height, top: vv.offsetTop }
+    const cached = cacheRef.current
+    if (cached && cached.height === next.height && cached.top === next.top) {
+      return cached
     }
-    update()
-    vv.addEventListener("resize", update)
-    vv.addEventListener("scroll", update)
-    return () => {
-      vv.removeEventListener("resize", update)
-      vv.removeEventListener("scroll", update)
-    }
+    cacheRef.current = next
+    return next
   }, [active])
 
-  return rect
+  const getServerSnapshot = React.useCallback((): ViewportRect => null, [])
+
+  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }
 
 // Leaves a sliver of the (blurred) page visible above the sheet instead of
@@ -38,7 +52,7 @@ export const SHEET_PEEK_INSET = 24
 // Falls back to the dvh unit only until the first real measurement lands
 // (or on browsers without VisualViewport support).
 export function visualViewportStyle(
-  rect: { height: number; top: number } | null,
+  rect: ViewportRect,
   topInset = 0,
 ): React.CSSProperties {
   return rect
