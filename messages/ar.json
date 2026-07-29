@@ -238,7 +238,8 @@
     "backToCatalog": "العودة إلى الكتالوج",
     "validationError": "يرجى التحقق من المعلومات المدخلة.",
     "missingScreenshotError": "يرجى إضافة لقطة شاشة للدفع.",
-    "insufficientStockError": "المخزون غير كافٍ لأحد عناصر طلبك."
+    "insufficientStockError": "المخزون غير كافٍ لأحد عناصر طلبك.",
+    "rateLimitedError": "عدد كبير جدًا من المحاولات. يرجى المحاولة مرة أخرى بعد بضع دقائق."
   },
   "orders": {
     "title": "الطلبات",

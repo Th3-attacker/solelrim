@@ -15,11 +15,15 @@ vi.mock("@/lib/supabase/admin", () => ({
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
+vi.mock("next/headers", () => ({
+  headers: vi.fn(),
+}));
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import {
   submitOrder,
   confirmOrder,
@@ -32,6 +36,7 @@ import {
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
 const createAdminClientMock = createAdminClient as unknown as Mock;
+const headersMock = headers as unknown as Mock;
 
 // Prisma Decimal fields only need `.toNumber()` for this module's purposes.
 function decimal(value: number) {
@@ -62,6 +67,7 @@ beforeEach(() => {
   createClientMock.mockReset();
   createAdminClientMock.mockReset();
   (revalidatePath as unknown as Mock).mockReset();
+  headersMock.mockReset();
   // Every action but submitOrder starts with requireAdmin(); default to an
   // authorized session so each describe block only overrides when the test
   // is specifically about authorization.
@@ -71,6 +77,10 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
+  // submitOrder's rate limit check: under the limit and no forwarded IP by
+  // default, so existing tests don't need to know about it.
+  headersMock.mockResolvedValue({ get: () => null });
+  prismaMock.rateLimitHit.count.mockResolvedValue(0);
 });
 
 function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
@@ -188,6 +198,40 @@ describe("submitOrder", () => {
 
     const createArgs = prismaMock.order.create.mock.calls[0][0];
     expect(createArgs.data.subtotal).toBe(3600); // override price 1800 * qty 2
+  });
+
+  it("rejects with rateLimited and does no work when the caller's IP is over the limit", async () => {
+    headersMock.mockResolvedValue({
+      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
+    });
+    prismaMock.rateLimitHit.count.mockResolvedValue(5);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "rateLimited" });
+    expect(prismaMock.rateLimitHit.create).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("counts a rate-limit hit against the first IP in x-forwarded-for", async () => {
+    headersMock.mockResolvedValue({
+      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
+    });
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+    } as never);
+
+    await submitOrder(buildOrderForm());
+
+    expect(prismaMock.rateLimitHit.create).toHaveBeenCalledWith({
+      data: { key: "order:203.0.113.9" },
+    });
   });
 
   it("retries the reference once on a collision, then succeeds", async () => {

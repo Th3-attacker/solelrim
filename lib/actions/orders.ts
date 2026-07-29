@@ -12,8 +12,13 @@ import {
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
+
+// Public, unauthenticated action that accepts a file upload — capped per IP
+// so it can't be used to spam Storage or flood the admin with fake orders.
+const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 5 };
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
   const locales: readonly string[] = routing.locales;
@@ -39,6 +44,12 @@ export type SubmitOrderResult = {
 export async function submitOrder(
   formData: FormData,
 ): Promise<SubmitOrderResult> {
+  const ip = await getClientIp();
+  const allowed = await checkRateLimit(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
+  if (!allowed) {
+    return { error: "rateLimited" };
+  }
+
   const customerParsed = checkoutCustomerSchema.safeParse({
     customerName: formData.get("customerName"),
     customerPhone: formData.get("customerPhone"),

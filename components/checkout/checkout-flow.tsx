@@ -116,7 +116,9 @@ export function CheckoutFlow({
       toast.error(
         result.error === "insufficientStock"
           ? t("insufficientStockError")
-          : t("validationError"),
+          : result.error === "rateLimited"
+            ? t("rateLimitedError")
+            : t("validationError"),
       );
       return;
     }
