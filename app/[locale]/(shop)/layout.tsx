@@ -134,98 +134,41 @@ export default async function ShopLayout({
             <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 desktop:px-8 md:py-10">
               {children}
             </main>
-            <footer className="border-t bg-zinc-950 text-zinc-400">
-              <div className="mx-auto max-w-7xl px-4 py-12 desktop:px-8">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
-                  <div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
-                    <Link
-                      href="/"
-                      className="flex items-center gap-2 text-base font-bold text-white"
+            <footer className="border-t bg-muted/30">
+              <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted-foreground desktop:px-8">
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                  <Link href="/about" className="transition-colors hover:text-foreground">
+                    {t("aboutLink")}
+                  </Link>
+                  <Link href="/contact" className="transition-colors hover:text-foreground">
+                    {t("contactLink")}
+                  </Link>
+                  {whatsappHref && (
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 transition-colors hover:text-foreground"
                     >
-                      {logoUrl && (
-                        <Image
-                          src={logoUrl}
-                          alt=""
-                          width={28}
-                          height={28}
-                          className="size-7 shrink-0 object-contain"
-                        />
-                      )}
-                      {siteName}
-                    </Link>
-                    <p className="max-w-52 text-sm text-zinc-500">{t("heroSubtitle")}</p>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-                      {t("footerShopTitle")}
-                    </h3>
-                    <nav className="flex flex-col gap-2 text-sm">
-                      <Link href="/" className="transition-colors hover:text-white">
-                        {t("allProductsTitle")}
-                      </Link>
-                      {categories.map((category) => (
-                        <Link
-                          key={category.id}
-                          href={{ pathname: "/", query: { category: category.id } }}
-                          className="transition-colors hover:text-white"
-                        >
-                          {category.name}
-                        </Link>
-                      ))}
-                    </nav>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-                      {t("footerHelpTitle")}
-                    </h3>
-                    <nav className="flex flex-col gap-2 text-sm">
-                      <Link href="/about" className="transition-colors hover:text-white">
-                        {t("aboutLink")}
-                      </Link>
-                      <Link href="/contact" className="transition-colors hover:text-white">
-                        {t("contactLink")}
-                      </Link>
-                      {whatsappHref && (
-                        <a
-                          href={whatsappHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 transition-colors hover:text-white"
-                        >
-                          <MessageCircle className="size-4" />
-                          {t("contactWhatsapp")}
-                        </a>
-                      )}
-                    </nav>
-                  </div>
-
-                  {socialLinks.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-                        {t("footerFollowTitle")}
-                      </h3>
-                      <nav className="flex flex-col gap-2 text-sm">
-                        {socialLinks.map((social) => (
-                          <a
-                            key={social.label}
-                            href={social.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="transition-colors hover:text-white"
-                          >
-                            {social.label}
-                          </a>
-                        ))}
-                      </nav>
-                    </div>
+                      <MessageCircle className="size-4" />
+                      {t("contactWhatsapp")}
+                    </a>
                   )}
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {social.label}
+                    </a>
+                  ))}
                 </div>
-
-                <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-zinc-500">
+                <span>
                   © {new Date().getFullYear()} {siteName}
-                </div>
+                </span>
               </div>
             </footer>
           </div>

@@ -3,13 +3,11 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFavorites } from "@/components/shop/favorites-provider";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 
-// Mobile gets a shorter first page (3 rows of the 2-col grid) than
-// tablet/desktop (a multiple of 3 and 4 too, so it fills a whole row of
-// their grids instead of ending on a half-empty one).
-const MOBILE_PAGE_SIZE = 6;
+// Same page size at every breakpoint — it's a multiple of 2, 3, and 4, so it
+// fills a whole row of the grid below (2 cols mobile / 3 tablet / 4 desktop)
+// instead of ending on a half-empty row.
 const PAGE_SIZE = 12;
 
 export function FavoritesSortedGrid({
@@ -20,10 +18,8 @@ export function FavoritesSortedGrid({
   children: React.ReactNode[];
 }) {
   const { isFavorite, hydrated } = useFavorites();
-  const isMobile = useIsMobile();
   const t = useTranslations("shop");
-  const pageSize = isMobile ? MOBILE_PAGE_SIZE : PAGE_SIZE;
-  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const ordered = useMemo(() => {
     const pairs = ids.map((id, index) => ({ id, node: children[index] }));
@@ -34,17 +30,15 @@ export function FavoritesSortedGrid({
     );
   }, [ids, children, hydrated, isFavorite]);
 
-  // A new filter/sort/search hands us a different id list, or the viewport
-  // crossed the mobile breakpoint — start capped again at the right page
-  // size instead of keeping whatever page the previous list/size was on.
-  // Adjusted during render (React's documented pattern for this) rather
-  // than in a useEffect, so it takes effect before the over-long list ever
-  // paints.
-  const resetKey = `${ids.join("|")}|${pageSize}`;
-  const [prevResetKey, setPrevResetKey] = useState(resetKey);
-  if (resetKey !== prevResetKey) {
-    setPrevResetKey(resetKey);
-    setVisibleCount(pageSize);
+  // A new filter/sort/search hands us a different id list — start capped
+  // again instead of keeping whatever page the previous list was on. Adjusted
+  // during render (React's documented pattern for this) rather than in a
+  // useEffect, so it takes effect before the over-long list ever paints.
+  const [prevIdsKey, setPrevIdsKey] = useState(ids.join("|"));
+  const idsKey = ids.join("|");
+  if (idsKey !== prevIdsKey) {
+    setPrevIdsKey(idsKey);
+    setVisibleCount(PAGE_SIZE);
   }
 
   const visible = ordered.slice(0, visibleCount);
@@ -60,7 +54,7 @@ export function FavoritesSortedGrid({
       {hasMore && (
         <Button
           variant="outline"
-          onClick={() => setVisibleCount((count) => count + pageSize)}
+          onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
         >
           {t("loadMore")}
         </Button>

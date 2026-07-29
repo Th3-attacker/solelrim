@@ -135,7 +135,6 @@
     "shopByCategory": "Parcourir par catégorie",
     "allProductsTitle": "Tous les produits",
     "loadMore": "Voir plus",
-    "featuredShowcaseTitle": "Nos meilleures ventes",
     "announcementBar": "Paiement mobile sécurisé · Confirmation instantanée par WhatsApp",
     "trustPaymentTitle": "Paiement mobile",
     "trustPaymentDesc": "Réglez facilement via Bankily ou Masrivi.",
@@ -169,10 +168,7 @@
     "contactWhatsapp": "Contactez-nous sur WhatsApp",
     "aboutLink": "À propos",
     "contactLink": "Contact",
-    "menu": "Menu",
-    "footerShopTitle": "Boutique",
-    "footerHelpTitle": "Assistance",
-    "footerFollowTitle": "Suivez-nous"
+    "menu": "Menu"
   },
   "contact": {
     "metaTitle": "Contact",
