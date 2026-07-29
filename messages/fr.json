@@ -359,5 +359,14 @@
     "noSales": "Aucune vente pour le moment.",
     "invoiceTitle": "Facture",
     "printInvoice": "Imprimer la facture"
+  },
+  "errors": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundMessage": "Cette page n'existe pas ou n'est plus disponible.",
+    "backToShop": "Retour à la boutique",
+    "backToDashboard": "Retour au tableau de bord",
+    "errorTitle": "Une erreur est survenue",
+    "errorMessage": "Quelque chose s'est mal passé de notre côté. Réessayez, ou revenez un peu plus tard.",
+    "retry": "Réessayer"
   }
 }
