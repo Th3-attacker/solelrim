@@ -359,5 +359,14 @@
     "noSales": "لا توجد مبيعات بعد.",
     "invoiceTitle": "الفاتورة",
     "printInvoice": "طباعة الفاتورة"
+  },
+  "errors": {
+    "notFoundTitle": "الصفحة غير موجودة",
+    "notFoundMessage": "هذه الصفحة غير موجودة أو لم تعد متاحة.",
+    "backToShop": "العودة إلى المتجر",
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "errorTitle": "حدث خطأ ما",
+    "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
+    "retry": "إعادة المحاولة"
   }
 }

@@ -359,5 +359,14 @@
     "noSales": "No sales yet.",
     "invoiceTitle": "Invoice",
     "printInvoice": "Print invoice"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundMessage": "This page doesn't exist or is no longer available.",
+    "backToShop": "Back to the shop",
+    "backToDashboard": "Back to dashboard",
+    "errorTitle": "Something went wrong",
+    "errorMessage": "Something broke on our end. Try again, or come back a little later.",
+    "retry": "Try again"
   }
 }
