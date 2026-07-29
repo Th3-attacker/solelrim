@@ -2,6 +2,7 @@ import { Tag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/card";
+import { SectionTitle } from "@/components/shop/section-title";
 
 type Category = { id: string; name: string };
 
@@ -12,9 +13,7 @@ export async function CategoryTiles({ categories }: { categories: Category[] }) 
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-heading-xs">
-        {t("shopByCategory")}
-      </h2>
+      <SectionTitle>{t("shopByCategory")}</SectionTitle>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {categories.map((category) => (
           <Link
