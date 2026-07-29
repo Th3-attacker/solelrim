@@ -135,6 +135,7 @@
     "shopByCategory": "Shop by category",
     "allProductsTitle": "All products",
     "loadMore": "Show more",
+    "featuredShowcaseTitle": "Our best sellers",
     "announcementBar": "Secure mobile payment · Instant WhatsApp confirmation",
     "trustPaymentTitle": "Mobile payment",
     "trustPaymentDesc": "Pay easily via Bankily or Masrivi.",
@@ -168,7 +169,10 @@
     "contactWhatsapp": "Contact us on WhatsApp",
     "aboutLink": "About",
     "contactLink": "Contact",
-    "menu": "Menu"
+    "menu": "Menu",
+    "footerShopTitle": "Shop",
+    "footerHelpTitle": "Support",
+    "footerFollowTitle": "Follow us"
   },
   "contact": {
     "metaTitle": "Contact",

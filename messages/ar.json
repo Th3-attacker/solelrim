@@ -135,6 +135,7 @@
     "shopByCategory": "تسوّق حسب الفئة",
     "allProductsTitle": "جميع المنتجات",
     "loadMore": "عرض المزيد",
+    "featuredShowcaseTitle": "الأكثر مبيعًا لدينا",
     "announcementBar": "دفع آمن عبر الهاتف · تأكيد فوري عبر واتساب",
     "trustPaymentTitle": "دفع عبر الهاتف",
     "trustPaymentDesc": "ادفع بسهولة عبر بنكيلي أو مصرفي.",
@@ -168,7 +169,10 @@
     "contactWhatsapp": "تواصل معنا عبر واتساب",
     "aboutLink": "من نحن",
     "contactLink": "تواصل معنا",
-    "menu": "القائمة"
+    "menu": "القائمة",
+    "footerShopTitle": "المتجر",
+    "footerHelpTitle": "المساعدة",
+    "footerFollowTitle": "تابعنا"
   },
   "contact": {
     "metaTitle": "تواصل معنا",
