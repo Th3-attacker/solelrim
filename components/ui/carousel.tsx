@@ -58,14 +58,39 @@ function Carousel({
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(false)
+  // canScrollPrev/canScrollNext mirror embla's own internal state — a
+  // useSyncExternalStore subscription to its "select"/"reInit" events,
+  // rather than state initialized and kept in sync from inside an effect.
+  const scrollStateRef = React.useRef({ prev: false, next: false })
 
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
+  const subscribeToScrollState = React.useCallback(
+    (onStoreChange: () => void) => {
+      if (!api) return () => {}
+      api.on("reInit", onStoreChange)
+      api.on("select", onStoreChange)
+      return () => {
+        api.off("select", onStoreChange)
+        api.off("reInit", onStoreChange)
+      }
+    },
+    [api]
+  )
+
+  const getScrollState = React.useCallback(() => {
+    const next = { prev: api?.canScrollPrev() ?? false, next: api?.canScrollNext() ?? false }
+    const cached = scrollStateRef.current
+    if (cached.prev === next.prev && cached.next === next.next) return cached
+    scrollStateRef.current = next
+    return next
+  }, [api])
+
+  const getServerScrollState = React.useCallback(() => scrollStateRef.current, [])
+
+  const { prev: canScrollPrev, next: canScrollNext } = React.useSyncExternalStore(
+    subscribeToScrollState,
+    getScrollState,
+    getServerScrollState
+  )
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev()
@@ -92,17 +117,6 @@ function Carousel({
     if (!api || !setApi) return
     setApi(api)
   }, [api, setApi])
-
-  React.useEffect(() => {
-    if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
-
-    return () => {
-      api?.off("select", onSelect)
-    }
-  }, [api, onSelect])
 
   return (
     <CarouselContext.Provider

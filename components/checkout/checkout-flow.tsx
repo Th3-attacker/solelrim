@@ -61,15 +61,18 @@ export function CheckoutFlow({
 
   // The drawer stays mounted across opens, so a fresh order after a
   // previous success shouldn't reopen straight onto the success screen.
-  useEffect(() => {
+  // Adjusted during render (on the `open` transition) rather than in an
+  // effect, per react-hooks/set-state-in-effect.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open && step === "success") {
       setStep(1);
       setCustomerInfo(null);
       setFile(null);
       setReference(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }
 
   useEffect(() => {
     if (open && cart.hydrated && cart.items.length === 0 && step !== "success") {
