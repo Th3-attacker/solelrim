@@ -238,7 +238,8 @@
     "backToCatalog": "Retour au catalogue",
     "validationError": "Merci de vérifier les informations saisies.",
     "missingScreenshotError": "Merci d'ajouter une capture d'écran du paiement.",
-    "insufficientStockError": "Stock insuffisant pour un des articles de votre commande."
+    "insufficientStockError": "Stock insuffisant pour un des articles de votre commande.",
+    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes."
   },
   "orders": {
     "title": "Commandes",

@@ -238,7 +238,8 @@
     "backToCatalog": "Back to catalog",
     "validationError": "Please check the information entered.",
     "missingScreenshotError": "Please add a payment screenshot.",
-    "insufficientStockError": "Insufficient stock for one of the items in your order."
+    "insufficientStockError": "Insufficient stock for one of the items in your order.",
+    "rateLimitedError": "Too many attempts. Please try again in a few minutes."
   },
   "orders": {
     "title": "Orders",
