@@ -7,10 +7,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 
 // Mobile gets a shorter first page (3 rows of the 2-col grid) than
-// tablet/desktop (a multiple of 3 and 4 too, so it fills a whole row of
-// their grids instead of ending on a half-empty one).
+// tablet/desktop — 8 is a clean 2 full rows on the 4-col desktop grid.
 const MOBILE_PAGE_SIZE = 6;
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 
 export function FavoritesSortedGrid({
   ids,
@@ -59,7 +58,7 @@ export function FavoritesSortedGrid({
       </div>
       {hasMore && (
         <Button
-          variant="outline"
+          size="lg"
           onClick={() => setVisibleCount((count) => count + pageSize)}
         >
           {t("loadMore")}
