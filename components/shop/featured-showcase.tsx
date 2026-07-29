@@ -21,12 +21,12 @@ export async function FeaturedShowcase({ products }: { products: Product[] }) {
     <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-6 duration-700">
       <SectionTitle>{t("featuredShowcaseTitle")}</SectionTitle>
 
-      <ScrollArea className="w-full">
+      <ScrollArea className="w-full" viewportClassName="snap-x snap-mandatory scroll-smooth">
         <div className="flex gap-4 px-1 pe-4 pb-4">
           {products.map((product) => (
             <div
               key={product.id}
-              className="flex w-[62%] shrink-0 flex-col gap-3 sm:w-[46%] sm:gap-4 desktop:w-[31%]"
+              className="group flex w-[62%] shrink-0 snap-start flex-col gap-3 sm:w-[46%] sm:gap-4 desktop:w-[31%]"
             >
               <div className="relative aspect-4/5 w-full overflow-hidden rounded-2xl bg-muted">
                 {product.images[0] ? (
@@ -34,7 +34,7 @@ export async function FeaturedShowcase({ products }: { products: Product[] }) {
                     src={getProductImageUrl(product.images[0].storagePath)}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 640px) 62vw, (max-width: 960px) 46vw, 31vw"
                   />
                 ) : (
