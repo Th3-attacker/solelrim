@@ -83,6 +83,10 @@ beforeEach(() => {
   prismaMock.rateLimitHit.count.mockResolvedValue(0);
 });
 
+// Only the first bytes matter for signature detection — this doesn't need
+// to be a fully decodable PNG.
+const PNG_MAGIC_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
 function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
   const form = new FormData();
   form.set("customerName", overrides.customerName ?? "Aicha Mint Salem");
@@ -93,10 +97,22 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
     "items",
     overrides.items ?? JSON.stringify([{ variantId: "variant-1", quantity: 2 }]),
   );
-  if (overrides.screenshot !== "none") {
+  if (overrides.screenshot === "none") {
+    // omitted
+  } else if (overrides.screenshot === "invalid-content") {
     form.set(
       "screenshot",
-      new File(["fake-bytes"], "proof.png", { type: "image/png" }),
+      new File(["not-actually-an-image"], "proof.png", { type: "image/png" }),
+    );
+  } else if (overrides.screenshot === "too-large") {
+    form.set(
+      "screenshot",
+      new File([new Uint8Array(1_600_000)], "proof.png", { type: "image/png" }),
+    );
+  } else {
+    form.set(
+      "screenshot",
+      new File([PNG_MAGIC_BYTES], "proof.png", { type: "image/png" }),
     );
   }
   return form;
@@ -141,11 +157,53 @@ describe("submitOrder", () => {
     expect(result).toEqual({ error: "insufficientStock" });
   });
 
-  it("rejects a missing or non-image payment screenshot", async () => {
+  it("rejects a missing payment screenshot", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const form = buildOrderForm({ screenshot: "none" });
     const result = await submitOrder(form);
     expect(result).toEqual({ error: "invalidFile" });
+  });
+
+  it("rejects a screenshot whose bytes don't match a real image format, regardless of its claimed type", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const form = buildOrderForm({ screenshot: "invalid-content" });
+    const result = await submitOrder(form);
+    expect(result).toEqual({ error: "invalidFile" });
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a screenshot over the size limit", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const form = buildOrderForm({ screenshot: "too-large" });
+    const result = await submitOrder(form);
+    expect(result).toEqual({ error: "invalidFile" });
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+  });
+
+  it("uploads under the detected content type and extension, not the client-claimed one", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload }) } });
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+    } as never);
+
+    // Client claims image/png via both the filename and the File.type, but
+    // the bytes are a JPEG signature — the stored file must follow the
+    // bytes, not the label.
+    const form = buildOrderForm();
+    form.set(
+      "screenshot",
+      new File([new Uint8Array([0xff, 0xd8, 0xff])], "proof.png", { type: "image/png" }),
+    );
+
+    await submitOrder(form);
+
+    expect(upload).toHaveBeenCalledTimes(1);
+    const [path, , options] = upload.mock.calls[0];
+    expect(path).toMatch(/\.jpg$/);
+    expect(options).toEqual({ contentType: "image/jpeg" });
   });
 
   it("surfaces a storage upload failure", async () => {

@@ -13,12 +13,18 @@ import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { detectImageSignature } from "@/lib/shop/image-signature";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
 // Public, unauthenticated action that accepts a file upload — capped per IP
 // so it can't be used to spam Storage or flood the admin with fake orders.
 const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 5 };
+
+// Payment screenshots are small phone captures in practice; well under the
+// Server Action's global 2mb body limit (next.config.ts), which covers the
+// whole multipart request, not just this field.
+const MAX_SCREENSHOT_BYTES = 1.5 * 1024 * 1024;
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
   const locales: readonly string[] = routing.locales;
@@ -105,16 +111,23 @@ export async function submitOrder(
   const total = subtotal;
 
   const file = formData.get("screenshot");
-  if (!(file instanceof File) || file.size === 0 || !file.type.startsWith("image/")) {
+  if (!(file instanceof File) || file.size === 0 || file.size > MAX_SCREENSHOT_BYTES) {
+    return { error: "invalidFile" };
+  }
+
+  // File.type is whatever the browser guessed from the filename — trust the
+  // actual bytes instead, so a renamed non-image can't pass as a "photo".
+  const fileBuffer = await file.arrayBuffer();
+  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  if (!detected) {
     return { error: "invalidFile" };
   }
 
   const supabase = createAdminClient();
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const storagePath = `orders/${crypto.randomUUID()}.${ext}`;
+  const storagePath = `orders/${crypto.randomUUID()}.${detected.extension}`;
   const { error: uploadError } = await supabase.storage
     .from(PAYMENT_PROOFS_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), { contentType: file.type });
+    .upload(storagePath, fileBuffer, { contentType: detected.contentType });
   if (uploadError) {
     return { error: "uploadFailed" };
   }
