@@ -6,9 +6,11 @@ import {
   getAdjacentProductSlugs,
   getProductSlugById,
 } from "@/lib/queries/shop";
+import { getStoreSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { VariantPicker } from "@/components/shop/variant-picker";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { Price } from "@/components/shop/price";
@@ -22,11 +24,15 @@ export default async function ProductDetailPage({
   params: Promise<{ productSlug: string }>;
 }) {
   const { productSlug } = await params;
-  const [t, tCommon, product] = await Promise.all([
+  const [t, tCommon, product, settings] = await Promise.all([
     getTranslations("shop"),
     getTranslations("common"),
     getActiveProductBySlug(productSlug),
+    getStoreSettings(),
   ]);
+  const productType = isProductType(settings.productType)
+    ? settings.productType
+    : DEFAULT_PRODUCT_TYPE;
 
   if (!product) {
     // Pre-slug links shared as the raw cuid still land here — redirect to
@@ -135,6 +141,7 @@ export default async function ProductDetailPage({
               productId={product.id}
               productName={product.name}
               imageStoragePath={product.images[0]?.storagePath ?? null}
+              productType={productType}
               variants={product.variants.map((variant) => ({
                 id: variant.id,
                 size: variant.size,

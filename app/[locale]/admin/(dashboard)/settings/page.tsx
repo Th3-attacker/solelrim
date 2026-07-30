@@ -5,6 +5,7 @@ import { SettingsForm } from "@/components/settings/settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
 import { HeroImageUpload } from "@/components/settings/hero-image-upload";
 import { ThemePicker } from "@/components/settings/theme-picker";
+import { ProductTypePicker } from "@/components/settings/product-type-picker";
 import { THEME_PRESETS } from "@/lib/theme/presets";
 
 export default async function SettingsPage() {
@@ -16,6 +17,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <ProductTypePicker currentProductType={settings.productType} />
       <LogoUpload
         logoUrl={
           settings.logoStoragePath

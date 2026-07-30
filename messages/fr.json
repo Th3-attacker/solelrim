@@ -85,6 +85,8 @@
     "variants": "Variantes",
     "size": "Taille",
     "color": "Couleur",
+    "sizeCosmetic": "Contenance",
+    "colorCosmetic": "Teinte",
     "sku": "Référence (SKU)",
     "stock": "Stock",
     "lowStockThreshold": "Seuil de stock faible",
@@ -312,6 +314,12 @@
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",
 
+    "productTypeSection": "Type de boutique",
+    "productTypeHint": "Change les libellés des variantes et suggère des catégories adaptées. N'affecte ni le nom du site, ni le SEO, ni le hero, ni la page À propos.",
+    "productTypes": {
+      "sport": "Sport",
+      "cosmetique": "Cosmétique"
+    },
     "themeSection": "Couleur du site",
     "themePresets": {
       "default": "Défaut",

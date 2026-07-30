@@ -192,5 +192,6 @@ model StoreSettings {
   facebookUrl         String?
   tiktokUrl           String?
   themeId             String   @default("default")
+  productType         String   @default("sport")
   updatedAt           DateTime @updatedAt
 }

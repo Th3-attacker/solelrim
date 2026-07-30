@@ -12,6 +12,7 @@ import { getVariantStockStatus } from "@/lib/shop/stock";
 import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import { useCart } from "@/components/cart/cart-provider";
 import { cn } from "@/lib/utils";
+import type { ProductType } from "@/lib/shop/product-type";
 
 type PlainVariant = {
   id: string;
@@ -27,14 +28,18 @@ export function VariantPicker({
   productName,
   imageStoragePath,
   variants,
+  productType,
 }: {
   productId: string;
   productName: string;
   imageStoragePath: string | null;
   variants: PlainVariant[];
+  productType: ProductType;
 }) {
   const t = useTranslations("products");
   const tCart = useTranslations("cart");
+  const sizeLabel = productType === "cosmetique" ? t("sizeCosmetic") : t("size");
+  const colorLabel = productType === "cosmetique" ? t("colorCosmetic") : t("color");
 
   const { addItem } = useCart();
 
@@ -85,7 +90,7 @@ export function VariantPicker({
     <div className="flex flex-col gap-4">
       {sizes.length > 1 && (
         <div>
-          <p className="mb-2 text-sm font-medium">{t("size")}</p>
+          <p className="mb-2 text-sm font-medium">{sizeLabel}</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => (
               <Button
@@ -106,7 +111,7 @@ export function VariantPicker({
       <div className="divide-y divide-border rounded-lg border">
         {colors.length > 1 && (
           <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-sm font-medium">{t("color")}</p>
+            <p className="text-sm font-medium">{colorLabel}</p>
             <div className="flex items-center gap-2">
               {colors.map((color) => {
                 const available = isColorAvailable(color);

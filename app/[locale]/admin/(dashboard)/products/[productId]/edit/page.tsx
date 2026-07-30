@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getProductById, getAllCategories } from "@/lib/queries/products";
+import { getStoreSettings } from "@/lib/queries/settings";
 import { ProductForm } from "@/components/products/product-form";
 import { ProductImageManager } from "@/components/products/product-image-manager";
 import type { ProductInput } from "@/lib/validation/product";
+import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 
 export default async function EditProductPage({
   params,
@@ -11,15 +13,20 @@ export default async function EditProductPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const [t, product, categories] = await Promise.all([
+  const [t, product, categories, settings] = await Promise.all([
     getTranslations("products"),
     getProductById(productId),
     getAllCategories(),
+    getStoreSettings(),
   ]);
 
   if (!product) {
     notFound();
   }
+
+  const productType = isProductType(settings.productType)
+    ? settings.productType
+    : DEFAULT_PRODUCT_TYPE;
 
   const defaultValues: ProductInput = {
     name: product.name,
@@ -53,6 +60,7 @@ export default async function EditProductPage({
         categories={categories}
         defaultValues={defaultValues}
         productId={product.id}
+        productType={productType}
       />
     </div>
   );

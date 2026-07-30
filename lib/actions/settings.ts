@@ -6,6 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
 import { THEME_PRESETS } from "@/lib/theme/presets";
+import {
+  isProductType,
+  SUGGESTED_CATEGORIES,
+  THEME_BY_PRODUCT_TYPE,
+} from "@/lib/shop/product-type";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -186,6 +191,37 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
   });
 
   revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setProductType(productType: string): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  if (!isProductType(productType)) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeSettings.upsert({
+    where: { id: "singleton" },
+    update: { productType, themeId: THEME_BY_PRODUCT_TYPE[productType] },
+    create: {
+      id: "singleton",
+      productType,
+      themeId: THEME_BY_PRODUCT_TYPE[productType],
+    },
+  });
+
+  // Additive only — never renames or deletes an existing category, so
+  // switching back and forth never touches categories already in use by
+  // real products.
+  await prisma.category.createMany({
+    data: SUGGESTED_CATEGORIES[productType].map((name) => ({ name })),
+    skipDuplicates: true,
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/admin/products");
   revalidatePath("/", "layout");
   return {};
 }
