@@ -17,6 +17,7 @@ import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getStoreSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, settings] = await Promise.all([
@@ -76,10 +77,18 @@ export default async function ShopLayout({
     ? `https://wa.me/${settings.adminWhatsappNumber.replace(/\D/g, "")}`
     : null;
 
+  const theme = getThemePreset(settings.themeId);
+
   return (
     <FavoritesProvider>
       <CartProvider>
         <CheckoutDrawerProvider>
+          {settings.themeId !== DEFAULT_THEME_ID && (
+            <style>{`
+              .shop-theme { --primary: ${theme.light.primary}; --primary-foreground: ${theme.light.primaryForeground}; --ring: ${theme.light.ring}; }
+              .dark .shop-theme { --primary: ${theme.dark.primary}; --primary-foreground: ${theme.dark.primaryForeground}; --ring: ${theme.dark.ring}; }
+            `}</style>
+          )}
           <div className="shop-theme flex min-h-screen flex-col">
             <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
               {announcementText}

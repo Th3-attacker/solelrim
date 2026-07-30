@@ -311,10 +311,16 @@
     "brandingSection": "Store",
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
-    "heroSection": "Hero",
-    "heroImage": "Cover image",
-    "heroTitle": "Title",
-    "heroSubtitle": "Subtitle",
+
+    "themeSection": "Site color",
+    "themePresets": {
+      "default": "Default",
+      "amber": "Amber",
+      "rose": "Powder pink",
+      "sage": "Sage",
+      "navy": "Navy"
+    },
+
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",

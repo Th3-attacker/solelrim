@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
+import { THEME_PRESETS } from "@/lib/theme/presets";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -103,66 +104,19 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   return {};
 }
 
-export async function uploadStoreHeroImage(
-  formData: FormData,
-): Promise<{ error?: string }> {
+
+export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
   await requireAdmin();
 
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
+  if (!THEME_PRESETS.some((preset) => preset.id === themeId)) {
     return { error: "invalid" };
-  }
-
-  const ext = file.name.split(".").pop() ?? "png";
-  const storagePath = `branding/hero-${crypto.randomUUID()}.${ext}`;
-
-  const supabase = createAdminClient();
-  const { error: uploadError } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), {
-      contentType: file.type,
-    });
-
-  if (uploadError) {
-    return { error: "uploadFailed" };
-  }
-
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
-  if (existing?.heroImagePath) {
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.heroImagePath]);
   }
 
   await prisma.storeSettings.upsert({
     where: { id: "singleton" },
-    update: { heroImagePath: storagePath },
-    create: { id: "singleton", heroImagePath: storagePath },
-  });
+    update: { themeId },
+    create: { id: "singleton", themeId },
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
-  return {};
-}
-
-export async function removeStoreHeroImage(): Promise<{ error?: string }> {
-  await requireAdmin();
-
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
-  if (existing?.heroImagePath) {
-    const supabase = createAdminClient();
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.heroImagePath]);
-  }
-
-  await prisma.storeSettings.update({
-    where: { id: "singleton" },
-    data: { heroImagePath: null },
   });
 
   revalidatePath("/admin/settings");
