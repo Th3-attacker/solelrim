@@ -216,7 +216,7 @@ export async function setProductType(productType: string): Promise<{ error?: str
   // switching back and forth never touches categories already in use by
   // real products.
   await prisma.category.createMany({
-    data: SUGGESTED_CATEGORIES[productType].map((name) => ({ name })),
+    data: SUGGESTED_CATEGORIES[productType].map((name) => ({ name, productType })),
     skipDuplicates: true,
   });
 

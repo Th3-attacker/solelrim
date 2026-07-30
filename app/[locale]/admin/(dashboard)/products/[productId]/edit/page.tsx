@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getProductById, getAllCategories } from "@/lib/queries/products";
+import {
+  getProductById,
+  getAllCategories,
+  getCategoryById,
+} from "@/lib/queries/products";
 import { getStoreSettings } from "@/lib/queries/settings";
 import { ProductForm } from "@/components/products/product-form";
 import { ProductImageManager } from "@/components/products/product-image-manager";
@@ -13,10 +17,9 @@ export default async function EditProductPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const [t, product, categories, settings] = await Promise.all([
+  const [t, product, settings] = await Promise.all([
     getTranslations("products"),
     getProductById(productId),
-    getAllCategories(),
     getStoreSettings(),
   ]);
 
@@ -27,6 +30,19 @@ export default async function EditProductPage({
   const productType = isProductType(settings.productType)
     ? settings.productType
     : DEFAULT_PRODUCT_TYPE;
+
+  let categories = await getAllCategories(productType);
+  if (!categories.some((category) => category.id === product.categoryId)) {
+    // The product's own category may be tagged for the other type (e.g. it
+    // was assigned before the last switch) — keep it selectable so editing
+    // never shows a blank/invalid category.
+    const currentCategory = await getCategoryById(product.categoryId);
+    if (currentCategory) {
+      categories = [...categories, currentCategory].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+    }
+  }
 
   const defaultValues: ProductInput = {
     name: product.name,

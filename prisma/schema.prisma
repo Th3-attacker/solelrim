@@ -24,10 +24,15 @@ enum OrderStatus {
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  name        String    @unique
+  // null = generic, shown regardless of the active store product type.
+  // Set only on categories created by the type switch (setProductType) —
+  // never backfilled on pre-existing categories, so nothing already in
+  // use disappears from the picker.
+  productType String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
 }
 
 model Product {
