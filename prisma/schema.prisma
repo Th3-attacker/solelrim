@@ -188,5 +188,6 @@ model StoreSettings {
   instagramUrl        String?
   facebookUrl         String?
   tiktokUrl           String?
+  themeId             String   @default("default")
   updatedAt           DateTime @updatedAt
 }

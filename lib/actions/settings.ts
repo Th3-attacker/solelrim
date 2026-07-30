@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
+import { THEME_PRESETS } from "@/lib/theme/presets";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -96,6 +97,24 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   await prisma.storeSettings.update({
     where: { id: "singleton" },
     data: { logoStoragePath: null },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
+  await requireAdmin();
+
+  if (!THEME_PRESETS.some((preset) => preset.id === themeId)) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeSettings.upsert({
+    where: { id: "singleton" },
+    update: { themeId },
+    create: { id: "singleton", themeId },
   });
 
   revalidatePath("/admin/settings");

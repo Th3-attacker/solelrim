@@ -311,6 +311,14 @@
     "brandingSection": "Boutique",
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",
+    "themeSection": "Couleur du site",
+    "themePresets": {
+      "default": "Défaut",
+      "amber": "Ambre",
+      "rose": "Rose poudré",
+      "sage": "Sauge",
+      "navy": "Marine"
+    },
     "seoSection": "Référencement (SEO)",
     "seoTitle": "Titre de la page",
     "seoDescription": "Description",

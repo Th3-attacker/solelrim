@@ -311,6 +311,14 @@
     "brandingSection": "المتجر",
     "siteName": "اسم الموقع",
     "announcementText": "نص شريط الإعلانات",
+    "themeSection": "لون الموقع",
+    "themePresets": {
+      "default": "افتراضي",
+      "amber": "كهرماني",
+      "rose": "وردي فاتح",
+      "sage": "أخضر مريمي",
+      "navy": "كحلي"
+    },
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",

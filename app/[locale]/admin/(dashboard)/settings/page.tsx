@@ -3,6 +3,8 @@ import { getStoreSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
+import { ThemePicker } from "@/components/settings/theme-picker";
+import { THEME_PRESETS } from "@/lib/theme/presets";
 
 export default async function SettingsPage() {
   const [t, settings] = await Promise.all([
@@ -20,6 +22,7 @@ export default async function SettingsPage() {
             : null
         }
       />
+      <ThemePicker presets={THEME_PRESETS} currentThemeId={settings.themeId} />
       <SettingsForm
         defaultValues={{
           bankilyNumber: settings.bankilyNumber ?? "",
