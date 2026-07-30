@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { getStoreSettings } from "@/lib/queries/settings";
-import { getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getStoreLogoUrl, getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
+
 import { ThemePicker } from "@/components/settings/theme-picker";
 import { THEME_PRESETS } from "@/lib/theme/presets";
 
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
             : null
         }
       />
+
       <ThemePicker presets={THEME_PRESETS} currentThemeId={settings.themeId} />
       <SettingsForm
         defaultValues={{
@@ -31,6 +33,8 @@ export default async function SettingsPage() {
           paymentInstructions: settings.paymentInstructions ?? "",
           siteName: settings.siteName ?? "",
           announcementText: settings.announcementText ?? "",
+          heroTitle: settings.heroTitle ?? "",
+          heroSubtitle: settings.heroSubtitle ?? "",
           seoTitle: settings.seoTitle ?? "",
           seoDescription: settings.seoDescription ?? "",
           instagramUrl: settings.instagramUrl ?? "",

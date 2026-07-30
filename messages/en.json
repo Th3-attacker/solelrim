@@ -311,6 +311,7 @@
     "brandingSection": "Store",
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
+
     "themeSection": "Site color",
     "themePresets": {
       "default": "Default",
@@ -319,6 +320,7 @@
       "sage": "Sage",
       "navy": "Navy"
     },
+
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",

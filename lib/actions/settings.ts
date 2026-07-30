@@ -104,6 +104,7 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   return {};
 }
 
+
 export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
   await requireAdmin();
 
@@ -115,6 +116,7 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
     where: { id: "singleton" },
     update: { themeId },
     create: { id: "singleton", themeId },
+
   });
 
   revalidatePath("/admin/settings");
