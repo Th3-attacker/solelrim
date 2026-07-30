@@ -5,14 +5,14 @@ import { ProductForm } from "@/components/products/product-form";
 import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 
 export default async function NewProductPage() {
-  const [t, categories, settings] = await Promise.all([
+  const [t, settings] = await Promise.all([
     getTranslations("products"),
-    getAllCategories(),
     getStoreSettings(),
   ]);
   const productType = isProductType(settings.productType)
     ? settings.productType
     : DEFAULT_PRODUCT_TYPE;
+  const categories = await getAllCategories(productType);
 
   return (
     <div className="flex flex-col gap-6">

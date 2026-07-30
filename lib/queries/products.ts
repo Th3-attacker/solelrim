@@ -21,6 +21,15 @@ export function getProductById(id: string) {
   });
 }
 
-export function getAllCategories() {
-  return prisma.category.findMany({ orderBy: { name: "asc" } });
+export function getAllCategories(activeProductType?: string) {
+  return prisma.category.findMany({
+    where: activeProductType
+      ? { OR: [{ productType: null }, { productType: activeProductType }] }
+      : undefined,
+    orderBy: { name: "asc" },
+  });
+}
+
+export function getCategoryById(id: string) {
+  return prisma.category.findUnique({ where: { id } });
 }
