@@ -104,6 +104,23 @@ export function SettingsForm({
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-base">{t("heroSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
+            <Input id="heroTitle" {...register("heroTitle")} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
+            <Input id="heroSubtitle" {...register("heroSubtitle")} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-base">{t("seoSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">

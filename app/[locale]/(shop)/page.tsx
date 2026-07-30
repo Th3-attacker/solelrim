@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/shop/product-card";
 import { SectionTitle } from "@/components/shop/section-title";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { getStoreSettings } from "@/lib/queries/settings";
 import {
   filterByColor,
   filterByPriceBucket,
@@ -27,10 +28,11 @@ export default async function ShopHomePage({
   }>;
 }) {
   const { category, sort, price, color, q } = await searchParams;
-  const [t, allProducts, categories] = await Promise.all([
+  const [t, allProducts, categories, settings] = await Promise.all([
     getTranslations("shop"),
     getActiveProducts(),
     getAllShopCategories(),
+    getStoreSettings(),
   ]);
 
   let displayedProducts = category
@@ -55,7 +57,7 @@ export default async function ShopHomePage({
 
   return (
     <div className="flex flex-col gap-14">
-      <HeroSection products={allProducts} />
+      <HeroSection settings={settings} />
 
       <CategoryFilters
         categoryBreadcrumb={

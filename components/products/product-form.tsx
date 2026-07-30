@@ -16,6 +16,7 @@ import { CategorySelect } from "@/components/products/category-select";
 import { VariantFields } from "@/components/products/variant-fields";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { createProduct, updateProduct } from "@/lib/actions/products";
+import type { ProductType } from "@/lib/shop/product-type";
 
 type Category = { id: string; name: string };
 type ProductFormValues = z.input<typeof productSchema>;
@@ -24,10 +25,12 @@ export function ProductForm({
   categories,
   defaultValues,
   productId,
+  productType,
 }: {
   categories: Category[];
   defaultValues?: ProductInput;
   productId?: string;
+  productType: ProductType;
 }) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
@@ -144,7 +147,12 @@ export function ProductForm({
 
       <Card>
         <CardContent className="pt-6">
-          <VariantFields control={control} register={register} errors={errors} />
+          <VariantFields
+            control={control}
+            register={register}
+            errors={errors}
+            productType={productType}
+          />
         </CardContent>
       </Card>
 

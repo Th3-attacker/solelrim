@@ -85,6 +85,8 @@
     "variants": "المتغيرات",
     "size": "المقاس",
     "color": "اللون",
+    "sizeCosmetic": "الحجم",
+    "colorCosmetic": "درجة اللون",
     "sku": "رمز المنتج (SKU)",
     "stock": "المخزون",
     "lowStockThreshold": "حد المخزون المنخفض",
@@ -311,6 +313,22 @@
     "brandingSection": "المتجر",
     "siteName": "اسم الموقع",
     "announcementText": "نص شريط الإعلانات",
+
+    "productTypeSection": "نوع المتجر",
+    "productTypeHint": "يغيّر تسميات المتغيرات ويقترح فئات مناسبة. لا يؤثر على اسم الموقع أو تحسين محركات البحث أو الصورة الرئيسية أو صفحة من نحن.",
+    "productTypes": {
+      "sport": "رياضة",
+      "cosmetique": "مستحضرات تجميل"
+    },
+    "themeSection": "لون الموقع",
+    "themePresets": {
+      "default": "افتراضي",
+      "amber": "كهرماني",
+      "rose": "وردي فاتح",
+      "sage": "أخضر مريمي",
+      "navy": "كحلي"
+    },
+
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",
