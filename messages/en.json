@@ -85,6 +85,8 @@
     "variants": "Variants",
     "size": "Size",
     "color": "Color",
+    "sizeCosmetic": "Volume",
+    "colorCosmetic": "Shade",
     "sku": "SKU",
     "stock": "Stock",
     "lowStockThreshold": "Low stock threshold",
@@ -312,6 +314,12 @@
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
 
+    "productTypeSection": "Store type",
+    "productTypeHint": "Changes the variant labels and suggests matching categories. Does not affect the site name, SEO, hero, or the About page.",
+    "productTypes": {
+      "sport": "Sport",
+      "cosmetique": "Cosmetics"
+    },
     "themeSection": "Site color",
     "themePresets": {
       "default": "Default",
