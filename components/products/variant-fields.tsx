@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { productSchema } from "@/lib/validation/product";
+import type { ProductType } from "@/lib/shop/product-type";
 
 type ProductFormValues = z.input<typeof productSchema>;
 
@@ -20,13 +21,17 @@ export function VariantFields({
   control,
   register,
   errors,
+  productType,
 }: {
   control: Control<ProductFormValues>;
   register: UseFormRegister<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
+  productType: ProductType;
 }) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
+  const sizeLabel = productType === "cosmetique" ? t("sizeCosmetic") : t("size");
+  const colorLabel = productType === "cosmetique" ? t("colorCosmetic") : t("color");
   const { fields, append, remove } = useFieldArray({
     control,
     name: "variants",
@@ -67,11 +72,11 @@ export function VariantFields({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-6"
           >
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">{t("size")}</Label>
+              <Label className="text-xs">{sizeLabel}</Label>
               <Input {...register(`variants.${index}.size`)} />
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">{t("color")}</Label>
+              <Label className="text-xs">{colorLabel}</Label>
               <Input {...register(`variants.${index}.color`)} />
             </div>
             <div className="flex flex-col gap-1">
