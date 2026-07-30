@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { getStoreSettings } from "@/lib/queries/settings";
-import { getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getStoreLogoUrl, getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
+import { HeroImageUpload } from "@/components/settings/hero-image-upload";
 
 export default async function SettingsPage() {
   const [t, settings] = await Promise.all([
@@ -20,6 +21,13 @@ export default async function SettingsPage() {
             : null
         }
       />
+      <HeroImageUpload
+        heroImageUrl={
+          settings.heroImagePath
+            ? getStoreHeroImageUrl(settings.heroImagePath)
+            : null
+        }
+      />
       <SettingsForm
         defaultValues={{
           bankilyNumber: settings.bankilyNumber ?? "",
@@ -28,6 +36,8 @@ export default async function SettingsPage() {
           paymentInstructions: settings.paymentInstructions ?? "",
           siteName: settings.siteName ?? "",
           announcementText: settings.announcementText ?? "",
+          heroTitle: settings.heroTitle ?? "",
+          heroSubtitle: settings.heroSubtitle ?? "",
           seoTitle: settings.seoTitle ?? "",
           seoDescription: settings.seoDescription ?? "",
           instagramUrl: settings.instagramUrl ?? "",

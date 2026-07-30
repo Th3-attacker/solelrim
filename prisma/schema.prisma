@@ -183,6 +183,9 @@ model StoreSettings {
   siteName            String?
   logoStoragePath     String?
   announcementText    String?
+  heroImagePath       String?
+  heroTitle           String?
+  heroSubtitle        String?
   seoTitle            String?
   seoDescription      String?
   instagramUrl        String?

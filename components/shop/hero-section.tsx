@@ -1,25 +1,18 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { HeroCarousel } from "@/components/shop/hero-carousel";
-import { getProductImageUrl } from "@/lib/supabase/storage";
-import type { getActiveProducts } from "@/lib/queries/shop";
+import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
 
-type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
+type HeroSettings = {
+  heroImagePath: string | null;
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+};
 
-export async function HeroSection({ products }: { products: Product[] }) {
+export async function HeroSection({ settings }: { settings: HeroSettings }) {
   const t = await getTranslations("shop");
 
-  // Only products with a real photo can headline the hero — a placeholder
-  // "Solelrim" tile would look broken blown up this large. `products` is
-  // already ordered newest-first (getActiveProducts), so filtering keeps
-  // that order — the 3 most recently added photographed products.
-  const spotlight = products
-    .filter((product) => product.images.length > 0)
-    .slice(0, 3);
-
-  if (spotlight.length === 0) {
+  if (!settings.heroImagePath) {
     return (
       <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-6 py-20 text-center sm:py-28">
         <span
@@ -50,42 +43,37 @@ export async function HeroSection({ products }: { products: Product[] }) {
     );
   }
 
-  const slides = spotlight.map((product) => (
-    <div key={product.id} className="grid md:min-h-110 md:grid-cols-2">
-      <div className="flex flex-col justify-center gap-4 p-8 md:p-12 md:pb-20">
-        <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          {product.category.name}
-        </span>
-        <h1 className="text-heading-md text-balance sm:text-heading-lg md:text-heading-xl">
-          {product.name}
-        </h1>
-        {product.description && (
-          <p className="max-w-sm text-paragraph-sm text-muted-foreground sm:text-paragraph-md">
-            {product.description}
+  return (
+    <div className="relative min-h-110 overflow-hidden rounded-3xl bg-muted">
+      <Image
+        src={getStoreHeroImageUrl(settings.heroImagePath)}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="100vw"
+        priority
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
+      />
+      <div className="relative flex min-h-110 flex-col justify-end gap-4 p-8 md:p-12">
+        {settings.heroTitle && (
+          <h1 className="max-w-2xl text-heading-lg text-balance text-white sm:text-heading-xl">
+            {settings.heroTitle}
+          </h1>
+        )}
+        {settings.heroSubtitle && (
+          <p className="max-w-md text-paragraph-md text-white/80 sm:text-paragraph-lg">
+            {settings.heroSubtitle}
           </p>
         )}
         <div>
-          <Button asChild size="lg">
-            <Link href={`/products/${product.slug}`}>{t("heroShopProduct")}</Link>
+          <Button asChild size="lg" className="mt-2">
+            <a href="#catalog">{t("heroCta")}</a>
           </Button>
         </div>
       </div>
-      <div className="relative h-64 md:h-auto">
-        <Image
-          src={getProductImageUrl(product.images[0].storagePath)}
-          alt={product.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
-          priority
-        />
-      </div>
-    </div>
-  ));
-
-  return (
-    <div className="relative overflow-hidden rounded-3xl bg-muted">
-      <HeroCarousel>{slides}</HeroCarousel>
     </div>
   );
 }

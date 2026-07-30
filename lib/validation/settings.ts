@@ -7,6 +7,8 @@ export const settingsSchema = z.object({
   paymentInstructions: z.string().optional(),
   siteName: z.string().optional(),
   announcementText: z.string().optional(),
+  heroTitle: z.string().optional(),
+  heroSubtitle: z.string().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   instagramUrl: z.string().optional(),
