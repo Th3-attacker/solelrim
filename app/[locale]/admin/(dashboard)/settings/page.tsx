@@ -3,7 +3,7 @@ import { getStoreSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl, getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
-
+import { HeroImageUpload } from "@/components/settings/hero-image-upload";
 import { ThemePicker } from "@/components/settings/theme-picker";
 import { THEME_PRESETS } from "@/lib/theme/presets";
 
@@ -23,7 +23,13 @@ export default async function SettingsPage() {
             : null
         }
       />
-
+      <HeroImageUpload
+        heroImageUrl={
+          settings.heroImagePath
+            ? getStoreHeroImageUrl(settings.heroImagePath)
+            : null
+        }
+      />
       <ThemePicker presets={THEME_PRESETS} currentThemeId={settings.themeId} />
       <SettingsForm
         defaultValues={{
