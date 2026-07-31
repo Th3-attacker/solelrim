@@ -329,6 +329,18 @@
       "navy": "Navy"
     },
 
+    "heroSection": "Hero",
+    "heroImage": "Hero photo",
+    "heroImagePosition": "Photo position",
+    "heroImagePositionLeft": "Left",
+    "heroImagePositionRight": "Right",
+    "heroBadgeText": "Badge (above the title)",
+    "heroBadgeTextPlaceholder": "E.g. New collection",
+    "heroTitle": "Title",
+    "heroSubtitle": "Subtitle",
+    "heroCtaLabel": "Button text",
+    "heroCtaLabelPlaceholder": "E.g. Shop the collection",
+
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",

@@ -43,6 +43,10 @@ export default async function SettingsPage() {
           announcementText: settings.announcementText ?? "",
           heroTitle: settings.heroTitle ?? "",
           heroSubtitle: settings.heroSubtitle ?? "",
+          heroBadgeText: settings.heroBadgeText ?? "",
+          heroCtaLabel: settings.heroCtaLabel ?? "",
+          heroImagePosition:
+            settings.heroImagePosition === "left" ? "left" : "right",
           seoTitle: settings.seoTitle ?? "",
           seoDescription: settings.seoDescription ?? "",
           instagramUrl: settings.instagramUrl ?? "",

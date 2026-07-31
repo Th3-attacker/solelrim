@@ -10,6 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
 import { updateStoreSettings } from "@/lib/actions/settings";
 
@@ -25,6 +32,8 @@ export function SettingsForm({
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<SettingsInput>({
     resolver: zodResolver(settingsSchema),
@@ -108,13 +117,53 @@ export function SettingsForm({
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
+            <Label htmlFor="heroBadgeText">{t("heroBadgeText")}</Label>
+            <Input
+              id="heroBadgeText"
+              placeholder={t("heroBadgeTextPlaceholder")}
+              {...register("heroBadgeText")}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
+            <Select
+              value={watch("heroImagePosition") ?? "right"}
+              onValueChange={(value) =>
+                setValue("heroImagePosition", value as "left" | "right")
+              }
+            >
+              <SelectTrigger id="heroImagePosition" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="right">
+                  {t("heroImagePositionRight")}
+                </SelectItem>
+                <SelectItem value="left">
+                  {t("heroImagePositionLeft")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
             <Input id="heroTitle" {...register("heroTitle")} />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
             <Input id="heroSubtitle" {...register("heroSubtitle")} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroCtaLabel">{t("heroCtaLabel")}</Label>
+            <Input
+              id="heroCtaLabel"
+              placeholder={t("heroCtaLabelPlaceholder")}
+              {...register("heroCtaLabel")}
+            />
           </div>
         </CardContent>
       </Card>

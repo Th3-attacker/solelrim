@@ -329,6 +329,18 @@
       "navy": "Marine"
     },
 
+    "heroSection": "Hero",
+    "heroImage": "Photo du hero",
+    "heroImagePosition": "Position de la photo",
+    "heroImagePositionLeft": "À gauche",
+    "heroImagePositionRight": "À droite",
+    "heroBadgeText": "Badge (au-dessus du titre)",
+    "heroBadgeTextPlaceholder": "Ex. Nouvelle collection",
+    "heroTitle": "Titre",
+    "heroSubtitle": "Sous-titre",
+    "heroCtaLabel": "Texte du bouton",
+    "heroCtaLabelPlaceholder": "Ex. Voir la collection",
+
     "seoSection": "Référencement (SEO)",
     "seoTitle": "Titre de la page",
     "seoDescription": "Description",

@@ -329,6 +329,18 @@
       "navy": "كحلي"
     },
 
+    "heroSection": "الصورة الرئيسية",
+    "heroImage": "صورة الهيرو",
+    "heroImagePosition": "موضع الصورة",
+    "heroImagePositionLeft": "يسار",
+    "heroImagePositionRight": "يمين",
+    "heroBadgeText": "الشارة (فوق العنوان)",
+    "heroBadgeTextPlaceholder": "مثال: تشكيلة جديدة",
+    "heroTitle": "العنوان",
+    "heroSubtitle": "العنوان الفرعي",
+    "heroCtaLabel": "نص الزر",
+    "heroCtaLabelPlaceholder": "مثال: تسوّق التشكيلة",
+
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",

@@ -189,8 +189,11 @@ model StoreSettings {
   logoStoragePath     String?
   announcementText    String?
   heroImagePath       String?
+  heroImagePosition   String   @default("right")
   heroTitle           String?
   heroSubtitle        String?
+  heroBadgeText       String?
+  heroCtaLabel        String?
   seoTitle            String?
   seoDescription      String?
   instagramUrl        String?
