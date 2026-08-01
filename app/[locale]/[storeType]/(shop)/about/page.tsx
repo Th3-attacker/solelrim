@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { getActiveProducts } from "@/lib/queries/shop";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,17 +16,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function AboutPage() {
-  const [t, tShop, products, settings] = await Promise.all([
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}) {
+  const { storeType } = await params;
+  const [t, tShop, boutique] = await Promise.all([
     getTranslations("about"),
     getTranslations("shop"),
-    getActiveProducts(),
-    getStoreSettings(),
+    getPublicBoutiqueSettings(storeType),
   ]);
+  const products = await getActiveProducts(storeType);
 
   const spotlight = products.filter((product) => product.images.length > 0).slice(0, 3);
-  const whatsappHref = settings.adminWhatsappNumber
-    ? `https://wa.me/${settings.adminWhatsappNumber.replace(/\D/g, "")}`
+  const whatsappHref = boutique.adminWhatsappNumber
+    ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
     : null;
 
   return (
@@ -71,7 +76,7 @@ export default async function AboutPage() {
             {spotlight.map((product) => (
               <Link
                 key={product.id}
-                href={`/products/${product.slug}`}
+                href={`/${storeType}/products/${product.slug}`}
                 className="group flex flex-col gap-2"
               >
                 <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
@@ -125,7 +130,9 @@ export default async function AboutPage() {
             </Button>
           )}
           <Button asChild size="lg" variant="outline">
-            <Link href={{ pathname: "/", hash: "catalog" }}>{t("ctaButton")}</Link>
+            <Link href={{ pathname: `/${storeType}`, hash: "catalog" }}>
+              {t("ctaButton")}
+            </Link>
           </Button>
         </div>
       </div>

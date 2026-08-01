@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-export function getActiveProducts(categoryId?: string) {
+export function getActiveProducts(productType: string, categoryId?: string) {
   return prisma.product.findMany({
-    where: { isActive: true, ...(categoryId ? { categoryId } : {}) },
+    where: { isActive: true, productType, ...(categoryId ? { categoryId } : {}) },
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
@@ -12,13 +12,16 @@ export function getActiveProducts(categoryId?: string) {
   });
 }
 
-export function getAllShopCategories() {
-  return prisma.category.findMany({ orderBy: { name: "asc" } });
+export function getAllShopCategories(productType: string) {
+  return prisma.category.findMany({
+    where: { OR: [{ productType: null }, { productType }] },
+    orderBy: { name: "asc" },
+  });
 }
 
-export function getActiveProductBySlug(slug: string) {
+export function getActiveProductBySlug(slug: string, productType: string) {
   return prisma.product.findFirst({
-    where: { slug, isActive: true },
+    where: { slug, isActive: true, productType },
     include: {
       category: true,
       images: { orderBy: { position: "asc" } },
@@ -40,9 +43,10 @@ export function getProductSlugById(id: string) {
 export async function getAdjacentProductSlugs(
   categoryId: string,
   currentProductId: string,
+  productType: string,
 ): Promise<{ prevSlug: string | null; nextSlug: string | null }> {
   const siblings = await prisma.product.findMany({
-    where: { isActive: true, categoryId },
+    where: { isActive: true, categoryId, productType },
     select: { id: true, slug: true },
     orderBy: { createdAt: "desc" },
   });

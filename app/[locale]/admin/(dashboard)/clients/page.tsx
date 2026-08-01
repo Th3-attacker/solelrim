@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllClients } from "@/lib/queries/clients";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,9 +14,10 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminClientsPage() {
+  const scope = await getAdminScope();
   const [t, clients] = await Promise.all([
     getTranslations("clients"),
-    getAllClients(),
+    getAllClients(scope),
   ]);
 
   return (

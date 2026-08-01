@@ -5,11 +5,10 @@ import {
   getAllCategories,
   getCategoryById,
 } from "@/lib/queries/products";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ProductForm } from "@/components/products/product-form";
 import { ProductImageManager } from "@/components/products/product-image-manager";
 import type { ProductInput } from "@/lib/validation/product";
-import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 
 export default async function EditProductPage({
   params,
@@ -17,19 +16,15 @@ export default async function EditProductPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const [t, product, settings] = await Promise.all([
+  const productType = await getAdminScope();
+  const [t, product] = await Promise.all([
     getTranslations("products"),
-    getProductById(productId),
-    getStoreSettings(),
+    getProductById(productId, productType),
   ]);
 
   if (!product) {
     notFound();
   }
-
-  const productType = isProductType(settings.productType)
-    ? settings.productType
-    : DEFAULT_PRODUCT_TYPE;
 
   let categories = await getAllCategories(productType);
   if (!categories.some((category) => category.id === product.categoryId)) {

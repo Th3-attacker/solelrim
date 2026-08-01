@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getStoreTypes } from "@/lib/queries/settings";
 import {
   cancelReasonSchema,
   checkoutCustomerSchema,
@@ -14,6 +14,7 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { detectImageSignature } from "@/lib/shop/image-signature";
+import { requireAdminScope } from "@/lib/shop/admin-scope";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -31,14 +32,6 @@ function resolveOrderLocale(value: FormDataEntryValue | null): string {
   return typeof value === "string" && locales.includes(value)
     ? value
     : routing.defaultLocale;
-}
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
 }
 
 export type SubmitOrderResult = {
@@ -66,6 +59,19 @@ export async function submitOrder(
   }
   const locale = resolveOrderLocale(formData.get("locale"));
 
+  // The checkout form sends the boutique it was submitted from (the URL's
+  // [storeType] segment) — client-supplied, so it's only trusted once
+  // checked against the real registry, same as any other form input.
+  const requestedProductType = formData.get("productType");
+  const storeTypes = await getStoreTypes();
+  if (
+    typeof requestedProductType !== "string" ||
+    !storeTypes.some((type) => type.key === requestedProductType)
+  ) {
+    return { error: "invalid" };
+  }
+  const productType = requestedProductType;
+
   let rawItems: unknown;
   try {
     rawItems = JSON.parse(String(formData.get("items") ?? "[]"));
@@ -85,6 +91,13 @@ export async function submitOrder(
   const variantById = new Map(variants.map((v) => [v.id, v]));
 
   if (variantById.size !== new Set(variantIds).size) {
+    return { error: "invalid" };
+  }
+
+  // The cart is scoped to one boutique client-side (per-boutique localStorage
+  // key), but nothing stops a crafted request from mixing variant ids across
+  // boutiques — reject rather than create an order that misattributes one.
+  if (variants.some((v) => v.product.productType !== productType)) {
     return { error: "invalid" };
   }
 
@@ -145,6 +158,7 @@ export async function submitOrder(
           total,
           paymentProofPath: storagePath,
           locale,
+          productType,
           items: {
             create: orderItems.map((i) => ({
               variantId: i.variantId,
@@ -171,12 +185,12 @@ export async function submitOrder(
 export async function confirmOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   try {
     await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
+      const order = await tx.order.findFirst({
+        where: { id: orderId, productType },
         include: { items: true },
       });
       if (!order) throw new Error("notFound");
@@ -223,7 +237,7 @@ export async function rejectOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const parsed = cancelReasonSchema.safeParse({ reason });
   if (!parsed.success) {
@@ -231,7 +245,7 @@ export async function rejectOrder(
   }
 
   const updated = await prisma.order.updateMany({
-    where: { id: orderId, status: "PENDING" },
+    where: { id: orderId, status: "PENDING", productType },
     data: {
       status: "REJECTED",
       rejectedAt: new Date(),
@@ -250,10 +264,10 @@ export async function rejectOrder(
 export async function shipOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const updated = await prisma.order.updateMany({
-    where: { id: orderId, status: "CONFIRMED" },
+    where: { id: orderId, status: "CONFIRMED", productType },
     data: { status: "SHIPPING", shippedAt: new Date() },
   });
   if (updated.count === 0) {
@@ -274,35 +288,15 @@ const BEST_SELLER_COUNT = 5;
 export async function deliverOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   try {
     await prisma.$transaction(async (tx) => {
       const updated = await tx.order.updateMany({
-        where: { id: orderId, status: "SHIPPING" },
+        where: { id: orderId, status: "SHIPPING", productType },
         data: { status: "DELIVERED", deliveredAt: new Date() },
       });
       if (updated.count === 0) throw new Error("invalidTransition");
-
-      const topProducts = await tx.$queryRaw<{ productId: string }[]>`
-        SELECT pv."productId" AS "productId", SUM(oi.quantity) AS total
-        FROM "OrderItem" oi
-        JOIN "ProductVariant" pv ON pv.id = oi."variantId"
-        JOIN "Order" o ON o.id = oi."orderId"
-        WHERE o.status = 'DELIVERED'
-        GROUP BY pv."productId"
-        ORDER BY total DESC
-        LIMIT ${BEST_SELLER_COUNT}
-      `;
-      const topIds = topProducts.map((p) => p.productId);
-
-      await tx.product.updateMany({ data: { isFeatured: false } });
-      if (topIds.length > 0) {
-        await tx.product.updateMany({
-          where: { id: { in: topIds } },
-          data: { isFeatured: true },
-        });
-      }
 
       // Delivered online orders otherwise never show up as revenue: the
       // dashboard's stats/best-sellers are computed from Sale, not Order.
@@ -312,6 +306,33 @@ export async function deliverOrder(
         where: { id: orderId },
         include: { items: true },
       });
+
+      // Best-sellers are scoped to the delivered order's own boutique —
+      // otherwise a delivery in one boutique would reset/override the
+      // "best-seller" badge for the other boutique's products too.
+      const topProducts = await tx.$queryRaw<{ productId: string }[]>`
+        SELECT pv."productId" AS "productId", SUM(oi.quantity) AS total
+        FROM "OrderItem" oi
+        JOIN "ProductVariant" pv ON pv.id = oi."variantId"
+        JOIN "Product" p ON p.id = pv."productId"
+        JOIN "Order" o ON o.id = oi."orderId"
+        WHERE o.status = 'DELIVERED' AND p."productType" = ${order.productType}
+        GROUP BY pv."productId"
+        ORDER BY total DESC
+        LIMIT ${BEST_SELLER_COUNT}
+      `;
+      const topIds = topProducts.map((p) => p.productId);
+
+      await tx.product.updateMany({
+        where: { productType: order.productType },
+        data: { isFeatured: false },
+      });
+      if (topIds.length > 0) {
+        await tx.product.updateMany({
+          where: { id: { in: topIds } },
+          data: { isFeatured: true },
+        });
+      }
 
       let attempt = 0;
       while (attempt < 3) {
@@ -323,6 +344,7 @@ export async function deliverOrder(
               subtotal: order.subtotal,
               total: order.total,
               notes: `Commande en ligne ${order.reference}`,
+              productType: order.productType,
               items: {
                 create: order.items.map((item) => ({
                   variantId: item.variantId,
@@ -365,7 +387,7 @@ export async function cancelOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const parsed = cancelReasonSchema.safeParse({ reason });
   if (!parsed.success) {
@@ -374,8 +396,8 @@ export async function cancelOrder(
 
   try {
     await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
+      const order = await tx.order.findFirst({
+        where: { id: orderId, productType },
         include: { items: true },
       });
       if (!order) throw new Error("notFound");

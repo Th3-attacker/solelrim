@@ -2,23 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { buildSaleReference } from "@/lib/shop/reference";
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-}
+import { requireAdminScope } from "@/lib/shop/admin-scope";
 
 export type SaleActionResult = { error?: string; saleId?: string };
 
 export async function createSale(input: SaleInput): Promise<SaleActionResult> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
   const parsed = saleSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -33,6 +25,19 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
         include: { product: true },
       });
       const variantById = new Map(variants.map((v) => [v.id, v]));
+
+      // The sale-form variant picker only lists the current boutique's
+      // variants, but guard against a stale tab / a different scope open
+      // elsewhere the same way submitOrder guards the storefront cart.
+      if (variants.some((v) => v.product.productType !== productType)) {
+        throw new Error("invalid");
+      }
+      if (clientId) {
+        const client = await tx.client.findFirst({
+          where: { id: clientId, productType },
+        });
+        if (!client) throw new Error("invalid");
+      }
 
       const lineItems = items.map((item) => {
         const variant = variantById.get(item.variantId);
@@ -70,6 +75,7 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
               total,
               paymentMethod,
               notes,
+              productType,
               items: { create: lineItems },
             },
           });
@@ -101,12 +107,12 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
 }
 
 export async function cancelSale(saleId: string): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   try {
     await prisma.$transaction(async (tx) => {
-      const sale = await tx.sale.findUnique({
-        where: { id: saleId },
+      const sale = await tx.sale.findFirst({
+        where: { id: saleId, productType },
         include: { items: true },
       });
       if (!sale) throw new Error("notFound");

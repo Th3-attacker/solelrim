@@ -1,77 +1,132 @@
-import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
+import { cn } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 type HeroSettings = {
   heroImagePath: string | null;
+  heroImagePosition: string;
   heroTitle: string | null;
   heroSubtitle: string | null;
+  heroBadgeText: string | null;
+  heroCtaLabel: string | null;
 };
+
+// No photo uploaded yet: a typographic hero (giant watermark + theme-colored
+// gradient) rather than an empty split panel — still uses the same
+// badge/CTA config so it stays consistent once a photo is added later.
+function HeroFallback({
+  badgeText,
+  title,
+  subtitle,
+  ctaLabel,
+}: {
+  badgeText: string | null;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-6 py-20 text-center sm:py-28">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-white/5 select-none"
+      >
+        SOLELRIM
+      </span>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,var(--color-primary)/35,transparent_60%)]"
+      />
+      <div className="animate-in fade-in slide-in-from-bottom-6 relative flex flex-col items-center gap-5 duration-1000">
+        {badgeText && (
+          <span className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
+            {badgeText}
+          </span>
+        )}
+        <h1 className="max-w-3xl text-heading-lg text-balance text-white sm:text-heading-2xl">
+          {title}
+        </h1>
+        <p className="max-w-md text-paragraph-lg text-white/70 sm:text-paragraph-lg">
+          {subtitle}
+        </p>
+        <Button asChild size="lg" className="mt-2">
+          <a href="#catalog">{ctaLabel}</a>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export async function HeroSection({ settings }: { settings: HeroSettings }) {
   const t = await getTranslations("shop");
 
+  const badgeText = settings.heroBadgeText;
+  const title = settings.heroTitle || t("heroTitle");
+  const subtitle = settings.heroSubtitle || t("heroSubtitle");
+  const ctaLabel = settings.heroCtaLabel || t("heroCta");
+
   if (!settings.heroImagePath) {
     return (
-      <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-6 py-20 text-center sm:py-28">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-white/5 select-none"
-        >
-          SOLELRIM
-        </span>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,var(--color-primary)/35,transparent_60%)]"
-        />
-        <div className="animate-in fade-in slide-in-from-bottom-6 relative flex flex-col items-center gap-5 duration-1000">
-          <span className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
-            {t("siteName")}
-          </span>
-          <h1 className="max-w-2xl text-heading-lg text-balance text-white sm:text-heading-xl">
-            {t("heroTitle")}
-          </h1>
-          <p className="max-w-md text-paragraph-md text-white/70 sm:text-paragraph-lg">
-            {t("heroSubtitle")}
-          </p>
-          <Button asChild size="lg" className="mt-2">
-            <a href="#catalog">{t("heroCta")}</a>
-          </Button>
-        </div>
-      </div>
+      <HeroFallback
+        badgeText={badgeText}
+        title={title}
+        subtitle={subtitle}
+        ctaLabel={ctaLabel}
+      />
     );
   }
 
+  const imageOnLeft = settings.heroImagePosition === "left";
+
   return (
-    <div className="relative min-h-110 overflow-hidden rounded-3xl bg-muted">
-      <Image
-        src={getStoreHeroImageUrl(settings.heroImagePath)}
-        alt=""
-        fill
-        className="object-cover"
-        sizes="100vw"
-        priority
-      />
+    <div className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
       <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
-      />
-      <div className="relative flex min-h-110 flex-col justify-end gap-4 p-8 md:p-12">
-        {settings.heroTitle && (
-          <h1 className="max-w-2xl text-heading-lg text-balance text-white sm:text-heading-xl">
-            {settings.heroTitle}
-          </h1>
+        className={cn(
+          "flex flex-col items-start gap-5 animate-in fade-in slide-in-from-bottom-6 duration-1000",
+          imageOnLeft ? "md:order-2" : "md:order-1",
         )}
-        {settings.heroSubtitle && (
-          <p className="max-w-md text-paragraph-md text-white/80 sm:text-paragraph-lg">
-            {settings.heroSubtitle}
-          </p>
+      >
+        {badgeText && (
+          <span className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
+            {badgeText}
+          </span>
         )}
-        <div>
-          <Button asChild size="lg" className="mt-2">
-            <a href="#catalog">{t("heroCta")}</a>
-          </Button>
+        <h1 className="max-w-3xl text-heading-lg text-balance sm:text-heading-2xl">
+          {title}
+        </h1>
+        <p className="max-w-sm text-paragraph-lg  text-muted-foreground sm:text-paragraph-xl">
+          {subtitle}
+        </p>
+        <Button asChild size="lg" className="mt-1">
+          <a href="#catalog">{ctaLabel}</a>
+        </Button>
+      </div>
+
+      <div
+        className={cn(
+          "relative mx-auto aspect-square w-full max-w-sm sm:max-w-md",
+          imageOnLeft ? "md:order-1" : "md:order-2",
+        )}
+      >
+        <div
+          aria-hidden
+          className="absolute -top-6 -left-6 size-28 rounded-full bg-primary/15 sm:size-36"
+        />
+        <div
+          aria-hidden
+          className="absolute -right-4 -bottom-8 size-36 rounded-full bg-primary/25 sm:size-44"
+        />
+        <div className="relative size-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-sm ">
+          <Image
+            src={getStoreHeroImageUrl(settings.heroImagePath)}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(min-width: 768px) 50vw, 100vw"
+            priority
+          />
         </div>
       </div>
     </div>

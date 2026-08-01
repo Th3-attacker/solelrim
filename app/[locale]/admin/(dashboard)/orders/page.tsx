@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
@@ -36,10 +37,11 @@ export default async function AdminOrdersPage({
   });
   const hasFilters = Boolean(status || search || dateFrom || dateTo);
 
+  const scope = await getAdminScope();
   const [t, tCommon, orders] = await Promise.all([
     getTranslations("orders"),
     getTranslations("common"),
-    getAllOrders({ status, search, dateFrom, dateTo }),
+    getAllOrders({ productType: scope, status, search, dateFrom, dateTo }),
   ]);
 
   return (

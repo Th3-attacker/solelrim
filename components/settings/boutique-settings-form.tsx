@@ -10,13 +10,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
-import { updateStoreSettings } from "@/lib/actions/settings";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  boutiqueSettingsSchema,
+  type BoutiqueSettingsInput,
+} from "@/lib/validation/settings";
+import { updateBoutiqueSettings } from "@/lib/actions/settings";
 
-export function SettingsForm({
+export function BoutiqueSettingsForm({
   defaultValues,
 }: {
-  defaultValues: SettingsInput;
+  defaultValues: BoutiqueSettingsInput;
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -25,15 +35,17 @@ export function SettingsForm({
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
-  } = useForm<SettingsInput>({
-    resolver: zodResolver(settingsSchema),
+  } = useForm<BoutiqueSettingsInput>({
+    resolver: zodResolver(boutiqueSettingsSchema),
     defaultValues,
   });
 
-  const onSubmit: SubmitHandler<SettingsInput> = async (data) => {
+  const onSubmit: SubmitHandler<BoutiqueSettingsInput> = async (data) => {
     setSubmitting(true);
-    const result = await updateStoreSettings(data);
+    const result = await updateBoutiqueSettings(data);
     setSubmitting(false);
 
     if (result.error) {
@@ -47,7 +59,27 @@ export function SettingsForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <Card>
-        <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+        <CardHeader>
+          <CardTitle className="text-base">{t("brandingSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="siteName">{t("siteName")}</Label>
+            <Input id="siteName" {...register("siteName")} />
+          </div>
+
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <Label htmlFor="announcementText">{t("announcementText")}</Label>
+            <Input id="announcementText" {...register("announcementText")} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("paymentSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="bankilyNumber">{t("bankilyNumber")}</Label>
             <Input id="bankilyNumber" {...register("bankilyNumber")} />
@@ -87,34 +119,57 @@ export function SettingsForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("brandingSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="siteName">{t("siteName")}</Label>
-            <Input id="siteName" {...register("siteName")} />
-          </div>
-
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="announcementText">{t("announcementText")}</Label>
-            <Input id="announcementText" {...register("announcementText")} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle className="text-base">{t("heroSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
+            <Label htmlFor="heroBadgeText">{t("heroBadgeText")}</Label>
+            <Input
+              id="heroBadgeText"
+              placeholder={t("heroBadgeTextPlaceholder")}
+              {...register("heroBadgeText")}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
+            <Select
+              value={watch("heroImagePosition") ?? "right"}
+              onValueChange={(value) =>
+                setValue("heroImagePosition", value as "left" | "right")
+              }
+            >
+              <SelectTrigger id="heroImagePosition" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="right">
+                  {t("heroImagePositionRight")}
+                </SelectItem>
+                <SelectItem value="left">
+                  {t("heroImagePositionLeft")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
             <Input id="heroTitle" {...register("heroTitle")} />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
             <Input id="heroSubtitle" {...register("heroSubtitle")} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="heroCtaLabel">{t("heroCtaLabel")}</Label>
+            <Input
+              id="heroCtaLabel"
+              placeholder={t("heroCtaLabelPlaceholder")}
+              {...register("heroCtaLabel")}
+            />
           </div>
         </CardContent>
       </Card>
@@ -132,28 +187,6 @@ export function SettingsForm({
           <div className="flex flex-col gap-2">
             <Label htmlFor="seoDescription">{t("seoDescription")}</Label>
             <Input id="seoDescription" {...register("seoDescription")} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("socialSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-3">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="instagramUrl">{t("instagramUrl")}</Label>
-            <Input id="instagramUrl" {...register("instagramUrl")} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="facebookUrl">{t("facebookUrl")}</Label>
-            <Input id="facebookUrl" {...register("facebookUrl")} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="tiktokUrl">{t("tiktokUrl")}</Label>
-            <Input id="tiktokUrl" {...register("tiktokUrl")} />
           </div>
         </CardContent>
       </Card>

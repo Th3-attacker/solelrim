@@ -14,8 +14,6 @@ type FavoritesAction =
   | { type: "HYDRATE"; ids: string[] }
   | { type: "TOGGLE"; id: string };
 
-const STORAGE_KEY = "solelrim-favorites";
-
 function reducer(state: FavoritesState, action: FavoritesAction): FavoritesState {
   switch (action.type) {
     case "HYDRATE":
@@ -41,23 +39,33 @@ type FavoritesContextValue = {
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
-export function FavoritesProvider({ children }: { children: React.ReactNode }) {
+export function FavoritesProvider({
+  storeType,
+  children,
+}: {
+  storeType: string;
+  children: React.ReactNode;
+}) {
   const [state, dispatch] = useReducer(reducer, { ids: [], hydrated: false });
+  const storageKey = `solelrim-favorites-${storeType}`;
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       const ids = raw ? (JSON.parse(raw) as string[]) : [];
       dispatch({ type: "HYDRATE", ids: Array.isArray(ids) ? ids : [] });
     } catch {
       dispatch({ type: "HYDRATE", ids: [] });
     }
-  }, []);
+    // Re-hydrates on a client-side navigation between two boutiques too,
+    // since this provider isn't guaranteed to remount when storeType
+    // changes (its parent layout re-renders in place).
+  }, [storageKey]);
 
   useEffect(() => {
     if (!state.hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.ids));
-  }, [state.ids, state.hydrated]);
+    localStorage.setItem(storageKey, JSON.stringify(state.ids));
+  }, [storageKey, state.ids, state.hydrated]);
 
   const value = useMemo<FavoritesContextValue>(
     () => ({

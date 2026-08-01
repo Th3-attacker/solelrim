@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getRevenueByDay(daysBack = 90) {
+export async function getRevenueByDay(productType: string, daysBack = 90) {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - daysBack);
 
   const rows = await prisma.$queryRaw<{ day: Date; total: number }[]>`
     SELECT date_trunc('day', "createdAt") AS day, SUM("total")::float AS total
     FROM "Sale"
-    WHERE "status" = 'COMPLETED' AND "createdAt" >= ${cutoff}
+    WHERE "status" = 'COMPLETED' AND "createdAt" >= ${cutoff} AND "productType" = ${productType}
     GROUP BY day
     ORDER BY day ASC
   `;
@@ -18,9 +18,10 @@ export async function getRevenueByDay(daysBack = 90) {
   }));
 }
 
-export async function getBestSellers(limit = 5) {
+export async function getBestSellers(productType: string, limit = 5) {
   const grouped = await prisma.saleItem.groupBy({
     by: ["variantId"],
+    where: { sale: { productType } },
     _sum: { quantity: true, lineTotal: true },
     orderBy: { _sum: { quantity: "desc" } },
     take: limit,
@@ -48,7 +49,7 @@ export async function getBestSellers(limit = 5) {
     .filter((x): x is NonNullable<typeof x> => x !== null);
 }
 
-export async function getLowStockVariants() {
+export async function getLowStockVariants(productType: string) {
   return prisma.$queryRaw<
     {
       id: string;
@@ -61,12 +62,12 @@ export async function getLowStockVariants() {
     SELECT v.id, v.size, v.color, v.stock, p.name AS "productName"
     FROM "ProductVariant" v
     JOIN "Product" p ON p.id = v."productId"
-    WHERE v.stock <= v."lowStockThreshold"
+    WHERE v.stock <= v."lowStockThreshold" AND p."productType" = ${productType}
     ORDER BY v.stock ASC
   `;
 }
 
-export async function getSummaryStats() {
+export async function getSummaryStats(productType: string) {
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -84,16 +85,17 @@ export async function getSummaryStats() {
     stockAgg,
   ] = await Promise.all([
     prisma.sale.aggregate({
-      where: { status: "COMPLETED", createdAt: { gte: startOfMonth } },
+      where: { status: "COMPLETED", createdAt: { gte: startOfMonth }, productType },
       _sum: { total: true },
     }),
     prisma.sale.count({
-      where: { status: "COMPLETED", createdAt: { gte: startOfMonth } },
+      where: { status: "COMPLETED", createdAt: { gte: startOfMonth }, productType },
     }),
     prisma.sale.aggregate({
       where: {
         status: "COMPLETED",
         createdAt: { gte: startOfLastMonth, lt: startOfMonth },
+        productType,
       },
       _sum: { total: true },
     }),
@@ -101,11 +103,17 @@ export async function getSummaryStats() {
       where: {
         status: "COMPLETED",
         createdAt: { gte: startOfLastMonth, lt: startOfMonth },
+        productType,
       },
     }),
-    prisma.client.count(),
-    prisma.client.count({ where: { createdAt: { gte: startOfMonth } } }),
-    prisma.productVariant.aggregate({ _sum: { stock: true } }),
+    prisma.client.count({ where: { productType } }),
+    prisma.client.count({
+      where: { productType, createdAt: { gte: startOfMonth } },
+    }),
+    prisma.productVariant.aggregate({
+      where: { product: { productType } },
+      _sum: { stock: true },
+    }),
   ]);
 
   return {

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ export function SearchTrigger({
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const { storeType } = useParams<{ storeType: string }>();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -60,7 +62,7 @@ export function SearchTrigger({
     e.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
-    router.push(`/?q=${encodeURIComponent(trimmed)}#catalog`);
+    router.push(`/${storeType}?q=${encodeURIComponent(trimmed)}#catalog`);
     close();
   }
 
@@ -72,7 +74,7 @@ export function SearchTrigger({
         {suggestions.map((product) => (
           <Link
             key={product.id}
-            href={`/products/${product.slug}`}
+            href={`/${storeType}/products/${product.slug}`}
             onClick={close}
             className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
           >
@@ -89,7 +91,7 @@ export function SearchTrigger({
       {categories.map((category) => (
         <Link
           key={category.id}
-          href={{ pathname: "/", query: { category: category.id } }}
+          href={{ pathname: `/${storeType}`, query: { category: category.id } }}
           onClick={close}
           className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
         >

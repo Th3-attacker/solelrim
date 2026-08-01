@@ -12,6 +12,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 type SearchCategory = { id: string; name: string };
@@ -26,6 +27,7 @@ export function MobileNav({
 }) {
   const t = useTranslations("shop");
   const tLanguage = useTranslations("language");
+  const { storeType } = useParams<{ storeType: string }>();
   const [open, setOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -75,14 +77,14 @@ export function MobileNav({
             </div>
             <div className="my-1 border-t" />
             <Link
-              href="/about"
+              href={`/${storeType}/about`}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               {t("aboutLink")}
             </Link>
             <Link
-              href="/contact"
+              href={`/${storeType}/contact`}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >

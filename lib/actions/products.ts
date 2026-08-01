@@ -2,21 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
+import { requireAdminScope } from "@/lib/shop/admin-scope";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-}
 
 export type ProductActionResult = { error?: string; productId?: string };
 
@@ -36,7 +28,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
 export async function createProduct(
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -49,6 +41,7 @@ export async function createProduct(
       data: {
         ...product,
         slug,
+        productType,
         variants: {
           create: variants.map(({ id: _id, ...variant }) => variant),
         },
@@ -72,12 +65,20 @@ export async function updateProduct(
   productId: string,
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
   const { variants, ...product } = parsed.data;
+
+  const owned = await prisma.product.findFirst({
+    where: { id: productId, productType },
+    select: { id: true },
+  });
+  if (!owned) {
+    return { error: "notFound" };
+  }
 
   try {
     const slug = await prisma.$transaction(async (tx) => {
@@ -130,7 +131,15 @@ export async function updateProduct(
 export async function deleteProduct(
   productId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
+
+  const owned = await prisma.product.findFirst({
+    where: { id: productId, productType },
+    select: { id: true },
+  });
+  if (!owned) {
+    return { error: "notFound" };
+  }
 
   const images = await prisma.productImage.findMany({
     where: { productId },
@@ -165,7 +174,15 @@ export async function uploadProductImage(
   productId: string,
   formData: FormData,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
+
+  const owned = await prisma.product.findFirst({
+    where: { id: productId, productType },
+    select: { id: true, slug: true },
+  });
+  if (!owned) {
+    return { error: "notFound" };
+  }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -186,16 +203,10 @@ export async function uploadProductImage(
     return { error: "uploadFailed" };
   }
 
-  const [maxPosition, product] = await Promise.all([
-    prisma.productImage.aggregate({
-      where: { productId },
-      _max: { position: true },
-    }),
-    prisma.product.findUniqueOrThrow({
-      where: { id: productId },
-      select: { slug: true },
-    }),
-  ]);
+  const maxPosition = await prisma.productImage.aggregate({
+    where: { productId },
+    _max: { position: true },
+  });
 
   await prisma.productImage.create({
     data: {
@@ -206,20 +217,20 @@ export async function uploadProductImage(
   });
 
   revalidatePath(`/admin/products/${productId}`);
-  revalidatePath(`/products/${product.slug}`);
+  revalidatePath(`/products/${owned.slug}`);
   return {};
 }
 
 export async function deleteProductImage(
   imageId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const image = await prisma.productImage.findUnique({
     where: { id: imageId },
-    include: { product: { select: { slug: true } } },
+    include: { product: { select: { slug: true, productType: true } } },
   });
-  if (!image) {
+  if (!image || image.product.productType !== productType) {
     return { error: "notFound" };
   }
 
@@ -233,4 +244,3 @@ export async function deleteProductImage(
   revalidatePath(`/products/${image.product.slug}`);
   return {};
 }
-

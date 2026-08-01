@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Tag } from "lucide-react";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
 import { OrderProgressActions } from "@/components/orders/order-progress-actions";
@@ -26,12 +27,13 @@ export default async function OrderDetailPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
+  const scope = await getAdminScope();
   const [t, tProducts, tSales, tCommon, order] = await Promise.all([
     getTranslations("orders"),
     getTranslations("products"),
     getTranslations("sales"),
     getTranslations("common"),
-    getOrderById(orderId),
+    getOrderById(orderId, scope),
   ]);
 
   if (!order) {

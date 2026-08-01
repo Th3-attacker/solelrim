@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { MessageCircle, Package, Share2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { buildOrderQuestionWhatsAppLink, buildWhatsAppLink } from "@/lib/shop/contact";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,21 +12,26 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ContactPage() {
-  const [t, settings] = await Promise.all([
+export default async function ContactPage({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}) {
+  const { storeType } = await params;
+  const [t, boutique] = await Promise.all([
     getTranslations("contact"),
-    getStoreSettings(),
+    getPublicBoutiqueSettings(storeType),
   ]);
 
-  const adminNumber = settings.adminWhatsappNumber?.trim();
+  const adminNumber = boutique.adminWhatsappNumber?.trim();
   const whatsappHref = adminNumber ? buildWhatsAppLink(adminNumber) : null;
   const orderWhatsappHref = adminNumber ? buildOrderQuestionWhatsAppLink(adminNumber) : null;
 
-  const socialLinks = [
-    { href: settings.instagramUrl?.trim(), label: "Instagram" },
-    { href: settings.facebookUrl?.trim(), label: "Facebook" },
-    { href: settings.tiktokUrl?.trim(), label: "TikTok" },
-  ].filter((social): social is { href: string; label: string } => Boolean(social.href));
+  const socialLinks = boutique.socialLinks.map((link) => ({
+    id: link.id,
+    href: link.url,
+    label: link.platform,
+  }));
 
   return (
     <div className="flex flex-col gap-10 py-6">
@@ -74,7 +79,7 @@ export default async function ContactPage() {
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-1">
               {socialLinks.map((social) => (
                 <a
-                  key={social.label}
+                  key={social.id}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"

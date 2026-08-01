@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllProducts } from "@/lib/queries/products";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StockBadge } from "@/components/shop/stock-badge";
@@ -18,10 +19,11 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminProductsPage() {
+  const scope = await getAdminScope();
   const [t, tCommon, products] = await Promise.all([
     getTranslations("products"),
     getTranslations("common"),
-    getAllProducts(),
+    getAllProducts(scope),
   ]);
 
   return (

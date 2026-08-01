@@ -6,11 +6,9 @@ import {
   getAdjacentProductSlugs,
   getProductSlugById,
 } from "@/lib/queries/shop";
-import { getStoreSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
-import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { VariantPicker } from "@/components/shop/variant-picker";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { Price } from "@/components/shop/price";
@@ -21,18 +19,15 @@ import { Link, redirect } from "@/i18n/navigation";
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ productSlug: string }>;
+  params: Promise<{ storeType: string; productSlug: string }>;
 }) {
-  const { productSlug } = await params;
-  const [t, tCommon, product, settings] = await Promise.all([
+  const { storeType, productSlug } = await params;
+  const [t, tCommon] = await Promise.all([
     getTranslations("shop"),
     getTranslations("common"),
-    getActiveProductBySlug(productSlug),
-    getStoreSettings(),
   ]);
-  const productType = isProductType(settings.productType)
-    ? settings.productType
-    : DEFAULT_PRODUCT_TYPE;
+  const productType = storeType;
+  const product = await getActiveProductBySlug(productSlug, productType);
 
   if (!product) {
     // Pre-slug links shared as the raw cuid still land here — redirect to
@@ -40,7 +35,7 @@ export default async function ProductDetailPage({
     const legacy = await getProductSlugById(productSlug);
     if (legacy) {
       const locale = await getLocale();
-      redirect({ href: `/products/${legacy.slug}`, locale });
+      redirect({ href: `/${storeType}/products/${legacy.slug}`, locale });
     }
     notFound();
   }
@@ -48,6 +43,7 @@ export default async function ProductDetailPage({
   const { prevSlug, nextSlug } = await getAdjacentProductSlugs(
     product.categoryId,
     product.id,
+    productType,
   );
 
   const { min, isRange } = getPriceRange(product.variants, product.basePrice);
@@ -61,12 +57,15 @@ export default async function ProductDetailPage({
     <div className="flex flex-col gap-6">
       <nav className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">
+          <Link href={`/${storeType}`} className="hover:text-foreground">
             {t("siteName")}
           </Link>
           <span aria-hidden>/</span>
           <Link
-            href={{ pathname: "/", query: { category: product.categoryId } }}
+            href={{
+              pathname: `/${storeType}`,
+              query: { category: product.categoryId },
+            }}
             className="hover:text-foreground"
           >
             {product.category.name}
@@ -78,7 +77,10 @@ export default async function ProductDetailPage({
         <div className="flex items-center gap-1">
           {prevSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link href={`/products/${prevSlug}`} aria-label={t("previousProduct")}>
+              <Link
+                href={`/${storeType}/products/${prevSlug}`}
+                aria-label={t("previousProduct")}
+              >
                 <ChevronLeft className="rtl:rotate-180" />
               </Link>
             </Button>
@@ -89,7 +91,10 @@ export default async function ProductDetailPage({
           )}
           {nextSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link href={`/products/${nextSlug}`} aria-label={t("nextProduct")}>
+              <Link
+                href={`/${storeType}/products/${nextSlug}`}
+                aria-label={t("nextProduct")}
+              >
                 <ChevronRight className="rtl:rotate-180" />
               </Link>
             </Button>
