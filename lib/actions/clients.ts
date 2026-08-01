@@ -2,29 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createClient as createSupabaseClient } from "@/lib/supabase/server";
 import { clientSchema, type ClientInput } from "@/lib/validation/client";
-
-async function requireAdmin() {
-  const supabase = await createSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-}
+import { requireAdminScope } from "@/lib/shop/admin-scope";
 
 export type ClientActionResult = { error?: string; clientId?: string };
 
 export async function createClientRecord(
   input: ClientInput,
 ): Promise<ClientActionResult> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
   const parsed = clientSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
-  const created = await prisma.client.create({ data: parsed.data });
+  const created = await prisma.client.create({
+    data: { ...parsed.data, productType },
+  });
   revalidatePath("/admin/clients");
   return { clientId: created.id };
 }
@@ -33,13 +27,19 @@ export async function updateClientRecord(
   clientId: string,
   input: ClientInput,
 ): Promise<ClientActionResult> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
   const parsed = clientSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
-  await prisma.client.update({ where: { id: clientId }, data: parsed.data });
+  const updated = await prisma.client.updateMany({
+    where: { id: clientId, productType },
+    data: parsed.data,
+  });
+  if (updated.count === 0) {
+    return { error: "notFound" };
+  }
   revalidatePath("/admin/clients");
   revalidatePath(`/admin/clients/${clientId}`);
   return { clientId };
@@ -48,7 +48,15 @@ export async function updateClientRecord(
 export async function deleteClient(
   clientId: string,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
+
+  const client = await prisma.client.findFirst({
+    where: { id: clientId, productType },
+    select: { id: true },
+  });
+  if (!client) {
+    return { error: "notFound" };
+  }
 
   const salesCount = await prisma.sale.count({ where: { clientId } });
   if (salesCount > 0) {

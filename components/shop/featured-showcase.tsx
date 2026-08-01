@@ -13,7 +13,13 @@ type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 // in deliverOrder() and already capped at 5 there) — one horizontally
 // scrollable row of big cards, same as the reference: ~3 visible at once on
 // desktop, one (plus a peek of the next) on mobile.
-export async function FeaturedShowcase({ products }: { products: Product[] }) {
+export async function FeaturedShowcase({
+  products,
+  storeType,
+}: {
+  products: Product[];
+  storeType: string;
+}) {
   if (products.length === 0) return null;
   const t = await getTranslations("shop");
 
@@ -44,7 +50,9 @@ export async function FeaturedShowcase({ products }: { products: Product[] }) {
         <h3 className="text-base font-semibold text-balance sm:text-xl">{product.name}</h3>
       </div>
       <Button asChild size="lg" className="w-full">
-        <Link href={`/products/${product.slug}`}>{t("heroShopProduct")}</Link>
+        <Link href={`/${storeType}/products/${product.slug}`}>
+          {t("heroShopProduct")}
+        </Link>
       </Button>
     </div>
   ));

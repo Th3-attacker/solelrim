@@ -29,8 +29,6 @@ type CartAction =
   | { type: "REMOVE_ITEM"; variantId: string }
   | { type: "CLEAR" };
 
-const STORAGE_KEY = "solelrim-cart";
-
 function reducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "HYDRATE":
@@ -106,26 +104,37 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({
+  storeType,
+  children,
+}: {
+  storeType: string;
+  children: React.ReactNode;
+}) {
   const [state, dispatch] = useReducer(reducer, {
     items: [],
     hydrated: false,
   });
+  const storageKey = `solelrim-cart-${storeType}`;
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       const items = raw ? (JSON.parse(raw) as CartLine[]) : [];
       dispatch({ type: "HYDRATE", items: Array.isArray(items) ? items : [] });
     } catch {
       dispatch({ type: "HYDRATE", items: [] });
     }
-  }, []);
+    // Re-hydrates from the new boutique's own key on the (rare) client-side
+    // navigation between two boutiques too, not just on first mount — this
+    // provider isn't guaranteed to remount when storeType changes, since
+    // its parent layout re-renders in place rather than unmounting.
+  }, [storageKey]);
 
   useEffect(() => {
     if (!state.hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
-  }, [state.items, state.hydrated]);
+    localStorage.setItem(storageKey, JSON.stringify(state.items));
+  }, [storageKey, state.items, state.hydrated]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotal = state.items.reduce(

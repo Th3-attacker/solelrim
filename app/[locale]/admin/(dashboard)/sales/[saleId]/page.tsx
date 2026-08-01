@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getSaleById } from "@/lib/queries/sales";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Badge } from "@/components/ui/badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
@@ -20,11 +21,12 @@ export default async function SaleDetailPage({
   params: Promise<{ saleId: string }>;
 }) {
   const { saleId } = await params;
+  const scope = await getAdminScope();
   const [t, tProducts, tCommon, sale] = await Promise.all([
     getTranslations("sales"),
     getTranslations("products"),
     getTranslations("common"),
-    getSaleById(saleId),
+    getSaleById(saleId, scope),
   ]);
 
   if (!sale) {

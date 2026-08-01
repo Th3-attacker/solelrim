@@ -1,17 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { getAllCategories } from "@/lib/queries/products";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ProductForm } from "@/components/products/product-form";
-import { isProductType, DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 
 export default async function NewProductPage() {
-  const [t, settings] = await Promise.all([
+  const [t, productType] = await Promise.all([
     getTranslations("products"),
-    getStoreSettings(),
+    getAdminScope(),
   ]);
-  const productType = isProductType(settings.productType)
-    ? settings.productType
-    : DEFAULT_PRODUCT_TYPE;
   const categories = await getAllCategories(productType);
 
   return (

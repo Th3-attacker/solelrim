@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getOrderById } from "@/lib/queries/orders";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { PrintLabelButton } from "@/components/orders/print-label-button";
 import { PrintPageSize } from "@/components/orders/print-page-size";
 import { formatPrice } from "@/lib/format/currency";
@@ -11,11 +12,12 @@ export default async function OrderLabelPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
+  const scope = await getAdminScope();
   const [t, tSales, tCommon, order] = await Promise.all([
     getTranslations("orders"),
     getTranslations("sales"),
     getTranslations("common"),
-    getOrderById(orderId),
+    getOrderById(orderId, scope),
   ]);
 
   if (!order) {

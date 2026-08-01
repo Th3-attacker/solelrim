@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/shop/product-card";
 import { SectionTitle } from "@/components/shop/section-title";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import {
   filterByColor,
   filterByPriceBucket,
@@ -17,8 +17,10 @@ import {
 import { getTranslations } from "next-intl/server";
 
 export default async function ShopHomePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ storeType: string }>;
   searchParams: Promise<{
     category?: string;
     sort?: string;
@@ -27,12 +29,17 @@ export default async function ShopHomePage({
     q?: string;
   }>;
 }) {
-  const { category, sort, price, color, q } = await searchParams;
-  const [t, allProducts, categories, settings] = await Promise.all([
+  const [{ storeType }, { category, sort, price, color, q }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  const [t, boutique] = await Promise.all([
     getTranslations("shop"),
-    getActiveProducts(),
-    getAllShopCategories(),
-    getStoreSettings(),
+    getPublicBoutiqueSettings(storeType),
+  ]);
+  const [allProducts, categories] = await Promise.all([
+    getActiveProducts(storeType),
+    getAllShopCategories(storeType),
   ]);
 
   let displayedProducts = category
@@ -57,11 +64,15 @@ export default async function ShopHomePage({
 
   return (
     <div className="flex flex-col gap-14">
-      <HeroSection settings={settings} />
+      <HeroSection settings={boutique} />
 
       <CategoryFilters
         categoryBreadcrumb={
-          <CategoryFilterBar categories={categories} activeCategoryId={category} />
+          <CategoryFilterBar
+            storeType={storeType}
+            categories={categories}
+            activeCategoryId={category}
+          />
         }
         colors={catalogColors}
         categoryId={category}
@@ -75,13 +86,18 @@ export default async function ShopHomePage({
         ) : (
           <FavoritesSortedGrid ids={displayedProducts.map((p) => p.id)}>
             {displayedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} priority={index < 4} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                storeType={storeType}
+                priority={index < 4}
+              />
             ))}
           </FavoritesSortedGrid>
         )}
       </div>
 
-      <FeaturedShowcase products={featuredProducts} />
+      <FeaturedShowcase products={featuredProducts} storeType={storeType} />
 
       <TrustBadges />
     </div>

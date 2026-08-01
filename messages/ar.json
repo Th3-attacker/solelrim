@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "products": "المنتجات",
+    "categories": "الفئات",
     "sales": "المبيعات",
     "orders": "الطلبات",
     "clients": "العملاء",
@@ -104,6 +105,19 @@
     "deleteError": "فشل الحذف.",
     "compareAtPrice": "السعر قبل الخصم",
     "isFeatured": "الأكثر مبيعًا"
+  },
+  "categories": {
+    "title": "الفئات",
+    "name": "الاسم",
+    "boutique": "المتجر",
+    "generic": "عام",
+    "productCount": "المنتجات",
+    "newCategory": "فئة جديدة",
+    "renameCategory": "إعادة تسمية الفئة",
+    "deleteConfirm": "حذف هذه الفئة؟",
+    "hasProductsError": "لا يمكن حذف فئة تحتوي على منتجات.",
+    "duplicateNameError": "توجد فئة بهذا الاسم بالفعل.",
+    "noCategories": "لا توجد فئات بعد."
   },
   "clients": {
     "title": "العملاء",
@@ -305,6 +319,9 @@
   },
   "settings": {
     "title": "الإعدادات",
+    "globalSettingsLink": "الإعدادات العامة للموقع",
+    "globalSettingsTitle": "الإعدادات العامة",
+    "paymentSection": "الدفع",
     "bankilyNumber": "رقم بنكيلي",
     "masrivyNumber": "رقم مصرفي",
     "adminWhatsappNumber": "رقم واتساب المتجر",
@@ -314,12 +331,18 @@
     "siteName": "اسم الموقع",
     "announcementText": "نص شريط الإعلانات",
 
-    "productTypeSection": "نوع المتجر",
-    "productTypeHint": "يغيّر تسميات المتغيرات ويقترح فئات مناسبة. لا يؤثر على اسم الموقع أو تحسين محركات البحث أو الصورة الرئيسية أو صفحة من نحن.",
+    "productTypeSection": "المتجر الافتراضي",
+    "productTypeHint": "يحدد المتجر الذي يظهر عندما يصل الزائر دون تحديد متجر في الرابط. يبقى كل متجر متاحًا عبر رابطه الخاص بغض النظر عن هذا الاختيار.",
     "productTypes": {
       "sport": "رياضة",
       "cosmetique": "مستحضرات تجميل"
     },
+    "productTypeNew": "نوع جديد",
+    "productTypeNewTitle": "إنشاء نوع متجر",
+    "productTypeNewName": "اسم النوع",
+    "productTypeNewNamePlaceholder": "مثال: مجوهرات",
+    "productTypeNewCategories": "الفئات المراد إنشاؤها (واحدة في كل سطر)",
+    "productTypeNewCategoriesPlaceholder": "قلادات\nأساور\nخواتم",
     "themeSection": "لون الموقع",
     "themePresets": {
       "default": "افتراضي",
@@ -329,13 +352,57 @@
       "navy": "كحلي"
     },
 
+    "heroSection": "الصورة الرئيسية",
+    "heroImage": "صورة الهيرو",
+    "heroImagePosition": "موضع الصورة",
+    "heroImagePositionLeft": "يسار",
+    "heroImagePositionRight": "يمين",
+    "heroBadgeText": "الشارة (فوق العنوان)",
+    "heroBadgeTextPlaceholder": "مثال: تشكيلة جديدة",
+    "heroTitle": "العنوان",
+    "heroSubtitle": "العنوان الفرعي",
+    "heroCtaLabel": "نص الزر",
+    "heroCtaLabelPlaceholder": "مثال: تسوّق التشكيلة",
+
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",
+
     "socialSection": "وسائل التواصل الاجتماعي",
-    "instagramUrl": "رابط إنستغرام",
-    "facebookUrl": "رابط فيسبوك",
-    "tiktokUrl": "رابط تيك توك"
+    "addSocialLink": "إضافة رابط تواصل",
+    "socialPlatform": "المنصة",
+    "socialPlatformPlaceholder": "مثال: انستغرام، سناب شات...",
+    "socialUrl": "الرابط",
+
+    "adminUsersSection": "حسابات إدارة المتاجر",
+    "newAdminUser": "مدير متجر جديد",
+    "adminUserEmail": "البريد الإلكتروني",
+    "adminUserPassword": "كلمة المرور",
+    "adminUserPasswordHint": "8 أحرف على الأقل.",
+    "adminUserBoutique": "المتجر",
+
+    "boutiquesSection": "المتاجر",
+    "noBoutiques": "لا توجد متاجر بعد.",
+    "domain": "اسم النطاق",
+    "domainNotSet": "لم يتم تعيين نطاق",
+    "domainPlaceholder": "solel.com",
+    "domainEdit": "النطاق",
+    "domainEditTitle": "النطاق — {label}",
+    "domainError": {
+      "invalid": "اسم نطاق غير صالح.",
+      "duplicateDomain": "هذا النطاق مستخدم بالفعل من متجر آخر.",
+      "reservedDomain": "هذا النطاق هو نطاق الموقع الرئيسي نفسه."
+    },
+    "licenseStatus": {
+      "unrestricted": "غير محدودة",
+      "ok": "محدّثة",
+      "expiringSoon": "قريبة الانتهاء",
+      "expired": "منتهية"
+    },
+    "licenseExtend": "تمديد",
+    "licenseClear": "إزالة تاريخ الاستحقاق",
+    "licenseBannerExpiringSoon": "ترخيص هذا المتجر ينتهي في {date}.",
+    "licenseBannerExpired": "انتهى ترخيص هذا المتجر في {date}."
   },
   "orderProcedure": {
     "trigger": "كيف يتم الطلب؟",
