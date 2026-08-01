@@ -8,16 +8,25 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getStoreTypes } from "@/lib/queries/settings";
+import { getCurrentAdmin } from "@/lib/auth/admin";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [storeTypes, currentScope, admin] = await Promise.all([
+    getStoreTypes(),
+    getAdminScope(),
+    getCurrentAdmin(),
+  ]);
+
   return (
     <SidebarProvider>
       <div className="print:hidden">
-        <AppSidebar />
+        <AppSidebar storeTypes={storeTypes} currentScope={currentScope} role={admin.role} />
       </div>
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 print:hidden">

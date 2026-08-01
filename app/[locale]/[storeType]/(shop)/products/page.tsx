@@ -1,7 +1,11 @@
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 
-export default async function ProductsIndexRedirect() {
-  const locale = await getLocale();
-  redirect({ href: "/", locale });
+export default async function ProductsIndexRedirect({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}) {
+  const [{ storeType }, locale] = await Promise.all([params, getLocale()]);
+  redirect({ href: `/${storeType}`, locale });
 }

@@ -18,12 +18,16 @@ vi.mock("next/cache", () => ({
 vi.mock("next/headers", () => ({
   headers: vi.fn(),
 }));
+vi.mock("@/lib/queries/settings", () => ({
+  getStoreTypes: vi.fn(),
+}));
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { getStoreTypes } from "@/lib/queries/settings";
 import {
   submitOrder,
   confirmOrder,
@@ -37,6 +41,12 @@ const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
 const createAdminClientMock = createAdminClient as unknown as Mock;
 const headersMock = headers as unknown as Mock;
+const getStoreTypesMock = getStoreTypes as unknown as Mock;
+
+const STORE_TYPES = [
+  { key: "sport", label: "Sport", themeId: "default", createdAt: new Date() },
+  { key: "cosmetique", label: "Cosmétique", themeId: "rose", createdAt: new Date() },
+];
 
 // Prisma Decimal fields only need `.toNumber()` for this module's purposes.
 function decimal(value: number) {
@@ -50,10 +60,22 @@ function collisionError() {
   });
 }
 
+// Modeled as a BOUTIQUE_ADMIN rather than SUPERADMIN: requireAdminScope()
+// short-circuits straight to admin.productType for this role without ever
+// touching getAdminScope()'s cookie/StoreType lookups, so this is the
+// minimal fixture that exercises every action's real code path without
+// needing next/headers' cookies() (unmocked here) or prismaMock.storeType.
 function asAdmin() {
   createClientMock.mockResolvedValue({
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "admin-1" } } }) },
   });
+  prismaMock.adminUser.findUnique.mockResolvedValue({
+    id: "admin-user-1",
+    supabaseUserId: "admin-1",
+    role: "BOUTIQUE_ADMIN",
+    productType: "cosmetique",
+    createdAt: new Date(),
+  } as never);
 }
 
 function asAnonymous() {
@@ -81,6 +103,11 @@ beforeEach(() => {
   // default, so existing tests don't need to know about it.
   headersMock.mockResolvedValue({ get: () => null });
   prismaMock.rateLimitHit.count.mockResolvedValue(0);
+  // The boutique the checkout form claims to be submitted from — validated
+  // against this registry, then must line up with baseVariant.product's
+  // productType (below) for the happy path.
+  getStoreTypesMock.mockReset();
+  getStoreTypesMock.mockResolvedValue(STORE_TYPES);
 });
 
 // Only the first bytes matter for signature detection — this doesn't need
@@ -93,6 +120,7 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
   form.set("customerPhone", overrides.customerPhone ?? "22345678");
   form.set("customerCity", overrides.customerCity ?? "Nouakchott");
   form.set("locale", overrides.locale ?? "fr");
+  form.set("productType", overrides.productType ?? "cosmetique");
   form.set(
     "items",
     overrides.items ?? JSON.stringify([{ variantId: "variant-1", quantity: 2 }]),
@@ -122,7 +150,7 @@ const baseVariant = {
   id: "variant-1",
   stock: 10,
   price: null,
-  product: { basePrice: decimal(1500) },
+  product: { basePrice: decimal(1500), productType: "cosmetique" },
 };
 
 describe("submitOrder", () => {
@@ -144,6 +172,20 @@ describe("submitOrder", () => {
     const form = buildOrderForm();
     const result = await submitOrder(form);
     expect(result).toEqual({ error: "invalid" });
+  });
+
+  it("rejects when a variant belongs to a different boutique than the form claims", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const result = await submitOrder(buildOrderForm({ productType: "sport" }));
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a productType that isn't a real boutique", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const result = await submitOrder(buildOrderForm({ productType: "does-not-exist" }));
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("rejects when a variant has insufficient stock", async () => {
@@ -340,13 +382,13 @@ describe("confirmOrder", () => {
   });
 
   it("returns notFound when the order does not exist", async () => {
-    prismaMock.order.findUnique.mockResolvedValue(null);
+    prismaMock.order.findFirst.mockResolvedValue(null);
     const result = await confirmOrder("missing");
     expect(result).toEqual({ error: "notFound" });
   });
 
   it("returns notPending when the order already moved on", async () => {
-    prismaMock.order.findUnique.mockResolvedValue({
+    prismaMock.order.findFirst.mockResolvedValue({
       id: "order-1",
       status: "CONFIRMED",
       items: [],
@@ -356,7 +398,7 @@ describe("confirmOrder", () => {
   });
 
   it("returns insufficientStock when a variant no longer has enough stock", async () => {
-    prismaMock.order.findUnique.mockResolvedValue({
+    prismaMock.order.findFirst.mockResolvedValue({
       id: "order-1",
       status: "PENDING",
       items: [{ variantId: "variant-1", quantity: 5 }],
@@ -371,7 +413,7 @@ describe("confirmOrder", () => {
   });
 
   it("decrements stock per line, marks the order CONFIRMED, and revalidates", async () => {
-    prismaMock.order.findUnique.mockResolvedValue({
+    prismaMock.order.findFirst.mockResolvedValue({
       id: "order-1",
       status: "PENDING",
       items: [
@@ -424,7 +466,7 @@ describe("rejectOrder", () => {
     const result = await rejectOrder("order-1", "Rupture de stock");
     expect(result).toEqual({});
     expect(prismaMock.order.updateMany).toHaveBeenCalledWith({
-      where: { id: "order-1", status: "PENDING" },
+      where: { id: "order-1", status: "PENDING", productType: "cosmetique" },
       data: expect.objectContaining({
         status: "REJECTED",
         rejectReason: "Rupture de stock",
@@ -445,7 +487,7 @@ describe("shipOrder", () => {
     const result = await shipOrder("order-1");
     expect(result).toEqual({});
     expect(prismaMock.order.updateMany).toHaveBeenCalledWith({
-      where: { id: "order-1", status: "CONFIRMED" },
+      where: { id: "order-1", status: "CONFIRMED", productType: "cosmetique" },
       data: expect.objectContaining({ status: "SHIPPING" }),
     });
   });
@@ -463,6 +505,7 @@ describe("deliverOrder", () => {
       reference: "CMD-20260729-1234",
       subtotal: decimal(3000),
       total: decimal(3000),
+      productType: "cosmetique",
       items: [{ variantId: "variant-1", quantity: 2, unitPrice: 1500, lineTotal: 3000 }],
     } as never);
   }
@@ -482,6 +525,7 @@ describe("deliverOrder", () => {
 
     expect(result).toEqual({});
     expect(prismaMock.product.updateMany).toHaveBeenCalledWith({
+      where: { productType: "cosmetique" },
       data: { isFeatured: false },
     });
     expect(prismaMock.product.updateMany).toHaveBeenCalledWith({
@@ -532,7 +576,7 @@ describe("cancelOrder", () => {
   });
 
   it("returns notFound when the order does not exist", async () => {
-    prismaMock.order.findUnique.mockResolvedValue(null);
+    prismaMock.order.findFirst.mockResolvedValue(null);
     const result = await cancelOrder("order-1", "Client injoignable");
     expect(result).toEqual({ error: "notFound" });
   });
@@ -540,7 +584,7 @@ describe("cancelOrder", () => {
   it.each(["PENDING", "DELIVERED", "REJECTED", "CANCELLED"] as const)(
     "returns invalidTransition from %s",
     async (status) => {
-      prismaMock.order.findUnique.mockResolvedValue({
+      prismaMock.order.findFirst.mockResolvedValue({
         id: "order-1",
         status,
         items: [],
@@ -553,7 +597,7 @@ describe("cancelOrder", () => {
   it.each(["CONFIRMED", "SHIPPING"] as const)(
     "restocks every line and cancels from %s",
     async (status) => {
-      prismaMock.order.findUnique.mockResolvedValue({
+      prismaMock.order.findFirst.mockResolvedValue({
         id: "order-1",
         status,
         items: [

@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "products": "Produits",
+    "categories": "Catégories",
     "sales": "Ventes",
     "orders": "Commandes",
     "clients": "Clients",
@@ -104,6 +105,19 @@
     "deleteError": "La suppression a échoué.",
     "compareAtPrice": "Prix barré",
     "isFeatured": "Best-seller"
+  },
+  "categories": {
+    "title": "Catégories",
+    "name": "Nom",
+    "boutique": "Boutique",
+    "generic": "Générique",
+    "productCount": "Produits",
+    "newCategory": "Nouvelle catégorie",
+    "renameCategory": "Renommer la catégorie",
+    "deleteConfirm": "Supprimer cette catégorie ?",
+    "hasProductsError": "Impossible de supprimer une catégorie qui contient des produits.",
+    "duplicateNameError": "Une catégorie porte déjà ce nom.",
+    "noCategories": "Aucune catégorie pour le moment."
   },
   "clients": {
     "title": "Clients",
@@ -305,6 +319,9 @@
   },
   "settings": {
     "title": "Paramètres",
+    "globalSettingsLink": "Réglages globaux du site",
+    "globalSettingsTitle": "Réglages globaux",
+    "paymentSection": "Paiement",
     "bankilyNumber": "Numéro Bankily",
     "masrivyNumber": "Numéro Masrivi",
     "adminWhatsappNumber": "Numéro WhatsApp de la boutique",
@@ -314,12 +331,18 @@
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",
 
-    "productTypeSection": "Type de boutique",
-    "productTypeHint": "Change les libellés des variantes et suggère des catégories adaptées. N'affecte ni le nom du site, ni le SEO, ni le hero, ni la page À propos.",
+    "productTypeSection": "Boutique par défaut",
+    "productTypeHint": "Détermine la boutique affichée quand un visiteur arrive sans préciser de boutique dans l'adresse. Chaque boutique reste accessible à sa propre adresse quel que soit ce choix.",
     "productTypes": {
       "sport": "Sport",
       "cosmetique": "Cosmétique"
     },
+    "productTypeNew": "Nouveau type",
+    "productTypeNewTitle": "Créer un type de boutique",
+    "productTypeNewName": "Nom du type",
+    "productTypeNewNamePlaceholder": "Ex. Bijoux",
+    "productTypeNewCategories": "Catégories à créer (une par ligne)",
+    "productTypeNewCategoriesPlaceholder": "Colliers\nBracelets\nBagues",
     "themeSection": "Couleur du site",
     "themePresets": {
       "default": "Défaut",
@@ -344,10 +367,19 @@
     "seoSection": "Référencement (SEO)",
     "seoTitle": "Titre de la page",
     "seoDescription": "Description",
+
     "socialSection": "Réseaux sociaux",
-    "instagramUrl": "Lien Instagram",
-    "facebookUrl": "Lien Facebook",
-    "tiktokUrl": "Lien TikTok"
+    "addSocialLink": "Ajouter un réseau",
+    "socialPlatform": "Plateforme",
+    "socialPlatformPlaceholder": "Ex. Instagram, Snapchat...",
+    "socialUrl": "Lien",
+
+    "adminUsersSection": "Comptes admin boutique",
+    "newAdminUser": "Nouvel admin boutique",
+    "adminUserEmail": "Email",
+    "adminUserPassword": "Mot de passe",
+    "adminUserPasswordHint": "Au moins 8 caractères.",
+    "adminUserBoutique": "Boutique"
   },
   "orderProcedure": {
     "trigger": "Comment commander ?",

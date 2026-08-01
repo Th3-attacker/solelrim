@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getClientById } from "@/lib/queries/clients";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
 import { formatPrice } from "@/lib/format/currency";
@@ -20,11 +21,12 @@ export default async function ClientDetailPage({
   params: Promise<{ clientId: string }>;
 }) {
   const { clientId } = await params;
+  const scope = await getAdminScope();
   const [t, tSales, tCommon, client] = await Promise.all([
     getTranslations("clients"),
     getTranslations("sales"),
     getTranslations("common"),
-    getClientById(clientId),
+    getClientById(clientId, scope),
   ]);
 
   if (!client) {

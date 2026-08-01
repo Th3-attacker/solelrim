@@ -2,39 +2,36 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
-import { THEME_PRESETS } from "@/lib/theme/presets";
 import {
-  isProductType,
-  SUGGESTED_CATEGORIES,
-  THEME_BY_PRODUCT_TYPE,
-} from "@/lib/shop/product-type";
+  boutiqueSettingsSchema,
+  productTypeInputSchema,
+  type BoutiqueSettingsInput,
+} from "@/lib/validation/settings";
+import { THEME_PRESETS } from "@/lib/theme/presets";
+import { SUGGESTED_CATEGORIES } from "@/lib/shop/product-type";
+import { slugify } from "@/lib/shop/slug";
+import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
+import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireSuperAdmin } from "@/lib/auth/admin";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-}
+// --- Per-boutique settings (both roles — scoped to the acting admin's
+// boutique, or whichever one a superadmin currently has selected) ---
 
-export async function updateStoreSettings(
-  input: SettingsInput,
+export async function updateBoutiqueSettings(
+  input: BoutiqueSettingsInput,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
-  const parsed = settingsSchema.safeParse(input);
+  const { productType } = await requireAdminScope();
+  const parsed = boutiqueSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
-  await prisma.storeSettings.upsert({
-    where: { id: "singleton" },
-    update: parsed.data,
-    create: { id: "singleton", ...parsed.data },
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: parsed.data,
   });
 
   revalidatePath("/admin/settings");
@@ -45,7 +42,7 @@ export async function updateStoreSettings(
 export async function uploadStoreLogo(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -66,19 +63,16 @@ export async function uploadStoreLogo(
     return { error: "uploadFailed" };
   }
 
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
     await supabase.storage
       .from(PRODUCT_IMAGES_BUCKET)
       .remove([existing.logoStoragePath]);
   }
 
-  await prisma.storeSettings.upsert({
-    where: { id: "singleton" },
-    update: { logoStoragePath: storagePath },
-    create: { id: "singleton", logoStoragePath: storagePath },
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { logoStoragePath: storagePath },
   });
 
   revalidatePath("/admin/settings");
@@ -87,11 +81,9 @@ export async function uploadStoreLogo(
 }
 
 export async function removeStoreLogo(): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
     const supabase = createAdminClient();
     await supabase.storage
@@ -99,8 +91,8 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
       .remove([existing.logoStoragePath]);
   }
 
-  await prisma.storeSettings.update({
-    where: { id: "singleton" },
+  await prisma.storeType.update({
+    where: { key: productType },
     data: { logoStoragePath: null },
   });
 
@@ -109,10 +101,14 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   return {};
 }
 
+// --- Per-boutique storefront settings (hero image + theme) — both roles,
+// same scope as updateBoutiqueSettings above. Each boutique has its own
+// public route now, so its own admin manages its own storefront look. ---
+
 export async function uploadStoreHeroImage(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -133,19 +129,16 @@ export async function uploadStoreHeroImage(
     return { error: "uploadFailed" };
   }
 
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
     await supabase.storage
       .from(PRODUCT_IMAGES_BUCKET)
       .remove([existing.heroImagePath]);
   }
 
-  await prisma.storeSettings.upsert({
-    where: { id: "singleton" },
-    update: { heroImagePath: storagePath },
-    create: { id: "singleton", heroImagePath: storagePath },
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { heroImagePath: storagePath },
   });
 
   revalidatePath("/admin/settings");
@@ -154,11 +147,9 @@ export async function uploadStoreHeroImage(
 }
 
 export async function removeStoreHeroImage(): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
-  const existing = await prisma.storeSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
     const supabase = createAdminClient();
     await supabase.storage
@@ -166,8 +157,8 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
       .remove([existing.heroImagePath]);
   }
 
-  await prisma.storeSettings.update({
-    where: { id: "singleton" },
+  await prisma.storeType.update({
+    where: { key: productType },
     data: { heroImagePath: null },
   });
 
@@ -177,17 +168,15 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
 }
 
 export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
-  await requireAdmin();
+  const { productType } = await requireAdminScope();
 
   if (!THEME_PRESETS.some((preset) => preset.id === themeId)) {
     return { error: "invalid" };
   }
 
-  await prisma.storeSettings.upsert({
-    where: { id: "singleton" },
-    update: { themeId },
-    create: { id: "singleton", themeId },
-
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { themeId },
   });
 
   revalidatePath("/admin/settings");
@@ -195,32 +184,89 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
   return {};
 }
 
-export async function setProductType(productType: string): Promise<{ error?: string }> {
-  await requireAdmin();
+// --- Default boutique (superadmin only) — which one "/" redirects to ---
 
-  if (!isProductType(productType)) {
+// Validates against StoreType (the durable registry) instead of a hardcoded
+// preset list — every boutique that has ever been created, built-in or
+// custom, is always re-selectable.
+export async function setProductType(productType: string): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const storeType = await prisma.storeType.findUnique({ where: { key: productType } });
+  if (!storeType) {
     return { error: "invalid" };
   }
 
   await prisma.storeSettings.upsert({
     where: { id: "singleton" },
-    update: { productType, themeId: THEME_BY_PRODUCT_TYPE[productType] },
-    create: {
-      id: "singleton",
-      productType,
-      themeId: THEME_BY_PRODUCT_TYPE[productType],
-    },
+    update: { productType },
+    create: { id: "singleton", productType },
   });
 
   // Additive only — never renames or deletes an existing category, so
   // switching back and forth never touches categories already in use by
-  // real products.
-  await prisma.category.createMany({
-    data: SUGGESTED_CATEGORIES[productType].map((name) => ({ name, productType })),
-    skipDuplicates: true,
-  });
+  // real products. Only the two built-in presets have a suggested set;
+  // a custom type's categories were already created by createProductType.
+  const suggested = SUGGESTED_CATEGORIES[productType];
+  if (suggested) {
+    await prisma.category.createMany({
+      data: suggested.map((name) => ({ name, productType })),
+      skipDuplicates: true,
+    });
+  }
 
-  revalidatePath("/admin/settings");
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/admin/products");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// A reserved static route (app/[locale]/admin) — a boutique keyed "admin"
+// would never be reachable at its own /{locale}/admin URL, since Next.js
+// always prefers the static folder over the [storeType] dynamic segment.
+const RESERVED_STORE_TYPE_KEYS = new Set(["admin"]);
+
+// A custom store type beyond the sport/cosmetique presets: no translated
+// label (displayed as typed), no theme switch (keeps whatever is active),
+// and only the categories the admin lists here — no SUGGESTED_CATEGORIES
+// entry to draw from.
+export async function createProductType(
+  input: unknown,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const parsed = productTypeInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+  const { name, categories } = parsed.data;
+  const key = slugify(name);
+
+  if (RESERVED_STORE_TYPE_KEYS.has(key)) {
+    return { error: "reservedKey" };
+  }
+
+  try {
+    await prisma.storeType.create({ data: { key, label: name } });
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
+      return { error: "duplicateKey" };
+    }
+    throw err;
+  }
+
+  const uniqueCategories = [...new Set(categories)];
+  if (uniqueCategories.length > 0) {
+    await prisma.category.createMany({
+      data: uniqueCategories.map((categoryName) => ({
+        name: categoryName,
+        productType: key,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  revalidatePath("/admin/settings/global");
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
   return {};

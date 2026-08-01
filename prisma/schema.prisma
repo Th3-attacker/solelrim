@@ -23,16 +23,93 @@ enum OrderStatus {
   CANCELLED
 }
 
-model Category {
+enum AdminRole {
+  SUPERADMIN
+  BOUTIQUE_ADMIN
+}
+
+model StoreType {
+  id                  String   @id @default(cuid())
+  key                 String   @unique
+  label               String
+  themeId             String?
+  // Per-boutique contact/branding/storefront — each boutique has its own
+  // public route (/{locale}/{key}), so everything a visitor sees (name,
+  // announcement bar, hero, SEO, theme, payment numbers, logo) lives here
+  // instead of on the StoreSettings singleton, which now only points at
+  // the default boutique for "/" to redirect to.
+  bankilyNumber       String?
+  masrivyNumber       String?
+  adminWhatsappNumber String?
+  paymentInstructions String?
+  logoStoragePath     String?
+  siteName            String?
+  announcementText    String?
+  heroImagePath       String?
+  heroImagePosition   String   @default("right")
+  heroTitle           String?
+  heroSubtitle        String?
+  heroBadgeText       String?
+  heroCtaLabel        String?
+  seoTitle            String?
+  seoDescription      String?
+  createdAt           DateTime @default(now())
+
+  categories    Category[]
+  products      Product[]
+  orders        Order[]
+  sales         Sale[]
+  clients       Client[]
+  storeSettings StoreSettings[]
+  adminUsers    AdminUser[]
+  socialLinks   SocialLink[]
+}
+
+model SocialLink {
   id          String    @id @default(cuid())
-  name        String    @unique
+  productType String
+  storeType   StoreType @relation(fields: [productType], references: [key])
+  platform    String
+  url         String
+  position    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([productType])
+}
+
+// Links a Supabase auth user to a role. supabaseUserId is a plain string,
+// not a real FK — auth.users lives in Supabase's own `auth` schema, out of
+// Prisma's reach here (no multi-schema config). SUPERADMIN sees/manages
+// every boutique; BOUTIQUE_ADMIN is permanently locked to one (enforced by
+// the DB check below, and by lib/shop/admin-scope.ts ignoring the
+// free-choice cookie for this role).
+model AdminUser {
+  id             String     @id @default(cuid())
+  supabaseUserId String     @unique
+  role           AdminRole
+  productType    String?
+  storeType      StoreType? @relation(fields: [productType], references: [key])
+  createdAt      DateTime   @default(now())
+
+  @@index([productType])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  // Not @unique here: uniqueness is enforced by two partial unique indexes
+  // in the migration SQL instead (one per generic name, one per
+  // (name, productType) pair) — Prisma's schema DSL can't express a
+  // partial/filtered unique index, but the DB-level constraint still
+  // applies and createCategory/updateCategory still catch its P2002.
+  name        String
   // null = generic, shown regardless of the active store product type.
   // Set only on categories created by the type switch (setProductType) —
   // never backfilled on pre-existing categories, so nothing already in
   // use disappears from the picker.
   productType String?
+  storeType   StoreType? @relation(fields: [productType], references: [key])
   products    Product[]
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
 }
 
 model Product {
@@ -45,6 +122,11 @@ model Product {
   isFeatured     Boolean          @default(false)
   categoryId     String
   category       Category         @relation(fields: [categoryId], references: [id])
+  // Which boutique this product belongs to — set once at creation from the
+  // admin's current scope (lib/shop/admin-scope.ts), never inferred from
+  // Category (which stays nullable/generic for the category picker only).
+  productType    String
+  storeType      StoreType        @relation(fields: [productType], references: [key])
   images         ProductImage[]
   variants       ProductVariant[]
   isActive       Boolean          @default(true)
@@ -52,6 +134,7 @@ model Product {
   updatedAt      DateTime         @updatedAt
 
   @@index([categoryId])
+  @@index([productType])
 }
 
 model ProductImage {
@@ -85,16 +168,22 @@ model ProductVariant {
 }
 
 model Client {
-  id        String   @id @default(cuid())
-  fullName  String
-  phone     String?
-  email     String?
-  address   String?
-  notes     String?
-  sales     Sale[]
-  createdAt DateTime @default(now())
+  id          String    @id @default(cuid())
+  fullName    String
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  // Which boutique this client belongs to — set at creation from the
+  // admin's current scope. Sales only ever pick clients from the same
+  // boutique (lib/actions/sales.ts).
+  productType String
+  storeType   StoreType @relation(fields: [productType], references: [key])
+  sales       Sale[]
+  createdAt   DateTime  @default(now())
 
   @@index([fullName])
+  @@index([productType])
 }
 
 model Sale {
@@ -109,10 +198,15 @@ model Sale {
   status        SaleStatus @default(COMPLETED)
   paymentMethod String?
   notes         String?
+  // Stamped at creation from the admin's current scope (manual sale) or
+  // copied from the source Order (auto-created on deliverOrder).
+  productType   String
+  storeType     StoreType  @relation(fields: [productType], references: [key])
   createdAt     DateTime   @default(now())
 
   @@index([clientId])
   @@index([createdAt])
+  @@index([productType])
 }
 
 model SaleItem {
@@ -141,6 +235,11 @@ model Order {
   status           OrderStatus @default(PENDING)
   paymentProofPath String
   locale           String?
+  // The boutique the checkout form was submitted from (its [storeType] URL
+  // segment) — validated server-side against every variant in the cart
+  // before being trusted (see submitOrder).
+  productType      String
+  storeType        StoreType   @relation(fields: [productType], references: [key])
   createdAt        DateTime    @default(now())
   confirmedAt      DateTime?
   rejectedAt       DateTime?
@@ -152,6 +251,7 @@ model Order {
 
   @@index([status])
   @@index([createdAt])
+  @@index([productType])
 }
 
 model OrderItem {
@@ -179,27 +279,12 @@ model RateLimitHit {
   @@index([key, createdAt])
 }
 
+// Every visible storefront concern (name, hero, SEO, theme, announcement)
+// now lives on StoreType, one row per boutique with its own public route.
+// This singleton keeps a single job: which boutique "/" redirects to.
 model StoreSettings {
-  id                  String   @id @default("singleton")
-  bankilyNumber       String?
-  masrivyNumber       String?
-  adminWhatsappNumber String?
-  paymentInstructions String?
-  siteName            String?
-  logoStoragePath     String?
-  announcementText    String?
-  heroImagePath       String?
-  heroImagePosition   String   @default("right")
-  heroTitle           String?
-  heroSubtitle        String?
-  heroBadgeText       String?
-  heroCtaLabel        String?
-  seoTitle            String?
-  seoDescription      String?
-  instagramUrl        String?
-  facebookUrl         String?
-  tiktokUrl           String?
-  themeId             String   @default("default")
-  productType         String   @default("sport")
-  updatedAt           DateTime @updatedAt
+  id          String    @id @default("singleton")
+  productType String    @default("sport")
+  storeType   StoreType @relation(fields: [productType], references: [key])
+  updatedAt   DateTime  @updatedAt
 }

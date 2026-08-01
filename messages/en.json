@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
+    "categories": "Categories",
     "sales": "Sales",
     "orders": "Orders",
     "clients": "Clients",
@@ -104,6 +105,19 @@
     "deleteError": "Deletion failed.",
     "compareAtPrice": "Compare-at price",
     "isFeatured": "Best-seller"
+  },
+  "categories": {
+    "title": "Categories",
+    "name": "Name",
+    "boutique": "Boutique",
+    "generic": "Generic",
+    "productCount": "Products",
+    "newCategory": "New category",
+    "renameCategory": "Rename category",
+    "deleteConfirm": "Delete this category?",
+    "hasProductsError": "Can't delete a category that still has products.",
+    "duplicateNameError": "A category already has that name.",
+    "noCategories": "No categories yet."
   },
   "clients": {
     "title": "Clients",
@@ -305,6 +319,9 @@
   },
   "settings": {
     "title": "Settings",
+    "globalSettingsLink": "Global site settings",
+    "globalSettingsTitle": "Global settings",
+    "paymentSection": "Payment",
     "bankilyNumber": "Bankily number",
     "masrivyNumber": "Masrivi number",
     "adminWhatsappNumber": "Store WhatsApp number",
@@ -314,12 +331,18 @@
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
 
-    "productTypeSection": "Store type",
-    "productTypeHint": "Changes the variant labels and suggests matching categories. Does not affect the site name, SEO, hero, or the About page.",
+    "productTypeSection": "Default store",
+    "productTypeHint": "Sets which store shows when a visitor arrives without a store in the address. Every store stays reachable at its own address either way.",
     "productTypes": {
       "sport": "Sport",
       "cosmetique": "Cosmetics"
     },
+    "productTypeNew": "New type",
+    "productTypeNewTitle": "Create a store type",
+    "productTypeNewName": "Type name",
+    "productTypeNewNamePlaceholder": "E.g. Jewelry",
+    "productTypeNewCategories": "Categories to create (one per line)",
+    "productTypeNewCategoriesPlaceholder": "Necklaces\nBracelets\nRings",
     "themeSection": "Site color",
     "themePresets": {
       "default": "Default",
@@ -344,10 +367,19 @@
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",
+
     "socialSection": "Social media",
-    "instagramUrl": "Instagram link",
-    "facebookUrl": "Facebook link",
-    "tiktokUrl": "TikTok link"
+    "addSocialLink": "Add a social link",
+    "socialPlatform": "Platform",
+    "socialPlatformPlaceholder": "E.g. Instagram, Snapchat...",
+    "socialUrl": "Link",
+
+    "adminUsersSection": "Boutique admin accounts",
+    "newAdminUser": "New boutique admin",
+    "adminUserEmail": "Email",
+    "adminUserPassword": "Password",
+    "adminUserPasswordHint": "At least 8 characters.",
+    "adminUserBoutique": "Boutique"
   },
   "orderProcedure": {
     "trigger": "How does ordering work?",

@@ -17,13 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { settingsSchema, type SettingsInput } from "@/lib/validation/settings";
-import { updateStoreSettings } from "@/lib/actions/settings";
+import {
+  boutiqueSettingsSchema,
+  type BoutiqueSettingsInput,
+} from "@/lib/validation/settings";
+import { updateBoutiqueSettings } from "@/lib/actions/settings";
 
-export function SettingsForm({
+export function BoutiqueSettingsForm({
   defaultValues,
 }: {
-  defaultValues: SettingsInput;
+  defaultValues: BoutiqueSettingsInput;
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -35,14 +38,14 @@ export function SettingsForm({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<SettingsInput>({
-    resolver: zodResolver(settingsSchema),
+  } = useForm<BoutiqueSettingsInput>({
+    resolver: zodResolver(boutiqueSettingsSchema),
     defaultValues,
   });
 
-  const onSubmit: SubmitHandler<SettingsInput> = async (data) => {
+  const onSubmit: SubmitHandler<BoutiqueSettingsInput> = async (data) => {
     setSubmitting(true);
-    const result = await updateStoreSettings(data);
+    const result = await updateBoutiqueSettings(data);
     setSubmitting(false);
 
     if (result.error) {
@@ -56,7 +59,27 @@ export function SettingsForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <Card>
-        <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+        <CardHeader>
+          <CardTitle className="text-base">{t("brandingSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="siteName">{t("siteName")}</Label>
+            <Input id="siteName" {...register("siteName")} />
+          </div>
+
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <Label htmlFor="announcementText">{t("announcementText")}</Label>
+            <Input id="announcementText" {...register("announcementText")} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("paymentSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="bankilyNumber">{t("bankilyNumber")}</Label>
             <Input id="bankilyNumber" {...register("bankilyNumber")} />
@@ -90,23 +113,6 @@ export function SettingsForm({
               id="paymentInstructions"
               {...register("paymentInstructions")}
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("brandingSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="siteName">{t("siteName")}</Label>
-            <Input id="siteName" {...register("siteName")} />
-          </div>
-
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="announcementText">{t("announcementText")}</Label>
-            <Input id="announcementText" {...register("announcementText")} />
           </div>
         </CardContent>
       </Card>
@@ -181,28 +187,6 @@ export function SettingsForm({
           <div className="flex flex-col gap-2">
             <Label htmlFor="seoDescription">{t("seoDescription")}</Label>
             <Input id="seoDescription" {...register("seoDescription")} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("socialSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-3">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="instagramUrl">{t("instagramUrl")}</Label>
-            <Input id="instagramUrl" {...register("instagramUrl")} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="facebookUrl">{t("facebookUrl")}</Label>
-            <Input id="facebookUrl" {...register("facebookUrl")} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="tiktokUrl">{t("tiktokUrl")}</Label>
-            <Input id="tiktokUrl" {...register("tiktokUrl")} />
           </div>
         </CardContent>
       </Card>

@@ -1,8 +1,8 @@
-import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 type HeroSettings = {
   heroImagePath: string | null;
@@ -45,10 +45,10 @@ function HeroFallback({
             {badgeText}
           </span>
         )}
-        <h1 className="max-w-2xl text-heading-lg text-balance text-white sm:text-heading-xl">
+        <h1 className="max-w-3xl text-heading-lg text-balance text-white sm:text-heading-2xl">
           {title}
         </h1>
-        <p className="max-w-md text-paragraph-md text-white/70 sm:text-paragraph-lg">
+        <p className="max-w-md text-paragraph-lg text-white/70 sm:text-paragraph-lg">
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-2">
@@ -81,10 +81,10 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
   const imageOnLeft = settings.heroImagePosition === "left";
 
   return (
-    <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+    <div className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
       <div
         className={cn(
-          "flex flex-col items-start gap-5",
+          "flex flex-col items-start gap-5 animate-in fade-in slide-in-from-bottom-6 duration-1000",
           imageOnLeft ? "md:order-2" : "md:order-1",
         )}
       >
@@ -93,10 +93,10 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
             {badgeText}
           </span>
         )}
-        <h1 className="max-w-md text-heading-lg text-balance sm:text-heading-xl">
+        <h1 className="max-w-3xl text-heading-lg text-balance sm:text-heading-2xl">
           {title}
         </h1>
-        <p className="max-w-sm text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
+        <p className="max-w-sm text-paragraph-lg  text-muted-foreground sm:text-paragraph-xl">
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-1">
@@ -118,7 +118,7 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
           aria-hidden
           className="absolute -right-4 -bottom-8 size-36 rounded-full bg-primary/25 sm:size-44"
         />
-        <div className="relative size-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-sm">
+        <div className="relative size-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-sm ">
           <Image
             src={getStoreHeroImageUrl(settings.heroImagePath)}
             alt=""

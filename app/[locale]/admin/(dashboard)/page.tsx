@@ -6,6 +6,7 @@ import {
   getLowStockVariants,
   getSummaryStats,
 } from "@/lib/queries/dashboard";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -26,15 +27,16 @@ function percentChange(current: number, previous: number): number | null {
 }
 
 export default async function DashboardPage() {
+  const scope = await getAdminScope();
   const [t, tProducts, tCommon, revenue, bestSellers, lowStock, summary] =
     await Promise.all([
       getTranslations("dashboard"),
       getTranslations("products"),
       getTranslations("common"),
-      getRevenueByDay(),
-      getBestSellers(),
-      getLowStockVariants(),
-      getSummaryStats(),
+      getRevenueByDay(scope),
+      getBestSellers(scope),
+      getLowStockVariants(scope),
+      getSummaryStats(scope),
     ]);
 
   const revenueTrend = percentChange(summary.revenueThisMonth, summary.revenueLastMonth);

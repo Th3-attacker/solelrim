@@ -14,33 +14,43 @@ import { MobileNav } from "@/components/shop/mobile-nav";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
-import { getStoreSettings } from "@/lib/queries/settings";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, settings] = await Promise.all([
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}): Promise<Metadata> {
+  const { storeType } = await params;
+  const [t, boutique] = await Promise.all([
     getTranslations("shop"),
-    getStoreSettings(),
+    getPublicBoutiqueSettings(storeType),
   ]);
-  const siteName = settings.siteName?.trim() || t("siteName");
+  const siteName = boutique.siteName?.trim() || t("siteName");
   return {
-    title: settings.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`,
-    description: settings.seoDescription?.trim() || t("heroSubtitle"),
+    title: boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`,
+    description: boutique.seoDescription?.trim() || t("heroSubtitle"),
   };
 }
 
 export default async function ShopLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ storeType: string }>;
 }) {
-  const [t, allProducts, categories, settings] = await Promise.all([
+  const { storeType } = await params;
+  const [t, boutique] = await Promise.all([
     getTranslations("shop"),
-    getActiveProducts(),
-    getAllShopCategories(),
-    getStoreSettings(),
+    getPublicBoutiqueSettings(storeType),
+  ]);
+  const [allProducts, categories] = await Promise.all([
+    getActiveProducts(storeType),
+    getAllShopCategories(storeType),
   ]);
 
   const favoriteCandidates = allProducts.map((product) => ({
@@ -59,31 +69,29 @@ export default async function ShopLayout({
     name: product.name,
   }));
 
-  const siteName = settings.siteName?.trim() || t("siteName");
-  const logoUrl = settings.logoStoragePath
-    ? getStoreLogoUrl(settings.logoStoragePath)
+  const siteName = boutique.siteName?.trim() || t("siteName");
+  const logoUrl = boutique.logoStoragePath
+    ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
-  const announcementText = settings.announcementText?.trim() || t("announcementBar");
+  const announcementText = boutique.announcementText?.trim() || t("announcementBar");
 
-  const socialLinks = [
-    { href: settings.instagramUrl?.trim(), label: "Instagram" },
-    { href: settings.facebookUrl?.trim(), label: "Facebook" },
-    { href: settings.tiktokUrl?.trim(), label: "TikTok" },
-  ].filter((social): social is { href: string; label: string } =>
-    Boolean(social.href),
-  );
+  const socialLinks = boutique.socialLinks.map((link) => ({
+    id: link.id,
+    href: link.url,
+    label: link.platform,
+  }));
 
-  const whatsappHref = settings.adminWhatsappNumber
-    ? `https://wa.me/${settings.adminWhatsappNumber.replace(/\D/g, "")}`
+  const whatsappHref = boutique.adminWhatsappNumber
+    ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
     : null;
 
-  const theme = getThemePreset(settings.themeId);
+  const theme = getThemePreset(boutique.themeId);
 
   return (
-    <FavoritesProvider>
-      <CartProvider>
+    <FavoritesProvider storeType={storeType}>
+      <CartProvider storeType={storeType}>
         <CheckoutDrawerProvider>
-          {settings.themeId !== DEFAULT_THEME_ID && (
+          {boutique.themeId !== DEFAULT_THEME_ID && (
             <style>{`
               .shop-theme { --primary: ${theme.light.primary}; --primary-foreground: ${theme.light.primaryForeground}; --ring: ${theme.light.ring}; }
               .dark .shop-theme { --primary: ${theme.dark.primary}; --primary-foreground: ${theme.dark.primaryForeground}; --ring: ${theme.dark.ring}; }
@@ -98,7 +106,7 @@ export default async function ShopLayout({
                 <div className="flex min-w-0 items-center gap-1">
                   <MobileNav categories={categories} products={searchProducts} />
                   <Link
-                    href="/"
+                    href={`/${storeType}`}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
                   >
                     {logoUrl && (
@@ -115,13 +123,13 @@ export default async function ShopLayout({
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
                   <Link
-                    href="/about"
+                    href={`/${storeType}/about`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {t("aboutLink")}
                   </Link>
                   <Link
-                    href="/contact"
+                    href={`/${storeType}/contact`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {t("contactLink")}
@@ -148,7 +156,7 @@ export default async function ShopLayout({
                 <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
                   <div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
                     <Link
-                      href="/"
+                      href={`/${storeType}`}
                       className="flex items-center gap-2 text-base font-bold text-white"
                     >
                       {logoUrl && (
@@ -170,13 +178,16 @@ export default async function ShopLayout({
                       {t("footerShopTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href="/" className="transition-colors hover:text-white">
+                      <Link href={`/${storeType}`} className="transition-colors hover:text-white">
                         {t("allProductsTitle")}
                       </Link>
                       {categories.map((category) => (
                         <Link
                           key={category.id}
-                          href={{ pathname: "/", query: { category: category.id } }}
+                          href={{
+                            pathname: `/${storeType}`,
+                            query: { category: category.id },
+                          }}
                           className="transition-colors hover:text-white"
                         >
                           {category.name}
@@ -190,10 +201,10 @@ export default async function ShopLayout({
                       {t("footerHelpTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href="/about" className="transition-colors hover:text-white">
+                      <Link href={`/${storeType}/about`} className="transition-colors hover:text-white">
                         {t("aboutLink")}
                       </Link>
-                      <Link href="/contact" className="transition-colors hover:text-white">
+                      <Link href={`/${storeType}/contact`} className="transition-colors hover:text-white">
                         {t("contactLink")}
                       </Link>
                       {whatsappHref && (
@@ -218,7 +229,7 @@ export default async function ShopLayout({
                       <nav className="flex flex-col gap-2 text-sm">
                         {socialLinks.map((social) => (
                           <a
-                            key={social.label}
+                            key={social.id}
                             href={social.href}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -238,7 +249,14 @@ export default async function ShopLayout({
               </div>
             </footer>
           </div>
-          <CheckoutDrawer settings={settings} />
+          <CheckoutDrawer
+            settings={{
+              bankilyNumber: boutique.bankilyNumber,
+              masrivyNumber: boutique.masrivyNumber,
+              adminWhatsappNumber: boutique.adminWhatsappNumber,
+              paymentInstructions: boutique.paymentInstructions,
+            }}
+          />
         </CheckoutDrawerProvider>
       </CartProvider>
     </FavoritesProvider>

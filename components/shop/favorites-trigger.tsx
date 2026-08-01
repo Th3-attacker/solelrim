@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
@@ -35,6 +36,7 @@ export function FavoritesTrigger({
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const { storeType } = useParams<{ storeType: string }>();
   const isMobile = useIsMobile();
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
@@ -86,7 +88,7 @@ export function FavoritesTrigger({
                   <div className="flex flex-1 flex-col justify-center gap-1">
                     <SheetClose asChild>
                       <Link
-                        href={`/products/${product.slug}`}
+                        href={`/${storeType}/products/${product.slug}`}
                         className="text-sm font-medium hover:underline"
                       >
                         {product.name}

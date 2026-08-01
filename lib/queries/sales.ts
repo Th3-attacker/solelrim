@@ -1,15 +1,16 @@
 import { prisma } from "@/lib/prisma";
 
-export function getAllSales() {
+export function getAllSales(productType: string) {
   return prisma.sale.findMany({
+    where: { productType },
     include: { client: true, items: true },
     orderBy: { createdAt: "desc" },
   });
 }
 
-export function getSaleById(id: string) {
-  return prisma.sale.findUnique({
-    where: { id },
+export function getSaleById(id: string, productType: string) {
+  return prisma.sale.findFirst({
+    where: { id, productType },
     include: {
       client: true,
       items: { include: { variant: { include: { product: true } } } },
@@ -17,8 +18,9 @@ export function getSaleById(id: string) {
   });
 }
 
-export function getAllVariantsForSale() {
+export function getAllVariantsForSale(productType: string) {
   return prisma.productVariant.findMany({
+    where: { product: { productType } },
     include: { product: true },
     orderBy: [{ product: { name: "asc" } }],
   });

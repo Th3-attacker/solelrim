@@ -10,12 +10,17 @@ const prisma = new PrismaClient({ adapter });
 
 const OLD_DATE = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
+// Category.name is no longer @unique in the Prisma schema (replaced by two
+// partial unique indexes so different boutiques can share a name — see
+// migration 20260731191000_category_partial_unique), so upsert-by-name
+// isn't expressible via Prisma's `where` anymore. This seed only ever
+// creates generic categories, so look one up the same way the app does.
 async function upsertCategory(name: string) {
-  return prisma.category.upsert({
-    where: { name },
-    update: {},
-    create: { name },
+  const existing = await prisma.category.findFirst({
+    where: { name, productType: null },
   });
+  if (existing) return existing;
+  return prisma.category.create({ data: { name } });
 }
 
 async function upsertProduct(data: {
@@ -27,6 +32,7 @@ async function upsertProduct(data: {
   isFeatured?: boolean;
   createdAt?: Date;
   categoryId: string;
+  productType?: string;
   variants: {
     size: string;
     color: string;
@@ -35,7 +41,7 @@ async function upsertProduct(data: {
     lowStockThreshold?: number;
   }[];
 }) {
-  const { id, variants, ...rest } = data;
+  const { id, variants, productType = "sport", ...rest } = data;
   await prisma.product.upsert({
     where: { id },
     update: rest,
@@ -43,6 +49,7 @@ async function upsertProduct(data: {
       id,
       slug: slugify(rest.name),
       ...rest,
+      productType,
       variants: {
         create: variants.map((v) => ({
           size: v.size,

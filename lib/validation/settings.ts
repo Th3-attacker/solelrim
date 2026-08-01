@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-export const settingsSchema = z.object({
+// Everything a boutique's own admin can edit about their boutique — payment
+// contact info, and (since each boutique has its own public storefront
+// route) its storefront's own name, announcement bar, hero, and SEO too.
+export const boutiqueSettingsSchema = z.object({
   bankilyNumber: z.string().optional(),
   masrivyNumber: z.string().optional(),
   adminWhatsappNumber: z.string().min(1),
@@ -14,9 +17,20 @@ export const settingsSchema = z.object({
   heroImagePosition: z.enum(["left", "right"]).optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
-  instagramUrl: z.string().optional(),
-  facebookUrl: z.string().optional(),
-  tiktokUrl: z.string().optional(),
 });
 
-export type SettingsInput = z.infer<typeof settingsSchema>;
+export type BoutiqueSettingsInput = z.infer<typeof boutiqueSettingsSchema>;
+
+export const socialLinkSchema = z.object({
+  platform: z.string().trim().min(1).max(40),
+  url: z.string().trim().min(1).max(500),
+});
+
+export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
+
+export const productTypeInputSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  categories: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
+});
+
+export type ProductTypeInput = z.infer<typeof productTypeInputSchema>;

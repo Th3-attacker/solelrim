@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
+import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/format/currency";
@@ -15,10 +16,11 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminSalesPage() {
+  const scope = await getAdminScope();
   const [t, tCommon, sales] = await Promise.all([
     getTranslations("sales"),
     getTranslations("common"),
-    getAllSales(),
+    getAllSales(scope),
   ]);
 
   return (
