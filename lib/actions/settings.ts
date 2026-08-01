@@ -3,14 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { parseISO, isValid } from "date-fns";
 import {
   boutiqueSettingsSchema,
   productTypeInputSchema,
+  storeDomainSchema,
   type BoutiqueSettingsInput,
 } from "@/lib/validation/settings";
 import { THEME_PRESETS } from "@/lib/theme/presets";
-import { SUGGESTED_CATEGORIES } from "@/lib/shop/product-type";
+import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/product-type";
 import { slugify } from "@/lib/shop/slug";
+import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
@@ -221,11 +224,6 @@ export async function setProductType(productType: string): Promise<{ error?: str
   return {};
 }
 
-// A reserved static route (app/[locale]/admin) — a boutique keyed "admin"
-// would never be reachable at its own /{locale}/admin URL, since Next.js
-// always prefers the static folder over the [storeType] dynamic segment.
-const RESERVED_STORE_TYPE_KEYS = new Set(["admin"]);
-
 // A custom store type beyond the sport/cosmetique presets: no translated
 // label (displayed as typed), no theme switch (keeps whatever is active),
 // and only the categories the admin lists here — no SUGGESTED_CATEGORIES
@@ -269,5 +267,67 @@ export async function createProductType(
   revalidatePath("/admin/settings/global");
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
+  return {};
+}
+
+// --- Infrastructure: custom domain + license (superadmin only, never via
+// requireAdminScope) — both take productType explicitly, since the
+// superadmin is editing an arbitrary row out of the all-boutiques table on
+// Réglages globaux, not "whichever boutique is currently scoped". ---
+
+export async function updateStoreDomain(
+  productType: string,
+  domain: string,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const parsed = storeDomainSchema.safeParse({ domain });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+  const normalized = parsed.data.domain || null;
+
+  if (normalized && normalized === new URL(getSiteUrl()).hostname) {
+    return { error: "reservedDomain" };
+  }
+
+  try {
+    await prisma.storeType.update({
+      where: { key: productType },
+      data: { domain: normalized },
+    });
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
+      return { error: "duplicateDomain" };
+    }
+    throw err;
+  }
+
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function updateLicenseExpiresAt(
+  productType: string,
+  licenseExpiresAt: string | null,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  let parsedDate: Date | null = null;
+  if (licenseExpiresAt) {
+    parsedDate = parseISO(licenseExpiresAt);
+    if (!isValid(parsedDate)) {
+      return { error: "invalid" };
+    }
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { licenseExpiresAt: parsedDate },
+  });
+
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/admin", "layout");
   return {};
 }

@@ -34,3 +34,28 @@ export const productTypeInputSchema = z.object({
 });
 
 export type ProductTypeInput = z.infer<typeof productTypeInputSchema>;
+
+// A bare hostname, no protocol/path — e.g. "solel.com", not
+// "https://solel.com/". Superadmin-only (lib/actions/settings.ts).
+const HOSTNAME_RE =
+  /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+
+// Empty string clears the domain; a non-empty value is normalized (protocol/
+// path/trailing slash stripped, lowercased) then checked against a basic
+// hostname shape. The "must differ from this app's own canonical host"
+// check lives in updateStoreDomain instead — it needs an env lookup, not a
+// pure validation rule.
+export const storeDomainSchema = z.object({
+  domain: z
+    .string()
+    .trim()
+    .transform((value) =>
+      value
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, "")
+        .toLowerCase(),
+    )
+    .refine((value) => value === "" || HOSTNAME_RE.test(value), "invalid"),
+});
+
+export type StoreDomainInput = z.infer<typeof storeDomainSchema>;

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { ProductTypePicker } from "@/components/settings/product-type-picker";
 import { AdminUsersManager } from "@/components/settings/admin-users-manager";
+import { BoutiqueLicenseManager } from "@/components/settings/boutique-license-manager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireSuperAdminPage } from "@/lib/auth/admin";
 import { listBoutiqueAdmins } from "@/lib/queries/admin-users";
@@ -17,9 +18,11 @@ export default async function GlobalSettingsPage() {
     listBoutiqueAdmins(),
   ]);
 
-  const storeTypeOptions = storeTypes.map((type) => ({
+  const boutiqueRows = storeTypes.map((type) => ({
     key: type.key,
     label: isProductType(type.key) ? t(`productTypes.${type.key}`) : type.label,
+    domain: type.domain,
+    licenseExpiresAt: type.licenseExpiresAt,
   }));
 
   return (
@@ -33,10 +36,19 @@ export default async function GlobalSettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-base">{t("boutiquesSection")}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <BoutiqueLicenseManager storeTypes={boutiqueRows} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-base">{t("adminUsersSection")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <AdminUsersManager admins={boutiqueAdmins} storeTypes={storeTypeOptions} />
+          <AdminUsersManager admins={boutiqueAdmins} storeTypes={boutiqueRows} />
         </CardContent>
       </Card>
     </div>

@@ -379,7 +379,30 @@
     "adminUserEmail": "Email",
     "adminUserPassword": "Password",
     "adminUserPasswordHint": "At least 8 characters.",
-    "adminUserBoutique": "Boutique"
+    "adminUserBoutique": "Boutique",
+
+    "boutiquesSection": "Boutiques",
+    "noBoutiques": "No boutiques yet.",
+    "domain": "Domain name",
+    "domainNotSet": "No domain configured",
+    "domainPlaceholder": "solel.com",
+    "domainEdit": "Domain",
+    "domainEditTitle": "Domain — {label}",
+    "domainError": {
+      "invalid": "Invalid domain name.",
+      "duplicateDomain": "This domain is already used by another boutique.",
+      "reservedDomain": "This domain is already the main site's own domain."
+    },
+    "licenseStatus": {
+      "unrestricted": "Unrestricted",
+      "ok": "Up to date",
+      "expiringSoon": "Expiring soon",
+      "expired": "Expired"
+    },
+    "licenseExtend": "Extend",
+    "licenseClear": "Clear due date",
+    "licenseBannerExpiringSoon": "This boutique's license expires on {date}.",
+    "licenseBannerExpired": "This boutique's license expired on {date}."
   },
   "orderProcedure": {
     "trigger": "How does ordering work?",

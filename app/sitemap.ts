@@ -13,14 +13,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
   const storeTypes = await getStoreTypes();
 
-  const urlFor = (locale: string, path: string) => `${baseUrl}/${locale}${path}`;
-  const alternatesFor = (path: string) =>
-    Object.fromEntries(routing.locales.map((locale) => [locale, urlFor(locale, path)]));
-
   const entries: MetadataRoute.Sitemap = [];
 
   for (const storeType of storeTypes) {
-    const staticPaths = STATIC_SUBPATHS.map((subpath) => `/${storeType.key}${subpath}`);
+    // A boutique with its own domain is reachable there with no /{key}
+    // segment (see proxy.ts) — its canonical URLs reflect that instead of
+    // the shared multi-boutique domain.
+    const base = storeType.domain ? `https://${storeType.domain}` : baseUrl;
+    const prefix = storeType.domain ? "" : `/${storeType.key}`;
+    const urlFor = (locale: string, path: string) => `${base}/${locale}${path}`;
+    const alternatesFor = (path: string) =>
+      Object.fromEntries(routing.locales.map((locale) => [locale, urlFor(locale, path)]));
+
+    const staticPaths = STATIC_SUBPATHS.map((subpath) => `${prefix}${subpath}`);
     for (const path of staticPaths) {
       for (const locale of routing.locales) {
         entries.push({
@@ -34,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // isActive: false products are excluded by getActiveProducts itself.
     const products = await getActiveProducts(storeType.key);
     for (const product of products) {
-      const path = `/${storeType.key}/products/${product.slug}`;
+      const path = `${prefix}/products/${product.slug}`;
       for (const locale of routing.locales) {
         entries.push({
           url: urlFor(locale, path),

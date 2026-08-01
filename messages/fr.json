@@ -379,7 +379,30 @@
     "adminUserEmail": "Email",
     "adminUserPassword": "Mot de passe",
     "adminUserPasswordHint": "Au moins 8 caractères.",
-    "adminUserBoutique": "Boutique"
+    "adminUserBoutique": "Boutique",
+
+    "boutiquesSection": "Boutiques",
+    "noBoutiques": "Aucune boutique.",
+    "domain": "Nom de domaine",
+    "domainNotSet": "Aucun domaine configuré",
+    "domainPlaceholder": "solel.com",
+    "domainEdit": "Domaine",
+    "domainEditTitle": "Domaine — {label}",
+    "domainError": {
+      "invalid": "Nom de domaine invalide.",
+      "duplicateDomain": "Ce domaine est déjà utilisé par une autre boutique.",
+      "reservedDomain": "Ce domaine est déjà celui du site principal."
+    },
+    "licenseStatus": {
+      "unrestricted": "Illimitée",
+      "ok": "À jour",
+      "expiringSoon": "Bientôt expirée",
+      "expired": "Expirée"
+    },
+    "licenseExtend": "Prolonger",
+    "licenseClear": "Retirer l'échéance",
+    "licenseBannerExpiringSoon": "La licence de cette boutique expire le {date}.",
+    "licenseBannerExpired": "La licence de cette boutique a expiré le {date}."
   },
   "orderProcedure": {
     "trigger": "Comment commander ?",

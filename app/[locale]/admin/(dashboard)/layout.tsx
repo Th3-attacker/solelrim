@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { LicenseWarningBanner } from "@/components/settings/license-warning-banner";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -11,6 +12,7 @@ import {
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getCurrentAdmin } from "@/lib/auth/admin";
+import { getLicenseStatus } from "@/lib/shop/license";
 
 export default async function DashboardLayout({
   children,
@@ -22,6 +24,9 @@ export default async function DashboardLayout({
     getAdminScope(),
     getCurrentAdmin(),
   ]);
+
+  const currentLicenseExpiresAt =
+    storeTypes.find((type) => type.key === currentScope)?.licenseExpiresAt ?? null;
 
   return (
     <SidebarProvider>
@@ -38,6 +43,12 @@ export default async function DashboardLayout({
             <LogoutButton />
           </div>
         </header>
+        <div className="print:hidden">
+          <LicenseWarningBanner
+            status={getLicenseStatus(currentLicenseExpiresAt)}
+            expiresAt={currentLicenseExpiresAt}
+          />
+        </div>
         <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

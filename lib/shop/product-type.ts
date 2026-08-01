@@ -29,3 +29,18 @@ export const THEME_BY_PRODUCT_TYPE: Record<string, string> = {
   sport: "default",
   cosmetique: "rose",
 };
+
+// proxy.ts's own sentinel rewrite target for blocking /admin on a custom
+// boutique domain — must never resolve to a real boutique, or that block
+// stops working (see RESERVED_STORE_TYPE_KEYS below).
+export const NOT_FOUND_STORE_TYPE_KEY = "__not-found__";
+
+// Keys a boutique can never claim (createProductType, lib/actions/settings.ts):
+// - "admin" would collide with the static app/[locale]/admin/ route — Next.js
+//   always prefers a static folder over the [storeType] dynamic segment, so
+//   a boutique keyed "admin" would silently never be reachable.
+// - NOT_FOUND_STORE_TYPE_KEY, see above.
+export const RESERVED_STORE_TYPE_KEYS = new Set([
+  "admin",
+  NOT_FOUND_STORE_TYPE_KEY,
+]);

@@ -29,8 +29,8 @@ enum AdminRole {
 }
 
 model StoreType {
-  id                  String   @id @default(cuid())
-  key                 String   @unique
+  id                  String    @id @default(cuid())
+  key                 String    @unique
   label               String
   themeId             String?
   // Per-boutique contact/branding/storefront — each boutique has its own
@@ -46,14 +46,23 @@ model StoreType {
   siteName            String?
   announcementText    String?
   heroImagePath       String?
-  heroImagePosition   String   @default("right")
+  heroImagePosition   String    @default("right")
   heroTitle           String?
   heroSubtitle        String?
   heroBadgeText       String?
   heroCtaLabel        String?
   seoTitle            String?
   seoDescription      String?
-  createdAt           DateTime @default(now())
+  // Infrastructure-level, superadmin-only — never editable via
+  // updateBoutiqueSettings/requireAdminScope like everything above. domain
+  // lets proxy.ts route a custom hostname straight to this boutique with no
+  // visible [storeType] segment (still needs the actual DNS/Vercel domain
+  // setup done separately). licenseExpiresAt drives a purely visual
+  // expiration warning (lib/shop/license.ts) — null means unrestricted,
+  // nothing is ever blocked based on it.
+  domain              String?   @unique
+  licenseExpiresAt    DateTime?
+  createdAt           DateTime  @default(now())
 
   categories    Category[]
   products      Product[]

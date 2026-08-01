@@ -379,7 +379,30 @@
     "adminUserEmail": "البريد الإلكتروني",
     "adminUserPassword": "كلمة المرور",
     "adminUserPasswordHint": "8 أحرف على الأقل.",
-    "adminUserBoutique": "المتجر"
+    "adminUserBoutique": "المتجر",
+
+    "boutiquesSection": "المتاجر",
+    "noBoutiques": "لا توجد متاجر بعد.",
+    "domain": "اسم النطاق",
+    "domainNotSet": "لم يتم تعيين نطاق",
+    "domainPlaceholder": "solel.com",
+    "domainEdit": "النطاق",
+    "domainEditTitle": "النطاق — {label}",
+    "domainError": {
+      "invalid": "اسم نطاق غير صالح.",
+      "duplicateDomain": "هذا النطاق مستخدم بالفعل من متجر آخر.",
+      "reservedDomain": "هذا النطاق هو نطاق الموقع الرئيسي نفسه."
+    },
+    "licenseStatus": {
+      "unrestricted": "غير محدودة",
+      "ok": "محدّثة",
+      "expiringSoon": "قريبة الانتهاء",
+      "expired": "منتهية"
+    },
+    "licenseExtend": "تمديد",
+    "licenseClear": "إزالة تاريخ الاستحقاق",
+    "licenseBannerExpiringSoon": "ترخيص هذا المتجر ينتهي في {date}.",
+    "licenseBannerExpired": "انتهى ترخيص هذا المتجر في {date}."
   },
   "orderProcedure": {
     "trigger": "كيف يتم الطلب؟",
