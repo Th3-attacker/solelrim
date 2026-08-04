@@ -28,7 +28,12 @@
     "orders": "Commandes",
     "clients": "Clients",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "catalogSection": "Catalogue",
+    "activitySection": "Activité",
+    "adminSection": "Administration",
+    "superadmin": "Super administrateur",
+    "boutiqueAdmin": "Administrateur boutique"
   },
   "auth": {
     "login": {
