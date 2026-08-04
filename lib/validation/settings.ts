@@ -4,8 +4,6 @@ import { z } from "zod";
 // contact info, and (since each boutique has its own public storefront
 // route) its storefront's own name, announcement bar, hero, and SEO too.
 export const boutiqueSettingsSchema = z.object({
-  bankilyNumber: z.string().optional(),
-  masrivyNumber: z.string().optional(),
   adminWhatsappNumber: z.string().min(1),
   paymentInstructions: z.string().optional(),
   siteName: z.string().optional(),
@@ -27,6 +25,13 @@ export const socialLinkSchema = z.object({
 });
 
 export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
+
+export const walletAccountSchema = z.object({
+  provider: z.enum(["BANKILY", "MASRIVY"]),
+  number: z.string().trim().min(1).max(30),
+});
+
+export type WalletAccountInput = z.infer<typeof walletAccountSchema>;
 
 export const productTypeInputSchema = z.object({
   name: z.string().trim().min(1).max(40),

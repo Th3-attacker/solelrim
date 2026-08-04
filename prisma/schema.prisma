@@ -33,6 +33,11 @@ enum PromoDiscountType {
   FIXED
 }
 
+enum WalletProvider {
+  BANKILY
+  MASRIVY
+}
+
 model StoreType {
   id                  String    @id @default(cuid())
   key                 String    @unique
@@ -43,8 +48,6 @@ model StoreType {
   // announcement bar, hero, SEO, theme, payment numbers, logo) lives here
   // instead of on the StoreSettings singleton, which now only points at
   // the default boutique for "/" to redirect to.
-  bankilyNumber       String?
-  masrivyNumber       String?
   adminWhatsappNumber String?
   paymentInstructions String?
   logoStoragePath     String?
@@ -69,15 +72,16 @@ model StoreType {
   licenseExpiresAt    DateTime?
   createdAt           DateTime  @default(now())
 
-  categories    Category[]
-  products      Product[]
-  orders        Order[]
-  sales         Sale[]
-  clients       Client[]
-  storeSettings StoreSettings[]
-  adminUsers    AdminUser[]
-  socialLinks   SocialLink[]
-  promoCodes    PromoCode[]
+  categories     Category[]
+  products       Product[]
+  orders         Order[]
+  sales          Sale[]
+  clients        Client[]
+  storeSettings  StoreSettings[]
+  adminUsers     AdminUser[]
+  socialLinks    SocialLink[]
+  promoCodes     PromoCode[]
+  walletAccounts WalletAccount[]
 }
 
 model SocialLink {
@@ -88,6 +92,23 @@ model SocialLink {
   url         String
   position    Int       @default(0)
   createdAt   DateTime  @default(now())
+
+  @@index([productType])
+}
+
+// Bankily/Masrivy payment numbers — a repeatable, ordered list (mirrors
+// SocialLink) instead of two fixed StoreType columns, so a boutique admin
+// can add multiple numbers per provider or drop one entirely. provider
+// drives which bundled logo (lib/shop/wallets.ts) renders next to number,
+// both in the admin manager and at checkout.
+model WalletAccount {
+  id          String         @id @default(cuid())
+  productType String
+  storeType   StoreType      @relation(fields: [productType], references: [key])
+  provider    WalletProvider
+  number      String
+  position    Int            @default(0)
+  createdAt   DateTime       @default(now())
 
   @@index([productType])
 }
@@ -185,7 +206,7 @@ model ProductVariant {
 }
 
 model Client {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   fullName    String
   phone       String?
   email       String?
@@ -195,10 +216,10 @@ model Client {
   // admin's current scope. Sales only ever pick clients from the same
   // boutique (lib/actions/sales.ts).
   productType String
-  storeType   StoreType @relation(fields: [productType], references: [key])
+  storeType   StoreType   @relation(fields: [productType], references: [key])
   sales       Sale[]
   promoCodes  PromoCode[]
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime    @default(now())
 
   @@index([fullName])
   @@index([productType])

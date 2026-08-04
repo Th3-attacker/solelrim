@@ -281,8 +281,6 @@
     "back": "Back",
     "orderSummary": "Summary",
     "paymentInstructionsTitle": "Payment instructions",
-    "bankilyLabel": "Bankily",
-    "masrivyLabel": "Masrivi",
     "uploadScreenshot": "Payment screenshot",
     "uploadScreenshotHint": "Upload a screenshot showing the payment was completed.",
     "submitOrder": "Confirm order",
@@ -305,6 +303,10 @@
     "promoCodeExpiredError": "This promo code has expired.",
     "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
     "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
+  },
+  "wallets": {
+    "bankily": "Bankily",
+    "masrivy": "Masrivi"
   },
   "orders": {
     "title": "Orders",
@@ -366,8 +368,6 @@
     "globalSettingsLink": "Global site settings",
     "globalSettingsTitle": "Global settings",
     "paymentSection": "Payment",
-    "bankilyNumber": "Bankily number",
-    "masrivyNumber": "Masrivi number",
     "adminWhatsappNumber": "Store WhatsApp number",
     "paymentInstructions": "Payment instructions",
     "logo": "Logo",
@@ -411,6 +411,11 @@
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",
+
+    "walletsSection": "Payment wallets",
+    "addWallet": "Add a wallet",
+    "walletProvider": "Provider",
+    "walletNumber": "Number",
 
     "socialSection": "Social media",
     "addSocialLink": "Add a social link",

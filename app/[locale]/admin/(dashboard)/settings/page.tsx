@@ -6,6 +6,7 @@ import { LogoUpload } from "@/components/settings/logo-upload";
 import { HeroImageUpload } from "@/components/settings/hero-image-upload";
 import { ThemePicker } from "@/components/settings/theme-picker";
 import { SocialLinksManager } from "@/components/settings/social-links-manager";
+import { WalletAccountsManager } from "@/components/settings/wallet-accounts-manager";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
@@ -52,8 +53,6 @@ export default async function SettingsPage() {
 
       <BoutiqueSettingsForm
         defaultValues={{
-          bankilyNumber: boutique.bankilyNumber ?? "",
-          masrivyNumber: boutique.masrivyNumber ?? "",
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
           paymentInstructions: boutique.paymentInstructions ?? "",
           siteName: boutique.siteName ?? "",
@@ -66,6 +65,14 @@ export default async function SettingsPage() {
           seoTitle: boutique.seoTitle ?? "",
           seoDescription: boutique.seoDescription ?? "",
         }}
+      />
+
+      <WalletAccountsManager
+        wallets={boutique.walletAccounts.map((wallet) => ({
+          id: wallet.id,
+          provider: wallet.provider,
+          number: wallet.number,
+        }))}
       />
 
       <SocialLinksManager

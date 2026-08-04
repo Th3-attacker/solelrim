@@ -15,6 +15,7 @@ import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
+import { WALLET_PROVIDERS } from "@/lib/shop/wallets";
 import { X } from "lucide-react";
 import {
   checkoutCustomerSchema,
@@ -22,8 +23,7 @@ import {
 } from "@/lib/validation/order";
 
 type Settings = {
-  bankilyNumber: string | null;
-  masrivyNumber: string | null;
+  wallets: { provider: "BANKILY" | "MASRIVY"; number: string }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
 };
@@ -42,6 +42,7 @@ export function CheckoutFlow({
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
+  const tWallets = useTranslations("wallets");
   const locale = useLocale();
   const { storeType } = useParams<{ storeType: string }>();
   const cart = useCart();
@@ -387,15 +388,30 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step3Title")}</h2>
           <div className="flex flex-col gap-1 text-sm">
             <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
-            {settings.bankilyNumber && (
-              <p>
-                {t("bankilyLabel")}: {settings.bankilyNumber}
-              </p>
-            )}
-            {settings.masrivyNumber && (
-              <p>
-                {t("masrivyLabel")}: {settings.masrivyNumber}
-              </p>
+            {settings.wallets.length > 0 && (
+              <div className="flex flex-col gap-2 py-1">
+                {settings.wallets.map((wallet, index) => (
+                  <div
+                    key={index}
+                    className="flex min-w-0 items-center gap-3 rounded-xl border bg-muted/30 p-3"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={WALLET_PROVIDERS[wallet.provider].logo}
+                      alt=""
+                      className="size-10 shrink-0 rounded-lg"
+                    />
+                    <div className="flex min-w-0 flex-col">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {tWallets(wallet.provider.toLowerCase())}
+                      </span>
+                      <span dir="ltr" className="truncate text-sm font-semibold">
+                        {wallet.number}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             {settings.paymentInstructions && (
               <p className="text-muted-foreground">

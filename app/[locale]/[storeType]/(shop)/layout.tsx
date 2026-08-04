@@ -264,8 +264,10 @@ export default async function ShopLayout({
           </div>
           <CheckoutDrawer
             settings={{
-              bankilyNumber: boutique.bankilyNumber,
-              masrivyNumber: boutique.masrivyNumber,
+              wallets: boutique.walletAccounts.map((wallet) => ({
+                provider: wallet.provider,
+                number: wallet.number,
+              })),
               adminWhatsappNumber: boutique.adminWhatsappNumber,
               paymentInstructions: boutique.paymentInstructions,
             }}

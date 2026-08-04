@@ -281,8 +281,6 @@
     "back": "رجوع",
     "orderSummary": "الملخص",
     "paymentInstructionsTitle": "تعليمات الدفع",
-    "bankilyLabel": "بنكيلي",
-    "masrivyLabel": "مصرفي",
     "uploadScreenshot": "لقطة شاشة الدفع",
     "uploadScreenshotHint": "أرسل لقطة شاشة تُثبت أن الدفع قد تم.",
     "submitOrder": "تأكيد الطلب",
@@ -305,6 +303,10 @@
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
+  },
+  "wallets": {
+    "bankily": "بنكيلي",
+    "masrivy": "مصرفي"
   },
   "orders": {
     "title": "الطلبات",
@@ -366,8 +368,6 @@
     "globalSettingsLink": "الإعدادات العامة للموقع",
     "globalSettingsTitle": "الإعدادات العامة",
     "paymentSection": "الدفع",
-    "bankilyNumber": "رقم بنكيلي",
-    "masrivyNumber": "رقم مصرفي",
     "adminWhatsappNumber": "رقم واتساب المتجر",
     "paymentInstructions": "تعليمات الدفع",
     "logo": "الشعار",
@@ -411,6 +411,11 @@
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",
+
+    "walletsSection": "محافظ الدفع",
+    "addWallet": "إضافة محفظة",
+    "walletProvider": "المزود",
+    "walletNumber": "الرقم",
 
     "socialSection": "وسائل التواصل الاجتماعي",
     "addSocialLink": "إضافة رابط تواصل",
