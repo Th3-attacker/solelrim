@@ -302,7 +302,7 @@ describe("submitOrder", () => {
       clientId: null,
       client: null,
     } as never);
-    prismaMock.promoCode.update.mockResolvedValue({} as never);
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 1 } as never);
     prismaMock.order.create.mockResolvedValue({
       id: "order-1",
       reference: "CMD-20260729-1234",
@@ -314,7 +314,10 @@ describe("submitOrder", () => {
     expect(prismaMock.promoCode.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { code: "WELCOME10" } }),
     );
-    expect(prismaMock.promoCode.update).toHaveBeenCalledWith({
+    // maxUses is null (unlimited) here, so the atomic guard adds no
+    // usedCount condition beyond the id match — see the maxUses-set case
+    // below for the guarded form.
+    expect(prismaMock.promoCode.updateMany).toHaveBeenCalledWith({
       where: { id: "promo-1" },
       data: { usedCount: { increment: 1 } },
     });
@@ -323,6 +326,97 @@ describe("submitOrder", () => {
     expect(createArgs.data.discount).toBe(300); // 10% of 3000
     expect(createArgs.data.total).toBe(2700);
     expect(createArgs.data.promoCodeId).toBe("promo-1");
+  });
+
+  it("accepts a personal promo code when the phone matches", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-2",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "FIXED",
+      discountValue: decimal(500),
+      expiresAt: null,
+      maxUses: null,
+      usedCount: 0,
+      clientId: "client-1",
+      client: { phone: "22345678" },
+    } as never);
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 1 } as never);
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+    } as never);
+
+    const result = await submitOrder(
+      buildOrderForm({ promoCode: "VIP-AICHA", customerPhone: "22345678" }),
+    );
+
+    expect(result).toEqual({ reference: "CMD-20260729-1234", orderId: "order-1" });
+    const createArgs = prismaMock.order.create.mock.calls[0][0];
+    expect(createArgs.data.discount).toBe(500);
+    expect(createArgs.data.promoCodeId).toBe("promo-2");
+  });
+
+  it("guards the usedCount increment with the maxUses limit atomically", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-3",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: null,
+      maxUses: 5,
+      usedCount: 4,
+      clientId: null,
+      client: null,
+    } as never);
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 1 } as never);
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+    } as never);
+
+    await submitOrder(buildOrderForm({ promoCode: "LIMITED" }));
+
+    expect(prismaMock.promoCode.updateMany).toHaveBeenCalledWith({
+      where: { id: "promo-3", usedCount: { lt: 5 } },
+      data: { usedCount: { increment: 1 } },
+    });
+  });
+
+  it("rejects when a concurrent request already claimed the last use (race lost)", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-3",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: null,
+      maxUses: 1,
+      usedCount: 0,
+      clientId: null,
+      client: null,
+    } as never);
+    // Another concurrent submit already incremented usedCount to maxUses by
+    // the time this one's UPDATE runs — the guarded WHERE matches 0 rows.
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 0 } as never);
+
+    const result = await submitOrder(buildOrderForm({ promoCode: "LAST-ONE" }));
+
+    expect(result).toEqual({ error: "usageLimitReached" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("rejects an expired promo code and does not create the order", async () => {
@@ -347,7 +441,7 @@ describe("submitOrder", () => {
 
     expect(result).toEqual({ error: "expired" });
     expect(prismaMock.order.create).not.toHaveBeenCalled();
-    expect(prismaMock.promoCode.update).not.toHaveBeenCalled();
+    expect(prismaMock.promoCode.updateMany).not.toHaveBeenCalled();
   });
 
   it("rejects a personal promo code when the phone doesn't match", async () => {

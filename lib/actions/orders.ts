@@ -174,10 +174,24 @@ export async function submitOrder(
           }
           discount = computePromoDiscount(result.promoCode, subtotal);
           promoCodeId = result.promoCode.id;
-          await tx.promoCode.update({
-            where: { id: promoCodeId },
+          const { maxUses } = result.promoCode;
+          // The read above and this increment aren't atomic on their own —
+          // under READ COMMITTED, two concurrent submits for the same
+          // maxUses-limited code could both pass the check before either
+          // commits. Re-asserting usedCount < maxUses in the UPDATE's WHERE
+          // closes that gap: if someone else's increment lands first,
+          // updated.count is 0 here and this one loses the race instead of
+          // silently overselling the code.
+          const updated = await tx.promoCode.updateMany({
+            where: {
+              id: promoCodeId,
+              ...(maxUses !== null ? { usedCount: { lt: maxUses } } : {}),
+            },
             data: { usedCount: { increment: 1 } },
           });
+          if (updated.count === 0) {
+            throw new Error("usageLimitReached");
+          }
         }
 
         return tx.order.create({
