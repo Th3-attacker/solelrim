@@ -16,7 +16,7 @@ import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
-import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 
 export async function generateMetadata({
@@ -264,8 +264,13 @@ export default async function ShopLayout({
           </div>
           <CheckoutDrawer
             settings={{
-              bankilyNumber: boutique.bankilyNumber,
-              masrivyNumber: boutique.masrivyNumber,
+              wallets: boutique.walletAccounts.map((wallet) => ({
+                provider: wallet.provider,
+                number: wallet.number,
+                logoUrl: wallet.logoStoragePath
+                  ? getWalletLogoUrl(wallet.logoStoragePath)
+                  : null,
+              })),
               adminWhatsappNumber: boutique.adminWhatsappNumber,
               paymentInstructions: boutique.paymentInstructions,
             }}

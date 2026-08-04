@@ -15,15 +15,14 @@ import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { X } from "lucide-react";
+import { Wallet, X } from "lucide-react";
 import {
   checkoutCustomerSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
 
 type Settings = {
-  bankilyNumber: string | null;
-  masrivyNumber: string | null;
+  wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
 };
@@ -387,15 +386,36 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step3Title")}</h2>
           <div className="flex flex-col gap-1 text-sm">
             <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
-            {settings.bankilyNumber && (
-              <p>
-                {t("bankilyLabel")}: {settings.bankilyNumber}
-              </p>
-            )}
-            {settings.masrivyNumber && (
-              <p>
-                {t("masrivyLabel")}: {settings.masrivyNumber}
-              </p>
+            {settings.wallets.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 py-1">
+                {settings.wallets.map((wallet, index) => (
+                  <div
+                    key={index}
+                    className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center"
+                  >
+                    {wallet.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={wallet.logoUrl}
+                        alt=""
+                        className="size-8 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Wallet className="size-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex min-w-0 flex-col items-center">
+                      <span className="truncate text-xs font-medium text-muted-foreground">
+                        {wallet.provider}
+                      </span>
+                      <span dir="ltr" className="truncate text-sm font-semibold">
+                        {wallet.number}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             {settings.paymentInstructions && (
               <p className="text-muted-foreground">
