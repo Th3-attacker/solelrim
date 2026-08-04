@@ -72,16 +72,16 @@ export function AppSidebar({
   ];
 
   return (
-    <Sidebar side={side}>
+    <Sidebar side={side} collapsible="icon">
       <SidebarHeader>
-        <div className="px-2 py-1.5 text-sm font-semibold">
+        <div className="px-2 py-1.5 text-sm font-semibold group-data-[collapsible=icon]:hidden">
           <Link href="/">Solelrim</Link>
         </div>
         {/* A boutique admin is permanently locked to one boutique — there's
             nothing for them to switch between, so the switcher (and the
             free-choice cookie it drives) is superadmin-only. */}
         {role === "SUPERADMIN" && (
-          <div className="px-2 pb-1">
+          <div className="px-2 pb-1 group-data-[collapsible=icon]:hidden">
             <StoreScopeSwitcher storeTypes={storeTypes} currentScope={currentScope} />
           </div>
         )}
@@ -107,6 +107,7 @@ export function AppSidebar({
                         asChild
                         isActive={isActive}
                         size="lg"
+                        tooltip={item.label}
                         className="text-base [&_svg]:size-5"
                       >
                         <Link href={item.href} onClick={() => setOpenMobile(false)}>
