@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { MessageCircle } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
@@ -16,8 +16,9 @@ import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
-import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
+import { buildSocialMetadata } from "@/lib/shop/metadata";
 
 export async function generateMetadata({
   params,
@@ -25,14 +26,22 @@ export async function generateMetadata({
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, boutique] = await Promise.all([
+  const [t, locale, boutique] = await Promise.all([
     getTranslations("shop"),
+    getLocale(),
     getPublicBoutiqueSettings(storeType),
   ]);
   const siteName = boutique.siteName?.trim() || t("siteName");
+  const title = boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`;
+  const description = boutique.seoDescription?.trim() || t("heroSubtitle");
+  const imageUrl = boutique.logoStoragePath
+    ? getStoreLogoUrl(boutique.logoStoragePath)
+    : null;
+
   return {
-    title: boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`,
-    description: boutique.seoDescription?.trim() || t("heroSubtitle"),
+    title,
+    description,
+    ...buildSocialMetadata({ title, description, imageUrl, locale }),
   };
 }
 
@@ -44,8 +53,9 @@ export default async function ShopLayout({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, boutique] = await Promise.all([
+  const [t, tNav, boutique] = await Promise.all([
     getTranslations("shop"),
+    getTranslations("nav"),
     getPublicBoutiqueSettings(storeType),
   ]);
   const [allProducts, categories] = await Promise.all([
@@ -123,6 +133,18 @@ export default async function ShopLayout({
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
                   <Link
+                    href={`/${storeType}`}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {tNav("home")}
+                  </Link>
+                  <Link
+                    href={`/${storeType}/products`}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {tNav("products")}
+                  </Link>
+                  <Link
                     href={`/${storeType}/about`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -178,14 +200,14 @@ export default async function ShopLayout({
                       {t("footerShopTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href={`/${storeType}`} className="transition-colors hover:text-white">
+                      <Link href={`/${storeType}/products`} className="transition-colors hover:text-white">
                         {t("allProductsTitle")}
                       </Link>
                       {categories.map((category) => (
                         <Link
                           key={category.id}
                           href={{
-                            pathname: `/${storeType}`,
+                            pathname: `/${storeType}/products`,
                             query: { category: category.id },
                           }}
                           className="transition-colors hover:text-white"
@@ -251,8 +273,13 @@ export default async function ShopLayout({
           </div>
           <CheckoutDrawer
             settings={{
-              bankilyNumber: boutique.bankilyNumber,
-              masrivyNumber: boutique.masrivyNumber,
+              wallets: boutique.walletAccounts.map((wallet) => ({
+                provider: wallet.provider,
+                number: wallet.number,
+                logoUrl: wallet.logoStoragePath
+                  ? getWalletLogoUrl(wallet.logoStoragePath)
+                  : null,
+              })),
               adminWhatsappNumber: boutique.adminWhatsappNumber,
               paymentInstructions: boutique.paymentInstructions,
             }}

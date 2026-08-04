@@ -26,6 +26,7 @@ export function MobileNav({
   products: SearchProduct[];
 }) {
   const t = useTranslations("shop");
+  const tNav = useTranslations("nav");
   const tLanguage = useTranslations("language");
   const { storeType } = useParams<{ storeType: string }>();
   const [open, setOpen] = useState(false);
@@ -71,11 +72,25 @@ export function MobileNav({
               <span>{t("search")}</span>
               <Search className="size-4 text-muted-foreground" />
             </button>
-            <div className="flex items-center justify-between rounded-lg pl-4 pr-1.5  py-3 text-sm font-medium transition-colors hover:bg-muted">
+            <div className="flex items-center justify-between rounded-lg ps-4 pe-1.5 py-3 text-sm font-medium transition-colors hover:bg-muted">
               <span>{tLanguage("label")}</span>
               <LanguageSwitcher />
             </div>
             <div className="my-1 border-t" />
+            <Link
+              href={`/${storeType}`}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              {tNav("home")}
+            </Link>
+            <Link
+              href={`/${storeType}/products`}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              {tNav("products")}
+            </Link>
             <Link
               href={`/${storeType}/about`}
               onClick={() => setOpen(false)}

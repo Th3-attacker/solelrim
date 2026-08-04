@@ -21,19 +21,21 @@ function HeroFallback({
   title,
   subtitle,
   ctaLabel,
+  ctaHref,
 }: {
   badgeText: string | null;
   title: string;
   subtitle: string;
   ctaLabel: string;
+  ctaHref: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-6 py-20 text-center sm:py-28">
+    <div className="relative overflow-hidden rounded-3xl bg-foreground px-6 py-20 text-center sm:py-28">
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-white/5 select-none"
+        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-background/5 select-none"
       >
-        SOLELRIM
+        SOLAL
       </span>
       <div
         aria-hidden
@@ -45,27 +47,34 @@ function HeroFallback({
             {badgeText}
           </span>
         )}
-        <h1 className="max-w-3xl text-heading-lg text-balance text-white sm:text-heading-2xl">
+        <h1 className="max-w-3xl text-heading-lg text-balance text-background sm:text-heading-2xl">
           {title}
         </h1>
-        <p className="max-w-md text-paragraph-lg text-white/70 sm:text-paragraph-lg">
+        <p className="max-w-md text-paragraph-lg text-background/70 sm:text-paragraph-lg">
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-2">
-          <a href="#catalog">{ctaLabel}</a>
+          <a href={ctaHref}>{ctaLabel}</a>
         </Button>
       </div>
     </div>
   );
 }
 
-export async function HeroSection({ settings }: { settings: HeroSettings }) {
+export async function HeroSection({
+  settings,
+  storeType,
+}: {
+  settings: HeroSettings;
+  storeType: string;
+}) {
   const t = await getTranslations("shop");
 
   const badgeText = settings.heroBadgeText;
   const title = settings.heroTitle || t("heroTitle");
   const subtitle = settings.heroSubtitle || t("heroSubtitle");
   const ctaLabel = settings.heroCtaLabel || t("heroCta");
+  const ctaHref = `/${storeType}/products`;
 
   if (!settings.heroImagePath) {
     return (
@@ -74,6 +83,7 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
         title={title}
         subtitle={subtitle}
         ctaLabel={ctaLabel}
+        ctaHref={ctaHref}
       />
     );
   }
@@ -100,7 +110,7 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-1">
-          <a href="#catalog">{ctaLabel}</a>
+          <a href={ctaHref}>{ctaLabel}</a>
         </Button>
       </div>
 

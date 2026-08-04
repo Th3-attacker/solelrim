@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -32,6 +32,18 @@ export function CategoryFilters({
   const activeCount = [sort !== "default", price !== "all", Boolean(color)].filter(
     Boolean,
   ).length;
+
+  // Clicking anywhere in the expanded panel (including a category link)
+  // already closes it — this just gives keyboard users the same escape
+  // hatch without tabbing all the way back to the toggle button.
+  useEffect(() => {
+    if (!categoriesOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setCategoriesOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [categoriesOpen]);
 
   function navigate(next: { sort: string; price: string; color: string }) {
     const params = new URLSearchParams();

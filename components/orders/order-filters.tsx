@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { CalendarIcon, ListFilter, Search } from "lucide-react";
 import { fr, enUS, arMA } from "date-fns/locale";
@@ -100,6 +100,7 @@ function readFilters(searchParams: URLSearchParams): Filters {
 export function OrderFilters() {
   const t = useTranslations("orders");
   const locale = useLocale();
+  const format = useFormatter();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -173,9 +174,9 @@ export function OrderFilters() {
 
   const dateLabel =
     filters.fromDate && filters.toDate && filters.toDate !== filters.fromDate
-      ? `${new Date(filters.fromDate).toLocaleDateString()} – ${new Date(filters.toDate).toLocaleDateString()}`
+      ? `${format.dateTime(new Date(filters.fromDate), { dateStyle: "medium" })} – ${format.dateTime(new Date(filters.toDate), { dateStyle: "medium" })}`
       : filters.fromDate
-        ? new Date(filters.fromDate).toLocaleDateString()
+        ? format.dateTime(new Date(filters.fromDate), { dateStyle: "medium" })
         : t("date");
 
   const hasActiveFilters = Boolean(
@@ -239,9 +240,9 @@ export function OrderFilters() {
             {dateLabel}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="flex">
-            <div className="flex w-36 flex-col gap-0.5 border-e p-2">
+        <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
+          <div className="flex flex-col sm:flex-row">
+            <div className="flex flex-row flex-wrap gap-0.5 border-b p-2 sm:w-36 sm:flex-col sm:border-e sm:border-b-0">
               {DATE_PRESETS.map((preset) => (
                 <button
                   key={preset.labelKey}

@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
+import { Gift } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getClientById } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
+import { PromoCodeFormDialog } from "@/components/settings/promo-code-form-dialog";
+import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -22,10 +25,12 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params;
   const scope = await getAdminScope();
-  const [t, tSales, tCommon, client] = await Promise.all([
+  const [t, tSales, tCommon, tPromo, format, client] = await Promise.all([
     getTranslations("clients"),
     getTranslations("sales"),
     getTranslations("common"),
+    getTranslations("promoCodes"),
+    getFormatter(),
     getClientById(clientId, scope),
   ]);
 
@@ -39,7 +44,18 @@ export default async function ClientDetailPage({
         <h1 className="text-2xl font-semibold tracking-tight">
           {client.fullName}
         </h1>
-        <DeleteClientButton clientId={client.id} />
+        <div className="flex items-center gap-2">
+          <PromoCodeFormDialog
+            fixedClient={{ id: client.id, fullName: client.fullName }}
+            trigger={
+              <Button type="button" variant="outline">
+                <Gift className="size-4" />
+                {tPromo("giveCode")}
+              </Button>
+            }
+          />
+          <DeleteClientButton clientId={client.id} />
+        </div>
       </div>
 
       <ClientForm
@@ -78,7 +94,7 @@ export default async function ClientDetailPage({
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {sale.createdAt.toLocaleDateString()}
+                    {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
                   </TableCell>
                   <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
                 </TableRow>

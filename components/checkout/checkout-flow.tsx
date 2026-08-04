@@ -12,16 +12,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
+import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
+import { Wallet, X } from "lucide-react";
 import {
   checkoutCustomerSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
 
 type Settings = {
-  bankilyNumber: string | null;
-  masrivyNumber: string | null;
+  wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
 };
@@ -52,6 +53,16 @@ export function CheckoutFlow({
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [promoInput, setPromoInput] = useState("");
+  const [applyingPromo, setApplyingPromo] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discount: number;
+  } | null>(null);
+  const discount = appliedPromo?.discount ?? 0;
+  const total = Math.max(cart.subtotal - discount, 0);
 
   // Snapshot the cart at submission time — clear() empties the live cart
   // right after success, so the WhatsApp button needs its own copy.
@@ -92,6 +103,52 @@ export function CheckoutFlow({
     defaultValues: { customerName: "", customerPhone: "", customerCity: "" },
   });
 
+  function fieldErrorMessage(message?: string) {
+    if (message === "required") return tCommon("requiredField");
+    if (message === "invalidPhone") return tCommon("invalidPhone");
+    return t("validationError");
+  }
+
+  function promoCodeErrorMessage(code: string) {
+    switch (code) {
+      case "expired":
+        return t("promoCodeExpiredError");
+      case "usageLimitReached":
+        return t("promoCodeUsageLimitError");
+      case "notYours":
+        return t("promoCodeNotYoursError");
+      default:
+        return t("promoCodeInvalidError");
+    }
+  }
+
+  async function handleApplyPromoCode() {
+    if (!promoInput.trim() || !customerInfo) return;
+    setApplyingPromo(true);
+    setPromoError(null);
+
+    const result = await previewPromoCode({
+      code: promoInput,
+      productType: storeType,
+      customerPhone: customerInfo.customerPhone,
+      subtotal: cart.subtotal,
+    });
+    setApplyingPromo(false);
+
+    if ("error" in result) {
+      setPromoError(promoCodeErrorMessage(result.error));
+      return;
+    }
+
+    setAppliedPromo({ code: promoInput.trim().toUpperCase(), discount: result.discount });
+  }
+
+  function handleRemovePromoCode() {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
+  }
+
   const onSubmitStep1: SubmitHandler<CheckoutCustomerInput> = (data) => {
     setCustomerInfo(data);
     setStep(2);
@@ -114,11 +171,23 @@ export function CheckoutFlow({
       ),
     );
     formData.set("screenshot", file);
+    if (appliedPromo) {
+      formData.set("promoCode", appliedPromo.code);
+    }
 
     const result = await submitOrder(formData);
     setSubmitting(false);
 
     if (result.error || !result.reference) {
+      const promoErrors = ["notFound", "expired", "usageLimitReached", "notYours"];
+      if (result.error && promoErrors.includes(result.error)) {
+        // The code passed preview but became invalid by the time this
+        // submitted (deactivated, limit hit by someone else, etc) — drop it
+        // rather than block the order the customer already filled out.
+        setAppliedPromo(null);
+        toast.error(promoCodeErrorMessage(result.error));
+        return;
+      }
       toast.error(
         result.error === "insufficientStock"
           ? t("insufficientStockError")
@@ -131,7 +200,7 @@ export function CheckoutFlow({
 
     orderSnapshotRef.current = {
       items: cart.items,
-      total: cart.subtotal,
+      total,
       customer: customerInfo,
     };
     setReference(result.reference);
@@ -184,9 +253,15 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step1Title")}</h2>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerName">{t("customerName")}</Label>
-            <Input id="customerName" {...register("customerName")} />
+            <Input
+              id="customerName"
+              aria-invalid={!!errors.customerName}
+              {...register("customerName")}
+            />
             {errors.customerName && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerName.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -195,17 +270,26 @@ export function CheckoutFlow({
               id="customerPhone"
               inputMode="numeric"
               maxLength={8}
+              aria-invalid={!!errors.customerPhone}
               {...register("customerPhone")}
             />
             {errors.customerPhone && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerPhone.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerCity">{t("customerCity")}</Label>
-            <Input id="customerCity" {...register("customerCity")} />
+            <Input
+              id="customerCity"
+              aria-invalid={!!errors.customerCity}
+              {...register("customerCity")}
+            />
             {errors.customerCity && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerCity.message)}
+              </p>
             )}
           </div>
           <Button type="submit">{t("next")}</Button>
@@ -224,11 +308,66 @@ export function CheckoutFlow({
                 <span>{formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}</span>
               </div>
             ))}
-            <div className="flex justify-between border-t pt-2 text-sm font-medium">
+            <div className="flex justify-between border-t pt-2 text-sm">
               <span>{tCart("subtotal")}</span>
               <span>{formatPrice(cart.subtotal, tCommon("currency"))}</span>
             </div>
+            {appliedPromo && (
+              <div className="flex justify-between text-sm text-primary">
+                <span>
+                  {t("discount")} ({appliedPromo.code})
+                </span>
+                <span>-{formatPrice(discount, tCommon("currency"))}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-medium">
+              <span>{t("total")}</span>
+              <span>{formatPrice(total, tCommon("currency"))}</span>
+            </div>
           </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="promoCode">{t("promoCode")}</Label>
+            {appliedPromo ? (
+              <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                <span className="font-mono font-medium">{appliedPromo.code}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={handleRemovePromoCode}
+                  aria-label={t("removePromoCode")}
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  id="promoCode"
+                  value={promoInput}
+                  onChange={(e) => {
+                    setPromoInput(e.target.value);
+                    setPromoError(null);
+                  }}
+                  placeholder={t("promoCodePlaceholder")}
+                  aria-invalid={!!promoError}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  loading={applyingPromo}
+                  disabled={!promoInput.trim()}
+                  onClick={handleApplyPromoCode}
+                >
+                  {t("applyPromoCode")}
+                </Button>
+              </div>
+            )}
+            {promoError && <p className="text-sm text-destructive">{promoError}</p>}
+          </div>
+
           <div className="text-sm text-muted-foreground">
             {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
             {customerInfo.customerCity}
@@ -247,15 +386,36 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step3Title")}</h2>
           <div className="flex flex-col gap-1 text-sm">
             <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
-            {settings.bankilyNumber && (
-              <p>
-                {t("bankilyLabel")}: {settings.bankilyNumber}
-              </p>
-            )}
-            {settings.masrivyNumber && (
-              <p>
-                {t("masrivyLabel")}: {settings.masrivyNumber}
-              </p>
+            {settings.wallets.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 py-1">
+                {settings.wallets.map((wallet, index) => (
+                  <div
+                    key={index}
+                    className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center"
+                  >
+                    {wallet.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={wallet.logoUrl}
+                        alt=""
+                        className="size-8 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Wallet className="size-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex min-w-0 flex-col items-center">
+                      <span className="truncate text-xs font-medium text-muted-foreground">
+                        {wallet.provider}
+                      </span>
+                      <span dir="ltr" className="truncate text-sm font-semibold">
+                        {wallet.number}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             {settings.paymentInstructions && (
               <p className="text-muted-foreground">

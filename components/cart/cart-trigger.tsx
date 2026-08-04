@@ -20,6 +20,7 @@ import { useCart } from "@/components/cart/cart-provider";
 import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
+import { StateMessage } from "@/components/ui/state-message";
 
 export function CartTrigger() {
   const t = useTranslations("cart");
@@ -55,7 +56,7 @@ export function CartTrigger() {
         </SheetHeader>
 
         {items.length === 0 ? (
-          <p className="px-4 text-sm text-muted-foreground">{t("empty")}</p>
+          <StateMessage icon={ShoppingCart} title={t("empty")} />
         ) : (
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="flex flex-col gap-4">

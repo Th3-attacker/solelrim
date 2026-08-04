@@ -1,14 +1,34 @@
 import type { Metadata } from "next";
 import { MessageCircle, Package, Share2 } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
+import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import { buildOrderQuestionWhatsAppLink, buildWhatsAppLink } from "@/lib/shop/contact";
+import { buildSocialMetadata } from "@/lib/shop/metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("contact");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}): Promise<Metadata> {
+  const { storeType } = await params;
+  const [t, tShop, locale, boutique] = await Promise.all([
+    getTranslations("contact"),
+    getTranslations("shop"),
+    getLocale(),
+    getPublicBoutiqueSettings(storeType),
+  ]);
+  const siteName = boutique.siteName?.trim() || tShop("siteName");
+  const title = `${t("metaTitle")} — ${siteName}`;
+  const description = t("metaDescription");
+  const imageUrl = boutique.logoStoragePath
+    ? getStoreLogoUrl(boutique.logoStoragePath)
+    : null;
+
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title,
+    description,
+    ...buildSocialMetadata({ title, description, imageUrl, locale }),
   };
 }
 

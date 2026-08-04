@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategorySelect } from "@/components/products/category-select";
 import { VariantFields } from "@/components/products/variant-fields";
@@ -85,7 +86,7 @@ export function ProductForm({
         <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="name">{t("name")}</Label>
-            <Input id="name" {...register("name")} />
+            <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
             {errors.name && (
               <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
             )}
@@ -102,6 +103,7 @@ export function ProductForm({
               id="basePrice"
               type="number"
               step="0.01"
+              aria-invalid={!!errors.basePrice}
               {...register("basePrice")}
             />
             {errors.basePrice && (
@@ -134,12 +136,18 @@ export function ProductForm({
           </div>
 
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("isActive")} className="size-4" />
+            <Checkbox
+              checked={watch("isActive")}
+              onCheckedChange={(checked) => setValue("isActive", checked === true)}
+            />
             {t("active")}
           </label>
 
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("isFeatured")} className="size-4" />
+            <Checkbox
+              checked={watch("isFeatured")}
+              onCheckedChange={(checked) => setValue("isFeatured", checked === true)}
+            />
             {t("isFeatured")}
           </label>
         </CardContent>
