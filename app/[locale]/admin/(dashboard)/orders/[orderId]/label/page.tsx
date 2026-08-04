@@ -32,7 +32,7 @@ export default async function OrderLabelPage({
 
       <div className="flex w-[10cm] flex-col gap-2 border p-3 text-[11px] leading-tight print:w-full print:border-0 print:p-0">
         <div className="flex items-center justify-between border-b pb-1">
-          <span className="text-sm font-bold">Solelrim</span>
+          <span className="text-sm font-bold">SOLAL</span>
           <span className="font-mono text-[10px]">{order.reference}</span>
         </div>
 

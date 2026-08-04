@@ -54,7 +54,7 @@ export default async function SaleDetailPage({
       <div className="rounded-lg border p-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <p className="text-lg font-semibold">Solelrim</p>
+            <p className="text-lg font-semibold">SOLAL</p>
             <p className="text-sm text-muted-foreground">{t("invoiceTitle")}</p>
           </div>
           <div className="text-end text-sm">

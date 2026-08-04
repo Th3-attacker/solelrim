@@ -39,7 +39,7 @@ export async function FeaturedShowcase({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-            Solelrim
+            SOLAL
           </div>
         )}
       </div>
