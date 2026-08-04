@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import Image from "next/image";
 import { ClipboardList } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -40,9 +40,10 @@ export default async function AdminOrdersPage({
   const hasFilters = Boolean(status || search || dateFrom || dateTo);
 
   const scope = await getAdminScope();
-  const [t, tCommon, orders] = await Promise.all([
+  const [t, tCommon, format, orders] = await Promise.all([
     getTranslations("orders"),
     getTranslations("common"),
+    getFormatter(),
     getAllOrders({ productType: scope, status, search, dateFrom, dateTo }),
   ]);
 
@@ -105,7 +106,7 @@ export default async function AdminOrdersPage({
                     <OrderStatusBadge status={order.status} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {order.createdAt.toLocaleDateString()}
+                    {format.dateTime(order.createdAt, { dateStyle: "medium" })}
                   </TableCell>
                 </TableRow>
               );

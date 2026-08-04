@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { getOrderById } from "@/lib/queries/orders";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { PrintLabelButton } from "@/components/orders/print-label-button";
@@ -13,10 +13,11 @@ export default async function OrderLabelPage({
 }) {
   const { orderId } = await params;
   const scope = await getAdminScope();
-  const [t, tSales, tCommon, order] = await Promise.all([
+  const [t, tSales, tCommon, format, order] = await Promise.all([
     getTranslations("orders"),
     getTranslations("sales"),
     getTranslations("common"),
+    getFormatter(),
     getOrderById(orderId, scope),
   ]);
 
@@ -37,7 +38,8 @@ export default async function OrderLabelPage({
 
         {order.confirmedAt && (
           <p className="text-[9px] text-muted-foreground">
-            {t("labelConfirmedOn")} {order.confirmedAt.toLocaleDateString()}
+            {t("labelConfirmedOn")}{" "}
+            {format.dateTime(order.confirmedAt, { dateStyle: "medium" })}
           </p>
         )}
 
