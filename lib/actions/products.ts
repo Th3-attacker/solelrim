@@ -141,22 +141,23 @@ export async function deleteProduct(
     return { error: "notFound" };
   }
 
+  const referenced = await prisma.productVariant.findFirst({
+    where: {
+      productId,
+      OR: [{ saleItems: { some: {} } }, { orderItems: { some: {} } }],
+    },
+    select: { id: true },
+  });
+  if (referenced) {
+    return { error: "hasSales" };
+  }
+
   const images = await prisma.productImage.findMany({
     where: { productId },
     select: { storagePath: true },
   });
 
-  try {
-    await prisma.product.delete({ where: { id: productId } });
-  } catch (err) {
-    if (
-      err instanceof PrismaClientKnownRequestError &&
-      (err.code === "P2003" || err.code === "P2014")
-    ) {
-      return { error: "hasSales" };
-    }
-    throw err;
-  }
+  await prisma.product.delete({ where: { id: productId } });
 
   if (images.length > 0) {
     const supabase = createAdminClient();
