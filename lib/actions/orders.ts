@@ -15,6 +15,7 @@ import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { detectImageSignature } from "@/lib/shop/image-signature";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -121,7 +122,11 @@ export async function submitOrder(
   }
 
   const subtotal = orderItems.reduce((sum, i) => sum + i.lineTotal, 0);
-  const total = subtotal;
+
+  // Optional — a blank/missing code just means no discount, not an error.
+  const rawPromoCode = formData.get("promoCode");
+  const promoCodeInput =
+    typeof rawPromoCode === "string" && rawPromoCode.trim() ? rawPromoCode.trim() : null;
 
   const file = formData.get("screenshot");
   if (!(file instanceof File) || file.size === 0 || file.size > MAX_SCREENSHOT_BYTES) {
@@ -145,35 +150,82 @@ export async function submitOrder(
     return { error: "uploadFailed" };
   }
 
+  const PROMO_CODE_ERRORS = ["notFound", "expired", "usageLimitReached", "notYours"];
+
   for (let attempt = 0; attempt < 3; attempt++) {
     const reference = buildOrderReference();
     try {
-      const order = await prisma.order.create({
-        data: {
-          reference,
-          customerName: customerParsed.data.customerName,
-          customerPhone: customerParsed.data.customerPhone,
-          customerCity: customerParsed.data.customerCity,
-          subtotal,
-          total,
-          paymentProofPath: storagePath,
-          locale,
-          productType,
-          items: {
-            create: orderItems.map((i) => ({
-              variantId: i.variantId,
-              quantity: i.quantity,
-              unitPrice: i.unitPrice,
-              lineTotal: i.lineTotal,
-            })),
+      const order = await prisma.$transaction(async (tx) => {
+        // Re-validated from scratch here, inside the same transaction that
+        // increments usedCount — never trusts whatever the checkout preview
+        // (previewPromoCode) showed the customer, which could be stale by
+        // the time this submits (code deactivated, limit hit by someone
+        // else, etc).
+        let discount = 0;
+        let promoCodeId: string | null = null;
+        if (promoCodeInput) {
+          const result = await findValidPromoCode(tx, {
+            code: promoCodeInput,
+            productType,
+            customerPhone: customerParsed.data.customerPhone,
+          });
+          if ("error" in result) {
+            throw new Error(result.error);
+          }
+          discount = computePromoDiscount(result.promoCode, subtotal);
+          promoCodeId = result.promoCode.id;
+          const { maxUses } = result.promoCode;
+          // The read above and this increment aren't atomic on their own —
+          // under READ COMMITTED, two concurrent submits for the same
+          // maxUses-limited code could both pass the check before either
+          // commits. Re-asserting usedCount < maxUses in the UPDATE's WHERE
+          // closes that gap: if someone else's increment lands first,
+          // updated.count is 0 here and this one loses the race instead of
+          // silently overselling the code.
+          const updated = await tx.promoCode.updateMany({
+            where: {
+              id: promoCodeId,
+              ...(maxUses !== null ? { usedCount: { lt: maxUses } } : {}),
+            },
+            data: { usedCount: { increment: 1 } },
+          });
+          if (updated.count === 0) {
+            throw new Error("usageLimitReached");
+          }
+        }
+
+        return tx.order.create({
+          data: {
+            reference,
+            customerName: customerParsed.data.customerName,
+            customerPhone: customerParsed.data.customerPhone,
+            customerCity: customerParsed.data.customerCity,
+            subtotal,
+            discount,
+            total: Math.max(subtotal - discount, 0),
+            promoCodeId,
+            paymentProofPath: storagePath,
+            locale,
+            productType,
+            items: {
+              create: orderItems.map((i) => ({
+                variantId: i.variantId,
+                quantity: i.quantity,
+                unitPrice: i.unitPrice,
+                lineTotal: i.lineTotal,
+              })),
+            },
           },
-        },
+        });
       });
       revalidatePath("/admin/orders");
       return { reference: order.reference, orderId: order.id };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
         continue;
+      }
+      if (err instanceof Error && PROMO_CODE_ERRORS.includes(err.message)) {
+        return { error: err.message };
       }
       throw err;
     }
@@ -342,6 +394,7 @@ export async function deliverOrder(
             data: {
               reference,
               subtotal: order.subtotal,
+              discount: order.discount,
               total: order.total,
               notes: `Commande en ligne ${order.reference}`,
               productType: order.productType,

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
 export function getActiveProducts(productType: string, categoryId?: string) {
@@ -19,7 +20,13 @@ export function getAllShopCategories(productType: string) {
   });
 }
 
-export function getActiveProductBySlug(slug: string, productType: string) {
+// Wrapped in React's per-request cache — generateMetadata and the page
+// component below both call this for the same product, and without cache()
+// that's two round trips to the DB instead of one.
+export const getActiveProductBySlug = cache(function getActiveProductBySlug(
+  slug: string,
+  productType: string,
+) {
   return prisma.product.findFirst({
     where: { slug, isActive: true, productType },
     include: {
@@ -28,7 +35,7 @@ export function getActiveProductBySlug(slug: string, productType: string) {
       variants: { orderBy: [{ size: "asc" }, { color: "asc" }] },
     },
   });
-}
+});
 
 // Legacy links shared before the slug migration still use the raw id —
 // looked up regardless of isActive so an old link to a product that's since

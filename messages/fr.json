@@ -21,13 +21,20 @@
   },
   "nav": {
     "dashboard": "Tableau de bord",
+    "home": "Accueil",
     "products": "Produits",
     "categories": "Catégories",
     "sales": "Ventes",
     "orders": "Commandes",
     "clients": "Clients",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "catalogSection": "Catalogue",
+    "activitySection": "Activité",
+    "adminSection": "Administration",
+    "superadmin": "Super administrateur",
+    "boutiqueAdmin": "Administrateur boutique",
+    "promoCodes": "Codes promo"
   },
   "auth": {
     "login": {
@@ -130,8 +137,35 @@
     "purchaseHistory": "Historique d'achats",
     "noClients": "Aucun client pour le moment."
   },
+  "promoCodes": {
+    "title": "Codes promo",
+    "newCode": "Nouveau code",
+    "code": "Code",
+    "discountType": "Type de réduction",
+    "percent": "Pourcentage",
+    "fixed": "Montant fixe",
+    "discountValue": "Valeur",
+    "client": "Client",
+    "generalCode": "Général (tous les clients)",
+    "expiresAt": "Expiration",
+    "noExpiration": "Sans expiration",
+    "maxUses": "Limite d'utilisation",
+    "unlimited": "Illimité",
+    "usage": "Utilisation",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Désactivé",
+    "deactivate": "Désactiver",
+    "deactivateConfirm": "Désactiver ce code promo ?",
+    "deactivateDescription": "Le code ne pourra plus être utilisé, mais reste visible dans l'historique.",
+    "noPromoCodes": "Aucun code promo pour le moment.",
+    "duplicateCodeError": "Ce code existe déjà.",
+    "giveCode": "Offrir un code promo",
+    "invalidCodeError": "Le code ne doit contenir que des lettres, chiffres, tirets et underscores (3 à 30 caractères).",
+    "invalidPercentError": "Le pourcentage doit être compris entre 0 et 100."
+  },
   "shop": {
-    "siteName": "Solelrim",
+    "siteName": "SOLAL",
     "startingFrom": "à partir de",
     "inStock": "En stock",
     "lowStock": "Stock faible",
@@ -192,7 +226,7 @@
   },
   "contact": {
     "metaTitle": "Contact",
-    "metaDescription": "Contactez Solelrim directement sur WhatsApp pour toute question sur une commande, un produit, ou autre chose.",
+    "metaDescription": "Contactez SOLAL directement sur WhatsApp pour toute question sur une commande, un produit, ou autre chose.",
     "title": "Contactez-nous",
     "subtitle": "Pas de formulaire, pas d'attente — un vrai humain vous répond directement.",
     "whatsappTitle": "WhatsApp",
@@ -206,7 +240,7 @@
   },
   "about": {
     "metaTitle": "À propos",
-    "metaDescription": "Solelrim propose des vêtements et accessoires de sport sélectionnés pour la qualité, avec un paiement local et un service humain à chaque commande.",
+    "metaDescription": "SOLAL propose des vêtements et accessoires de sport sélectionnés pour la qualité — rapide, simple, avec un paiement local et un service humain à chaque commande.",
     "eyebrow": "Notre histoire",
     "heroTitle": "Le sport, sans compromis sur la qualité",
     "heroSubtitle": "Des vêtements et accessoires de sport sélectionnés pour durer, à des prix accessibles, avec un vrai humain derrière chaque commande.",
@@ -247,8 +281,6 @@
     "back": "Retour",
     "orderSummary": "Résumé",
     "paymentInstructionsTitle": "Instructions de paiement",
-    "bankilyLabel": "Bankily",
-    "masrivyLabel": "Masrivi",
     "uploadScreenshot": "Capture d'écran du paiement",
     "uploadScreenshotHint": "Envoyez une capture montrant que le paiement a bien été effectué.",
     "submitOrder": "Confirmer la commande",
@@ -260,7 +292,17 @@
     "validationError": "Merci de vérifier les informations saisies.",
     "missingScreenshotError": "Merci d'ajouter une capture d'écran du paiement.",
     "insufficientStockError": "Stock insuffisant pour un des articles de votre commande.",
-    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes."
+    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    "promoCode": "Code promo",
+    "promoCodePlaceholder": "Entrez un code",
+    "applyPromoCode": "Appliquer",
+    "removePromoCode": "Retirer le code",
+    "discount": "Réduction",
+    "total": "Total",
+    "promoCodeInvalidError": "Code promo invalide.",
+    "promoCodeExpiredError": "Ce code promo a expiré.",
+    "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
+    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
   },
   "orders": {
     "title": "Commandes",
@@ -322,8 +364,6 @@
     "globalSettingsLink": "Réglages globaux du site",
     "globalSettingsTitle": "Réglages globaux",
     "paymentSection": "Paiement",
-    "bankilyNumber": "Numéro Bankily",
-    "masrivyNumber": "Numéro Masrivi",
     "adminWhatsappNumber": "Numéro WhatsApp de la boutique",
     "paymentInstructions": "Instructions de paiement",
     "logo": "Logo",
@@ -352,7 +392,7 @@
       "navy": "Marine"
     },
 
-    "heroSection": "Hero",
+    "heroSection": "Image principale",
     "heroImage": "Photo du hero",
     "heroImagePosition": "Position de la photo",
     "heroImagePositionLeft": "À gauche",
@@ -367,6 +407,15 @@
     "seoSection": "Référencement (SEO)",
     "seoTitle": "Titre de la page",
     "seoDescription": "Description",
+
+    "walletsSection": "Wallets de paiement",
+    "addWallet": "Ajouter une wallet",
+    "editWallet": "Modifier la wallet",
+    "walletProvider": "Fournisseur",
+    "walletProviderPlaceholder": "Ex. Bankily, Masrivi, Sedad...",
+    "walletNumber": "Numéro",
+    "walletLogo": "Logo",
+    "walletLogoHint": "Facultatif — sans logo, une icône générique s'affiche.",
 
     "socialSection": "Réseaux sociaux",
     "addSocialLink": "Ajouter un réseau",
@@ -385,7 +434,7 @@
     "noBoutiques": "Aucune boutique.",
     "domain": "Nom de domaine",
     "domainNotSet": "Aucun domaine configuré",
-    "domainPlaceholder": "solel.com",
+    "domainPlaceholder": "solal.com",
     "domainEdit": "Domaine",
     "domainEditTitle": "Domaine — {label}",
     "domainError": {

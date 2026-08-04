@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { CalendarIcon, Pencil } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -55,6 +55,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -140,7 +141,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
           <Button type="button" variant="outline" size="sm">
             <CalendarIcon className="size-3.5" />
             {storeType.licenseExpiresAt
-              ? storeType.licenseExpiresAt.toLocaleDateString()
+              ? format.dateTime(storeType.licenseExpiresAt, { dateStyle: "medium" })
               : t("licenseExtend")}
           </Button>
         </PopoverTrigger>

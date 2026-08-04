@@ -80,22 +80,13 @@ export function BoutiqueSettingsForm({
           <CardTitle className="text-base">{t("paymentSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="bankilyNumber">{t("bankilyNumber")}</Label>
-            <Input id="bankilyNumber" {...register("bankilyNumber")} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="masrivyNumber">{t("masrivyNumber")}</Label>
-            <Input id="masrivyNumber" {...register("masrivyNumber")} />
-          </div>
-
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="adminWhatsappNumber">
               {t("adminWhatsappNumber")}
             </Label>
             <Input
               id="adminWhatsappNumber"
+              aria-invalid={!!errors.adminWhatsappNumber}
               {...register("adminWhatsappNumber")}
             />
             {errors.adminWhatsappNumber && (

@@ -29,7 +29,10 @@ export const getBoutiqueSettings = cache(function getBoutiqueSettings(
 ) {
   return prisma.storeType.findUniqueOrThrow({
     where: { key: productType },
-    include: { socialLinks: { orderBy: { position: "asc" } } },
+    include: {
+      socialLinks: { orderBy: { position: "asc" } },
+      walletAccounts: { orderBy: { position: "asc" } },
+    },
   });
 });
 
@@ -45,7 +48,10 @@ export const getPublicBoutiqueSettings = cache(async function getPublicBoutiqueS
 ) {
   const boutique = await prisma.storeType.findUnique({
     where: { key: productType },
-    include: { socialLinks: { orderBy: { position: "asc" } } },
+    include: {
+      socialLinks: { orderBy: { position: "asc" } },
+      walletAccounts: { orderBy: { position: "asc" } },
+    },
   });
   if (!boutique) {
     notFound();

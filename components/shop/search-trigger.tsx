@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -62,7 +63,7 @@ export function SearchTrigger({
     e.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
-    router.push(`/${storeType}?q=${encodeURIComponent(trimmed)}#catalog`);
+    router.push(`/${storeType}/products?q=${encodeURIComponent(trimmed)}`);
     close();
   }
 
@@ -91,7 +92,7 @@ export function SearchTrigger({
       {categories.map((category) => (
         <Link
           key={category.id}
-          href={{ pathname: `/${storeType}`, query: { category: category.id } }}
+          href={{ pathname: `/${storeType}/products`, query: { category: category.id } }}
           onClick={close}
           className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
         >
@@ -104,14 +105,15 @@ export function SearchTrigger({
 
   const searchInput = (
     <form onSubmit={handleSubmit}>
-      <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2.5">
-        <Search className="size-4 shrink-0 text-muted-foreground" />
-        <input
+      <div className="relative flex items-center">
+        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
           autoFocus
+          aria-label={t("search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("searchPlaceholder")}
-          className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
+          className="h-auto rounded-lg bg-muted/40 py-2.5 ps-9 text-base shadow-none"
         />
       </div>
     </form>

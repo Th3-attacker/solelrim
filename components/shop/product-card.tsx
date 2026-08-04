@@ -58,8 +58,8 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group relative flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-all duration-300",
-        isOutOfStock ? "opacity-60" : "hover:-translate-y-1 hover:shadow-md",
+        "group relative flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-[transform,box-shadow] duration-300 ease-out",
+        isOutOfStock ? "opacity-60" : "hover:-translate-y-1 hover:shadow-lg",
       )}
     >
       <div className="relative aspect-square w-full">
@@ -70,14 +70,14 @@ export function ProductCard({
             fill
             priority={priority}
             className={cn(
-              "object-contain p-4 transition-transform duration-500",
+              "object-contain p-4 transition-transform duration-500 ease-out",
               isOutOfStock ? "grayscale" : "group-hover:scale-105",
             )}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-            Solelrim
+            SOLAL
           </div>
         )}
 
@@ -127,14 +127,14 @@ export function ProductCard({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-          <span className="flex items-baseline gap-1.5 text-sm">
+          <span className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 text-sm">
             {isRange && (
               <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
+            <Price value={min} currency={tCommon("currency")} emphasize={promo} />
             {promo && product.compareAtPrice && (
               <Price value={product.compareAtPrice} strikethrough />
             )}
-            <Price value={min} currency={tCommon("currency")} />
           </span>
           <StockBadge status={status} />
         </div>
