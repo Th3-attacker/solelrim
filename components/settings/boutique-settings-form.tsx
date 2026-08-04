@@ -96,6 +96,7 @@ export function BoutiqueSettingsForm({
             </Label>
             <Input
               id="adminWhatsappNumber"
+              aria-invalid={!!errors.adminWhatsappNumber}
               {...register("adminWhatsappNumber")}
             />
             {errors.adminWhatsappNumber && (

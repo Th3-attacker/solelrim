@@ -184,7 +184,11 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step1Title")}</h2>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerName">{t("customerName")}</Label>
-            <Input id="customerName" {...register("customerName")} />
+            <Input
+              id="customerName"
+              aria-invalid={!!errors.customerName}
+              {...register("customerName")}
+            />
             {errors.customerName && (
               <p className="text-sm text-destructive">{t("validationError")}</p>
             )}
@@ -195,6 +199,7 @@ export function CheckoutFlow({
               id="customerPhone"
               inputMode="numeric"
               maxLength={8}
+              aria-invalid={!!errors.customerPhone}
               {...register("customerPhone")}
             />
             {errors.customerPhone && (
@@ -203,7 +208,11 @@ export function CheckoutFlow({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerCity">{t("customerCity")}</Label>
-            <Input id="customerCity" {...register("customerCity")} />
+            <Input
+              id="customerCity"
+              aria-invalid={!!errors.customerCity}
+              {...register("customerCity")}
+            />
             {errors.customerCity && (
               <p className="text-sm text-destructive">{t("validationError")}</p>
             )}
