@@ -58,8 +58,8 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group relative flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-all duration-300",
-        isOutOfStock ? "opacity-60" : "hover:-translate-y-1 hover:shadow-md",
+        "group relative flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-[transform,box-shadow] duration-300 ease-out",
+        isOutOfStock ? "opacity-60" : "hover:-translate-y-1 hover:shadow-lg",
       )}
     >
       <div className="relative aspect-square w-full">
@@ -70,7 +70,7 @@ export function ProductCard({
             fill
             priority={priority}
             className={cn(
-              "object-contain p-4 transition-transform duration-500",
+              "object-contain p-4 transition-transform duration-500 ease-out",
               isOutOfStock ? "grayscale" : "group-hover:scale-105",
             )}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

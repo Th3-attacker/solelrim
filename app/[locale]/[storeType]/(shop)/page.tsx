@@ -1,6 +1,7 @@
 import { FeaturedShowcase } from "@/components/shop/featured-showcase";
 import { HeroSection } from "@/components/shop/hero-section";
 import { ProductCard } from "@/components/shop/product-card";
+import { Reveal } from "@/components/shop/reveal";
 import { SectionTitle } from "@/components/shop/section-title";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { StateMessage } from "@/components/ui/state-message";
@@ -44,12 +45,13 @@ export default async function ShopHomePage({
           <>
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
               {previewProducts.map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  storeType={storeType}
-                  priority={index < 4}
-                />
+                <Reveal key={product.id} delay={Math.min(index, 7) * 60}>
+                  <ProductCard
+                    product={product}
+                    storeType={storeType}
+                    priority={index < 4}
+                  />
+                </Reveal>
               ))}
             </div>
             <Link

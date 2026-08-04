@@ -1,6 +1,7 @@
 import { CreditCard, MessageCircle, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { OrderProcedureTrigger } from "@/components/shop/order-procedure-trigger";
+import { Reveal } from "@/components/shop/reveal";
 
 export async function TrustBadges() {
   const t = await getTranslations("shop");
@@ -26,8 +27,8 @@ export async function TrustBadges() {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="grid w-full gap-3 desktop:gap-4 rounded-2xl border bg-muted/30 p-6 sm:grid-cols-3 sm:p-8">
-        {items.map((item) => (
-          <div key={item.title} className="flex items-start gap-3">
+        {items.map((item, index) => (
+          <Reveal key={item.title} delay={index * 90} className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
               <item.icon className="size-5" />
             </div>
@@ -35,7 +36,7 @@ export async function TrustBadges() {
               <p className="text-sm font-medium">{item.title}</p>
               <p className="text-sm text-muted-foreground">{item.desc}</p>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
       <OrderProcedureTrigger />
