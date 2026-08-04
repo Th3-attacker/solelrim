@@ -71,7 +71,7 @@ export function MobileNav({
               <span>{t("search")}</span>
               <Search className="size-4 text-muted-foreground" />
             </button>
-            <div className="flex items-center justify-between rounded-lg pl-4 pr-1.5  py-3 text-sm font-medium transition-colors hover:bg-muted">
+            <div className="flex items-center justify-between rounded-lg ps-4 pe-1.5 py-3 text-sm font-medium transition-colors hover:bg-muted">
               <span>{tLanguage("label")}</span>
               <LanguageSwitcher />
             </div>
