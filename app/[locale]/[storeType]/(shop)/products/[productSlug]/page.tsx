@@ -128,13 +128,16 @@ export default async function ProductDetailPage({
             </div>
           )}
 
-          <p className="flex items-baseline gap-1">
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
             {isRange && (
               <span className="text-sm font-normal text-muted-foreground">
                 {t("startingFrom")}
               </span>
             )}
-            <Price value={min} currency={tCommon("currency")} size="lg" />
+            <Price value={min} currency={tCommon("currency")} size="lg" emphasize={promo} />
+            {promo && product.compareAtPrice && (
+              <Price value={product.compareAtPrice} size="lg" strikethrough />
+            )}
           </p>
 
           {product.description && (

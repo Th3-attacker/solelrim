@@ -127,14 +127,14 @@ export function ProductCard({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-          <span className="flex items-baseline gap-1.5 text-sm">
+          <span className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 text-sm">
             {isRange && (
               <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
+            <Price value={min} currency={tCommon("currency")} emphasize={promo} />
             {promo && product.compareAtPrice && (
               <Price value={product.compareAtPrice} strikethrough />
             )}
-            <Price value={min} currency={tCommon("currency")} />
           </span>
           <StockBadge status={status} />
         </div>
