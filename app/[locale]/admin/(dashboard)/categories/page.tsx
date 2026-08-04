@@ -1,9 +1,11 @@
 import { getTranslations } from "next-intl/server";
+import { Tags } from "lucide-react";
 import { getCategoriesForAdmin } from "@/lib/queries/categories";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { CreateCategoryButton } from "@/components/categories/create-category-button";
 import { RenameCategoryDialog } from "@/components/categories/rename-category-dialog";
 import { DeleteCategoryButton } from "@/components/categories/delete-category-button";
+import { StateMessage } from "@/components/ui/state-message";
 import {
   Table,
   TableBody,
@@ -32,7 +34,7 @@ export default async function AdminCategoriesPage() {
       </div>
 
       {categories.length === 0 ? (
-        <p className="text-muted-foreground">{t("noCategories")}</p>
+        <StateMessage icon={Tags} title={t("noCategories")} />
       ) : (
         <Table>
           <TableHeader>

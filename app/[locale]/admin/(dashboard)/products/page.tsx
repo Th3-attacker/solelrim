@@ -1,11 +1,12 @@
 import { getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllProducts } from "@/lib/queries/products";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StateMessage } from "@/components/ui/state-message";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { DeleteProductButton } from "@/components/products/delete-product-button";
 import { formatPrice } from "@/lib/format/currency";
@@ -39,7 +40,7 @@ export default async function AdminProductsPage() {
       </div>
 
       {products.length === 0 ? (
-        <p className="text-muted-foreground">{t("noProducts")}</p>
+        <StateMessage icon={Package} title={t("noProducts")} />
       ) : (
         <Table>
           <TableHeader>

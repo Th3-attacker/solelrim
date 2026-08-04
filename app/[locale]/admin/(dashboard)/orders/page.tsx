@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
+import { ClipboardList } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
@@ -8,6 +9,7 @@ import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderFilters } from "@/components/orders/order-filters";
+import { StateMessage } from "@/components/ui/state-message";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -51,9 +53,10 @@ export default async function AdminOrdersPage({
       <OrderFilters />
 
       {orders.length === 0 ? (
-        <p className="text-muted-foreground">
-          {hasFilters ? tCommon("noResults") : t("noOrders")}
-        </p>
+        <StateMessage
+          icon={ClipboardList}
+          title={hasFilters ? tCommon("noResults") : t("noOrders")}
+        />
       ) : (
         <Table>
           <TableHeader>

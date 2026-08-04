@@ -1,10 +1,11 @@
 import { getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { Plus, Receipt } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StateMessage } from "@/components/ui/state-message";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -36,7 +37,7 @@ export default async function AdminSalesPage() {
       </div>
 
       {sales.length === 0 ? (
-        <p className="text-muted-foreground">{t("noSales")}</p>
+        <StateMessage icon={Receipt} title={t("noSales")} />
       ) : (
         <Table>
           <TableHeader>
