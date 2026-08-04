@@ -1,1 +1,18 @@
-export { PageSpinner as default } from "@/components/ui/page-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+
+export default function SaleDetailLoading() {
+  return (
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-9 w-24" />
+      </div>
+
+      <TableSkeleton columns={3} rows={4} />
+    </div>
+  );
+}
