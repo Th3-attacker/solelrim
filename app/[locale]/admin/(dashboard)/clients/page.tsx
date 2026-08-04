@@ -1,9 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllClients } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
+import { StateMessage } from "@/components/ui/state-message";
 import {
   Table,
   TableBody,
@@ -33,7 +34,7 @@ export default async function AdminClientsPage() {
       </div>
 
       {clients.length === 0 ? (
-        <p className="text-muted-foreground">{t("noClients")}</p>
+        <StateMessage icon={Users} title={t("noClients")} />
       ) : (
         <Table>
           <TableHeader>

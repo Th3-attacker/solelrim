@@ -8,7 +8,7 @@ export function StateMessage({
 }: {
   icon: LucideIcon;
   title: string;
-  message: string;
+  message?: string;
   action?: React.ReactNode;
 }) {
   return (
@@ -18,7 +18,9 @@ export function StateMessage({
       </div>
       <div className="flex flex-col gap-1.5">
         <h1 className="text-heading-xs">{title}</h1>
-        <p className="max-w-sm text-paragraph-sm text-muted-foreground">{message}</p>
+        {message && (
+          <p className="max-w-sm text-paragraph-sm text-muted-foreground">{message}</p>
+        )}
       </div>
       {action}
     </div>
