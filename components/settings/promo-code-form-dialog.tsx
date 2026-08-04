@@ -115,7 +115,7 @@ export function PromoCodeFormDialog({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="discountType">{t("discountType")}</Label>
             <Select
@@ -176,7 +176,7 @@ export function PromoCodeFormDialog({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="expiresAt">{t("expiresAt")}</Label>
             <Input

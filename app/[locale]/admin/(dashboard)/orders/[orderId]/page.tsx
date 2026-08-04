@@ -45,7 +45,7 @@ export default async function OrderDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">
             {order.reference}
@@ -54,7 +54,7 @@ export default async function OrderDetailPage({
         </div>
         {order.status === "PENDING" && <OrderActions orderId={order.id} />}
         {order.status === "CONFIRMED" && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {order.confirmedAt && (
               <p className="text-sm text-muted-foreground">
                 {format.dateTime(order.confirmedAt, { dateStyle: "medium", timeStyle: "short" })}
@@ -78,7 +78,7 @@ export default async function OrderDetailPage({
           </div>
         )}
         {order.status === "SHIPPING" && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {order.shippedAt && (
               <p className="text-sm text-muted-foreground">
                 {format.dateTime(order.shippedAt, { dateStyle: "medium", timeStyle: "short" })}
@@ -93,7 +93,7 @@ export default async function OrderDetailPage({
           </p>
         )}
         {order.status === "REJECTED" && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="text-end">
               {order.rejectedAt && (
                 <p className="text-sm text-muted-foreground">

@@ -110,9 +110,9 @@ export function VariantPicker({
 
       <div className="divide-y divide-border rounded-lg border">
         {colors.length > 1 && (
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
             <p className="text-sm font-medium">{colorLabel}</p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {colors.map((color) => {
                 const available = isColorAvailable(color);
                 return (

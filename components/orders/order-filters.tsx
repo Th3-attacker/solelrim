@@ -240,9 +240,9 @@ export function OrderFilters() {
             {dateLabel}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="flex">
-            <div className="flex w-36 flex-col gap-0.5 border-e p-2">
+        <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
+          <div className="flex flex-col sm:flex-row">
+            <div className="flex flex-row flex-wrap gap-0.5 border-b p-2 sm:w-36 sm:flex-col sm:border-e sm:border-b-0">
               {DATE_PRESETS.map((preset) => (
                 <button
                   key={preset.labelKey}
