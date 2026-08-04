@@ -21,6 +21,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "home": "Home",
     "products": "Products",
     "categories": "Categories",
     "sales": "Sales",

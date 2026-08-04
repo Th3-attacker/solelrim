@@ -44,8 +44,9 @@ export default async function ShopLayout({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, boutique] = await Promise.all([
+  const [t, tNav, boutique] = await Promise.all([
     getTranslations("shop"),
+    getTranslations("nav"),
     getPublicBoutiqueSettings(storeType),
   ]);
   const [allProducts, categories] = await Promise.all([
@@ -123,6 +124,18 @@ export default async function ShopLayout({
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
                   <Link
+                    href={`/${storeType}`}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {tNav("home")}
+                  </Link>
+                  <Link
+                    href={`/${storeType}/products`}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {tNav("products")}
+                  </Link>
+                  <Link
                     href={`/${storeType}/about`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -178,14 +191,14 @@ export default async function ShopLayout({
                       {t("footerShopTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href={`/${storeType}`} className="transition-colors hover:text-white">
+                      <Link href={`/${storeType}/products`} className="transition-colors hover:text-white">
                         {t("allProductsTitle")}
                       </Link>
                       {categories.map((category) => (
                         <Link
                           key={category.id}
                           href={{
-                            pathname: `/${storeType}`,
+                            pathname: `/${storeType}/products`,
                             query: { category: category.id },
                           }}
                           className="transition-colors hover:text-white"

@@ -63,7 +63,7 @@ export default async function ProductDetailPage({
           <span aria-hidden>/</span>
           <Link
             href={{
-              pathname: `/${storeType}`,
+              pathname: `/${storeType}/products`,
               query: { category: product.categoryId },
             }}
             className="hover:text-foreground"

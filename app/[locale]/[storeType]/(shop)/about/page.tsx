@@ -130,7 +130,7 @@ export default async function AboutPage({
             </Button>
           )}
           <Button asChild size="lg" variant="outline">
-            <Link href={{ pathname: `/${storeType}`, hash: "catalog" }}>
+            <Link href={{ pathname: `/${storeType}/products`, hash: "catalog" }}>
               {t("ctaButton")}
             </Link>
           </Button>

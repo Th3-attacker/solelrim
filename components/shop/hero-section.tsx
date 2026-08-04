@@ -21,11 +21,13 @@ function HeroFallback({
   title,
   subtitle,
   ctaLabel,
+  ctaHref,
 }: {
   badgeText: string | null;
   title: string;
   subtitle: string;
   ctaLabel: string;
+  ctaHref: string;
 }) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-foreground px-6 py-20 text-center sm:py-28">
@@ -52,20 +54,27 @@ function HeroFallback({
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-2">
-          <a href="#catalog">{ctaLabel}</a>
+          <a href={ctaHref}>{ctaLabel}</a>
         </Button>
       </div>
     </div>
   );
 }
 
-export async function HeroSection({ settings }: { settings: HeroSettings }) {
+export async function HeroSection({
+  settings,
+  storeType,
+}: {
+  settings: HeroSettings;
+  storeType: string;
+}) {
   const t = await getTranslations("shop");
 
   const badgeText = settings.heroBadgeText;
   const title = settings.heroTitle || t("heroTitle");
   const subtitle = settings.heroSubtitle || t("heroSubtitle");
   const ctaLabel = settings.heroCtaLabel || t("heroCta");
+  const ctaHref = `/${storeType}/products`;
 
   if (!settings.heroImagePath) {
     return (
@@ -74,6 +83,7 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
         title={title}
         subtitle={subtitle}
         ctaLabel={ctaLabel}
+        ctaHref={ctaHref}
       />
     );
   }
@@ -100,7 +110,7 @@ export async function HeroSection({ settings }: { settings: HeroSettings }) {
           {subtitle}
         </p>
         <Button asChild size="lg" className="mt-1">
-          <a href="#catalog">{ctaLabel}</a>
+          <a href={ctaHref}>{ctaLabel}</a>
         </Button>
       </div>
 

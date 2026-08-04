@@ -62,7 +62,7 @@ export function SearchTrigger({
     e.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
-    router.push(`/${storeType}?q=${encodeURIComponent(trimmed)}#catalog`);
+    router.push(`/${storeType}/products?q=${encodeURIComponent(trimmed)}`);
     close();
   }
 
@@ -91,7 +91,7 @@ export function SearchTrigger({
       {categories.map((category) => (
         <Link
           key={category.id}
-          href={{ pathname: `/${storeType}`, query: { category: category.id } }}
+          href={{ pathname: `/${storeType}/products`, query: { category: category.id } }}
           onClick={close}
           className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
         >
