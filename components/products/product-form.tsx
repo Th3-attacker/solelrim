@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategorySelect } from "@/components/products/category-select";
 import { VariantFields } from "@/components/products/variant-fields";
@@ -134,12 +135,18 @@ export function ProductForm({
           </div>
 
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("isActive")} className="size-4" />
+            <Checkbox
+              checked={watch("isActive")}
+              onCheckedChange={(checked) => setValue("isActive", checked === true)}
+            />
             {t("active")}
           </label>
 
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("isFeatured")} className="size-4" />
+            <Checkbox
+              checked={watch("isFeatured")}
+              onCheckedChange={(checked) => setValue("isFeatured", checked === true)}
+            />
             {t("isFeatured")}
           </label>
         </CardContent>
