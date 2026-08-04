@@ -1,0 +1,60 @@
+import type { PrismaClient } from "@/lib/generated/prisma/client";
+import type { TransactionClient } from "@/lib/generated/prisma/internal/prismaNamespace";
+import type { Decimal } from "@/lib/generated/prisma/internal/prismaNamespace";
+import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
+
+type Db = PrismaClient | TransactionClient;
+
+export type PromoCodeValidationError =
+  | "notFound"
+  | "expired"
+  | "usageLimitReached"
+  | "notYours";
+
+type ValidatedPromoCode = {
+  id: string;
+  discountType: PromoDiscountType;
+  discountValue: Decimal;
+};
+
+// Shared by the checkout preview (read-only) and submitOrder's transaction
+// (authoritative re-check right before it increments usedCount) — a single
+// source of truth for what makes a code usable, so the two never drift.
+export async function findValidPromoCode(
+  db: Db,
+  args: { code: string; productType: string; customerPhone: string },
+): Promise<{ error: PromoCodeValidationError } | { promoCode: ValidatedPromoCode }> {
+  const normalized = args.code.trim().toUpperCase();
+  const promoCode = await db.promoCode.findUnique({
+    where: { code: normalized },
+    include: { client: true },
+  });
+
+  if (!promoCode || !promoCode.isActive || promoCode.productType !== args.productType) {
+    return { error: "notFound" };
+  }
+  if (promoCode.expiresAt && promoCode.expiresAt < new Date()) {
+    return { error: "expired" };
+  }
+  if (promoCode.maxUses !== null && promoCode.usedCount >= promoCode.maxUses) {
+    return { error: "usageLimitReached" };
+  }
+  // Personal code: only usable with the phone number of the client it was
+  // given to. A client with no phone on file can never redeem one.
+  if (promoCode.clientId && promoCode.client?.phone !== args.customerPhone) {
+    return { error: "notYours" };
+  }
+
+  return { promoCode };
+}
+
+// Rounded to the currency's smallest practical unit (whole units, same as
+// formatPriceNumber) and never lets a fixed-amount code exceed the subtotal.
+export function computePromoDiscount(
+  promoCode: { discountType: PromoDiscountType; discountValue: Decimal },
+  subtotal: number,
+): number {
+  const value = promoCode.discountValue.toNumber();
+  const raw = promoCode.discountType === "PERCENT" ? subtotal * (value / 100) : value;
+  return Math.min(Math.round(raw), subtotal);
+}

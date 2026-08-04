@@ -33,7 +33,8 @@
     "activitySection": "النشاط",
     "adminSection": "الإدارة",
     "superadmin": "مدير عام",
-    "boutiqueAdmin": "مدير متجر"
+    "boutiqueAdmin": "مدير متجر",
+    "promoCodes": "أكواد الخصم"
   },
   "auth": {
     "login": {
@@ -135,6 +136,31 @@
     "notes": "ملاحظات",
     "purchaseHistory": "سجل المشتريات",
     "noClients": "لا يوجد عملاء بعد."
+  },
+  "promoCodes": {
+    "title": "أكواد الخصم",
+    "newCode": "كود جديد",
+    "code": "الكود",
+    "discountType": "نوع الخصم",
+    "percent": "نسبة مئوية",
+    "fixed": "مبلغ ثابت",
+    "discountValue": "القيمة",
+    "client": "العميل",
+    "generalCode": "عام (لأي عميل)",
+    "expiresAt": "تاريخ الانتهاء",
+    "noExpiration": "بدون تاريخ انتهاء",
+    "maxUses": "حد الاستخدام",
+    "unlimited": "غير محدود",
+    "usage": "الاستخدام",
+    "status": "الحالة",
+    "active": "نشط",
+    "inactive": "معطّل",
+    "deactivate": "تعطيل",
+    "deactivateConfirm": "تعطيل هذا الكود؟",
+    "deactivateDescription": "لن يكون الكود قابلاً للاستخدام بعد الآن، لكنه يبقى ظاهرًا في السجل.",
+    "noPromoCodes": "لا توجد أكواد خصم بعد.",
+    "duplicateCodeError": "هذا الكود موجود بالفعل.",
+    "giveCode": "منح كود خصم"
   },
   "shop": {
     "siteName": "سوليريم",
@@ -266,7 +292,17 @@
     "validationError": "يرجى التحقق من المعلومات المدخلة.",
     "missingScreenshotError": "يرجى إضافة لقطة شاشة للدفع.",
     "insufficientStockError": "المخزون غير كافٍ لأحد عناصر طلبك.",
-    "rateLimitedError": "عدد كبير جدًا من المحاولات. يرجى المحاولة مرة أخرى بعد بضع دقائق."
+    "rateLimitedError": "عدد كبير جدًا من المحاولات. يرجى المحاولة مرة أخرى بعد بضع دقائق.",
+    "promoCode": "كود الخصم",
+    "promoCodePlaceholder": "أدخل كودًا",
+    "applyPromoCode": "تطبيق",
+    "removePromoCode": "إزالة الكود",
+    "discount": "الخصم",
+    "total": "الإجمالي",
+    "promoCodeInvalidError": "كود خصم غير صالح.",
+    "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
+    "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
+    "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
   },
   "orders": {
     "title": "الطلبات",

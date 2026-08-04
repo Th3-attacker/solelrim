@@ -24,6 +24,7 @@ import {
   Settings,
   ShoppingCart,
   Tag,
+  Ticket,
   Users,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -63,6 +64,7 @@ export function AppSidebar({
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         { href: "/admin/orders", label: t("orders"), icon: ClipboardList },
         { href: "/admin/clients", label: t("clients"), icon: Users },
+        { href: "/admin/promo-codes", label: t("promoCodes"), icon: Ticket },
       ],
     },
     {

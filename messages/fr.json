@@ -33,7 +33,8 @@
     "activitySection": "Activité",
     "adminSection": "Administration",
     "superadmin": "Super administrateur",
-    "boutiqueAdmin": "Administrateur boutique"
+    "boutiqueAdmin": "Administrateur boutique",
+    "promoCodes": "Codes promo"
   },
   "auth": {
     "login": {
@@ -135,6 +136,31 @@
     "notes": "Notes",
     "purchaseHistory": "Historique d'achats",
     "noClients": "Aucun client pour le moment."
+  },
+  "promoCodes": {
+    "title": "Codes promo",
+    "newCode": "Nouveau code",
+    "code": "Code",
+    "discountType": "Type de réduction",
+    "percent": "Pourcentage",
+    "fixed": "Montant fixe",
+    "discountValue": "Valeur",
+    "client": "Client",
+    "generalCode": "Général (tous les clients)",
+    "expiresAt": "Expiration",
+    "noExpiration": "Sans expiration",
+    "maxUses": "Limite d'utilisation",
+    "unlimited": "Illimité",
+    "usage": "Utilisation",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Désactivé",
+    "deactivate": "Désactiver",
+    "deactivateConfirm": "Désactiver ce code promo ?",
+    "deactivateDescription": "Le code ne pourra plus être utilisé, mais reste visible dans l'historique.",
+    "noPromoCodes": "Aucun code promo pour le moment.",
+    "duplicateCodeError": "Ce code existe déjà.",
+    "giveCode": "Offrir un code promo"
   },
   "shop": {
     "siteName": "Solelrim",
@@ -266,7 +292,17 @@
     "validationError": "Merci de vérifier les informations saisies.",
     "missingScreenshotError": "Merci d'ajouter une capture d'écran du paiement.",
     "insufficientStockError": "Stock insuffisant pour un des articles de votre commande.",
-    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes."
+    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    "promoCode": "Code promo",
+    "promoCodePlaceholder": "Entrez un code",
+    "applyPromoCode": "Appliquer",
+    "removePromoCode": "Retirer le code",
+    "discount": "Réduction",
+    "total": "Total",
+    "promoCodeInvalidError": "Code promo invalide.",
+    "promoCodeExpiredError": "Ce code promo a expiré.",
+    "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
+    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
   },
   "orders": {
     "title": "Commandes",
