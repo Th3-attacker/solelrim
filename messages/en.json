@@ -28,7 +28,10 @@
     "orders": "Orders",
     "clients": "Clients",
     "settings": "Settings",
-    "logout": "Log out"
+    "logout": "Log out",
+    "catalogSection": "Catalog",
+    "activitySection": "Activity",
+    "adminSection": "Administration"
   },
   "auth": {
     "login": {

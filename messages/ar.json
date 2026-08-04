@@ -28,7 +28,10 @@
     "orders": "الطلبات",
     "clients": "العملاء",
     "settings": "الإعدادات",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "catalogSection": "الكتالوج",
+    "activitySection": "النشاط",
+    "adminSection": "الإدارة"
   },
   "auth": {
     "login": {

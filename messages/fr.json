@@ -28,7 +28,10 @@
     "orders": "Commandes",
     "clients": "Clients",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "catalogSection": "Catalogue",
+    "activitySection": "Activité",
+    "adminSection": "Administration"
   },
   "auth": {
     "login": {
