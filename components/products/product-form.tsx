@@ -85,7 +85,7 @@ export function ProductForm({
         <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="name">{t("name")}</Label>
-            <Input id="name" {...register("name")} />
+            <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
             {errors.name && (
               <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
             )}
@@ -102,6 +102,7 @@ export function ProductForm({
               id="basePrice"
               type="number"
               step="0.01"
+              aria-invalid={!!errors.basePrice}
               {...register("basePrice")}
             />
             {errors.basePrice && (

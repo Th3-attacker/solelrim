@@ -119,6 +119,8 @@ model Category {
   storeType   StoreType? @relation(fields: [productType], references: [key])
   products    Product[]
   createdAt   DateTime   @default(now())
+
+  @@index([productType])
 }
 
 model Product {

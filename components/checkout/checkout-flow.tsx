@@ -92,6 +92,12 @@ export function CheckoutFlow({
     defaultValues: { customerName: "", customerPhone: "", customerCity: "" },
   });
 
+  function fieldErrorMessage(message?: string) {
+    if (message === "required") return tCommon("requiredField");
+    if (message === "invalidPhone") return tCommon("invalidPhone");
+    return t("validationError");
+  }
+
   const onSubmitStep1: SubmitHandler<CheckoutCustomerInput> = (data) => {
     setCustomerInfo(data);
     setStep(2);
@@ -184,9 +190,15 @@ export function CheckoutFlow({
           <h2 className="text-label-xs">{t("step1Title")}</h2>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerName">{t("customerName")}</Label>
-            <Input id="customerName" {...register("customerName")} />
+            <Input
+              id="customerName"
+              aria-invalid={!!errors.customerName}
+              {...register("customerName")}
+            />
             {errors.customerName && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerName.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -195,17 +207,26 @@ export function CheckoutFlow({
               id="customerPhone"
               inputMode="numeric"
               maxLength={8}
+              aria-invalid={!!errors.customerPhone}
               {...register("customerPhone")}
             />
             {errors.customerPhone && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerPhone.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="customerCity">{t("customerCity")}</Label>
-            <Input id="customerCity" {...register("customerCity")} />
+            <Input
+              id="customerCity"
+              aria-invalid={!!errors.customerCity}
+              {...register("customerCity")}
+            />
             {errors.customerCity && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerCity.message)}
+              </p>
             )}
           </div>
           <Button type="submit">{t("next")}</Button>

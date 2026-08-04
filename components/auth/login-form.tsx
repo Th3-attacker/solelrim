@@ -32,11 +32,24 @@ export function LoginForm() {
           <input type="hidden" name="locale" value={locale} />
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">{t("email")}</Label>
-            <Input id="email" name="email" type="email" required autoFocus />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoFocus
+              aria-invalid={!!state.error}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">{t("password")}</Label>
-            <Input id="password" name="password" type="password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              aria-invalid={!!state.error}
+            />
           </div>
           {state.error && (
             <p className="text-sm text-destructive">{t("error")}</p>
