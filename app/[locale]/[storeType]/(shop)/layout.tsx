@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { MessageCircle } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
@@ -18,6 +18,7 @@ import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
+import { buildSocialMetadata } from "@/lib/shop/metadata";
 
 export async function generateMetadata({
   params,
@@ -25,14 +26,22 @@ export async function generateMetadata({
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, boutique] = await Promise.all([
+  const [t, locale, boutique] = await Promise.all([
     getTranslations("shop"),
+    getLocale(),
     getPublicBoutiqueSettings(storeType),
   ]);
   const siteName = boutique.siteName?.trim() || t("siteName");
+  const title = boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`;
+  const description = boutique.seoDescription?.trim() || t("heroSubtitle");
+  const imageUrl = boutique.logoStoragePath
+    ? getStoreLogoUrl(boutique.logoStoragePath)
+    : null;
+
   return {
-    title: boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`,
-    description: boutique.seoDescription?.trim() || t("heroSubtitle"),
+    title,
+    description,
+    ...buildSocialMetadata({ title, description, imageUrl, locale }),
   };
 }
 

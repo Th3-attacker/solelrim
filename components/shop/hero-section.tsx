@@ -35,7 +35,7 @@ function HeroFallback({
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-background/5 select-none"
       >
-        SOLELRIM
+        SOLAL
       </span>
       <div
         aria-hidden

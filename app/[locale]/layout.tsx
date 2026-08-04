@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
 import { Toaster } from "@/components/ui/toast";
 import { routing, getDirection } from "@/i18n/routing";
+import { getSiteUrl } from "@/lib/shop/site-url";
 
 // Body/heading font is the native OS UI font stack (SF Pro on Apple
 // devices) defined in globals.css's --font-sans — no webfont to load here.
@@ -29,9 +30,21 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
+// Sane defaults every page inherits unless it overrides them (Next merges
+// metadata per-field across nested generateMetadata calls) — the public
+// storefront pages (shop layout, about, contact, product detail) all
+// override title/description/openGraph with boutique- or product-specific
+// values; this only really surfaces as-is on admin pages, which robots.ts
+// already keeps out of search results.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
-  return { title: `Solelrim — ${t("title")}` };
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    title: `SOLAL — ${t("title")}`,
+    description: "SOLAL — rapide et simple.",
+    openGraph: { siteName: "SOLAL", type: "website" },
+    twitter: { card: "summary" },
+  };
 }
 
 export default async function LocaleLayout({

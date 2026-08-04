@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -6,15 +7,48 @@ import {
   getAdjacentProductSlugs,
   getProductSlugById,
 } from "@/lib/queries/shop";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { VariantPicker } from "@/components/shop/variant-picker";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { Price } from "@/components/shop/price";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link, redirect } from "@/i18n/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ storeType: string; productSlug: string }>;
+}): Promise<Metadata> {
+  const { storeType, productSlug } = await params;
+  const [tShop, locale, boutique, product] = await Promise.all([
+    getTranslations("shop"),
+    getLocale(),
+    getPublicBoutiqueSettings(storeType),
+    getActiveProductBySlug(productSlug, storeType),
+  ]);
+
+  if (!product) {
+    return {};
+  }
+
+  const siteName = boutique.siteName?.trim() || tShop("siteName");
+  const title = `${product.name} — ${siteName}`;
+  const description = product.description?.trim() || tShop("heroSubtitle");
+  const imageUrl = product.images[0]
+    ? getProductImageUrl(product.images[0].storagePath)
+    : null;
+
+  return {
+    title,
+    description,
+    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+  };
+}
 
 export default async function ProductDetailPage({
   params,

@@ -165,7 +165,7 @@
     "invalidPercentError": "Le pourcentage doit être compris entre 0 et 100."
   },
   "shop": {
-    "siteName": "Solelrim",
+    "siteName": "SOLAL",
     "startingFrom": "à partir de",
     "inStock": "En stock",
     "lowStock": "Stock faible",
@@ -226,7 +226,7 @@
   },
   "contact": {
     "metaTitle": "Contact",
-    "metaDescription": "Contactez Solelrim directement sur WhatsApp pour toute question sur une commande, un produit, ou autre chose.",
+    "metaDescription": "Contactez SOLAL directement sur WhatsApp pour toute question sur une commande, un produit, ou autre chose.",
     "title": "Contactez-nous",
     "subtitle": "Pas de formulaire, pas d'attente — un vrai humain vous répond directement.",
     "whatsappTitle": "WhatsApp",
@@ -240,7 +240,7 @@
   },
   "about": {
     "metaTitle": "À propos",
-    "metaDescription": "Solelrim propose des vêtements et accessoires de sport sélectionnés pour la qualité, avec un paiement local et un service humain à chaque commande.",
+    "metaDescription": "SOLAL propose des vêtements et accessoires de sport sélectionnés pour la qualité — rapide, simple, avec un paiement local et un service humain à chaque commande.",
     "eyebrow": "Notre histoire",
     "heroTitle": "Le sport, sans compromis sur la qualité",
     "heroSubtitle": "Des vêtements et accessoires de sport sélectionnés pour durer, à des prix accessibles, avec un vrai humain derrière chaque commande.",
@@ -392,7 +392,7 @@
       "navy": "Marine"
     },
 
-    "heroSection": "Hero",
+    "heroSection": "Image principale",
     "heroImage": "Photo du hero",
     "heroImagePosition": "Position de la photo",
     "heroImagePositionLeft": "À gauche",
@@ -434,7 +434,7 @@
     "noBoutiques": "Aucune boutique.",
     "domain": "Nom de domaine",
     "domainNotSet": "Aucun domaine configuré",
-    "domainPlaceholder": "solel.com",
+    "domainPlaceholder": "solal.com",
     "domainEdit": "Domaine",
     "domainEditTitle": "Domaine — {label}",
     "domainError": {

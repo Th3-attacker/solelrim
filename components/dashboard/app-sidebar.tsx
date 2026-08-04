@@ -77,7 +77,7 @@ export function AppSidebar({
     <Sidebar side={side} collapsible="icon">
       <SidebarHeader>
         <div className="px-2 py-1.5 text-sm font-semibold group-data-[collapsible=icon]:hidden">
-          <Link href="/">Solelrim</Link>
+          <Link href="/">SOLAL</Link>
         </div>
         {/* A boutique admin is permanently locked to one boutique — there's
             nothing for them to switch between, so the switcher (and the
