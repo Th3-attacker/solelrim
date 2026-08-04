@@ -60,6 +60,12 @@ export function PromoCodeFormDialog({
     },
   });
 
+  function fieldErrorMessage(message?: string) {
+    if (message === "invalidCode") return t("invalidCodeError");
+    if (message === "invalidPercent") return t("invalidPercentError");
+    return tCommon("requiredField");
+  }
+
   const onSubmit: SubmitHandler<PromoCodeInput> = async (data) => {
     setSubmitting(true);
     const result = await createPromoCode(data);
@@ -103,7 +109,9 @@ export function PromoCodeFormDialog({
             {...register("code")}
           />
           {errors.code && (
-            <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+            <p className="text-sm text-destructive">
+              {fieldErrorMessage(errors.code.message)}
+            </p>
           )}
         </div>
 
@@ -135,7 +143,9 @@ export function PromoCodeFormDialog({
               {...register("discountValue")}
             />
             {errors.discountValue && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.discountValue.message)}
+              </p>
             )}
           </div>
         </div>

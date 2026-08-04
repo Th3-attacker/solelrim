@@ -160,7 +160,9 @@
     "deactivateDescription": "The code will no longer be usable, but stays visible in history.",
     "noPromoCodes": "No promo codes yet.",
     "duplicateCodeError": "This code already exists.",
-    "giveCode": "Give a promo code"
+    "giveCode": "Give a promo code",
+    "invalidCodeError": "The code can only contain letters, numbers, hyphens, and underscores (3 to 30 characters).",
+    "invalidPercentError": "The percentage must be between 0 and 100."
   },
   "shop": {
     "siteName": "Solelrim",
