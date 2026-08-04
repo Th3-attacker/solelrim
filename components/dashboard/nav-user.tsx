@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,10 +18,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
+import { getDirection } from "@/i18n/routing";
 import { logout } from "@/lib/actions/auth";
 
 function initials(email: string): string {
-  return email.slice(0, 2).toUpperCase();
+  return email.slice(0, 2).toUpperCase() || "?";
 }
 
 export function NavUser({
@@ -33,6 +36,7 @@ export function NavUser({
   const t = useTranslations("nav");
   const locale = useLocale();
   const { isMobile } = useSidebar();
+  const [loggingOut, startLogout] = useTransition();
 
   const avatar = (
     <Avatar className="size-8 rounded-lg">
@@ -53,6 +57,7 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
+              tooltip={roleLabel}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               {avatar}
@@ -65,7 +70,7 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right"}
             align="end"
             sideOffset={4}
           >
@@ -76,8 +81,12 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={() => logout(locale)}>
-              <LogOut />
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={loggingOut}
+              onSelect={() => startLogout(() => logout(locale))}
+            >
+              {loggingOut ? <Spinner className="size-4" /> : <LogOut />}
               {t("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
