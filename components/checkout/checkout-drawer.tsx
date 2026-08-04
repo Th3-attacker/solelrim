@@ -20,7 +20,7 @@ import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { cn } from "@/lib/utils";
 
 type Settings = {
-  wallets: { provider: "BANKILY" | "MASRIVY"; number: string }[];
+  wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
 };

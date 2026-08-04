@@ -33,11 +33,6 @@ enum PromoDiscountType {
   FIXED
 }
 
-enum WalletProvider {
-  BANKILY
-  MASRIVY
-}
-
 model StoreType {
   id                  String    @id @default(cuid())
   key                 String    @unique
@@ -96,19 +91,21 @@ model SocialLink {
   @@index([productType])
 }
 
-// Bankily/Masrivy payment numbers — a repeatable, ordered list (mirrors
-// SocialLink) instead of two fixed StoreType columns, so a boutique admin
-// can add multiple numbers per provider or drop one entirely. provider
-// drives which bundled logo (lib/shop/wallets.ts) renders next to number,
-// both in the admin manager and at checkout.
+// Payment wallet numbers (Bankily, Masrivy, or any other provider the
+// admin names) — a repeatable, ordered list (mirrors SocialLink) instead
+// of two fixed StoreType columns. provider is free text, not an enum, so
+// the admin isn't limited to a hardcoded set; logoStoragePath is an
+// optional uploaded image (falls back to a generic icon when absent), both
+// in the admin manager and at checkout.
 model WalletAccount {
-  id          String         @id @default(cuid())
-  productType String
-  storeType   StoreType      @relation(fields: [productType], references: [key])
-  provider    WalletProvider
-  number      String
-  position    Int            @default(0)
-  createdAt   DateTime       @default(now())
+  id              String    @id @default(cuid())
+  productType     String
+  storeType       StoreType @relation(fields: [productType], references: [key])
+  provider        String
+  number          String
+  logoStoragePath String?
+  position        Int       @default(0)
+  createdAt       DateTime  @default(now())
 
   @@index([productType])
 }

@@ -2,49 +2,74 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, Pencil, Wallet, X } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import {
   createWalletAccount,
+  updateWalletAccount,
   deleteWalletAccount,
   moveWalletAccount,
 } from "@/lib/actions/wallets";
-import { WALLET_PROVIDERS, WALLET_PROVIDER_KEYS } from "@/lib/shop/wallets";
-import type { WalletProvider } from "@/lib/generated/prisma/enums";
 
-type WalletAccount = { id: string; provider: WalletProvider; number: string };
+type WalletAccount = {
+  id: string;
+  provider: string;
+  number: string;
+  logoUrl: string | null;
+};
+
+const EMPTY_FORM = { provider: "", number: "" };
 
 export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] }) {
   const t = useTranslations("settings");
-  const tWallets = useTranslations("wallets");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [provider, setProvider] = useState<WalletProvider | "">("");
-  const [number, setNumber] = useState("");
+  const [editing, setEditing] = useState<WalletAccount | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function handleCreate() {
+  function openCreate() {
+    setEditing(null);
+    setForm(EMPTY_FORM);
+    setLogoFile(null);
+    setRemoveLogo(false);
+    setOpen(true);
+  }
+
+  function openEdit(wallet: WalletAccount) {
+    setEditing(wallet);
+    setForm({ provider: wallet.provider, number: wallet.number });
+    setLogoFile(null);
+    setRemoveLogo(false);
+    setOpen(true);
+  }
+
+  function handleSubmit() {
+    const formData = new FormData();
+    formData.set("provider", form.provider);
+    formData.set("number", form.number);
+    if (logoFile) {
+      formData.set("logo", logoFile);
+    } else if (removeLogo) {
+      formData.set("removeLogo", "true");
+    }
+
     startTransition(async () => {
-      const result = await createWalletAccount({ provider, number });
+      const result = editing
+        ? await updateWalletAccount(editing.id, formData)
+        : await createWalletAccount(formData);
       if (result.error) {
         toast.error(tCommon("error"));
         return;
       }
-      setProvider("");
-      setNumber("");
       setOpen(false);
       router.refresh();
     });
@@ -80,20 +105,33 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
         <div className="flex flex-col gap-2">
           {wallets.map((wallet, index) => (
             <div key={wallet.id} className="flex items-center gap-3 rounded-md border p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={WALLET_PROVIDERS[wallet.provider].logo}
-                alt=""
-                className="size-8 shrink-0 rounded-md"
-              />
+              {wallet.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={wallet.logoUrl}
+                  alt=""
+                  className="size-8 shrink-0 rounded-md object-cover"
+                />
+              ) : (
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                  <Wallet className="size-4 text-muted-foreground" />
+                </div>
+              )}
               <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm font-medium">
-                  {tWallets(wallet.provider.toLowerCase())}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="text-sm font-medium">{wallet.provider}</span>
+                <span dir="ltr" className="truncate text-xs text-muted-foreground">
                   {wallet.number}
                 </span>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={pending}
+                onClick={() => openEdit(wallet)}
+              >
+                <Pencil className="size-4" />
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
@@ -130,57 +168,72 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
         open={open}
         onOpenChange={setOpen}
         trigger={
-          <Button type="button" variant="outline" className="self-start">
+          <Button type="button" variant="outline" className="self-start" onClick={openCreate}>
             <Plus className="size-4" />
             {t("addWallet")}
           </Button>
         }
-        title={t("addWallet")}
+        title={editing ? t("editWallet") : t("addWallet")}
         footer={
           <Button
             type="button"
-            disabled={!provider || !number.trim()}
+            disabled={!form.provider.trim() || !form.number.trim()}
             loading={pending}
-            onClick={handleCreate}
+            onClick={handleSubmit}
           >
-            {tCommon("create")}
+            {editing ? tCommon("save") : tCommon("create")}
           </Button>
         }
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="wallet-provider">{t("walletProvider")}</Label>
-            <Select
-              value={provider}
-              onValueChange={(value) => setProvider(value as WalletProvider)}
-            >
-              <SelectTrigger id="wallet-provider" className="w-full">
-                <SelectValue placeholder={t("walletProvider")} />
-              </SelectTrigger>
-              <SelectContent>
-                {WALLET_PROVIDER_KEYS.map((key) => (
-                  <SelectItem key={key} value={key}>
-                    <span className="flex items-center gap-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={WALLET_PROVIDERS[key].logo}
-                        alt=""
-                        className="size-5 rounded"
-                      />
-                      {tWallets(key.toLowerCase())}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              id="wallet-provider"
+              value={form.provider}
+              placeholder={t("walletProviderPlaceholder")}
+              onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="wallet-number">{t("walletNumber")}</Label>
             <Input
               id="wallet-number"
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
+              value={form.number}
+              onChange={(e) => setForm((f) => ({ ...f, number: e.target.value }))}
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="wallet-logo">{t("walletLogo")}</Label>
+            {editing?.logoUrl && !logoFile && !removeLogo && (
+              <div className="flex items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={editing.logoUrl}
+                  alt=""
+                  className="size-10 rounded-md border object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRemoveLogo(true)}
+                >
+                  <X className="size-4" />
+                  {tCommon("delete")}
+                </Button>
+              </div>
+            )}
+            <Input
+              id="wallet-logo"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={(e) => {
+                setLogoFile(e.target.files?.[0] ?? null);
+                setRemoveLogo(false);
+              }}
+            />
+            <p className="text-xs text-muted-foreground">{t("walletLogoHint")}</p>
           </div>
         </div>
       </ResponsiveFormDialog>

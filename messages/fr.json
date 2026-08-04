@@ -304,10 +304,6 @@
     "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
     "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
   },
-  "wallets": {
-    "bankily": "Bankily",
-    "masrivy": "Masrivi"
-  },
   "orders": {
     "title": "Commandes",
     "reference": "Référence",
@@ -414,8 +410,12 @@
 
     "walletsSection": "Wallets de paiement",
     "addWallet": "Ajouter une wallet",
+    "editWallet": "Modifier la wallet",
     "walletProvider": "Fournisseur",
+    "walletProviderPlaceholder": "Ex. Bankily, Masrivi, Sedad...",
     "walletNumber": "Numéro",
+    "walletLogo": "Logo",
+    "walletLogoHint": "Facultatif — sans logo, une icône générique s'affiche.",
 
     "socialSection": "Réseaux sociaux",
     "addSocialLink": "Ajouter un réseau",

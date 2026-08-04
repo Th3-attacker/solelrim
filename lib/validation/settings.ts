@@ -27,7 +27,7 @@ export const socialLinkSchema = z.object({
 export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
 
 export const walletAccountSchema = z.object({
-  provider: z.enum(["BANKILY", "MASRIVY"]),
+  provider: z.string().trim().min(1).max(40),
   number: z.string().trim().min(1).max(30),
 });
 

@@ -15,15 +15,14 @@ import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { WALLET_PROVIDERS } from "@/lib/shop/wallets";
-import { X } from "lucide-react";
+import { Wallet, X } from "lucide-react";
 import {
   checkoutCustomerSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
 
 type Settings = {
-  wallets: { provider: "BANKILY" | "MASRIVY"; number: string }[];
+  wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
 };
@@ -42,7 +41,6 @@ export function CheckoutFlow({
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
-  const tWallets = useTranslations("wallets");
   const locale = useLocale();
   const { storeType } = useParams<{ storeType: string }>();
   const cart = useCart();
@@ -395,15 +393,21 @@ export function CheckoutFlow({
                     key={index}
                     className="flex min-w-0 items-center gap-3 rounded-xl border bg-muted/30 p-3"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={WALLET_PROVIDERS[wallet.provider].logo}
-                      alt=""
-                      className="size-10 shrink-0 rounded-lg"
-                    />
+                    {wallet.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={wallet.logoUrl}
+                        alt=""
+                        className="size-10 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Wallet className="size-5 text-muted-foreground" />
+                      </div>
+                    )}
                     <div className="flex min-w-0 flex-col">
                       <span className="text-xs font-medium text-muted-foreground">
-                        {tWallets(wallet.provider.toLowerCase())}
+                        {wallet.provider}
                       </span>
                       <span dir="ltr" className="truncate text-sm font-semibold">
                         {wallet.number}

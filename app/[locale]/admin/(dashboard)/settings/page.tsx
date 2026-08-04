@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getBoutiqueSettings } from "@/lib/queries/settings";
-import { getStoreHeroImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
 import { HeroImageUpload } from "@/components/settings/hero-image-upload";
@@ -72,6 +72,7 @@ export default async function SettingsPage() {
           id: wallet.id,
           provider: wallet.provider,
           number: wallet.number,
+          logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
         }))}
       />
 

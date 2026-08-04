@@ -304,10 +304,6 @@
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
   },
-  "wallets": {
-    "bankily": "بنكيلي",
-    "masrivy": "مصرفي"
-  },
   "orders": {
     "title": "الطلبات",
     "reference": "المرجع",
@@ -414,8 +410,12 @@
 
     "walletsSection": "محافظ الدفع",
     "addWallet": "إضافة محفظة",
+    "editWallet": "تعديل المحفظة",
     "walletProvider": "المزود",
+    "walletProviderPlaceholder": "مثال: بنكيلي، مصرفي، سداد...",
     "walletNumber": "الرقم",
+    "walletLogo": "الشعار",
+    "walletLogoHint": "اختياري — يظهر رمز عام إذا لم يوجد شعار.",
 
     "socialSection": "وسائل التواصل الاجتماعي",
     "addSocialLink": "إضافة رابط تواصل",
