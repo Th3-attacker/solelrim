@@ -28,6 +28,11 @@ enum AdminRole {
   BOUTIQUE_ADMIN
 }
 
+enum PromoDiscountType {
+  PERCENT
+  FIXED
+}
+
 model StoreType {
   id                  String    @id @default(cuid())
   key                 String    @unique
@@ -72,6 +77,7 @@ model StoreType {
   storeSettings StoreSettings[]
   adminUsers    AdminUser[]
   socialLinks   SocialLink[]
+  promoCodes    PromoCode[]
 }
 
 model SocialLink {
@@ -191,6 +197,7 @@ model Client {
   productType String
   storeType   StoreType @relation(fields: [productType], references: [key])
   sales       Sale[]
+  promoCodes  PromoCode[]
   createdAt   DateTime  @default(now())
 
   @@index([fullName])
@@ -242,10 +249,15 @@ model Order {
   customerCity     String
   items            OrderItem[]
   subtotal         Decimal     @db.Decimal(10, 2)
+  discount         Decimal     @default(0) @db.Decimal(10, 2)
   total            Decimal     @db.Decimal(10, 2)
   status           OrderStatus @default(PENDING)
   paymentProofPath String
   locale           String?
+  // Re-validated from scratch inside submitOrder's transaction — never
+  // trusts a client-computed discount amount. Null when no code was used.
+  promoCodeId      String?
+  promoCode        PromoCode?  @relation(fields: [promoCodeId], references: [id])
   // The boutique the checkout form was submitted from (its [storeType] URL
   // segment) — validated server-side against every variant in the cart
   // before being trusted (see submitOrder).
@@ -277,6 +289,32 @@ model OrderItem {
 
   @@index([orderId])
   @@index([variantId])
+}
+
+// Personal (clientId set — usable only by that client, matched by phone at
+// checkout) or general (clientId null — usable by any customer) discount
+// code. Limits are all optional and independently configurable: expiresAt
+// null = never expires, maxUses null = unlimited (isActive is the only way
+// to retire it). usedCount is incremented atomically inside submitOrder's
+// transaction, never trusted from client input.
+model PromoCode {
+  id            String            @id @default(cuid())
+  code          String            @unique
+  discountType  PromoDiscountType
+  discountValue Decimal           @db.Decimal(10, 2)
+  clientId      String?
+  client        Client?           @relation(fields: [clientId], references: [id])
+  productType   String
+  storeType     StoreType         @relation(fields: [productType], references: [key])
+  expiresAt     DateTime?
+  maxUses       Int?
+  usedCount     Int               @default(0)
+  isActive      Boolean           @default(true)
+  orders        Order[]
+  createdAt     DateTime          @default(now())
+
+  @@index([productType])
+  @@index([clientId])
 }
 
 // Sliding-window rate limiting: one row per request that counted against a

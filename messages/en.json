@@ -33,7 +33,8 @@
     "activitySection": "Activity",
     "adminSection": "Administration",
     "superadmin": "Super admin",
-    "boutiqueAdmin": "Boutique admin"
+    "boutiqueAdmin": "Boutique admin",
+    "promoCodes": "Promo codes"
   },
   "auth": {
     "login": {
@@ -135,6 +136,31 @@
     "notes": "Notes",
     "purchaseHistory": "Purchase history",
     "noClients": "No clients yet."
+  },
+  "promoCodes": {
+    "title": "Promo codes",
+    "newCode": "New code",
+    "code": "Code",
+    "discountType": "Discount type",
+    "percent": "Percentage",
+    "fixed": "Fixed amount",
+    "discountValue": "Value",
+    "client": "Client",
+    "generalCode": "General (any customer)",
+    "expiresAt": "Expiration",
+    "noExpiration": "No expiration",
+    "maxUses": "Usage limit",
+    "unlimited": "Unlimited",
+    "usage": "Usage",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Deactivated",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate this promo code?",
+    "deactivateDescription": "The code will no longer be usable, but stays visible in history.",
+    "noPromoCodes": "No promo codes yet.",
+    "duplicateCodeError": "This code already exists.",
+    "giveCode": "Give a promo code"
   },
   "shop": {
     "siteName": "Solelrim",
@@ -266,7 +292,17 @@
     "validationError": "Please check the information entered.",
     "missingScreenshotError": "Please add a payment screenshot.",
     "insufficientStockError": "Insufficient stock for one of the items in your order.",
-    "rateLimitedError": "Too many attempts. Please try again in a few minutes."
+    "rateLimitedError": "Too many attempts. Please try again in a few minutes.",
+    "promoCode": "Promo code",
+    "promoCodePlaceholder": "Enter a code",
+    "applyPromoCode": "Apply",
+    "removePromoCode": "Remove code",
+    "discount": "Discount",
+    "total": "Total",
+    "promoCodeInvalidError": "Invalid promo code.",
+    "promoCodeExpiredError": "This promo code has expired.",
+    "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
+    "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
   },
   "orders": {
     "title": "Orders",

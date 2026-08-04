@@ -125,6 +125,9 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
     "items",
     overrides.items ?? JSON.stringify([{ variantId: "variant-1", quantity: 2 }]),
   );
+  if (overrides.promoCode) {
+    form.set("promoCode", overrides.promoCode);
+  }
   if (overrides.screenshot === "none") {
     // omitted
   } else if (overrides.screenshot === "invalid-content") {
@@ -280,6 +283,97 @@ describe("submitOrder", () => {
     expect(createArgs.data.subtotal).toBe(3000); // basePrice 1500 * qty 2
     expect(createArgs.data.total).toBe(3000);
     expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
+  });
+
+  it("applies a valid promo code, stores the discount, and increments usedCount", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-1",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: null,
+      maxUses: null,
+      usedCount: 0,
+      clientId: null,
+      client: null,
+    } as never);
+    prismaMock.promoCode.update.mockResolvedValue({} as never);
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+    } as never);
+
+    const result = await submitOrder(buildOrderForm({ promoCode: "welcome10" }));
+
+    expect(result).toEqual({ reference: "CMD-20260729-1234", orderId: "order-1" });
+    expect(prismaMock.promoCode.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { code: "WELCOME10" } }),
+    );
+    expect(prismaMock.promoCode.update).toHaveBeenCalledWith({
+      where: { id: "promo-1" },
+      data: { usedCount: { increment: 1 } },
+    });
+    const createArgs = prismaMock.order.create.mock.calls[0][0];
+    expect(createArgs.data.subtotal).toBe(3000);
+    expect(createArgs.data.discount).toBe(300); // 10% of 3000
+    expect(createArgs.data.total).toBe(2700);
+    expect(createArgs.data.promoCodeId).toBe("promo-1");
+  });
+
+  it("rejects an expired promo code and does not create the order", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-1",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: new Date("2020-01-01"),
+      maxUses: null,
+      usedCount: 0,
+      clientId: null,
+      client: null,
+    } as never);
+
+    const result = await submitOrder(buildOrderForm({ promoCode: "EXPIRED" }));
+
+    expect(result).toEqual({ error: "expired" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+    expect(prismaMock.promoCode.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects a personal promo code when the phone doesn't match", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-1",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "FIXED",
+      discountValue: decimal(500),
+      expiresAt: null,
+      maxUses: null,
+      usedCount: 0,
+      clientId: "client-1",
+      client: { phone: "20000000" },
+    } as never);
+
+    const result = await submitOrder(
+      buildOrderForm({ promoCode: "VIP-AICHA", customerPhone: "22345678" }),
+    );
+
+    expect(result).toEqual({ error: "notYours" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("prefers the variant override price over the product base price", async () => {
