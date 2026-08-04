@@ -92,6 +92,12 @@ export function CheckoutFlow({
     defaultValues: { customerName: "", customerPhone: "", customerCity: "" },
   });
 
+  function fieldErrorMessage(message?: string) {
+    if (message === "required") return tCommon("requiredField");
+    if (message === "invalidPhone") return tCommon("invalidPhone");
+    return t("validationError");
+  }
+
   const onSubmitStep1: SubmitHandler<CheckoutCustomerInput> = (data) => {
     setCustomerInfo(data);
     setStep(2);
@@ -190,7 +196,9 @@ export function CheckoutFlow({
               {...register("customerName")}
             />
             {errors.customerName && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerName.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -203,7 +211,9 @@ export function CheckoutFlow({
               {...register("customerPhone")}
             />
             {errors.customerPhone && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerPhone.message)}
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -214,7 +224,9 @@ export function CheckoutFlow({
               {...register("customerCity")}
             />
             {errors.customerCity && (
-              <p className="text-sm text-destructive">{t("validationError")}</p>
+              <p className="text-sm text-destructive">
+                {fieldErrorMessage(errors.customerCity.message)}
+              </p>
             )}
           </div>
           <Button type="submit">{t("next")}</Button>

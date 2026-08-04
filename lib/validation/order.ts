@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const checkoutCustomerSchema = z.object({
-  customerName: z.string().min(1),
+  customerName: z.string().min(1, "required"),
   customerPhone: z.string().regex(/^[234]\d{7}$/, "invalidPhone"),
-  customerCity: z.string().min(1),
+  customerCity: z.string().min(1, "required"),
 });
 
 export type CheckoutCustomerInput = z.infer<typeof checkoutCustomerSchema>;
