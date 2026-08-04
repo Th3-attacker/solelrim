@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Tag } from "lucide-react";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
@@ -28,11 +28,12 @@ export default async function OrderDetailPage({
 }) {
   const { orderId } = await params;
   const scope = await getAdminScope();
-  const [t, tProducts, tSales, tCommon, order] = await Promise.all([
+  const [t, tProducts, tSales, tCommon, format, order] = await Promise.all([
     getTranslations("orders"),
     getTranslations("products"),
     getTranslations("sales"),
     getTranslations("common"),
+    getFormatter(),
     getOrderById(orderId, scope),
   ]);
 
@@ -56,7 +57,7 @@ export default async function OrderDetailPage({
           <div className="flex items-center gap-3">
             {order.confirmedAt && (
               <p className="text-sm text-muted-foreground">
-                {order.confirmedAt.toLocaleString()}
+                {format.dateTime(order.confirmedAt, { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
             <Button asChild variant="outline" size="sm">
@@ -80,7 +81,7 @@ export default async function OrderDetailPage({
           <div className="flex items-center gap-3">
             {order.shippedAt && (
               <p className="text-sm text-muted-foreground">
-                {order.shippedAt.toLocaleString()}
+                {format.dateTime(order.shippedAt, { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
             <OrderProgressActions orderId={order.id} status="SHIPPING" />
@@ -88,7 +89,7 @@ export default async function OrderDetailPage({
         )}
         {order.status === "DELIVERED" && order.deliveredAt && (
           <p className="text-sm text-muted-foreground">
-            {order.deliveredAt.toLocaleString()}
+            {format.dateTime(order.deliveredAt, { dateStyle: "medium", timeStyle: "short" })}
           </p>
         )}
         {order.status === "REJECTED" && (
@@ -96,7 +97,7 @@ export default async function OrderDetailPage({
             <div className="text-end">
               {order.rejectedAt && (
                 <p className="text-sm text-muted-foreground">
-                  {order.rejectedAt.toLocaleString()}
+                  {format.dateTime(order.rejectedAt, { dateStyle: "medium", timeStyle: "short" })}
                 </p>
               )}
               {order.rejectReason && (
@@ -121,7 +122,7 @@ export default async function OrderDetailPage({
           <div className="text-end">
             {order.cancelledAt && (
               <p className="text-sm text-muted-foreground">
-                {order.cancelledAt.toLocaleString()}
+                {format.dateTime(order.cancelledAt, { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
             {order.cancelReason && (

@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
@@ -17,9 +17,10 @@ import {
 
 export default async function AdminSalesPage() {
   const scope = await getAdminScope();
-  const [t, tCommon, sales] = await Promise.all([
+  const [t, tCommon, format, sales] = await Promise.all([
     getTranslations("sales"),
     getTranslations("common"),
+    getFormatter(),
     getAllSales(scope),
   ]);
 
@@ -71,7 +72,7 @@ export default async function AdminSalesPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {sale.createdAt.toLocaleDateString()}
+                  {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
                 </TableCell>
               </TableRow>
             ))}

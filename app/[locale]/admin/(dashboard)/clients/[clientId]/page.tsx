@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getClientById } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
@@ -22,10 +22,11 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params;
   const scope = await getAdminScope();
-  const [t, tSales, tCommon, client] = await Promise.all([
+  const [t, tSales, tCommon, format, client] = await Promise.all([
     getTranslations("clients"),
     getTranslations("sales"),
     getTranslations("common"),
+    getFormatter(),
     getClientById(clientId, scope),
   ]);
 
@@ -78,7 +79,7 @@ export default async function ClientDetailPage({
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {sale.createdAt.toLocaleDateString()}
+                    {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
                   </TableCell>
                   <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
                 </TableRow>

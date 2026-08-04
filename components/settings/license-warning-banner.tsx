@@ -1,5 +1,5 @@
 import { AlertTriangle } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LicenseStatus } from "@/lib/shop/license";
@@ -20,7 +20,7 @@ export async function LicenseWarningBanner({
     return null;
   }
 
-  const t = await getTranslations("settings");
+  const [t, format] = await Promise.all([getTranslations("settings"), getFormatter()]);
   const isExpired = status === "expired";
   const variant = isExpired ? "destructive" : "warning";
 
@@ -37,8 +37,12 @@ export async function LicenseWarningBanner({
       </Badge>
       <span className="text-muted-foreground">
         {status === "expired"
-          ? t("licenseBannerExpired", { date: expiresAt!.toLocaleDateString() })
-          : t("licenseBannerExpiringSoon", { date: expiresAt!.toLocaleDateString() })}
+          ? t("licenseBannerExpired", {
+              date: format.dateTime(expiresAt!, { dateStyle: "medium" }),
+            })
+          : t("licenseBannerExpiringSoon", {
+              date: format.dateTime(expiresAt!, { dateStyle: "medium" }),
+            })}
       </span>
     </div>
   );

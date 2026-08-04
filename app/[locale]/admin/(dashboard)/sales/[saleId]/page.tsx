@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { getSaleById } from "@/lib/queries/sales";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +22,11 @@ export default async function SaleDetailPage({
 }) {
   const { saleId } = await params;
   const scope = await getAdminScope();
-  const [t, tProducts, tCommon, sale] = await Promise.all([
+  const [t, tProducts, tCommon, format, sale] = await Promise.all([
     getTranslations("sales"),
     getTranslations("products"),
     getTranslations("common"),
+    getFormatter(),
     getSaleById(saleId, scope),
   ]);
 
@@ -59,7 +60,7 @@ export default async function SaleDetailPage({
           <div className="text-end text-sm">
             <p className="font-medium">{sale.reference}</p>
             <p className="text-muted-foreground">
-              {sale.createdAt.toLocaleDateString()}
+              {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
             </p>
           </div>
         </div>
