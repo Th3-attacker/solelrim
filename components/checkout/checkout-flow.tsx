@@ -387,26 +387,26 @@ export function CheckoutFlow({
           <div className="flex flex-col gap-1 text-sm">
             <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
             {settings.wallets.length > 0 && (
-              <div className="flex flex-col gap-2 py-1">
+              <div className="grid grid-cols-2 gap-2 py-1">
                 {settings.wallets.map((wallet, index) => (
                   <div
                     key={index}
-                    className="flex min-w-0 items-center gap-3 rounded-xl border bg-muted/30 p-3"
+                    className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center"
                   >
                     {wallet.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={wallet.logoUrl}
                         alt=""
-                        className="size-10 shrink-0 rounded-lg object-cover"
+                        className="size-8 shrink-0 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Wallet className="size-5 text-muted-foreground" />
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Wallet className="size-4 text-muted-foreground" />
                       </div>
                     )}
-                    <div className="flex min-w-0 flex-col">
-                      <span className="text-xs font-medium text-muted-foreground">
+                    <div className="flex min-w-0 flex-col items-center">
+                      <span className="truncate text-xs font-medium text-muted-foreground">
                         {wallet.provider}
                       </span>
                       <span dir="ltr" className="truncate text-sm font-semibold">
