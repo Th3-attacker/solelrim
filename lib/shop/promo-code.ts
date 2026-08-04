@@ -15,6 +15,7 @@ type ValidatedPromoCode = {
   id: string;
   discountType: PromoDiscountType;
   discountValue: Decimal;
+  maxUses: number | null;
 };
 
 // Shared by the checkout preview (read-only) and submitOrder's transaction
