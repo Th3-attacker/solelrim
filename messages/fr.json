@@ -21,6 +21,7 @@
   },
   "nav": {
     "dashboard": "Tableau de bord",
+    "home": "Accueil",
     "products": "Produits",
     "categories": "Catégories",
     "sales": "Ventes",

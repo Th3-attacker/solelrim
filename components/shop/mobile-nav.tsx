@@ -26,6 +26,7 @@ export function MobileNav({
   products: SearchProduct[];
 }) {
   const t = useTranslations("shop");
+  const tNav = useTranslations("nav");
   const tLanguage = useTranslations("language");
   const { storeType } = useParams<{ storeType: string }>();
   const [open, setOpen] = useState(false);
@@ -76,6 +77,20 @@ export function MobileNav({
               <LanguageSwitcher />
             </div>
             <div className="my-1 border-t" />
+            <Link
+              href={`/${storeType}`}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              {tNav("home")}
+            </Link>
+            <Link
+              href={`/${storeType}/products`}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              {tNav("products")}
+            </Link>
             <Link
               href={`/${storeType}/about`}
               onClick={() => setOpen(false)}
