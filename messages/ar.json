@@ -31,7 +31,9 @@
     "logout": "تسجيل الخروج",
     "catalogSection": "الكتالوج",
     "activitySection": "النشاط",
-    "adminSection": "الإدارة"
+    "adminSection": "الإدارة",
+    "superadmin": "مدير عام",
+    "boutiqueAdmin": "مدير متجر"
   },
   "auth": {
     "login": {

@@ -31,7 +31,9 @@
     "logout": "Déconnexion",
     "catalogSection": "Catalogue",
     "activitySection": "Activité",
-    "adminSection": "Administration"
+    "adminSection": "Administration",
+    "superadmin": "Super administrateur",
+    "boutiqueAdmin": "Administrateur boutique"
   },
   "auth": {
     "login": {

@@ -13,17 +13,22 @@ import { getAdminScope } from "@/lib/shop/admin-scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { getLicenseStatus } from "@/lib/shop/license";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [storeTypes, currentScope, admin] = await Promise.all([
+  const [storeTypes, currentScope, admin, supabase] = await Promise.all([
     getStoreTypes(),
     getAdminScope(),
     getCurrentAdmin(),
+    createClient(),
   ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const currentLicenseExpiresAt =
     storeTypes.find((type) => type.key === currentScope)?.licenseExpiresAt ?? null;
@@ -31,7 +36,12 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="print:hidden">
-        <AppSidebar storeTypes={storeTypes} currentScope={currentScope} role={admin.role} />
+        <AppSidebar
+          storeTypes={storeTypes}
+          currentScope={currentScope}
+          role={admin.role}
+          email={user?.email ?? ""}
+        />
       </div>
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 print:hidden">

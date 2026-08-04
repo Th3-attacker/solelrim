@@ -3,6 +3,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -13,6 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { StoreScopeSwitcher } from "@/components/dashboard/store-scope-switcher";
+import { NavUser } from "@/components/dashboard/nav-user";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
@@ -33,10 +35,12 @@ export function AppSidebar({
   storeTypes,
   currentScope,
   role,
+  email,
 }: {
   storeTypes: StoreTypeOption[];
   currentScope: string;
   role: "SUPERADMIN" | "BOUTIQUE_ADMIN";
+  email: string;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -118,6 +122,12 @@ export function AppSidebar({
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser
+          email={email}
+          roleLabel={role === "SUPERADMIN" ? t("superadmin") : t("boutiqueAdmin")}
+        />
+      </SidebarFooter>
     </Sidebar>
   );
 }
