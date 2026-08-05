@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Heart } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
@@ -19,6 +18,7 @@ import {
 import { useFavorites } from "@/components/shop/favorites-provider";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
+import { StateMessage } from "@/components/ui/state-message";
 
 export type FavoriteProductSummary = {
   id: string;
@@ -30,13 +30,14 @@ export type FavoriteProductSummary = {
 
 export function FavoritesTrigger({
   products,
+  basePath,
 }: {
   products: FavoriteProductSummary[];
+  basePath: string;
 }) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const { storeType } = useParams<{ storeType: string }>();
   const isMobile = useIsMobile();
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
@@ -68,7 +69,7 @@ export function FavoritesTrigger({
         </SheetHeader>
 
         {!hydrated || favoriteProducts.length === 0 ? (
-          <p className="px-4 text-sm text-muted-foreground">{t("noFavorites")}</p>
+          <StateMessage icon={Heart} title={t("noFavorites")} />
         ) : (
           <div className="flex-1 overflow-y-auto px-4">
             <div className="flex flex-col gap-4">
@@ -88,7 +89,7 @@ export function FavoritesTrigger({
                   <div className="flex flex-1 flex-col justify-center gap-1">
                     <SheetClose asChild>
                       <Link
-                        href={`/${storeType}/products/${product.slug}`}
+                        href={`${basePath}/products/${product.slug}`}
                         className="text-sm font-medium hover:underline"
                       >
                         {product.name}

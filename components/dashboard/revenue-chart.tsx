@@ -26,7 +26,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const RANGE_DAYS: Record<string, number> = {
+const RANGE_DAYS: Record<string, number | null> = {
+  all: null,
   "90d": 90,
   "30d": 30,
   "7d": 7,
@@ -39,10 +40,11 @@ export function RevenueChart({
 }) {
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
-  const [range, setRange] = useState<"90d" | "30d" | "7d">("90d");
+  const [range, setRange] = useState<"all" | "90d" | "30d" | "7d">("90d");
 
   const filtered = useMemo(() => {
     const days = RANGE_DAYS[range];
+    if (days === null) return data;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffKey = cutoff.toISOString().slice(0, 10);
@@ -50,6 +52,7 @@ export function RevenueChart({
   }, [data, range]);
 
   const rangeOptions = [
+    { value: "all" as const, label: t("allTime") },
     { value: "90d" as const, label: t("last90Days") },
     { value: "30d" as const, label: t("last30Days") },
     { value: "7d" as const, label: t("last7Days") },

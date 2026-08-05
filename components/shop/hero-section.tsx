@@ -63,10 +63,10 @@ function HeroFallback({
 
 export async function HeroSection({
   settings,
-  storeType,
+  basePath,
 }: {
   settings: HeroSettings;
-  storeType: string;
+  basePath: string;
 }) {
   const t = await getTranslations("shop");
 
@@ -74,7 +74,7 @@ export async function HeroSection({
   const title = settings.heroTitle || t("heroTitle");
   const subtitle = settings.heroSubtitle || t("heroSubtitle");
   const ctaLabel = settings.heroCtaLabel || t("heroCta");
-  const ctaHref = `/${storeType}/products`;
+  const ctaHref = `${basePath}/products`;
 
   if (!settings.heroImagePath) {
     return (

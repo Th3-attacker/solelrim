@@ -16,6 +16,8 @@ import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
@@ -31,9 +33,10 @@ export async function generateMetadata({
     getLocale(),
     getPublicBoutiqueSettings(storeType),
   ]);
-  const siteName = boutique.siteName?.trim() || t("siteName");
-  const title = boutique.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`;
-  const description = boutique.seoDescription?.trim() || t("heroSubtitle");
+  const localized = resolveBoutiqueText(boutique, locale);
+  const siteName = localized.siteName?.trim() || t("siteName");
+  const title = localized.seoTitle?.trim() || `${siteName} — ${t("heroTitle")}`;
+  const description = localized.seoDescription?.trim() || t("heroSubtitle");
   const imageUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
@@ -53,10 +56,12 @@ export default async function ShopLayout({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, tNav, boutique] = await Promise.all([
+  const [t, tNav, boutique, basePath, locale] = await Promise.all([
     getTranslations("shop"),
     getTranslations("nav"),
     getPublicBoutiqueSettings(storeType),
+    getStorefrontBasePath(storeType),
+    getLocale(),
   ]);
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
@@ -79,7 +84,7 @@ export default async function ShopLayout({
     name: product.name,
   }));
 
-  const siteName = boutique.siteName?.trim() || t("siteName");
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
   const logoUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
@@ -114,9 +119,9 @@ export default async function ShopLayout({
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
-                  <MobileNav categories={categories} products={searchProducts} />
+                  <MobileNav categories={categories} products={searchProducts} basePath={basePath} />
                   <Link
-                    href={`/${storeType}`}
+                    href={basePath || "/"}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
                   >
                     {logoUrl && (
@@ -133,25 +138,25 @@ export default async function ShopLayout({
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
                   <Link
-                    href={`/${storeType}`}
+                    href={basePath || "/"}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {tNav("home")}
                   </Link>
                   <Link
-                    href={`/${storeType}/products`}
+                    href={`${basePath}/products`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {tNav("products")}
                   </Link>
                   <Link
-                    href={`/${storeType}/about`}
+                    href={`${basePath}/about`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {t("aboutLink")}
                   </Link>
                   <Link
-                    href={`/${storeType}/contact`}
+                    href={`${basePath}/contact`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {t("contactLink")}
@@ -159,9 +164,9 @@ export default async function ShopLayout({
                 </nav>
                 <div className="flex items-center justify-end gap-1">
                   <div className="hidden md:block">
-                    <SearchTrigger categories={categories} products={searchProducts} />
+                    <SearchTrigger categories={categories} products={searchProducts} basePath={basePath} />
                   </div>
-                  <FavoritesTrigger products={favoriteCandidates} />
+                  <FavoritesTrigger products={favoriteCandidates} basePath={basePath} />
                   <CartTrigger />
                   <div className="hidden md:block">
                     <LanguageSwitcher />
@@ -178,7 +183,7 @@ export default async function ShopLayout({
                 <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
                   <div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
                     <Link
-                      href={`/${storeType}`}
+                      href={basePath || "/"}
                       className="flex items-center gap-2 text-base font-bold text-white"
                     >
                       {logoUrl && (
@@ -200,14 +205,14 @@ export default async function ShopLayout({
                       {t("footerShopTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href={`/${storeType}/products`} className="transition-colors hover:text-white">
+                      <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
                         {t("allProductsTitle")}
                       </Link>
                       {categories.map((category) => (
                         <Link
                           key={category.id}
                           href={{
-                            pathname: `/${storeType}/products`,
+                            pathname: `${basePath}/products`,
                             query: { category: category.id },
                           }}
                           className="transition-colors hover:text-white"
@@ -223,10 +228,10 @@ export default async function ShopLayout({
                       {t("footerHelpTitle")}
                     </h3>
                     <nav className="flex flex-col gap-2 text-sm">
-                      <Link href={`/${storeType}/about`} className="transition-colors hover:text-white">
+                      <Link href={`${basePath}/about`} className="transition-colors hover:text-white">
                         {t("aboutLink")}
                       </Link>
-                      <Link href={`/${storeType}/contact`} className="transition-colors hover:text-white">
+                      <Link href={`${basePath}/contact`} className="transition-colors hover:text-white">
                         {t("contactLink")}
                       </Link>
                       {whatsappHref && (

@@ -29,6 +29,8 @@
     "clients": "Clients",
     "settings": "Settings",
     "logout": "Log out",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmDescription": "You'll need to sign in again to access the dashboard.",
     "catalogSection": "Catalog",
     "activitySection": "Activity",
     "adminSection": "Administration",
@@ -61,6 +63,9 @@
   "dashboard": {
     "title": "Dashboard",
     "revenueThisMonth": "Revenue this month",
+    "revenueAllTime": "Total revenue",
+    "salesAllTimeCount": "{count} sales total",
+    "sinceBeginning": "Since the beginning",
     "salesThisMonth": "Sales this month",
     "activeClients": "Active clients",
     "unitsInStock": "Units in stock",
@@ -81,7 +86,8 @@
     "revenueOverTimeSubtitle": "Revenue trend over time",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
-    "last90Days": "Last 3 months"
+    "last90Days": "Last 3 months",
+    "allTime": "All time"
   },
   "products": {
     "title": "Products",
@@ -367,6 +373,8 @@
     "adminWhatsappNumber": "Store WhatsApp number",
     "paymentInstructions": "Payment instructions",
     "logo": "Logo",
+    "contentLanguage": "Content language",
+    "contentLanguageHint": "The site name, hero title/subtitle, and SEO can have different text in Arabic. Pick which language to edit below.",
     "brandingSection": "Store",
     "siteName": "Site name",
     "announcementText": "Announcement bar text",

@@ -1,13 +1,19 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
 
-export async function getRevenueByDay(productType: string, daysBack = 90) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - daysBack);
+// daysBack omitted (or undefined) fetches the entire sales history — the
+// dashboard page always fetches unfiltered now so the chart's client-side
+// range toggle (including "all time") never needs a second round trip.
+export async function getRevenueByDay(productType: string, daysBack?: number) {
+  const cutoff = daysBack !== undefined ? new Date() : null;
+  if (cutoff) cutoff.setDate(cutoff.getDate() - daysBack!);
 
   const rows = await prisma.$queryRaw<{ day: Date; total: number }[]>`
     SELECT date_trunc('day', "createdAt") AS day, SUM("total")::float AS total
     FROM "Sale"
-    WHERE "status" = 'COMPLETED' AND "createdAt" >= ${cutoff} AND "productType" = ${productType}
+    WHERE "status" = 'COMPLETED'
+      AND "productType" = ${productType}
+      ${cutoff ? Prisma.sql`AND "createdAt" >= ${cutoff}` : Prisma.empty}
     GROUP BY day
     ORDER BY day ASC
   `;
@@ -80,6 +86,8 @@ export async function getSummaryStats(productType: string) {
     salesCount,
     lastMonthRevenueAgg,
     lastMonthSalesCount,
+    allTimeRevenueAgg,
+    allTimeSalesCount,
     activeClients,
     newClientsThisMonth,
     stockAgg,
@@ -106,6 +114,13 @@ export async function getSummaryStats(productType: string) {
         productType,
       },
     }),
+    prisma.sale.aggregate({
+      where: { status: "COMPLETED", productType },
+      _sum: { total: true },
+    }),
+    prisma.sale.count({
+      where: { status: "COMPLETED", productType },
+    }),
     prisma.client.count({ where: { productType } }),
     prisma.client.count({
       where: { productType, createdAt: { gte: startOfMonth } },
@@ -121,6 +136,8 @@ export async function getSummaryStats(productType: string) {
     revenueLastMonth: lastMonthRevenueAgg._sum.total?.toNumber() ?? 0,
     salesThisMonth: salesCount,
     salesLastMonth: lastMonthSalesCount,
+    revenueAllTime: allTimeRevenueAgg._sum.total?.toNumber() ?? 0,
+    salesAllTime: allTimeSalesCount,
     activeClients,
     newClientsThisMonth,
     unitsInStock: stockAgg._sum.stock ?? 0,

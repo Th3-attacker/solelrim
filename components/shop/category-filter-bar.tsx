@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 type Category = { id: string; name: string };
 
 export async function CategoryFilterBar({
-  storeType,
+  basePath,
   categories,
   activeCategoryId,
 }: {
-  storeType: string;
+  basePath: string;
   categories: Category[];
   activeCategoryId?: string;
 }) {
@@ -20,7 +20,7 @@ export async function CategoryFilterBar({
       {/* Desktop: breadcrumb */}
       <nav className="hidden flex-wrap items-center gap-2 text-sm md:flex">
         <Link
-          href={`/${storeType}/products`}
+          href={`${basePath}/products`}
           className={cn(
             "transition-colors",
             !activeCategoryId
@@ -36,7 +36,7 @@ export async function CategoryFilterBar({
               /
             </span>
             <Link
-              href={{ pathname: `/${storeType}/products`, query: { category: category.id } }}
+              href={{ pathname: `${basePath}/products`, query: { category: category.id } }}
               className={cn(
                 "transition-colors",
                 activeCategoryId === category.id
@@ -53,7 +53,7 @@ export async function CategoryFilterBar({
       {/* Mobile: divided full-width rows */}
       <div className="flex flex-col md:hidden">
         <Link
-          href={`/${storeType}/products`}
+          href={`${basePath}/products`}
           className={cn(
             "border-b py-3 text-sm transition-colors",
             !activeCategoryId
@@ -66,7 +66,7 @@ export async function CategoryFilterBar({
         {categories.map((category) => (
           <Link
             key={category.id}
-            href={{ pathname: `/${storeType}/products`, query: { category: category.id } }}
+            href={{ pathname: `${basePath}/products`, query: { category: category.id } }}
             className={cn(
               "border-b py-3 text-sm transition-colors",
               activeCategoryId === category.id

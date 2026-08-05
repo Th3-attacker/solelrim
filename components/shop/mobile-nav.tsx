@@ -12,7 +12,6 @@ import {
 import { Link } from "@/i18n/navigation";
 import { Menu, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 type SearchCategory = { id: string; name: string };
@@ -21,14 +20,15 @@ type SearchProduct = { id: string; slug: string; name: string };
 export function MobileNav({
   categories,
   products,
+  basePath,
 }: {
   categories: SearchCategory[];
   products: SearchProduct[];
+  basePath: string;
 }) {
   const t = useTranslations("shop");
   const tNav = useTranslations("nav");
   const tLanguage = useTranslations("language");
-  const { storeType } = useParams<{ storeType: string }>();
   const [open, setOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +56,7 @@ export function MobileNav({
         <Menu className="size-4" />
       </Button>
       <div ref={searchTriggerRef} className="hidden">
-        <SearchTrigger categories={categories} products={products} />
+        <SearchTrigger categories={categories} products={products} basePath={basePath} />
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" showHandle className="rounded-t-2xl">
@@ -78,28 +78,28 @@ export function MobileNav({
             </div>
             <div className="my-1 border-t" />
             <Link
-              href={`/${storeType}`}
+              href={basePath || "/"}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               {tNav("home")}
             </Link>
             <Link
-              href={`/${storeType}/products`}
+              href={`${basePath}/products`}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               {tNav("products")}
             </Link>
             <Link
-              href={`/${storeType}/about`}
+              href={`${basePath}/about`}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               {t("aboutLink")}
             </Link>
             <Link
-              href={`/${storeType}/contact`}
+              href={`${basePath}/contact`}
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >

@@ -56,6 +56,16 @@ model StoreType {
   heroCtaLabel        String?
   seoTitle            String?
   seoDescription      String?
+  // Arabic overrides for the handful of fields worth translating (name,
+  // hero copy, SEO) — optional, fall back to the base (French) column above
+  // when null. English reuses the base column too (no separate en field):
+  // only fr/ar diverge, by explicit choice. Everything else on this model
+  // (announcement bar, hero badge/CTA, payment info) stays single-language.
+  siteNameAr          String?
+  heroTitleAr         String?
+  heroSubtitleAr      String?
+  seoTitleAr          String?
+  seoDescriptionAr    String?
   // Infrastructure-level, superadmin-only — never editable via
   // updateBoutiqueSettings/requireAdminScope like everything above. domain
   // lets proxy.ts route a custom hostname straight to this boutique with no
@@ -121,7 +131,12 @@ model AdminUser {
   supabaseUserId String     @unique
   role           AdminRole
   productType    String?
-  storeType      StoreType? @relation(fields: [productType], references: [key])
+  // Explicit Restrict (not Prisma's implicit SetNull default for an
+  // optional relation) — matches the original migration's raw SQL and the
+  // DB-level CHECK below: a BOUTIQUE_ADMIN's productType must never become
+  // null, so deleting a boutique an admin is scoped to must fail loudly,
+  // not silently orphan the check constraint.
+  storeType      StoreType? @relation(fields: [productType], references: [key], onDelete: Restrict)
   createdAt      DateTime   @default(now())
 
   @@index([productType])
