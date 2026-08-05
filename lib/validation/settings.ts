@@ -7,14 +7,19 @@ export const boutiqueSettingsSchema = z.object({
   adminWhatsappNumber: z.string().min(1),
   paymentInstructions: z.string().optional(),
   siteName: z.string().optional(),
+  siteNameAr: z.string().optional(),
   announcementText: z.string().optional(),
   heroTitle: z.string().optional(),
+  heroTitleAr: z.string().optional(),
   heroSubtitle: z.string().optional(),
+  heroSubtitleAr: z.string().optional(),
   heroBadgeText: z.string().optional(),
   heroCtaLabel: z.string().optional(),
   heroImagePosition: z.enum(["left", "right"]).optional(),
   seoTitle: z.string().optional(),
+  seoTitleAr: z.string().optional(),
   seoDescription: z.string().optional(),
+  seoDescriptionAr: z.string().optional(),
 });
 
 export type BoutiqueSettingsInput = z.infer<typeof boutiqueSettingsSchema>;

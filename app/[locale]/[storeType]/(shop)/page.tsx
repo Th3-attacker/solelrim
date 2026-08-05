@@ -1,7 +1,6 @@
 import { FeaturedShowcase } from "@/components/shop/featured-showcase";
 import { HeroSection } from "@/components/shop/hero-section";
 import { ProductCard } from "@/components/shop/product-card";
-import { Reveal } from "@/components/shop/reveal";
 import { SectionTitle } from "@/components/shop/section-title";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { StateMessage } from "@/components/ui/state-message";
@@ -9,7 +8,9 @@ import { Link } from "@/i18n/navigation";
 import { ArrowRight, PackageSearch } from "lucide-react";
 import { getActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
-import { getTranslations } from "next-intl/server";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
+import { getLocale, getTranslations } from "next-intl/server";
 
 // Just a teaser on the homepage — the full catalog with search/filters
 // lives on its own page (/{storeType}/products) behind "Voir plus".
@@ -21,20 +22,26 @@ export default async function ShopHomePage({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, boutique] = await Promise.all([
+  const [t, boutique, basePath, locale] = await Promise.all([
     getTranslations("shop"),
     getPublicBoutiqueSettings(storeType),
+    getStorefrontBasePath(storeType),
+    getLocale(),
   ]);
   const allProducts = await getActiveProducts(storeType);
 
   const previewProducts = allProducts.slice(0, PREVIEW_COUNT);
   const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 5);
+  const { heroTitle, heroSubtitle } = resolveBoutiqueText(boutique, locale);
 
   return (
     <div className="flex flex-col gap-14">
-      <HeroSection settings={boutique} storeType={storeType} />
+      <HeroSection
+        settings={{ ...boutique, heroTitle, heroSubtitle }}
+        basePath={basePath}
+      />
 
-      <FeaturedShowcase products={featuredProducts} storeType={storeType} />
+      <FeaturedShowcase products={featuredProducts} basePath={basePath} />
 
       <div className="flex flex-col items-center gap-6">
         <SectionTitle>{t("allProductsTitle")}</SectionTitle>
@@ -45,17 +52,21 @@ export default async function ShopHomePage({
           <>
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
               {previewProducts.map((product, index) => (
-                <Reveal key={product.id} delay={Math.min(index, 7) * 60}>
+                <div
+                  key={product.id}
+                  style={{ animationDelay: `${Math.min(index, 7) * 60}ms` }}
+                  className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out"
+                >
                   <ProductCard
                     product={product}
-                    storeType={storeType}
+                    basePath={basePath}
                     priority={index < 4}
                   />
-                </Reveal>
+                </div>
               ))}
             </div>
             <Link
-              href={`/${storeType}/products`}
+              href={`${basePath}/products`}
               className="group flex items-center gap-2 text-sm font-semibold tracking-wide uppercase transition-colors hover:text-primary"
             >
               {t("loadMore")}

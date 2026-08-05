@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   boutiqueSettingsSchema,
   type BoutiqueSettingsInput,
@@ -30,7 +31,9 @@ export function BoutiqueSettingsForm({
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
+  const tLanguage = useTranslations("language");
   const [submitting, setSubmitting] = useState(false);
+  const [contentLang, setContentLang] = useState<"fr" | "ar">("fr");
 
   const {
     register,
@@ -56,8 +59,28 @@ export function BoutiqueSettingsForm({
     toast.success(tCommon("save"));
   };
 
+  const rtl = contentLang === "ar";
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <div>
+            <CardTitle className="text-base">{t("contentLanguage")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("contentLanguageHint")}</p>
+          </div>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={contentLang}
+            onValueChange={(value) => value && setContentLang(value as "fr" | "ar")}
+          >
+            <ToggleGroupItem value="fr">{tLanguage("fr")}</ToggleGroupItem>
+            <ToggleGroupItem value="ar">{tLanguage("ar")}</ToggleGroupItem>
+          </ToggleGroup>
+        </CardHeader>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t("brandingSection")}</CardTitle>
@@ -65,7 +88,11 @@ export function BoutiqueSettingsForm({
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="siteName">{t("siteName")}</Label>
-            <Input id="siteName" {...register("siteName")} />
+            {rtl ? (
+              <Input id="siteName" dir="rtl" lang="ar" {...register("siteNameAr")} />
+            ) : (
+              <Input id="siteName" {...register("siteName")} />
+            )}
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
@@ -146,12 +173,20 @@ export function BoutiqueSettingsForm({
 
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
-            <Input id="heroTitle" {...register("heroTitle")} />
+            {rtl ? (
+              <Input id="heroTitle" dir="rtl" lang="ar" {...register("heroTitleAr")} />
+            ) : (
+              <Input id="heroTitle" {...register("heroTitle")} />
+            )}
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
-            <Input id="heroSubtitle" {...register("heroSubtitle")} />
+            {rtl ? (
+              <Input id="heroSubtitle" dir="rtl" lang="ar" {...register("heroSubtitleAr")} />
+            ) : (
+              <Input id="heroSubtitle" {...register("heroSubtitle")} />
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -172,12 +207,20 @@ export function BoutiqueSettingsForm({
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="seoTitle">{t("seoTitle")}</Label>
-            <Input id="seoTitle" {...register("seoTitle")} />
+            {rtl ? (
+              <Input id="seoTitle" dir="rtl" lang="ar" {...register("seoTitleAr")} />
+            ) : (
+              <Input id="seoTitle" {...register("seoTitle")} />
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="seoDescription">{t("seoDescription")}</Label>
-            <Input id="seoDescription" {...register("seoDescription")} />
+            {rtl ? (
+              <Input id="seoDescription" dir="rtl" lang="ar" {...register("seoDescriptionAr")} />
+            ) : (
+              <Input id="seoDescription" {...register("seoDescription")} />
+            )}
           </div>
         </CardContent>
       </Card>

@@ -19,11 +19,11 @@ const MAX_SWATCHES = 4;
 
 export function ProductCard({
   product,
-  storeType,
+  basePath,
   priority = false,
 }: {
   product: Product;
-  storeType: string;
+  basePath: string;
   priority?: boolean;
 }) {
   const t = useTranslations("shop");
@@ -114,7 +114,7 @@ export function ProductCard({
             </span>
           ) : (
             <Link
-              href={`/${storeType}/products/${product.slug}`}
+              href={`${basePath}/products/${product.slug}`}
               className="truncate text-sm text-foreground after:absolute after:inset-0 after:content-['']"
             >
               {product.name}

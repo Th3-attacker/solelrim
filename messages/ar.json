@@ -29,6 +29,8 @@
     "clients": "العملاء",
     "settings": "الإعدادات",
     "logout": "تسجيل الخروج",
+    "logoutConfirmTitle": "تسجيل الخروج؟",
+    "logoutConfirmDescription": "ستحتاج إلى تسجيل الدخول مجددًا للوصول إلى لوحة التحكم.",
     "catalogSection": "الكتالوج",
     "activitySection": "النشاط",
     "adminSection": "الإدارة",
@@ -61,6 +63,9 @@
   "dashboard": {
     "title": "لوحة التحكم",
     "revenueThisMonth": "الإيرادات هذا الشهر",
+    "revenueAllTime": "إجمالي الإيرادات",
+    "salesAllTimeCount": "{count} مبيعات إجمالاً",
+    "sinceBeginning": "منذ البداية",
     "salesThisMonth": "المبيعات هذا الشهر",
     "activeClients": "العملاء النشطون",
     "unitsInStock": "الوحدات المتوفرة",
@@ -81,7 +86,8 @@
     "revenueOverTimeSubtitle": "تطور الإيرادات بمرور الوقت",
     "last7Days": "آخر 7 أيام",
     "last30Days": "آخر 30 يومًا",
-    "last90Days": "آخر 3 أشهر"
+    "last90Days": "آخر 3 أشهر",
+    "allTime": "الكل"
   },
   "products": {
     "title": "المنتجات",
@@ -367,6 +373,8 @@
     "adminWhatsappNumber": "رقم واتساب المتجر",
     "paymentInstructions": "تعليمات الدفع",
     "logo": "الشعار",
+    "contentLanguage": "لغة المحتوى",
+    "contentLanguageHint": "يمكن أن يكون لاسم الموقع وعنوان/عنوان فرعي القسم الرئيسي وتحسين محركات البحث نص مختلف بالعربية. اختر اللغة التي تريد تعديلها أدناه.",
     "brandingSection": "المتجر",
     "siteName": "اسم الموقع",
     "announcementText": "نص شريط الإعلانات",

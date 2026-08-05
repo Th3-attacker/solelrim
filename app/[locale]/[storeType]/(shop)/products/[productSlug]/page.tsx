@@ -12,6 +12,8 @@ import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { VariantPicker } from "@/components/shop/variant-picker";
 import { ProductGallery } from "@/components/shop/product-gallery";
 import { Price } from "@/components/shop/price";
@@ -36,7 +38,7 @@ export async function generateMetadata({
     return {};
   }
 
-  const siteName = boutique.siteName?.trim() || tShop("siteName");
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${product.name} — ${siteName}`;
   const description = product.description?.trim() || tShop("heroSubtitle");
   const imageUrl = product.images[0]
@@ -56,9 +58,10 @@ export default async function ProductDetailPage({
   params: Promise<{ storeType: string; productSlug: string }>;
 }) {
   const { storeType, productSlug } = await params;
-  const [t, tCommon] = await Promise.all([
+  const [t, tCommon, basePath] = await Promise.all([
     getTranslations("shop"),
     getTranslations("common"),
+    getStorefrontBasePath(storeType),
   ]);
   const productType = storeType;
   const product = await getActiveProductBySlug(productSlug, productType);
@@ -69,7 +72,7 @@ export default async function ProductDetailPage({
     const legacy = await getProductSlugById(productSlug);
     if (legacy) {
       const locale = await getLocale();
-      redirect({ href: `/${storeType}/products/${legacy.slug}`, locale });
+      redirect({ href: `${basePath}/products/${legacy.slug}`, locale });
     }
     notFound();
   }
@@ -91,13 +94,13 @@ export default async function ProductDetailPage({
     <div className="flex flex-col gap-6">
       <nav className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-          <Link href={`/${storeType}`} className="hover:text-foreground">
+          <Link href={basePath || "/"} className="hover:text-foreground">
             {t("siteName")}
           </Link>
           <span aria-hidden>/</span>
           <Link
             href={{
-              pathname: `/${storeType}/products`,
+              pathname: `${basePath}/products`,
               query: { category: product.categoryId },
             }}
             className="hover:text-foreground"
@@ -112,7 +115,7 @@ export default async function ProductDetailPage({
           {prevSlug ? (
             <Button asChild variant="outline" size="icon-sm">
               <Link
-                href={`/${storeType}/products/${prevSlug}`}
+                href={`${basePath}/products/${prevSlug}`}
                 aria-label={t("previousProduct")}
               >
                 <ChevronLeft className="rtl:rotate-180" />
@@ -126,7 +129,7 @@ export default async function ProductDetailPage({
           {nextSlug ? (
             <Button asChild variant="outline" size="icon-sm">
               <Link
-                href={`/${storeType}/products/${nextSlug}`}
+                href={`${basePath}/products/${nextSlug}`}
                 aria-label={t("nextProduct")}
               >
                 <ChevronRight className="rtl:rotate-180" />

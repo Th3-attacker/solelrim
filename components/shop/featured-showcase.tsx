@@ -15,10 +15,10 @@ type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 // desktop, one (plus a peek of the next) on mobile.
 export async function FeaturedShowcase({
   products,
-  storeType,
+  basePath,
 }: {
   products: Product[];
-  storeType: string;
+  basePath: string;
 }) {
   if (products.length === 0) return null;
   const t = await getTranslations("shop");
@@ -50,7 +50,7 @@ export async function FeaturedShowcase({
         <h3 className="text-base font-semibold text-balance sm:text-xl">{product.name}</h3>
       </div>
       <Button asChild size="lg" className="w-full">
-        <Link href={`/${storeType}/products/${product.slug}`}>
+        <Link href={`${basePath}/products/${product.slug}`}>
           {t("heroShopProduct")}
         </Link>
       </Button>

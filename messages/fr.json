@@ -29,6 +29,8 @@
     "clients": "Clients",
     "settings": "Paramètres",
     "logout": "Déconnexion",
+    "logoutConfirmTitle": "Se déconnecter ?",
+    "logoutConfirmDescription": "Vous devrez vous reconnecter pour accéder au tableau de bord.",
     "catalogSection": "Catalogue",
     "activitySection": "Activité",
     "adminSection": "Administration",
@@ -61,6 +63,9 @@
   "dashboard": {
     "title": "Tableau de bord",
     "revenueThisMonth": "Chiffre d'affaires ce mois-ci",
+    "revenueAllTime": "Chiffre d'affaires total",
+    "salesAllTimeCount": "{count} ventes au total",
+    "sinceBeginning": "Depuis le début",
     "salesThisMonth": "Ventes ce mois-ci",
     "activeClients": "Clients actifs",
     "unitsInStock": "Unités en stock",
@@ -81,7 +86,8 @@
     "revenueOverTimeSubtitle": "Évolution du chiffre d'affaires",
     "last7Days": "7 derniers jours",
     "last30Days": "30 derniers jours",
-    "last90Days": "3 derniers mois"
+    "last90Days": "3 derniers mois",
+    "allTime": "Tout"
   },
   "products": {
     "title": "Produits",
@@ -367,6 +373,8 @@
     "adminWhatsappNumber": "Numéro WhatsApp de la boutique",
     "paymentInstructions": "Instructions de paiement",
     "logo": "Logo",
+    "contentLanguage": "Langue du contenu",
+    "contentLanguageHint": "Le nom du site, le titre/sous-titre du hero et le SEO peuvent avoir un texte différent en arabe. Choisissez la langue à modifier ci-dessous.",
     "brandingSection": "Boutique",
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",
