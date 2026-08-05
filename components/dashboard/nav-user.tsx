@@ -1,8 +1,18 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -34,9 +44,11 @@ export function NavUser({
   roleLabel: string;
 }) {
   const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const { isMobile } = useSidebar();
   const [loggingOut, startLogout] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const avatar = (
     <Avatar className="size-8 rounded-lg">
@@ -84,7 +96,10 @@ export function NavUser({
             <DropdownMenuItem
               variant="destructive"
               disabled={loggingOut}
-              onSelect={() => startLogout(() => logout(locale))}
+              onSelect={(event) => {
+                event.preventDefault();
+                setConfirmOpen(true);
+              }}
             >
               {loggingOut ? <Spinner className="size-4" /> : <LogOut />}
               {t("logout")}
@@ -92,6 +107,24 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("logoutConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("logoutConfirmDescription")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loggingOut}>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={loggingOut}
+              onClick={() => startLogout(() => logout(locale))}
+            >
+              {loggingOut ? <Spinner /> : t("logout")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarMenu>
   );
 }

@@ -8,6 +8,8 @@ import { getActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 
 export async function generateMetadata({
   params,
@@ -21,7 +23,7 @@ export async function generateMetadata({
     getLocale(),
     getPublicBoutiqueSettings(storeType),
   ]);
-  const siteName = boutique.siteName?.trim() || tShop("siteName");
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
   const description = t("metaDescription");
   const imageUrl = boutique.logoStoragePath
@@ -41,10 +43,11 @@ export default async function AboutPage({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, tShop, boutique] = await Promise.all([
+  const [t, tShop, boutique, basePath] = await Promise.all([
     getTranslations("about"),
     getTranslations("shop"),
     getPublicBoutiqueSettings(storeType),
+    getStorefrontBasePath(storeType),
   ]);
   const products = await getActiveProducts(storeType);
 
@@ -95,7 +98,7 @@ export default async function AboutPage({
             {spotlight.map((product) => (
               <Link
                 key={product.id}
-                href={`/${storeType}/products/${product.slug}`}
+                href={`${basePath}/products/${product.slug}`}
                 className="group flex flex-col gap-2"
               >
                 <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
@@ -149,7 +152,7 @@ export default async function AboutPage({
             </Button>
           )}
           <Button asChild size="lg" variant="outline">
-            <Link href={{ pathname: `/${storeType}/products`, hash: "catalog" }}>
+            <Link href={{ pathname: `${basePath}/products`, hash: "catalog" }}>
               {t("ctaButton")}
             </Link>
           </Button>

@@ -10,6 +10,7 @@ import {
   getAllCatalogColors,
   sortProducts,
 } from "@/lib/shop/filters";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { getTranslations } from "next-intl/server";
 
 export default async function ProductsPage({
@@ -29,7 +30,10 @@ export default async function ProductsPage({
     params,
     searchParams,
   ]);
-  const t = await getTranslations("shop");
+  const [t, basePath] = await Promise.all([
+    getTranslations("shop"),
+    getStorefrontBasePath(storeType),
+  ]);
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
     getAllShopCategories(storeType),
@@ -63,7 +67,7 @@ export default async function ProductsPage({
       <CategoryFilters
         categoryBreadcrumb={
           <CategoryFilterBar
-            storeType={storeType}
+            basePath={basePath}
             categories={categories}
             activeCategoryId={category}
           />
@@ -81,7 +85,7 @@ export default async function ProductsPage({
               <ProductCard
                 key={product.id}
                 product={product}
-                storeType={storeType}
+                basePath={basePath}
                 priority={index < 4}
               />
             ))}

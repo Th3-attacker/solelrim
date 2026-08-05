@@ -56,14 +56,19 @@ export default async function SettingsPage() {
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
           paymentInstructions: boutique.paymentInstructions ?? "",
           siteName: boutique.siteName ?? "",
+          siteNameAr: boutique.siteNameAr ?? "",
           announcementText: boutique.announcementText ?? "",
           heroTitle: boutique.heroTitle ?? "",
+          heroTitleAr: boutique.heroTitleAr ?? "",
           heroSubtitle: boutique.heroSubtitle ?? "",
+          heroSubtitleAr: boutique.heroSubtitleAr ?? "",
           heroBadgeText: boutique.heroBadgeText ?? "",
           heroCtaLabel: boutique.heroCtaLabel ?? "",
           heroImagePosition: boutique.heroImagePosition === "left" ? "left" : "right",
           seoTitle: boutique.seoTitle ?? "",
+          seoTitleAr: boutique.seoTitleAr ?? "",
           seoDescription: boutique.seoDescription ?? "",
+          seoDescriptionAr: boutique.seoDescriptionAr ?? "",
         }}
       />
 

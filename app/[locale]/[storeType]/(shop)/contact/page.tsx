@@ -5,6 +5,7 @@ import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import { buildOrderQuestionWhatsAppLink, buildWhatsAppLink } from "@/lib/shop/contact";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 
 export async function generateMetadata({
   params,
@@ -18,7 +19,7 @@ export async function generateMetadata({
     getLocale(),
     getPublicBoutiqueSettings(storeType),
   ]);
-  const siteName = boutique.siteName?.trim() || tShop("siteName");
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
   const description = t("metaDescription");
   const imageUrl = boutique.logoStoragePath

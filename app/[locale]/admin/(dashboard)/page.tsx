@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label={t("revenueThisMonth")}
           value={formatPrice(summary.revenueThisMonth, tCommon("currency"))}
@@ -107,6 +107,13 @@ export default async function DashboardPage() {
             </>
           }
           subtitle={t("vsLastMonth")}
+        />
+
+        <StatCard
+          label={t("revenueAllTime")}
+          value={formatPrice(summary.revenueAllTime, tCommon("currency"))}
+          description={t("salesAllTimeCount", { count: summary.salesAllTime })}
+          subtitle={t("sinceBeginning")}
         />
 
         <StatCard
