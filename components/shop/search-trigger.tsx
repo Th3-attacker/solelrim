@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { ArrowRight, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
@@ -19,12 +20,26 @@ import {
   visualViewportStyle,
   SHEET_PEEK_INSET,
 } from "@/hooks/use-visual-viewport";
+import { matchesSearch } from "@/lib/shop/search-text";
+import { formatPrice } from "@/lib/format/currency";
+import type { FavoriteProductSummary } from "@/components/shop/favorites-trigger";
 import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
-type SearchProduct = { id: string; slug: string; name: string };
 
-const MAX_SUGGESTIONS = 8;
+type SearchItem =
+  | { type: "category"; id: string; href: string; label: string }
+  | {
+      type: "product";
+      id: string;
+      href: string;
+      label: string;
+      imageUrl: string | null;
+      price: number;
+    };
+
+const MAX_PRODUCT_SUGGESTIONS = 6;
+const MAX_CATEGORY_SUGGESTIONS = 3;
 
 export function SearchTrigger({
   categories,
@@ -32,7 +47,7 @@ export function SearchTrigger({
   basePath,
 }: {
   categories: SearchCategory[];
-  products: SearchProduct[];
+  products: FavoriteProductSummary[];
   basePath: string;
 }) {
   const t = useTranslations("shop");
@@ -41,17 +56,62 @@ export function SearchTrigger({
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
     useFocusWithin<HTMLDivElement>();
   const viewportRect = useVisualViewport(keyboardOpen);
 
-  const suggestions = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
+  const hasQuery = query.trim().length > 0;
+
+  const quickLinkItems = useMemo<SearchItem[]>(
+    () =>
+      categories.map((category) => ({
+        type: "category",
+        id: category.id,
+        href: `${basePath}/products?category=${category.id}`,
+        label: category.name,
+      })),
+    [categories, basePath],
+  );
+
+  const matchedItems = useMemo<SearchItem[]>(() => {
+    const trimmed = query.trim();
     if (!trimmed) return [];
-    return products
-      .filter((product) => product.name.toLowerCase().includes(trimmed))
-      .slice(0, MAX_SUGGESTIONS);
-  }, [products, query]);
+    const matchedCategories: SearchItem[] = categories
+      .filter((category) => matchesSearch(category.name, trimmed))
+      .slice(0, MAX_CATEGORY_SUGGESTIONS)
+      .map((category) => ({
+        type: "category",
+        id: category.id,
+        href: `${basePath}/products?category=${category.id}`,
+        label: category.name,
+      }));
+    const matchedProducts: SearchItem[] = products
+      .filter((product) => matchesSearch(product.name, trimmed))
+      .slice(0, MAX_PRODUCT_SUGGESTIONS)
+      .map((product) => ({
+        type: "product",
+        id: product.id,
+        href: `${basePath}/products/${product.slug}`,
+        label: product.name,
+        imageUrl: product.imageUrl,
+        price: product.price,
+      }));
+    return [...matchedCategories, ...matchedProducts];
+  }, [categories, products, query, basePath]);
+
+  const items = hasQuery ? matchedItems : quickLinkItems;
+
+  // The active item only makes sense for the list currently on screen —
+  // drop it whenever the query (and therefore the list) changes. Adjusted
+  // during render rather than in an effect, so it lands in the same
+  // commit instead of triggering a follow-up render.
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setActiveIndex(-1);
+  }
 
   function close() {
     setOpen(false);
@@ -67,57 +127,92 @@ export function SearchTrigger({
     close();
   }
 
-  const hasQuery = query.trim().length > 0;
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (items.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % items.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i - 1 + items.length) % items.length);
+    } else if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault();
+      router.push(items[activeIndex].href);
+      close();
+    }
+  }
 
-  const linksList = hasQuery ? (
-    suggestions.length > 0 ? (
+  // Radix would otherwise auto-focus the input the instant the mobile sheet
+  // mounts, popping the keyboard while the sheet is still sliding up —
+  // the resize-for-keyboard transition then fights the slide-in animation
+  // for the same frames. Deferring focus to the slide-in's real
+  // `animationend` sequences them instead: sheet settles, then keyboard.
+  function focusInputAfterOpenAnimation(e: React.AnimationEvent<HTMLDivElement>) {
+    if (e.target !== e.currentTarget || !open) return;
+    inputRef.current?.focus();
+  }
+
+  const linksList =
+    items.length > 0 ? (
       <div className="flex flex-col">
-        {suggestions.map((product) => (
+        {items.map((item, index) => (
           <Link
-            key={product.id}
-            href={`${basePath}/products/${product.slug}`}
+            key={`${item.type}-${item.id}`}
+            href={item.href}
             onClick={close}
-            className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
+            onMouseEnter={() => setActiveIndex(index)}
+            className={cn(
+              "-mx-2 flex items-center gap-3 rounded-md border-b px-2 py-3 text-sm font-semibold last:border-0",
+              index === activeIndex ? "bg-muted" : "hover:bg-muted/60",
+            )}
           >
-            <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-            {product.name}
+            {item.type === "product" ? (
+              <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted">
+                {item.imageUrl && (
+                  <Image
+                    src={item.imageUrl}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                )}
+              </div>
+            ) : (
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+            )}
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            {item.type === "product" && (
+              <span className="shrink-0 text-xs font-normal text-muted-foreground">
+                {formatPrice(item.price, tCommon("currency"))}
+              </span>
+            )}
           </Link>
         ))}
       </div>
     ) : (
       <p className="py-3 text-sm text-muted-foreground">{tCommon("noResults")}</p>
-    )
-  ) : (
-    <div className="flex flex-col">
-      {categories.map((category) => (
-        <Link
-          key={category.id}
-          href={{ pathname: `${basePath}/products`, query: { category: category.id } }}
-          onClick={close}
-          className="flex items-center gap-3 border-b py-3 text-sm font-semibold last:border-0"
-        >
-          <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-          {category.name}
-        </Link>
-      ))}
-    </div>
-  );
+    );
 
-  const searchInput = (
-    <form onSubmit={handleSubmit}>
-      <div className="relative flex items-center">
-        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          autoFocus
-          aria-label={t("search")}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          className="h-auto rounded-lg bg-muted/40 py-2.5 ps-9 text-base shadow-none"
-        />
-      </div>
-    </form>
-  );
+  function renderSearchInput(autoFocus: boolean) {
+    return (
+      <form onSubmit={handleSubmit}>
+        <div className="relative flex items-center">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            ref={inputRef}
+            autoFocus={autoFocus}
+            aria-label={t("search")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t("searchPlaceholder")}
+            className="h-auto rounded-lg bg-muted/40 py-2.5 ps-9 text-base shadow-none"
+          />
+        </div>
+      </form>
+    );
+  }
 
   return (
     <>
@@ -136,6 +231,8 @@ export function SearchTrigger({
             ref={ref}
             onFocus={onFocus}
             onBlur={onBlur}
+            onOpenAutoFocus={(event) => event.preventDefault()}
+            onAnimationEnd={focusInputAfterOpenAnimation}
             side="bottom"
             showHandle
             overlayClassName="bg-popover/50 supports-backdrop-filter:backdrop-blur-lg"
@@ -151,7 +248,7 @@ export function SearchTrigger({
           >
             <SheetHeader className="pb-2">
               <SheetTitle className="sr-only">{t("search")}</SheetTitle>
-              {searchInput}
+              {renderSearchInput(false)}
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-4 pb-6">
               <p className="pt-2 pb-1 text-sm text-muted-foreground">
@@ -173,7 +270,7 @@ export function SearchTrigger({
             <div className="mx-auto w-full max-w-7xl px-4 desktop:px-8">
               <SheetHeader className="px-0 pb-2">
                 <SheetTitle className="sr-only">{t("search")}</SheetTitle>
-                <div className="max-w-md">{searchInput}</div>
+                <div className="max-w-md">{renderSearchInput(true)}</div>
               </SheetHeader>
               <div className="max-h-[60vh] overflow-y-auto pb-6">
                 <p className="pt-2 pb-1 text-sm text-muted-foreground">
