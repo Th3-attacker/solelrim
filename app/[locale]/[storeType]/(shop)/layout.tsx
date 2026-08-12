@@ -22,16 +22,28 @@ import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/sup
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 
+// Meta keywords have had no effect on Google ranking since 2009 — this
+// exists only because a couple of smaller engines/directories still read
+// it, and it's free once the copy above already exists. Sourced from the
+// real catalog (not hand-maintained) so it can't go stale like the old
+// hardcoded brand text did.
+const COUNTRY_NAME: Record<string, string> = {
+  fr: "Mauritanie",
+  en: "Mauritania",
+  ar: "موريتانيا",
+};
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, locale, boutique] = await Promise.all([
+  const [t, locale, boutique, categories] = await Promise.all([
     getTranslations("shop"),
     getLocale(),
     getPublicBoutiqueSettings(storeType),
+    getAllShopCategories(storeType),
   ]);
   const localized = resolveBoutiqueText(boutique, locale);
   const siteName = localized.siteName?.trim() || t("siteName");
@@ -40,10 +52,18 @@ export async function generateMetadata({
   const imageUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
+  const keywords = [
+    ...new Set([
+      siteName,
+      ...categories.map((category) => category.name),
+      COUNTRY_NAME[locale] ?? COUNTRY_NAME.fr,
+    ]),
+  ];
 
   return {
     title,
     description,
+    keywords,
     ...buildSocialMetadata({ title, description, imageUrl, locale }),
   };
 }
