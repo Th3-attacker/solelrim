@@ -68,6 +68,7 @@ export default async function ShopLayout({
     getAllShopCategories(storeType),
   ]);
 
+  // Also used for search suggestions (thumbnail + price), not just favorites.
   const favoriteCandidates = allProducts.map((product) => ({
     id: product.id,
     slug: product.slug,
@@ -76,12 +77,6 @@ export default async function ShopLayout({
       ? getProductImageUrl(product.images[0].storagePath)
       : null,
     price: getPriceRange(product.variants, product.basePrice).min,
-  }));
-
-  const searchProducts = allProducts.map((product) => ({
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
   }));
 
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
@@ -119,7 +114,7 @@ export default async function ShopLayout({
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
-                  <MobileNav categories={categories} products={searchProducts} basePath={basePath} />
+                  <MobileNav categories={categories} products={favoriteCandidates} basePath={basePath} />
                   <Link
                     href={basePath || "/"}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
@@ -164,7 +159,7 @@ export default async function ShopLayout({
                 </nav>
                 <div className="flex items-center justify-end gap-1">
                   <div className="hidden md:block">
-                    <SearchTrigger categories={categories} products={searchProducts} basePath={basePath} />
+                    <SearchTrigger categories={categories} products={favoriteCandidates} basePath={basePath} />
                   </div>
                   <FavoritesTrigger products={favoriteCandidates} basePath={basePath} />
                   <CartTrigger />
