@@ -296,7 +296,8 @@
     "remove": "إزالة",
     "subtotal": "المجموع الفرعي",
     "checkoutButton": "إتمام الطلب",
-    "continueShopping": "متابعة التسوق"
+    "continueShopping": "متابعة التسوق",
+    "stockUpdated": "تغيّر مخزون بعض المنتجات — تم تحديث الكميات."
   },
   "checkout": {
     "title": "إتمام الطلب",

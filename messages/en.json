@@ -296,7 +296,8 @@
     "remove": "Remove",
     "subtotal": "Subtotal",
     "checkoutButton": "Checkout",
-    "continueShopping": "Continue shopping"
+    "continueShopping": "Continue shopping",
+    "stockUpdated": "Stock changed for some items — quantities updated."
   },
   "checkout": {
     "title": "Checkout",
