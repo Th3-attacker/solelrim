@@ -117,5 +117,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  // icon/opengraph-image (and this app's extra icon-192, icon-512 routes)
+  // are Next's dot-less metadata file-convention routes — without this
+  // exclusion the i18n redirect below caught them same as any other path,
+  // sending them to /{locale}/icon (a 404) instead of the actual image.
+  // That silently broke the favicon and every WhatsApp/social link preview.
+  matcher: ["/((?!api|_next|_vercel|icon|opengraph-image|.*\\..*).*)"],
 };
