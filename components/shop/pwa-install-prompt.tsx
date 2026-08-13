@@ -13,7 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-const DISMISS_STORAGE_KEY = "pwa-install-dismissed";
+const SEEN_STORAGE_KEY = "pwa-install-seen";
 const SHOW_DELAY_MS = 3000;
 // Phones and tablets (iPad included, portrait or landscape) — not desktop.
 // Deliberately wider than the app's usual 768px mobile breakpoint, which
@@ -40,8 +40,15 @@ function isIos(): boolean {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
-function hasBeenDismissed(): boolean {
-  return localStorage.getItem(DISMISS_STORAGE_KEY) !== null;
+function hasBeenSeen(): boolean {
+  return localStorage.getItem(SEEN_STORAGE_KEY) !== null;
+}
+
+// Marked the instant the sheet opens, not when it's dismissed — a refresh
+// (or the tab just closing) after it's already on screen but before any
+// click must not bring it back on the next load.
+function markSeen(): void {
+  localStorage.setItem(SEEN_STORAGE_KEY, "true");
 }
 
 // Same useSyncExternalStore shape as hooks/use-mobile.ts, just with a
@@ -64,8 +71,9 @@ function getViewportServerSnapshot() {
 // desktop dialog to keep in sync). Phones and tablets only; skipped on
 // desktop entirely. Android/Chrome capture the native beforeinstallprompt
 // event; iOS Safari never fires it at all (no programmatic install API
-// there), so it gets instructions instead. Either way — install, decline,
-// or just close it — the choice is remembered permanently, one time only.
+// there), so it gets instructions instead. Shown at most once, ever, per
+// browser — marked as seen the instant it opens (not on install/decline),
+// so a refresh mid-display can't bring it back either.
 export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   const t = useTranslations("shop");
   const isEligibleViewport = useSyncExternalStore(
@@ -78,7 +86,7 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || hasBeenDismissed()) return;
+    if (isStandalone() || hasBeenSeen()) return;
 
     function handleBeforeInstallPrompt(e: Event) {
       e.preventDefault();
@@ -89,6 +97,7 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
     const timer = setTimeout(() => {
       if (isIos()) {
         setShowIosHint(true);
+        markSeen();
         setOpen(true);
       }
     }, SHOW_DELAY_MS);
@@ -101,21 +110,19 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
 
   useEffect(() => {
     if (!deferredPrompt) return;
-    const timer = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
+    const timer = setTimeout(() => {
+      markSeen();
+      setOpen(true);
+    }, SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, [deferredPrompt]);
-
-  function dismiss() {
-    localStorage.setItem(DISMISS_STORAGE_KEY, "true");
-    setOpen(false);
-  }
 
   async function handleInstall() {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     setDeferredPrompt(null);
-    dismiss();
+    setOpen(false);
   }
 
   if (!isEligibleViewport) return null;
@@ -138,7 +145,7 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   );
 
   return (
-    <Sheet open={open} onOpenChange={(next) => (next ? setOpen(true) : dismiss())}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent side="bottom" showHandle className="rounded-t-2xl">
         <SheetHeader className="items-center gap-3 text-center sm:items-start sm:text-start">
           {icon}
