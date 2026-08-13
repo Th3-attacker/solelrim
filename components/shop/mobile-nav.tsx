@@ -1,6 +1,7 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
+import type { FavoriteProductSummary } from "@/components/shop/favorites-trigger";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,6 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 type SearchCategory = { id: string; name: string };
-type SearchProduct = { id: string; slug: string; name: string };
 
 export function MobileNav({
   categories,
@@ -23,7 +23,7 @@ export function MobileNav({
   basePath,
 }: {
   categories: SearchCategory[];
-  products: SearchProduct[];
+  products: FavoriteProductSummary[];
   basePath: string;
 }) {
   const t = useTranslations("shop");

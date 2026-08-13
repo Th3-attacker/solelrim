@@ -22,16 +22,28 @@ import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/sup
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 
+// Meta keywords have had no effect on Google ranking since 2009 — this
+// exists only because a couple of smaller engines/directories still read
+// it, and it's free once the copy above already exists. Sourced from the
+// real catalog (not hand-maintained) so it can't go stale like the old
+// hardcoded brand text did.
+const COUNTRY_NAME: Record<string, string> = {
+  fr: "Mauritanie",
+  en: "Mauritania",
+  ar: "موريتانيا",
+};
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, locale, boutique] = await Promise.all([
+  const [t, locale, boutique, categories] = await Promise.all([
     getTranslations("shop"),
     getLocale(),
     getPublicBoutiqueSettings(storeType),
+    getAllShopCategories(storeType),
   ]);
   const localized = resolveBoutiqueText(boutique, locale);
   const siteName = localized.siteName?.trim() || t("siteName");
@@ -40,10 +52,18 @@ export async function generateMetadata({
   const imageUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
+  const keywords = [
+    ...new Set([
+      siteName,
+      ...categories.map((category) => category.name),
+      COUNTRY_NAME[locale] ?? COUNTRY_NAME.fr,
+    ]),
+  ];
 
   return {
     title,
     description,
+    keywords,
     ...buildSocialMetadata({ title, description, imageUrl, locale }),
   };
 }
@@ -68,6 +88,7 @@ export default async function ShopLayout({
     getAllShopCategories(storeType),
   ]);
 
+  // Also used for search suggestions (thumbnail + price), not just favorites.
   const favoriteCandidates = allProducts.map((product) => ({
     id: product.id,
     slug: product.slug,
@@ -76,12 +97,6 @@ export default async function ShopLayout({
       ? getProductImageUrl(product.images[0].storagePath)
       : null,
     price: getPriceRange(product.variants, product.basePrice).min,
-  }));
-
-  const searchProducts = allProducts.map((product) => ({
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
   }));
 
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
@@ -119,7 +134,7 @@ export default async function ShopLayout({
             <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
-                  <MobileNav categories={categories} products={searchProducts} basePath={basePath} />
+                  <MobileNav categories={categories} products={favoriteCandidates} basePath={basePath} />
                   <Link
                     href={basePath || "/"}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
@@ -164,7 +179,7 @@ export default async function ShopLayout({
                 </nav>
                 <div className="flex items-center justify-end gap-1">
                   <div className="hidden md:block">
-                    <SearchTrigger categories={categories} products={searchProducts} basePath={basePath} />
+                    <SearchTrigger categories={categories} products={favoriteCandidates} basePath={basePath} />
                   </div>
                   <FavoritesTrigger products={favoriteCandidates} basePath={basePath} />
                   <CartTrigger />

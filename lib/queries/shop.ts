@@ -13,12 +13,17 @@ export function getActiveProducts(productType: string, categoryId?: string) {
   });
 }
 
-export function getAllShopCategories(productType: string) {
+// Wrapped in React's per-request cache — generateMetadata and the shop
+// layout/products page below both call this for the same storeType, and
+// without cache() that's an extra round trip to the DB per request.
+export const getAllShopCategories = cache(function getAllShopCategories(
+  productType: string,
+) {
   return prisma.category.findMany({
     where: { OR: [{ productType: null }, { productType }] },
     orderBy: { name: "asc" },
   });
-}
+});
 
 // Wrapped in React's per-request cache — generateMetadata and the page
 // component below both call this for the same product, and without cache()
