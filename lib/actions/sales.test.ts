@@ -72,7 +72,7 @@ beforeEach(() => {
 describe("createSale", () => {
   it("creates a sale, decrements stock, and returns the sale id", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant()] as never);
-    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
     prismaMock.sale.create.mockResolvedValue({ id: "sale-1" } as never);
 
     const result = await createSale({
@@ -84,8 +84,8 @@ describe("createSale", () => {
 
     expect(result.error).toBeUndefined();
     expect(result.saleId).toBe("sale-1");
-    expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
-      where: { id: "variant-1" },
+    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "variant-1", stock: { gte: 2 } },
       data: { stock: { decrement: 2 } },
     });
     expect(prismaMock.sale.create).toHaveBeenCalledWith(
@@ -141,12 +141,33 @@ describe("createSale", () => {
     });
 
     expect(result.error).toBe("insufficientStock");
-    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects when the atomic stock guard loses a race despite the initial read passing", async () => {
+    // Simulates two concurrent sales/orders for the same variant: the read
+    // above sees enough stock, but by the time this transaction's UPDATE
+    // runs, someone else's already claimed it — the WHERE guard (stock >=
+    // quantity) matches no row instead of driving stock negative.
+    prismaMock.productVariant.findMany.mockResolvedValue([
+      baseVariant({ stock: 5 }),
+    ] as never);
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
+
+    const result = await createSale({
+      clientId: null,
+      discount: 0,
+      paymentMethod: null,
+      items: [{ variantId: "variant-1", quantity: 5 }],
+    });
+
+    expect(result.error).toBe("insufficientStock");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
   });
 
   it("retries the sale reference on a collision then succeeds", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant()] as never);
-    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
     prismaMock.sale.create
       .mockRejectedValueOnce(collisionError())
       .mockResolvedValueOnce({ id: "sale-2" } as never);
