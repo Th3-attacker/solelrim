@@ -14,15 +14,17 @@ next-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest.
 
 ## Installation locale
 
-Prérequis : Node 20+, un projet Supabase (base Postgres + Auth + Storage).
+Prérequis : Node 20+, [pnpm](https://pnpm.io) (voir `packageManager` dans
+[`package.json`](./package.json) — `corepack enable` l'installe automatiquement
+à la bonne version), un projet Supabase (base Postgres + Auth + Storage).
 
 ```bash
-npm install
+pnpm install
 cp .env.local.example .env.local   # remplir avec les identifiants du projet Supabase
-npx prisma generate
-npx prisma migrate deploy          # applique les migrations existantes
-npm run db:seed                    # optionnel — jeu de données de démo
-npm run dev
+pnpm exec prisma generate
+pnpm exec prisma migrate deploy    # applique les migrations existantes
+pnpm run db:seed                   # optionnel — jeu de données de démo
+pnpm dev
 ```
 
 Ouvrir [http://localhost:3000](http://localhost:3000). Les variables
@@ -32,16 +34,16 @@ Pour créer les buckets Supabase Storage (`product-images`, `payment-proofs`)
 et, optionnellement, un premier compte admin :
 
 ```bash
-SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... npx tsx scripts/setup-supabase.ts
+SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... pnpm exec tsx scripts/setup-supabase.ts
 ```
 
 ## Déploiement
 
 `master` est déployé automatiquement sur Vercel à chaque merge (voir le
-workflow `dev` → `staging` → `master` ci-dessous). `npm run build` applique
-les migrations Prisma en attente (`prisma migrate deploy`) avant de builder
-— s'assurer que `DATABASE_URL`/`DIRECT_URL` pointent vers la bonne base
-avant de déployer.
+workflow `dev` → `staging` → `master` ci-dessous). Vercel détecte pnpm via
+`pnpm-lock.yaml`. `pnpm run build` applique les migrations Prisma en attente
+(`prisma migrate deploy`) avant de builder — s'assurer que
+`DATABASE_URL`/`DIRECT_URL` pointent vers la bonne base avant de déployer.
 
 ## Workflow de contribution
 
@@ -125,13 +127,13 @@ gh pr create \
 
 Chaque PR vers `dev`, `staging` ou `master` déclenche automatiquement (`.github/workflows/ci.yml`) :
 
-- **Lint, typecheck, tests** — `npm run lint`, `npm run typecheck` (`tsc --noEmit`) et `npm test`. Une PR qui casse l'un des trois est bloquée.
+- **Lint, typecheck, tests** — `pnpm lint`, `pnpm typecheck` (`tsc --noEmit`) et `pnpm test`. Une PR qui casse l'un des trois est bloquée.
 - **Format du titre de la PR** — vérifié indépendamment des commits, puisque c'est ce titre que GitHub reprend comme message de commit lors d'un squash-merge (voir l'avertissement à la section Commits ci-dessus).
 
 Pour reproduire les mêmes vérifications en local avant de pousser :
 
 ```bash
-npm run lint
-npm run typecheck
-npm test
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
