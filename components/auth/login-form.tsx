@@ -52,7 +52,9 @@ export function LoginForm() {
             />
           </div>
           {state.error && (
-            <p className="text-sm text-destructive">{t("error")}</p>
+            <p className="text-sm text-destructive">
+              {state.error === "rateLimited" ? t("rateLimitedError") : t("error")}
+            </p>
           )}
           <Button type="submit" loading={pending} className="w-full">
             {t("submit")}

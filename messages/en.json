@@ -45,7 +45,8 @@
       "email": "Email",
       "password": "Password",
       "submit": "Sign in",
-      "error": "Incorrect email or password."
+      "error": "Incorrect email or password.",
+      "rateLimitedError": "Too many attempts. Please try again in a few minutes."
     }
   },
   "theme": {

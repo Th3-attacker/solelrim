@@ -5,17 +5,24 @@ import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { detectImageSignature } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
-async function uploadWalletLogo(file: File): Promise<{ path: string } | { error: "uploadFailed" }> {
-  const ext = file.name.split(".").pop() ?? "png";
-  const storagePath = `branding/wallet-${crypto.randomUUID()}.${ext}`;
+async function uploadWalletLogo(
+  file: File,
+): Promise<{ path: string } | { error: "uploadFailed" | "invalidFile" }> {
+  const fileBuffer = await file.arrayBuffer();
+  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  if (!detected) {
+    return { error: "invalidFile" };
+  }
+  const storagePath = `branding/wallet-${crypto.randomUUID()}.${detected.extension}`;
 
   const supabase = createAdminClient();
   const { error } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), { contentType: file.type });
+    .upload(storagePath, fileBuffer, { contentType: detected.contentType });
 
   if (error) {
     return { error: "uploadFailed" };

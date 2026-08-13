@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -12,6 +13,10 @@ const loginSchema = z.object({
 });
 
 export type LoginState = { error?: string };
+
+// Unauthenticated by definition — capped per IP so the admin password can't
+// be brute-forced. 10/15min is loose enough for a legitimate typo or two.
+const LOGIN_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
 
 export async function login(
   _prevState: LoginState,
@@ -25,6 +30,12 @@ export async function login(
 
   if (!parsed.success) {
     return { error: "invalid" };
+  }
+
+  const ip = await getClientIp();
+  const allowed = await checkRateLimit(`login:${ip}`, LOGIN_RATE_LIMIT);
+  if (!allowed) {
+    return { error: "rateLimited" };
   }
 
   const { email, password, locale } = parsed.data;

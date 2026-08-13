@@ -45,7 +45,8 @@
       "email": "Email",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "error": "Email ou mot de passe incorrect."
+      "error": "Email ou mot de passe incorrect.",
+      "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes."
     }
   },
   "theme": {
