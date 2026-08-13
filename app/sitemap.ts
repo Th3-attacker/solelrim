@@ -7,7 +7,7 @@ import { getSiteUrl } from "@/lib/shop/site-url";
 // Only real, canonical, crawlable pages — the catalog is listed at its bare
 // /{storeType}/products URL (no filter query params, those aren't distinct
 // canonical pages), and admin is excluded entirely (see robots.ts).
-const STATIC_SUBPATHS = ["", "/about", "/contact", "/products"];
+const STATIC_SUBPATHS = ["", "/about", "/contact", "/products", "/legal"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
