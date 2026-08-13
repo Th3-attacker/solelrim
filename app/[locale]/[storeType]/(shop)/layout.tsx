@@ -11,6 +11,7 @@ import { CheckoutDrawer } from "@/components/checkout/checkout-drawer";
 import { FavoritesProvider } from "@/components/shop/favorites-provider";
 import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { MobileNav } from "@/components/shop/mobile-nav";
+import { PwaInstallPrompt } from "@/components/shop/pwa-install-prompt";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
@@ -294,6 +295,7 @@ export default async function ShopLayout({
               </div>
             </footer>
           </div>
+          <PwaInstallPrompt siteName={siteName} />
           <CheckoutDrawer
             settings={{
               wallets: boutique.walletAccounts.map((wallet) => ({
