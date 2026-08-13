@@ -1,39 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solelrim
 
-## Getting Started
+Plateforme e-commerce multi-boutique. Une seule codebase sert plusieurs
+boutiques indépendantes (`StoreType` — ex. SOLAL pour le sport), chacune
+avec sa propre marque, son thème, son catalogue et sa gestion, reprise soit
+via `/{locale}/{storeType}`, soit sur son propre nom de domaine. Le paiement
+est manuel : le client commande, paie sur un compte mobile money affiché,
+envoie une capture WhatsApp, un admin confirme depuis le dashboard — pas de
+passerelle de paiement.
 
-First, run the development server:
+**Stack** : Next.js 16 (App Router, Turbopack) · TypeScript · Prisma +
+PostgreSQL (Supabase) · Supabase Auth (admin) & Storage (images) ·
+next-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest.
+
+## Installation locale
+
+Prérequis : Node 20+, un projet Supabase (base Postgres + Auth + Storage).
 
 ```bash
+npm install
+cp .env.local.example .env.local   # remplir avec les identifiants du projet Supabase
+npx prisma generate
+npx prisma migrate deploy          # applique les migrations existantes
+npm run db:seed                    # optionnel — jeu de données de démo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000). Les variables
+requises sont documentées dans [`.env.local.example`](./.env.local.example).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Pour créer les buckets Supabase Storage (`product-images`, `payment-proofs`)
+et, optionnellement, un premier compte admin :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... npx tsx scripts/setup-supabase.ts
+```
 
-## Learn More
+## Déploiement
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`master` est déployé automatiquement sur Vercel à chaque merge (voir le
+workflow `dev` → `staging` → `master` ci-dessous). `npm run build` applique
+les migrations Prisma en attente (`prisma migrate deploy`) avant de builder
+— s'assurer que `DATABASE_URL`/`DIRECT_URL` pointent vers la bonne base
+avant de déployer.
 
 ## Workflow de contribution
 
