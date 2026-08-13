@@ -14,6 +14,7 @@ import {
   sortProducts,
 } from "@/lib/shop/filters";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -46,6 +47,8 @@ export async function generateMetadata({
   };
 }
 
+
+
 export default async function ProductsPage({
   params,
   searchParams,
@@ -76,10 +79,7 @@ export default async function ProductsPage({
     ? allProducts.filter((p) => p.categoryId === category)
     : allProducts;
   if (q) {
-    const query = q.trim().toLowerCase();
-    displayedProducts = displayedProducts.filter((p) =>
-      p.name.toLowerCase().includes(query),
-    );
+    displayedProducts = displayedProducts.filter((p) => matchesSearch(p.name, q));
   }
   if (color) {
     displayedProducts = filterByColor(displayedProducts, color);
