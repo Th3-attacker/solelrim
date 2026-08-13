@@ -52,11 +52,20 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
         };
       });
 
+      // The lineItems check above reads stock once for a fast, clear error
+      // on the obvious case — it isn't atomic on its own though, so also
+      // re-assert stock >= quantity in the UPDATE's WHERE (same guard as
+      // confirmOrder/promo codes) to close the race where two concurrent
+      // sales/orders for the same variant both pass that read before
+      // either commits.
       for (const item of items) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
+        const updated = await tx.productVariant.updateMany({
+          where: { id: item.variantId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity } },
         });
+        if (updated.count === 0) {
+          throw new Error("insufficientStock");
+        }
       }
 
       const subtotal = lineItems.reduce((sum, i) => sum + i.lineTotal, 0);

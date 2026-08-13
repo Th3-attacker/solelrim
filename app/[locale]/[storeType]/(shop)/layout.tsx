@@ -249,6 +249,9 @@ export default async function ShopLayout({
                       <Link href={`${basePath}/contact`} className="transition-colors hover:text-white">
                         {t("contactLink")}
                       </Link>
+                      <Link href={`${basePath}/legal`} className="transition-colors hover:text-white">
+                        {t("legalLink")}
+                      </Link>
                       {whatsappHref && (
                         <a
                           href={whatsappHref}

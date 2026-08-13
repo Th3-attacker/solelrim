@@ -45,7 +45,8 @@
       "email": "Email",
       "password": "Password",
       "submit": "Sign in",
-      "error": "Incorrect email or password."
+      "error": "Incorrect email or password.",
+      "rateLimitedError": "Too many attempts. Please try again in a few minutes."
     }
   },
   "theme": {
@@ -190,6 +191,7 @@
     "heroShopProduct": "Discover",
     "shopByCategory": "Shop by category",
     "allProductsTitle": "All products",
+    "allProductsMetaDescription": "Browse the full catalog and filter by category, color, and price to find what you need.",
     "loadMore": "Show more",
     "featuredShowcaseTitle": "Our best sellers",
     "announcementBar": "Secure mobile payment · Instant WhatsApp confirmation",
@@ -225,6 +227,7 @@
     "contactWhatsapp": "Contact us on WhatsApp",
     "aboutLink": "About",
     "contactLink": "Contact",
+    "legalLink": "Legal information",
     "menu": "Menu",
     "footerShopTitle": "Shop",
     "footerHelpTitle": "Support",
@@ -243,6 +246,22 @@
     "orderCta": "Message about an order",
     "socialTitle": "Social media",
     "socialDesc": "Follow us and message us directly on our channels."
+  },
+  "legal": {
+    "metaTitle": "Legal information",
+    "metaDescription": "Ordering, payment, personal data, and returns.",
+    "title": "Legal information",
+    "subtitle": "How we handle your order, your payment, and your information.",
+    "identityTitle": "Who runs this store",
+    "identityBody": "This store operates under the name {siteName}. For any question or complaint, the fastest way to reach us is WhatsApp (see below).",
+    "ordersTitle": "Ordering and payment",
+    "ordersBody": "No online payment gateway is used: payment is made to the mobile money account shown at checkout, proof of payment (a screenshot) is submitted with the order form, and a team member confirms the order manually. No card details are ever collected or stored by this site.",
+    "privacyTitle": "Personal data",
+    "privacyBody": "At checkout, only your name, phone number, city, and payment proof are collected — solely to process the order and contact you about it. This site does not use any third-party analytics or advertising tools.",
+    "returnsTitle": "Returns and refunds",
+    "returnsBody": "[To be completed by the store — accepted return window, conditions (defective, not as described…), and refund process.]",
+    "contactTitle": "Contact and complaints",
+    "contactBody": "For any question about an order or a complaint, contact us directly on WhatsApp."
   },
   "about": {
     "metaTitle": "About",

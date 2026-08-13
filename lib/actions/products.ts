@@ -7,6 +7,7 @@ import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { detectImageSignature } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -190,14 +191,18 @@ export async function uploadProductImage(
     return { error: "invalid" };
   }
 
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const storagePath = `products/${productId}/${crypto.randomUUID()}.${ext}`;
+  const fileBuffer = await file.arrayBuffer();
+  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  if (!detected) {
+    return { error: "invalidFile" };
+  }
+  const storagePath = `products/${productId}/${crypto.randomUUID()}.${detected.extension}`;
 
   const supabase = createAdminClient();
   const { error: uploadError } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), {
-      contentType: file.type,
+    .upload(storagePath, fileBuffer, {
+      contentType: detected.contentType,
     });
 
   if (uploadError) {

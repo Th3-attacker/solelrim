@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -15,6 +16,13 @@ import { getStoreTypes } from "@/lib/queries/settings";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { getLicenseStatus } from "@/lib/shop/license";
 import { createClient } from "@/lib/supabase/server";
+
+// robots.ts already disallows /{locale}/admin for crawling, but that alone
+// doesn't stop a URL from getting indexed if it's linked from elsewhere —
+// this is the actual no-index directive for the dashboard.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardLayout({
   children,

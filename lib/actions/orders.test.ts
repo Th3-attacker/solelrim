@@ -591,13 +591,17 @@ describe("confirmOrder", () => {
       status: "PENDING",
       items: [{ variantId: "variant-1", quantity: 5 }],
     } as never);
-    prismaMock.productVariant.findUnique.mockResolvedValue({
-      id: "variant-1",
-      stock: 2,
-    } as never);
+    // The WHERE guard (stock >= quantity) is what actually enforces this —
+    // count: 0 simulates it matching no row, whether because stock is
+    // really 2 or because a concurrent confirm already claimed it.
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
     const result = await confirmOrder("order-1");
     expect(result).toEqual({ error: "insufficientStock" });
-    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "variant-1", stock: { gte: 5 } },
+      data: { stock: { decrement: 5 } },
+    });
+    expect(prismaMock.order.update).not.toHaveBeenCalled();
   });
 
   it("decrements stock per line, marks the order CONFIRMED, and revalidates", async () => {
@@ -609,19 +613,17 @@ describe("confirmOrder", () => {
         { variantId: "variant-2", quantity: 1 },
       ],
     } as never);
-    prismaMock.productVariant.findUnique
-      .mockResolvedValueOnce({ id: "variant-1", stock: 10 } as never)
-      .mockResolvedValueOnce({ id: "variant-2", stock: 10 } as never);
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
 
     const result = await confirmOrder("order-1");
 
     expect(result).toEqual({});
-    expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
-      where: { id: "variant-1" },
+    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "variant-1", stock: { gte: 3 } },
       data: { stock: { decrement: 3 } },
     });
-    expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
-      where: { id: "variant-2" },
+    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "variant-2", stock: { gte: 1 } },
       data: { stock: { decrement: 1 } },
     });
     expect(prismaMock.order.update).toHaveBeenCalledWith(
