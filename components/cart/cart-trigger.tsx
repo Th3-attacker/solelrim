@@ -21,6 +21,8 @@ import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provide
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
 import { StateMessage } from "@/components/ui/state-message";
+import { toast } from "@/components/ui/toast";
+import { getVariantStocks } from "@/lib/actions/cart";
 
 export function CartTrigger() {
   const t = useTranslations("cart");
@@ -28,11 +30,30 @@ export function CartTrigger() {
   const locale = useLocale();
   const isMobile = useIsMobile();
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
-  const { items, hydrated, subtotal, updateQuantity, removeItem } = useCart();
+  const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } =
+    useCart();
   const { openCheckout } = useCheckoutDrawer();
 
+  // The stock cached on each cart line is a snapshot from whenever it was
+  // added — it can go stale (another sale, an admin adjusting stock, or
+  // the visitor just coming back days later, since the cart survives in
+  // localStorage). Reconciled against the real numbers every time the
+  // sheet opens, not continuously — cheap enough to just re-check then.
+  async function handleOpenChange(open: boolean) {
+    if (!open || items.length === 0) return;
+    const stockByVariantId = await getVariantStocks(
+      storeType,
+      items.map((i) => i.variantId),
+    );
+    const changed = items.some(
+      (i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock,
+    );
+    syncStock(stockByVariantId);
+    if (changed) toast.info(t("stockUpdated"));
+  }
+
   return (
-    <Sheet>
+    <Sheet onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative" aria-label={t("title")}>
           <ShoppingCart className="size-4" />

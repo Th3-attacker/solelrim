@@ -27,6 +27,7 @@ type CartAction =
   | { type: "ADD_ITEM"; line: Omit<CartLine, "quantity">; quantity: number }
   | { type: "UPDATE_QUANTITY"; variantId: string; quantity: number }
   | { type: "REMOVE_ITEM"; variantId: string }
+  | { type: "SYNC_STOCK"; stockByVariantId: Record<string, number> }
   | { type: "CLEAR" };
 
 function reducer(state: CartState, action: CartAction): CartState {
@@ -85,6 +86,22 @@ function reducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.filter((i) => i.variantId !== action.variantId),
       };
+    case "SYNC_STOCK": {
+      // Reconciles the cached stock snapshot against the real, current
+      // values: clamps quantity down if it now exceeds live stock, and
+      // drops the line entirely once live stock hits 0. A variant absent
+      // from the map (deleted, or moved to another boutique) is treated
+      // the same as 0 in stock — never trusted to mean "unlimited".
+      return {
+        ...state,
+        items: state.items
+          .map((i) => {
+            const liveStock = action.stockByVariantId[i.variantId] ?? 0;
+            return { ...i, stock: liveStock, quantity: Math.min(i.quantity, liveStock) };
+          })
+          .filter((i) => i.quantity > 0),
+      };
+    }
     case "CLEAR":
       return { ...state, items: [] };
     default:
@@ -93,11 +110,13 @@ function reducer(state: CartState, action: CartAction): CartState {
 }
 
 type CartContextValue = {
+  storeType: string;
   items: CartLine[];
   hydrated: boolean;
   addItem: (line: Omit<CartLine, "quantity">, quantity?: number) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
+  syncStock: (stockByVariantId: Record<string, number>) => void;
   clear: () => void;
   subtotal: number;
 };
@@ -142,6 +161,7 @@ export function CartProvider({
       0,
     );
     return {
+      storeType,
       items: state.items,
       hydrated: state.hydrated,
       addItem: (line, quantity = 1) =>
@@ -149,10 +169,12 @@ export function CartProvider({
       updateQuantity: (variantId, quantity) =>
         dispatch({ type: "UPDATE_QUANTITY", variantId, quantity }),
       removeItem: (variantId) => dispatch({ type: "REMOVE_ITEM", variantId }),
+      syncStock: (stockByVariantId) =>
+        dispatch({ type: "SYNC_STOCK", stockByVariantId }),
       clear: () => dispatch({ type: "CLEAR" }),
       subtotal,
     };
-  }, [state]);
+  }, [state, storeType]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
