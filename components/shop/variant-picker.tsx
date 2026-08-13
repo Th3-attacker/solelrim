@@ -55,11 +55,17 @@ export function VariantPicker({
   const firstInStock = variants.find((v) => v.stock > 0) ?? variants[0];
   const [selectedSize, setSelectedSize] = useState(firstInStock?.size);
   const [selectedColor, setSelectedColor] = useState(firstInStock?.color);
-  const [quantity, setQuantity] = useState(1);
+  const [rawQuantity, setQuantity] = useState(1);
 
   const resolvedVariant = variants.find(
     (v) => v.size === selectedSize && v.color === selectedColor,
   );
+
+  // rawQuantity can be stale for the variant now resolved — e.g. picked 5
+  // on a size/color with 5 in stock, then switched to one with only 1 left.
+  // Re-clamped here (not reset in the setter) so switching back restores
+  // the original pick instead of forgetting it.
+  const quantity = Math.min(rawQuantity, Math.max(1, resolvedVariant?.stock ?? 1));
 
   function isSizeAvailable(size: string) {
     return variants.some((v) => v.size === size && v.stock > 0);
