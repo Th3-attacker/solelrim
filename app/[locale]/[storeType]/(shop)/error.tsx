@@ -8,10 +8,10 @@ import { StateMessage } from "@/components/ui/state-message";
 
 export default function ShopError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   const t = useTranslations("errors");
 
@@ -25,7 +25,7 @@ export default function ShopError({
       title={t("errorTitle")}
       message={t("errorMessage")}
       action={
-        <Button size="lg" onClick={() => unstable_retry()}>
+        <Button size="lg" onClick={() => retry()}>
           {t("retry")}
         </Button>
       }

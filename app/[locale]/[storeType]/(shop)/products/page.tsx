@@ -14,7 +14,7 @@ import {
   sortProducts,
 } from "@/lib/shop/filters";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
-
+import { matchesSearch } from "@/lib/shop/search-text";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getLocale, getTranslations } from "next-intl/server";
