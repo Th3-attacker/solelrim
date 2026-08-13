@@ -67,6 +67,7 @@ export function ProductImageManager({
               type="button"
               onClick={() => handleDelete(image.id)}
               disabled={pending}
+              aria-label={tCommon("delete")}
               className="absolute top-1 end-1 rounded-full bg-background/90 p-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
             >
               {pending ? <Spinner className="size-3" /> : <X className="size-3" />}

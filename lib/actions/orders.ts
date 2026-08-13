@@ -248,20 +248,21 @@ export async function confirmOrder(
       if (!order) throw new Error("notFound");
       if (order.status !== "PENDING") throw new Error("notPending");
 
+      // The old read-then-update wasn't atomic on its own — under READ
+      // COMMITTED, two concurrent confirms for the same variant could both
+      // pass a separate stock check before either commits, driving stock
+      // negative. Re-asserting stock >= quantity in the UPDATE's WHERE
+      // closes that gap, same guard as usedCount above for promo codes:
+      // whichever update lands first wins, the other gets count === 0 and
+      // fails cleanly instead of overselling.
       for (const item of order.items) {
-        const variant = await tx.productVariant.findUnique({
-          where: { id: item.variantId },
-        });
-        if (!variant || variant.stock < item.quantity) {
-          throw new Error("insufficientStock");
-        }
-      }
-
-      for (const item of order.items) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
+        const updated = await tx.productVariant.updateMany({
+          where: { id: item.variantId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity } },
         });
+        if (updated.count === 0) {
+          throw new Error("insufficientStock");
+        }
       }
 
       await tx.order.update({

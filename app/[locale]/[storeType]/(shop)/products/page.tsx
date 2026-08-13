@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategoryFilters } from "@/components/shop/category-filters";
 import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
 import { PackageSearch } from "lucide-react";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
+import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import {
   filterByColor,
   filterByPriceBucket,
@@ -12,7 +15,39 @@ import {
 } from "@/lib/shop/filters";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { matchesSearch } from "@/lib/shop/search-text";
-import { getTranslations } from "next-intl/server";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
+import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { getLocale, getTranslations } from "next-intl/server";
+
+// The catalog is a real, distinct, filterable page (not a redirect — see
+// the corrected note in app/sitemap.ts) and deserves its own title instead
+// of inheriting the boutique's home-page seoTitle from the layout.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}): Promise<Metadata> {
+  const { storeType } = await params;
+  const [t, locale, boutique] = await Promise.all([
+    getTranslations("shop"),
+    getLocale(),
+    getPublicBoutiqueSettings(storeType),
+  ]);
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
+  const title = `${siteName} — ${t("allProductsTitle")}`;
+  const description = t("allProductsMetaDescription");
+  const imageUrl = boutique.logoStoragePath
+    ? getStoreLogoUrl(boutique.logoStoragePath)
+    : null;
+
+  return {
+    title,
+    description,
+    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+  };
+}
+
+
 
 export default async function ProductsPage({
   params,

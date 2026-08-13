@@ -4,10 +4,10 @@ import { getStoreTypes } from "@/lib/queries/settings";
 import { routing } from "@/i18n/routing";
 import { getSiteUrl } from "@/lib/shop/site-url";
 
-// Only real, canonical, crawlable pages — /{storeType}/products redirects
-// straight to /{storeType} (see the (shop)/products/page.tsx redirect) so
-// it's not listed here, and admin is excluded entirely (see robots.ts).
-const STATIC_SUBPATHS = ["", "/about", "/contact"];
+// Only real, canonical, crawlable pages — the catalog is listed at its bare
+// /{storeType}/products URL (no filter query params, those aren't distinct
+// canonical pages), and admin is excluded entirely (see robots.ts).
+const STATIC_SUBPATHS = ["", "/about", "/contact", "/products", "/legal"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();

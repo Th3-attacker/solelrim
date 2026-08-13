@@ -5,10 +5,10 @@
 // globals.css or next-intl context being available. Deliberately plain and
 // not translated.
 export default function GlobalError({
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   return (
     <html lang="en">
@@ -33,7 +33,7 @@ export default function GlobalError({
           Please try again, or come back a little later.
         </p>
         <button
-          onClick={() => unstable_retry()}
+          onClick={() => retry()}
           style={{
             padding: "0.5rem 1.25rem",
             borderRadius: "0.5rem",

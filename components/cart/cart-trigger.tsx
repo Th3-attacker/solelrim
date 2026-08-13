@@ -34,7 +34,7 @@ export function CartTrigger() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("title")}>
           <ShoppingCart className="size-4" />
           {hydrated && items.length > 0 && (
             <span className="absolute -top-1 -end-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">

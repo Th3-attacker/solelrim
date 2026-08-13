@@ -238,9 +238,15 @@
   }
   /* Tailwind's preflight resets button cursor to default; every clickable
      control in this app should read as clickable regardless of whether it
-     went through the shadcn Button component or a raw <button>. */
+     went through the shadcn Button component or a raw <button>. Disabled
+     controls get the inverse — not-allowed instead of just "nothing
+     happens" — for any that don't already set it via their own classes. */
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
+  }
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
   }
 }
