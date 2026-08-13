@@ -1,17 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Share } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -20,11 +12,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-const DISMISS_STORAGE_KEY = "pwa-install-dismissed-at";
-const REPROMPT_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
+const SEEN_STORAGE_KEY = "pwa-install-seen";
 const SHOW_DELAY_MS = 3000;
+// Phones and tablets (iPad included, portrait or landscape) — not desktop.
+// Deliberately wider than the app's usual 768px mobile breakpoint, which
+// would misclassify an iPad as "desktop".
+const ELIGIBLE_MAX_WIDTH = 1024;
 
 // Chrome/Edge/Android fire this instead of installing immediately, so the
 // browser's own mini-infobar can be swapped for this drawer — the payload
@@ -46,27 +40,53 @@ function isIos(): boolean {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
-function recentlyDismissed(): boolean {
-  const raw = localStorage.getItem(DISMISS_STORAGE_KEY);
-  if (!raw) return false;
-  const dismissedAt = Number(raw);
-  return Number.isFinite(dismissedAt) && Date.now() - dismissedAt < REPROMPT_AFTER_MS;
+function hasBeenSeen(): boolean {
+  return localStorage.getItem(SEEN_STORAGE_KEY) !== null;
 }
 
-// Suggests installing the PWA on a visitor's first eligible visit — a real
-// bottom sheet / dialog using the same primitives as every other drawer in
-// the app, not a toast-style corner banner. Android/Chrome/desktop capture
-// the native beforeinstallprompt event; iOS Safari never fires it at all
-// (no programmatic install API there), so it gets instructions instead.
+// Marked the instant the sheet opens, not when it's dismissed — a refresh
+// (or the tab just closing) after it's already on screen but before any
+// click must not bring it back on the next load.
+function markSeen(): void {
+  localStorage.setItem(SEEN_STORAGE_KEY, "true");
+}
+
+// Same useSyncExternalStore shape as hooks/use-mobile.ts, just with a
+// wider breakpoint local to this component — reusing that hook's 768px
+// cutoff here would misclassify an iPad as desktop.
+function subscribeToViewport(onStoreChange: () => void) {
+  const mql = window.matchMedia(`(max-width: ${ELIGIBLE_MAX_WIDTH}px)`);
+  mql.addEventListener("change", onStoreChange);
+  return () => mql.removeEventListener("change", onStoreChange);
+}
+function getViewportSnapshot() {
+  return window.matchMedia(`(max-width: ${ELIGIBLE_MAX_WIDTH}px)`).matches;
+}
+function getViewportServerSnapshot() {
+  return false;
+}
+
+// Suggests installing the PWA on a visitor's first eligible visit, as a
+// single bottom sheet (same shape as Cart/Favorites/Search — no separate
+// desktop dialog to keep in sync). Phones and tablets only; skipped on
+// desktop entirely. Android/Chrome capture the native beforeinstallprompt
+// event; iOS Safari never fires it at all (no programmatic install API
+// there), so it gets instructions instead. Shown at most once, ever, per
+// browser — marked as seen the instant it opens (not on install/decline),
+// so a refresh mid-display can't bring it back either.
 export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   const t = useTranslations("shop");
-  const isMobile = useIsMobile();
+  const isEligibleViewport = useSyncExternalStore(
+    subscribeToViewport,
+    getViewportSnapshot,
+    getViewportServerSnapshot,
+  );
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIosHint, setShowIosHint] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || recentlyDismissed()) return;
+    if (isStandalone() || hasBeenSeen()) return;
 
     function handleBeforeInstallPrompt(e: Event) {
       e.preventDefault();
@@ -77,6 +97,7 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
     const timer = setTimeout(() => {
       if (isIos()) {
         setShowIosHint(true);
+        markSeen();
         setOpen(true);
       }
     }, SHOW_DELAY_MS);
@@ -89,22 +110,22 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
 
   useEffect(() => {
     if (!deferredPrompt) return;
-    const timer = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
+    const timer = setTimeout(() => {
+      markSeen();
+      setOpen(true);
+    }, SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, [deferredPrompt]);
-
-  function dismiss() {
-    localStorage.setItem(DISMISS_STORAGE_KEY, String(Date.now()));
-    setOpen(false);
-  }
 
   async function handleInstall() {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     setDeferredPrompt(null);
-    dismiss();
+    setOpen(false);
   }
+
+  if (!isEligibleViewport) return null;
 
   // Plain <img>, not next/image: this is our own /icon-192 route (already
   // exactly the right size, generated on the fly via ImageResponse), and
@@ -123,50 +144,32 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
     />
   );
 
-  const body = showIosHint ? (
-    <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2.5 text-sm text-foreground">
-      <Share className="size-4 shrink-0 text-primary" />
-      <span>{t("installIosBody")}</span>
-    </div>
-  ) : null;
-
-  const action = !showIosHint && (
-    <Button size="lg" className="w-full" onClick={handleInstall}>
-      {t("installButton")}
-    </Button>
-  );
-
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={(next) => (next ? setOpen(true) : dismiss())}>
-        <SheetContent side="bottom" showHandle className="rounded-t-2xl">
-          <SheetHeader className="items-center gap-3 text-center sm:items-start sm:text-start">
-            {icon}
-            <div className="flex flex-col gap-1">
-              <SheetTitle>{t("installTitle", { siteName })}</SheetTitle>
-              {!showIosHint && (
-                <SheetDescription>{t("installBody")}</SheetDescription>
-              )}
-            </div>
-          </SheetHeader>
-          {body && <div className="px-4">{body}</div>}
-          <SheetFooter>{action}</SheetFooter>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
   return (
-    <Dialog open={open} onOpenChange={(next) => (next ? setOpen(true) : dismiss())}>
-      <DialogContent>
-        <DialogHeader className="items-start gap-3">
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetContent side="bottom" showHandle className="rounded-t-2xl">
+        <SheetHeader className="items-center gap-3 text-center sm:items-start sm:text-start">
           {icon}
-          <DialogTitle>{t("installTitle", { siteName })}</DialogTitle>
-          {!showIosHint && <DialogDescription>{t("installBody")}</DialogDescription>}
-        </DialogHeader>
-        {body}
-        <DialogFooter>{action}</DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div className="flex flex-col gap-1">
+            <SheetTitle>{t("installTitle", { siteName })}</SheetTitle>
+            {!showIosHint && <SheetDescription>{t("installBody")}</SheetDescription>}
+          </div>
+        </SheetHeader>
+        {showIosHint && (
+          <div className="px-4">
+            <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2.5 text-sm text-foreground">
+              <Share className="size-4 shrink-0 text-primary" />
+              <span>{t("installIosBody")}</span>
+            </div>
+          </div>
+        )}
+        {!showIosHint && (
+          <SheetFooter>
+            <Button size="lg" className="w-full" onClick={handleInstall}>
+              {t("installButton")}
+            </Button>
+          </SheetFooter>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

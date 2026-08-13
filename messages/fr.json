@@ -296,7 +296,8 @@
     "remove": "Retirer",
     "subtotal": "Sous-total",
     "checkoutButton": "Passer la commande",
-    "continueShopping": "Continuer mes achats"
+    "continueShopping": "Continuer mes achats",
+    "stockUpdated": "Le stock de certains articles a changé — quantités mises à jour."
   },
   "checkout": {
     "title": "Commande",
