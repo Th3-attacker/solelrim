@@ -17,6 +17,7 @@ import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
+import { detectImageSignature } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -52,14 +53,20 @@ export async function uploadStoreLogo(
     return { error: "invalid" };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const storagePath = `branding/logo-${crypto.randomUUID()}.${ext}`;
+  // File.type/file.name are client-declared metadata — trust the actual
+  // bytes instead, same as the payment-screenshot upload in orders.ts.
+  const fileBuffer = await file.arrayBuffer();
+  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  if (!detected) {
+    return { error: "invalidFile" };
+  }
+  const storagePath = `branding/logo-${crypto.randomUUID()}.${detected.extension}`;
 
   const supabase = createAdminClient();
   const { error: uploadError } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), {
-      contentType: file.type,
+    .upload(storagePath, fileBuffer, {
+      contentType: detected.contentType,
     });
 
   if (uploadError) {
@@ -118,14 +125,18 @@ export async function uploadStoreHeroImage(
     return { error: "invalid" };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const storagePath = `branding/hero-${crypto.randomUUID()}.${ext}`;
+  const fileBuffer = await file.arrayBuffer();
+  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  if (!detected) {
+    return { error: "invalidFile" };
+  }
+  const storagePath = `branding/hero-${crypto.randomUUID()}.${detected.extension}`;
 
   const supabase = createAdminClient();
   const { error: uploadError } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, await file.arrayBuffer(), {
-      contentType: file.type,
+    .upload(storagePath, fileBuffer, {
+      contentType: detected.contentType,
     });
 
   if (uploadError) {

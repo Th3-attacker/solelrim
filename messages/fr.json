@@ -45,7 +45,8 @@
       "email": "Email",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "error": "Email ou mot de passe incorrect."
+      "error": "Email ou mot de passe incorrect.",
+      "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes."
     }
   },
   "theme": {
@@ -190,6 +191,7 @@
     "heroShopProduct": "Découvrir",
     "shopByCategory": "Parcourir par catégorie",
     "allProductsTitle": "Tous les produits",
+    "allProductsMetaDescription": "Parcourez tout le catalogue et filtrez par catégorie, couleur et prix pour trouver ce qu'il vous faut.",
     "loadMore": "Voir plus",
     "featuredShowcaseTitle": "Nos meilleures ventes",
     "announcementBar": "Paiement mobile sécurisé · Confirmation instantanée par WhatsApp",
@@ -222,9 +224,14 @@
     "categoriesLabel": "Catégories",
     "quickLinks": "Liens rapides",
     "suggestedLinks": "Liens suggérés",
+    "installTitle": "Installer {siteName}",
+    "installBody": "Accédez plus vite à la boutique depuis votre écran d'accueil.",
+    "installButton": "Installer",
+    "installIosBody": "Appuyez sur Partager puis « Sur l'écran d'accueil » pour installer.",
     "contactWhatsapp": "Contactez-nous sur WhatsApp",
     "aboutLink": "À propos",
     "contactLink": "Contact",
+    "legalLink": "Informations légales",
     "menu": "Menu",
     "footerShopTitle": "Boutique",
     "footerHelpTitle": "Assistance",
@@ -243,6 +250,22 @@
     "orderCta": "Écrire au sujet d'une commande",
     "socialTitle": "Réseaux sociaux",
     "socialDesc": "Suivez-nous et écrivez-nous directement sur nos réseaux."
+  },
+  "legal": {
+    "metaTitle": "Informations légales",
+    "metaDescription": "Conditions de commande, paiement, données personnelles et retours.",
+    "title": "Informations légales",
+    "subtitle": "Comment on traite votre commande, votre paiement et vos informations.",
+    "identityTitle": "Qui exploite cette boutique",
+    "identityBody": "Cette boutique est exploitée sous le nom {siteName}. Pour toute question ou réclamation, le moyen de contact le plus rapide est WhatsApp (voir en bas de page).",
+    "ordersTitle": "Commande et paiement",
+    "ordersBody": "Aucune passerelle de paiement en ligne n'est utilisée : le paiement se fait sur le compte mobile money affiché au moment de la commande, la preuve de paiement (capture d'écran) est envoyée via le formulaire de commande, et un membre de l'équipe confirme la commande manuellement. Aucune donnée de carte bancaire n'est collectée ou stockée par ce site.",
+    "privacyTitle": "Données personnelles",
+    "privacyBody": "Au moment de la commande, seuls le nom, le numéro de téléphone, la ville et la preuve de paiement sont collectés — uniquement pour traiter la commande et vous contacter à son sujet. Ce site n'utilise aucun outil d'analyse ou de publicité tiers.",
+    "returnsTitle": "Retours et remboursements",
+    "returnsBody": "[À compléter par la boutique — délai de retour accepté, conditions (produit défectueux, non conforme…) et modalités de remboursement.]",
+    "contactTitle": "Contact et réclamations",
+    "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement via WhatsApp."
   },
   "about": {
     "metaTitle": "À propos",
