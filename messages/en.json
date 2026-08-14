@@ -309,6 +309,7 @@
     "customerCity": "City",
     "next": "Next",
     "back": "Back",
+    "edit": "Edit",
     "orderSummary": "Summary",
     "paymentInstructionsTitle": "Payment instructions",
     "uploadScreenshot": "Payment screenshot",
