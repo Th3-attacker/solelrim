@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
@@ -67,6 +72,7 @@ export function CheckoutFlow({
     null,
   );
   const [file, setFile] = useState<File | null>(null);
+  const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,16 +106,21 @@ export function CheckoutFlow({
       setStep(1);
       setCustomerInfo(null);
       setFile(null);
+      setPaymentDetailsVisible(false);
       setReference(null);
     }
   }
 
+  const storageKey = `solelrim-checkout-${storeType}`;
+
+  // An emptied cart (checkout submitted, or every line removed from the
+  // cart drawer) invalidates any saved draft — nothing left to resume into.
   useEffect(() => {
-    if (open && cart.hydrated && cart.items.length === 0 && step !== "success") {
-      onClose();
-    }
+    if (!cart.hydrated || cart.items.length > 0) return;
+    localStorage.removeItem(storageKey);
+    if (open && step !== "success") onClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, cart.hydrated, cart.items.length, step]);
+  }, [open, cart.hydrated, cart.items.length, step, storageKey]);
 
   const {
     register,
@@ -128,7 +139,6 @@ export function CheckoutFlow({
   // CartProvider's own hydration (which reaches for the same localStorage
   // -> setState-on-mount shape via a reducer's dispatch instead of a raw
   // setter, which is why only this one trips the lint heuristic below).
-  const storageKey = `solelrim-checkout-${storeType}`;
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -471,75 +481,94 @@ export function CheckoutFlow({
           {step === 3 && (
             <div className="flex flex-col gap-4">
               <h2 className="text-label-xs">{t("step3Title")}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t("paymentIntroBody")}
-              </p>
-              <div className="flex flex-col gap-1 text-sm">
-                {settings.wallets.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 py-1">
-                    {settings.wallets.map((wallet, index) => (
-                      <div
-                        key={index}
-                        className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center"
-                      >
-                        {wallet.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={wallet.logoUrl}
-                            alt=""
-                            className="size-8 shrink-0 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                            <Wallet className="size-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex min-w-0 flex-col items-center">
-                          <span className="truncate text-xs font-medium text-muted-foreground">
-                            {wallet.provider}
-                          </span>
-                          <span dir="ltr" className="truncate text-sm font-semibold">
-                            {wallet.number}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {settings.paymentInstructions && (
-                  <p className="text-muted-foreground">
-                    {settings.paymentInstructions}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
-                <Input
-                  id="screenshot"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("uploadScreenshotHint")}
+              {settings.paymentInstructions && (
+                <p className="text-sm text-muted-foreground">
+                  {settings.paymentInstructions}
                 </p>
-              </div>
+              )}
 
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(2)}>
-                  {t("back")}
-                </Button>
-                <Button
-                  onClick={handleFinalSubmit}
-                  loading={submitting}
-                  disabled={!file}
-                  className="flex-1"
-                >
-                  {t("submitOrder")}
-                </Button>
-              </div>
+              {!paymentDetailsVisible ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setStep(2)}>
+                    {t("back")}
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => setPaymentDetailsVisible(true)}
+                  >
+                    {t("next")}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {settings.wallets.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {settings.wallets.map((wallet, index) => (
+                        <Popover key={index}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center transition-colors hover:bg-muted/50"
+                            >
+                              {wallet.logoUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={wallet.logoUrl}
+                                  alt=""
+                                  className="size-8 shrink-0 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <Wallet className="size-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex min-w-0 flex-col items-center">
+                                <span className="truncate text-xs font-medium text-muted-foreground">
+                                  {wallet.provider}
+                                </span>
+                                <span dir="ltr" className="truncate text-sm font-semibold">
+                                  {wallet.number}
+                                </span>
+                              </div>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 text-center text-sm">
+                            {t("walletNumberHint", { provider: wallet.provider })}
+                          </PopoverContent>
+                        </Popover>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
+                    <Input
+                      id="screenshot"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("uploadScreenshotHint")}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setStep(2)}>
+                      {t("back")}
+                    </Button>
+                    <Button
+                      onClick={handleFinalSubmit}
+                      loading={submitting}
+                      disabled={!file}
+                      className="flex-1"
+                    >
+                      {t("submitOrder")}
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
