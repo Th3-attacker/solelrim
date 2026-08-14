@@ -66,6 +66,10 @@ export function CheckoutFlow({
   const [customerInfo, setCustomerInfo] = useState<CheckoutCustomerInput | null>(
     null,
   );
+  // Step 3 is itself two phases: read the explanation, then see the wallets
+  // and pick a screenshot. Always starts back at "intro" on (re-)entering
+  // step 3 — never resumed mid-phase, no need to persist it separately.
+  const [paymentPhase, setPaymentPhase] = useState<"intro" | "wallets">("intro");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
@@ -336,7 +340,7 @@ export function CheckoutFlow({
 
       <div className="flex-1 overflow-y-auto px-4 pb-6">
         <div
-          key={step}
+          key={`${step}-${step === 3 ? paymentPhase : ""}`}
           className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-end-4"
         >
           {step === 1 && (
@@ -463,16 +467,40 @@ export function CheckoutFlow({
                 <Button variant="outline" onClick={() => setStep(1)}>
                   {t("back")}
                 </Button>
-                <Button onClick={() => setStep(3)}>{t("next")}</Button>
+                <Button
+                  onClick={() => {
+                    setPaymentPhase("intro");
+                    setStep(3);
+                  }}
+                >
+                  {t("next")}
+                </Button>
               </div>
             </div>
           )}
 
-          {step === 3 && (
+          {step === 3 && paymentPhase === "intro" && (
             <div className="flex flex-col gap-4">
               <h2 className="text-label-xs">{t("step3Title")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {t("paymentIntroBody")}
+              </p>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep(2)}>
+                  {t("back")}
+                </Button>
+                <Button onClick={() => setPaymentPhase("wallets")}>
+                  {t("next")}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && paymentPhase === "wallets" && (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-label-xs">{t("paymentInstructionsTitle")}</h2>
               <div className="flex flex-col gap-1 text-sm">
-                <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
                 {settings.wallets.length > 0 && (
                   <div className="grid grid-cols-2 gap-2 py-1">
                     {settings.wallets.map((wallet, index) => (
@@ -526,7 +554,7 @@ export function CheckoutFlow({
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(2)}>
+                <Button variant="outline" onClick={() => setPaymentPhase("intro")}>
                   {t("back")}
                 </Button>
                 <Button

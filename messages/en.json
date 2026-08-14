@@ -312,6 +312,7 @@
     "edit": "Edit",
     "orderSummary": "Summary",
     "paymentInstructionsTitle": "Payment instructions",
+    "paymentIntroBody": "Payment is made through one of the mobile money accounts shown below. Once you've made the transfer, you'll be able to send your screenshot.",
     "uploadScreenshot": "Payment screenshot",
     "uploadScreenshotHint": "Upload a screenshot showing the payment was completed.",
     "submitOrder": "Confirm order",

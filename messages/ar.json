@@ -312,6 +312,7 @@
     "edit": "تعديل",
     "orderSummary": "الملخص",
     "paymentInstructionsTitle": "تعليمات الدفع",
+    "paymentIntroBody": "يتم الدفع عبر أحد حسابات الدفع عبر الهاتف المحمول التي ستظهر أدناه. بمجرد إتمام التحويل، يمكنك إرسال صورة لإثبات الدفع.",
     "uploadScreenshot": "لقطة شاشة الدفع",
     "uploadScreenshotHint": "أرسل لقطة شاشة تُثبت أن الدفع قد تم.",
     "submitOrder": "تأكيد الطلب",

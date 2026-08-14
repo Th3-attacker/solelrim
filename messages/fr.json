@@ -312,6 +312,7 @@
     "edit": "Modifier",
     "orderSummary": "Résumé",
     "paymentInstructionsTitle": "Instructions de paiement",
+    "paymentIntroBody": "Le paiement s'effectue via l'un des comptes mobile money qui vont s'afficher ci-dessous. Une fois le transfert effectué, vous pourrez envoyer votre capture d'écran.",
     "uploadScreenshot": "Capture d'écran du paiement",
     "uploadScreenshotHint": "Envoyez une capture montrant que le paiement a bien été effectué.",
     "submitOrder": "Confirmer la commande",
