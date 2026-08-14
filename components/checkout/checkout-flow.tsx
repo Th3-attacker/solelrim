@@ -112,15 +112,37 @@ export function CheckoutFlow({
   }
 
   const storageKey = `solelrim-checkout-${storeType}`;
+  const previousVariantIdsRef = useRef<Set<string>>(new Set());
 
-  // An emptied cart (checkout submitted, or every line removed from the
-  // cart drawer) invalidates any saved draft — nothing left to resume into.
+  // A product disappearing from the cart (removed, or dropped by a stock
+  // sync) means the order the customer reviewed no longer matches what's
+  // in front of them — send them back to step 1 to re-confirm. Their info
+  // stays filled in; only pure growth (new items added, quantities bumped,
+  // nothing removed) keeps the resumed step as-is. A fully emptied cart
+  // additionally drops the saved draft — there's nothing left to resume.
   useEffect(() => {
-    if (!cart.hydrated || cart.items.length > 0) return;
-    localStorage.removeItem(storageKey);
-    if (open && step !== "success") onClose();
+    if (!cart.hydrated) return;
+    const currentIds = new Set(cart.items.map((line) => line.variantId));
+    const hadRemoval = Array.from(previousVariantIdsRef.current).some(
+      (id) => !currentIds.has(id),
+    );
+    previousVariantIdsRef.current = currentIds;
+
+    if (cart.items.length === 0) {
+      localStorage.removeItem(storageKey);
+      if (step !== 1 && step !== "success") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setStep(1);
+      }
+      if (open && step !== "success") onClose();
+      return;
+    }
+
+    if (hadRemoval && step !== 1 && step !== "success") {
+      setStep(1);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, cart.hydrated, cart.items.length, step, storageKey]);
+  }, [open, cart.hydrated, cart.items, step, storageKey]);
 
   const {
     register,
@@ -144,14 +166,14 @@ export function CheckoutFlow({
       const raw = localStorage.getItem(storageKey);
       if (!raw) return;
       const saved = JSON.parse(raw) as {
-        step: 2 | 3;
+        step: 1 | 2 | 3;
         customerInfo: CheckoutCustomerInput;
       };
       if (!saved.customerInfo) return;
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCustomerInfo(saved.customerInfo);
       resetCustomerForm(saved.customerInfo);
-      setStep(saved.step === 3 ? 3 : 2);
+      setStep(saved.step === 3 ? 3 : saved.step === 1 ? 1 : 2);
     } catch {
       // Malformed/foreign value — ignore, checkout just starts at step 1.
     }
@@ -160,13 +182,12 @@ export function CheckoutFlow({
 
   // Only step 1's data is worth restoring — the payment screenshot is a
   // File (can't be serialized) and has to be re-picked either way, so
-  // there's nothing to save once past step 2.
+  // there's nothing to save once past step 2. customerInfo can be set
+  // while step is back at 1 (a cart removal reset it) — that's saved as-is
+  // so a reload right after doesn't resume past the re-confirmation.
   useEffect(() => {
     if (!customerInfo || step === "success") return;
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ step: step === 1 ? 2 : step, customerInfo }),
-    );
+    localStorage.setItem(storageKey, JSON.stringify({ step, customerInfo }));
   }, [storageKey, customerInfo, step]);
 
   function fieldErrorMessage(message?: string) {
