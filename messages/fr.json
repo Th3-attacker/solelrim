@@ -17,7 +17,11 @@
     "optional": "optionnel",
     "currency": "MRU",
     "close": "Fermer",
-    "invalidPhone": "Numéro invalide (8 chiffres, doit commencer par 2, 3 ou 4)."
+    "invalidPhone": "Numéro invalide (8 chiffres, doit commencer par 2, 3 ou 4).",
+    "resetFilters": "Réinitialiser",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "paginationRange": "{from}–{to} sur {total}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -123,7 +127,9 @@
     "variantHasSalesError": "Impossible de supprimer une variante ayant des ventes ou commandes enregistrées. Mettez son stock à 0 pour la désactiver.",
     "deleteError": "La suppression a échoué.",
     "compareAtPrice": "Prix barré",
-    "isFeatured": "Best-seller"
+    "isFeatured": "Best-seller",
+    "searchPlaceholder": "Nom ou référence (SKU)...",
+    "allCategories": "Toutes les catégories"
   },
   "categories": {
     "title": "Catégories",
@@ -147,7 +153,8 @@
     "address": "Adresse",
     "notes": "Notes",
     "purchaseHistory": "Historique d'achats",
-    "noClients": "Aucun client pour le moment."
+    "noClients": "Aucun client pour le moment.",
+    "searchPlaceholder": "Nom ou téléphone..."
   },
   "promoCodes": {
     "title": "Codes promo",

@@ -17,7 +17,11 @@
     "optional": "اختياري",
     "currency": "أوقية",
     "close": "إغلاق",
-    "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4)."
+    "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4).",
+    "resetFilters": "إعادة تعيين",
+    "previous": "السابق",
+    "next": "التالي",
+    "paginationRange": "{from}–{to} من {total}"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -123,7 +127,9 @@
     "variantHasSalesError": "لا يمكن حذف نوع منتج له مبيعات أو طلبات مسجلة. اجعل مخزونه 0 لتعطيله بدلاً من ذلك.",
     "deleteError": "فشل الحذف.",
     "compareAtPrice": "السعر قبل الخصم",
-    "isFeatured": "الأكثر مبيعًا"
+    "isFeatured": "الأكثر مبيعًا",
+    "searchPlaceholder": "الاسم أو رمز المنتج...",
+    "allCategories": "كل الفئات"
   },
   "categories": {
     "title": "الفئات",
@@ -147,7 +153,8 @@
     "address": "العنوان",
     "notes": "ملاحظات",
     "purchaseHistory": "سجل المشتريات",
-    "noClients": "لا يوجد عملاء بعد."
+    "noClients": "لا يوجد عملاء بعد.",
+    "searchPlaceholder": "الاسم أو رقم الهاتف..."
   },
   "promoCodes": {
     "title": "أكواد الخصم",

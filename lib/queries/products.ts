@@ -1,15 +1,43 @@
 import { prisma } from "@/lib/prisma";
 
-export function getAllProducts(productType: string) {
-  return prisma.product.findMany({
-    where: { productType },
-    include: {
-      category: true,
-      images: { orderBy: { position: "asc" }, take: 1 },
-      variants: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export const PRODUCTS_PAGE_SIZE = 50;
+
+export async function getAllProducts(
+  productType: string,
+  filters: { search?: string; categoryId?: string; page?: number } = {},
+) {
+  const page = Math.max(1, filters.page ?? 1);
+  const where = {
+    productType,
+    ...(filters.categoryId && { categoryId: filters.categoryId }),
+    ...(filters.search && {
+      OR: [
+        { name: { contains: filters.search, mode: "insensitive" as const } },
+        {
+          variants: {
+            some: { sku: { contains: filters.search, mode: "insensitive" as const } },
+          },
+        },
+      ],
+    }),
+  };
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+        images: { orderBy: { position: "asc" }, take: 1 },
+        variants: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PRODUCTS_PAGE_SIZE,
+      take: PRODUCTS_PAGE_SIZE,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return { products, total, page };
 }
 
 export function getProductById(id: string, productType: string) {

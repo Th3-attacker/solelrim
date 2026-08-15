@@ -17,7 +17,11 @@
     "optional": "optional",
     "currency": "MRU",
     "close": "Close",
-    "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4)."
+    "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4).",
+    "resetFilters": "Reset",
+    "previous": "Previous",
+    "next": "Next",
+    "paginationRange": "{from}–{to} of {total}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -123,7 +127,9 @@
     "variantHasSalesError": "Can't remove a variant with recorded sales or orders. Set its stock to 0 to disable it instead.",
     "deleteError": "Deletion failed.",
     "compareAtPrice": "Compare-at price",
-    "isFeatured": "Best-seller"
+    "isFeatured": "Best-seller",
+    "searchPlaceholder": "Name or SKU...",
+    "allCategories": "All categories"
   },
   "categories": {
     "title": "Categories",
@@ -147,7 +153,8 @@
     "address": "Address",
     "notes": "Notes",
     "purchaseHistory": "Purchase history",
-    "noClients": "No clients yet."
+    "noClients": "No clients yet.",
+    "searchPlaceholder": "Name or phone..."
   },
   "promoCodes": {
     "title": "Promo codes",

@@ -1,13 +1,15 @@
 import { getTranslations } from "next-intl/server";
 import { Plus, Package } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getAllProducts } from "@/lib/queries/products";
+import { getAllProducts, getAllCategories, PRODUCTS_PAGE_SIZE } from "@/lib/queries/products";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StateMessage } from "@/components/ui/state-message";
 import { StockBadge } from "@/components/shop/stock-badge";
+import { ListPagination } from "@/components/ui/list-pagination";
+import { ProductFilters } from "@/components/products/product-filters";
 import { DeleteProductButton } from "@/components/products/delete-product-button";
 import { formatPrice } from "@/lib/format/currency";
 import {
@@ -19,12 +21,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
+  const categoryId = typeof params.category === "string" ? params.category : undefined;
+  const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
+  const hasFilters = Boolean(search || categoryId);
+
   const scope = await getAdminScope();
-  const [t, tCommon, products] = await Promise.all([
+  const [t, tCommon, categories, { products, total }] = await Promise.all([
     getTranslations("products"),
     getTranslations("common"),
-    getAllProducts(scope),
+    getAllCategories(scope),
+    getAllProducts(scope, { search, categoryId, page }),
   ]);
 
   return (
@@ -39,8 +52,13 @@ export default async function AdminProductsPage() {
         </Button>
       </div>
 
+      <ProductFilters categories={categories} />
+
       {products.length === 0 ? (
-        <StateMessage icon={Package} title={t("noProducts")} />
+        <StateMessage
+          icon={Package}
+          title={hasFilters ? tCommon("noResults") : t("noProducts")}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -84,6 +102,14 @@ export default async function AdminProductsPage() {
           </TableBody>
         </Table>
       )}
+
+      <ListPagination
+        page={page}
+        pageSize={PRODUCTS_PAGE_SIZE}
+        total={total}
+        basePath="/admin/products"
+        searchParams={{ q: search, category: categoryId }}
+      />
     </div>
   );
 }
