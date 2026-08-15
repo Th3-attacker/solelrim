@@ -1,15 +1,25 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
-export function getActiveProducts(productType: string, categoryId?: string) {
+export function getActiveProducts(
+  productType: string,
+  categoryId?: string,
+  options?: { excludeId?: string; take?: number },
+) {
   return prisma.product.findMany({
-    where: { isActive: true, productType, ...(categoryId ? { categoryId } : {}) },
+    where: {
+      isActive: true,
+      productType,
+      ...(categoryId ? { categoryId } : {}),
+      ...(options?.excludeId ? { id: { not: options.excludeId } } : {}),
+    },
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
       variants: true,
     },
     orderBy: { createdAt: "desc" },
+    ...(options?.take ? { take: options.take } : {}),
   });
 }
 

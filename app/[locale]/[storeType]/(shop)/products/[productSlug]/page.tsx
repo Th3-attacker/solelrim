@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   getActiveProductBySlug,
+  getActiveProducts,
   getAdjacentProductSlugs,
   getProductSlugById,
 } from "@/lib/queries/shop";
@@ -15,8 +16,11 @@ import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { ProductDetailView } from "@/components/shop/product-detail-view";
+import { ProductCard } from "@/components/shop/product-card";
 import { Button } from "@/components/ui/button";
 import { Link, redirect } from "@/i18n/navigation";
+
+const RELATED_PRODUCTS_LIMIT = 4;
 
 export async function generateMetadata({
   params,
@@ -78,6 +82,10 @@ export default async function ProductDetailPage({
     product.id,
     productType,
   );
+  const relatedProducts = await getActiveProducts(productType, product.categoryId, {
+    excludeId: product.id,
+    take: RELATED_PRODUCTS_LIMIT,
+  });
 
   const images = product.images.map((image) => ({
     id: image.id,
@@ -159,6 +167,17 @@ export default async function ProductDetailPage({
         images={images}
         variants={variants}
       />
+
+      {relatedProducts.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h2 className="text-heading-xs">{t("relatedProducts")}</h2>
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
+            {relatedProducts.map((related) => (
+              <ProductCard key={related.id} product={related} basePath={basePath} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
