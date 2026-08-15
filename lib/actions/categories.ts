@@ -57,6 +57,48 @@ export async function updateCategory(id: string, name: string) {
   }
 }
 
+export async function moveCategory(id: string, direction: "up" | "down") {
+  const { admin, productType } = await requireAdminScope();
+
+  const category = await prisma.category.findUnique({ where: { id } });
+  if (!category) {
+    return { error: "notFound" as const };
+  }
+  if (admin.role === "BOUTIQUE_ADMIN" && category.productType !== productType) {
+    return { error: "forbidden" as const };
+  }
+
+  // Siblings share the same scope as the category being moved (its own
+  // productType — including null for a generic one), never the acting
+  // admin's: a superadmin moving a generic category reorders it among the
+  // other generic ones, not among whichever boutique they're currently
+  // scoped to.
+  const siblings = await prisma.category.findMany({
+    where: { productType: category.productType },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
+  });
+  const index = siblings.findIndex((c) => c.id === id);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= siblings.length) {
+    return {};
+  }
+
+  // Reassigns every sibling's position to its new array index rather than
+  // swapping two values — positions all start at the same default (0), so
+  // a plain value-swap between two ties would be a no-op on first use.
+  [siblings[index], siblings[swapIndex]] = [siblings[swapIndex], siblings[index]];
+  await prisma.$transaction(
+    siblings.map((sibling, i) =>
+      prisma.category.update({ where: { id: sibling.id }, data: { position: i } }),
+    ),
+  );
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/products");
+  revalidatePath("/", "layout");
+  return {};
+}
+
 export async function deleteCategory(id: string) {
   const { admin, productType } = await requireAdminScope();
 

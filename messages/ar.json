@@ -17,7 +17,14 @@
     "optional": "اختياري",
     "currency": "أوقية",
     "close": "إغلاق",
-    "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4)."
+    "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4).",
+    "resetFilters": "إعادة تعيين",
+    "exportCsv": "تصدير CSV",
+    "moveUp": "تحريك للأعلى",
+    "moveDown": "تحريك للأسفل",
+    "previous": "السابق",
+    "next": "التالي",
+    "paginationRange": "{from}–{to} من {total}"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -36,7 +43,8 @@
     "adminSection": "الإدارة",
     "superadmin": "مدير عام",
     "boutiqueAdmin": "مدير متجر",
-    "promoCodes": "أكواد الخصم"
+    "promoCodes": "أكواد الخصم",
+    "auditLog": "السجل"
   },
   "auth": {
     "login": {
@@ -120,9 +128,22 @@
     "inactive": "غير نشط",
     "duplicateSkuError": "يوجد متغير بهذا الرمز (SKU) بالفعل.",
     "hasSalesError": "لا يمكن حذف منتج له مبيعات مسجلة. قم بإلغاء تفعيله بدلاً من ذلك.",
+    "variantHasSalesError": "لا يمكن حذف نوع منتج له مبيعات أو طلبات مسجلة. اجعل مخزونه 0 لتعطيله بدلاً من ذلك.",
     "deleteError": "فشل الحذف.",
     "compareAtPrice": "السعر قبل الخصم",
-    "isFeatured": "الأكثر مبيعًا"
+    "isFeatured": "الأكثر مبيعًا",
+    "searchPlaceholder": "الاسم أو رمز المنتج...",
+    "allCategories": "كل الفئات",
+    "addCategory": "إضافة فئة",
+    "selectedCount": "{count} محدد",
+    "selectAll": "تحديد الكل",
+    "selectProduct": "تحديد {name}",
+    "activateSelected": "تفعيل",
+    "deactivateSelected": "إلغاء التفعيل",
+    "deleteSelected": "حذف",
+    "bulkDeleteConfirmTitle": "حذف المنتجات المحددة؟",
+    "bulkDeleteConfirmDescription": "المنتجات التي لها مبيعات أو طلبات مسجلة ستبقى — قم بإلغاء تفعيلها بدلاً من ذلك.",
+    "bulkDeleteResult": "تم حذف {deleted}، وتم الاحتفاظ بـ {skipped} (مبيعات مسجلة)."
   },
   "categories": {
     "title": "الفئات",
@@ -146,7 +167,10 @@
     "address": "العنوان",
     "notes": "ملاحظات",
     "purchaseHistory": "سجل المشتريات",
-    "noClients": "لا يوجد عملاء بعد."
+    "onlineOrders": "الطلبات عبر الإنترنت",
+    "onlineOrdersNoPhone": "لا يوجد رقم هاتف مسجل لهذا العميل — يتعذر مطابقة طلباته عبر الإنترنت.",
+    "noClients": "لا يوجد عملاء بعد.",
+    "searchPlaceholder": "الاسم أو رقم الهاتف..."
   },
   "promoCodes": {
     "title": "أكواد الخصم",
@@ -217,6 +241,7 @@
     "applyFilters": "تطبيق",
     "resetFilters": "إعادة تعيين",
     "previousProduct": "المنتج السابق",
+    "relatedProducts": "منتجات مشابهة",
     "nextProduct": "المنتج التالي",
     "share": "مشاركة",
     "linkCopied": "تم نسخ الرابط.",
@@ -236,6 +261,7 @@
     "aboutLink": "من نحن",
     "contactLink": "تواصل معنا",
     "legalLink": "معلومات قانونية",
+    "trackOrderLink": "تتبع طلبي",
     "menu": "القائمة",
     "footerShopTitle": "المتجر",
     "footerHelpTitle": "المساعدة",
@@ -267,7 +293,7 @@
     "privacyTitle": "البيانات الشخصية",
     "privacyBody": "عند إتمام الطلب، يتم جمع الاسم ورقم الهاتف والمدينة وإثبات الدفع فقط — لغرض معالجة الطلب والتواصل بشأنه فقط. لا يستخدم هذا الموقع أي أدوات تحليل أو إعلانات تابعة لجهات خارجية.",
     "returnsTitle": "الإرجاع والاسترداد",
-    "returnsBody": "[تُستكمل من طرف المتجر — مدة الإرجاع المقبولة، الشروط (منتج تالف أو غير مطابق...)، وطريقة الاسترداد.]",
+    "returnsBody": "لا يُقبل الإرجاع أو الاسترداد إلا في حالة استلام منتج تالف أو معيب أو مختلف عمّا تم طلبه — وليس لمجرد تغيير الرأي. يجب الإبلاغ عن المشكلة خلال 48 ساعة من الاستلام، مع إرسال صورة أو فيديو للمنتج عبر واتساب. بعد الموافقة على الإرجاع، يُرد المبلغ إلى نفس حساب الدفع عبر الهاتف المحمول المستخدم في عملية الدفع.",
     "contactTitle": "التواصل والشكاوى",
     "contactBody": "لأي سؤال بخصوص طلبية أو أي شكوى، تواصلوا معنا مباشرة عبر واتساب."
   },
@@ -297,6 +323,8 @@
     "addToCart": "أضف إلى السلة",
     "addedToCart": "تمت الإضافة إلى السلة.",
     "quantity": "الكمية",
+    "decreaseQuantity": "إنقاص الكمية",
+    "increaseQuantity": "زيادة الكمية",
     "remove": "إزالة",
     "subtotal": "المجموع الفرعي",
     "checkoutButton": "إتمام الطلب",
@@ -335,6 +363,7 @@
     "discount": "الخصم",
     "total": "الإجمالي",
     "promoCodeInvalidError": "كود خصم غير صالح.",
+    "promoDroppedAtSubmit": "لم يعد كود الخصم صالحًا عند تأكيد الطلب — تم تحديث الإجمالي. يُرجى إعادة إرفاق إثبات الدفع لهذا المبلغ الجديد.",
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
@@ -539,5 +568,35 @@
     "errorTitle": "حدث خطأ ما",
     "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
     "retry": "إعادة المحاولة"
+  },
+  "auditLog": {
+    "title": "سجل الإجراءات",
+    "subtitle": "من فعل ماذا في الطلبات والمنتجات.",
+    "date": "التاريخ",
+    "admin": "المسؤول",
+    "action": "الإجراء",
+    "target": "بخصوص",
+    "noEntries": "لا توجد إجراءات مسجلة بعد.",
+    "actionOrderConfirm": "تم تأكيد الطلب",
+    "actionOrderReject": "تم رفض الطلب",
+    "actionOrderShip": "تم شحن الطلب",
+    "actionOrderDeliver": "تم تسليم الطلب",
+    "actionOrderCancel": "تم إلغاء الطلب",
+    "actionProductUpdate": "تم تعديل المنتج",
+    "actionProductDelete": "تم حذف المنتج"
+  },
+  "trackOrder": {
+    "title": "تتبع طلبي",
+    "subtitle": "أدخل رقم هاتفك والمرجع الذي استلمته عند الطلب لمعرفة حالته.",
+    "phoneLabel": "رقم الهاتف",
+    "referenceLabel": "مرجع الطلب",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "تحقق",
+    "notFoundError": "لا يوجد طلب مطابق لهذه المعلومات.",
+    "rateLimitedError": "محاولات كثيرة جدًا. يُرجى المحاولة مرة أخرى خلال بضع دقائق.",
+    "validationError": "تحقق من رقم الهاتف والمرجع اللذين أدخلتهما.",
+    "resultTotal": "الإجمالي",
+    "resultDate": "تاريخ الطلب",
+    "resultStatus": "الحالة"
   }
 }

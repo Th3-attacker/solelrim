@@ -91,6 +91,9 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   }
 
   return (
+    // Only ever fed `config` objects hardcoded by the developer at each
+    // chart's call site (see components/dashboard/revenue-chart.tsx) — never
+    // wire user-supplied color/theme strings into this without escaping them.
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)

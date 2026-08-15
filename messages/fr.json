@@ -17,7 +17,14 @@
     "optional": "optionnel",
     "currency": "MRU",
     "close": "Fermer",
-    "invalidPhone": "Numéro invalide (8 chiffres, doit commencer par 2, 3 ou 4)."
+    "invalidPhone": "Numéro invalide (8 chiffres, doit commencer par 2, 3 ou 4).",
+    "resetFilters": "Réinitialiser",
+    "exportCsv": "Exporter en CSV",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "paginationRange": "{from}–{to} sur {total}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -36,7 +43,8 @@
     "adminSection": "Administration",
     "superadmin": "Super administrateur",
     "boutiqueAdmin": "Administrateur boutique",
-    "promoCodes": "Codes promo"
+    "promoCodes": "Codes promo",
+    "auditLog": "Historique"
   },
   "auth": {
     "login": {
@@ -120,9 +128,22 @@
     "inactive": "Inactif",
     "duplicateSkuError": "Une variante avec cette référence (SKU) existe déjà.",
     "hasSalesError": "Impossible de supprimer un produit ayant des ventes enregistrées. Désactivez-le plutôt.",
+    "variantHasSalesError": "Impossible de supprimer une variante ayant des ventes ou commandes enregistrées. Mettez son stock à 0 pour la désactiver.",
     "deleteError": "La suppression a échoué.",
     "compareAtPrice": "Prix barré",
-    "isFeatured": "Best-seller"
+    "isFeatured": "Best-seller",
+    "searchPlaceholder": "Nom ou référence (SKU)...",
+    "allCategories": "Toutes les catégories",
+    "addCategory": "Ajouter une catégorie",
+    "selectedCount": "{count} sélectionné(s)",
+    "selectAll": "Tout sélectionner",
+    "selectProduct": "Sélectionner {name}",
+    "activateSelected": "Activer",
+    "deactivateSelected": "Désactiver",
+    "deleteSelected": "Supprimer",
+    "bulkDeleteConfirmTitle": "Supprimer les produits sélectionnés ?",
+    "bulkDeleteConfirmDescription": "Les produits ayant des ventes ou commandes enregistrées seront conservés — désactivez-les plutôt.",
+    "bulkDeleteResult": "{deleted} supprimé(s), {skipped} conservé(s) (ventes enregistrées)."
   },
   "categories": {
     "title": "Catégories",
@@ -146,7 +167,10 @@
     "address": "Adresse",
     "notes": "Notes",
     "purchaseHistory": "Historique d'achats",
-    "noClients": "Aucun client pour le moment."
+    "onlineOrders": "Commandes en ligne",
+    "onlineOrdersNoPhone": "Aucun numéro de téléphone enregistré pour ce client — impossible de retrouver ses commandes en ligne.",
+    "noClients": "Aucun client pour le moment.",
+    "searchPlaceholder": "Nom ou téléphone..."
   },
   "promoCodes": {
     "title": "Codes promo",
@@ -217,6 +241,7 @@
     "applyFilters": "Appliquer",
     "resetFilters": "Réinitialiser",
     "previousProduct": "Produit précédent",
+    "relatedProducts": "Produits similaires",
     "nextProduct": "Produit suivant",
     "share": "Partager",
     "linkCopied": "Lien copié.",
@@ -236,6 +261,7 @@
     "aboutLink": "À propos",
     "contactLink": "Contact",
     "legalLink": "Informations légales",
+    "trackOrderLink": "Suivre ma commande",
     "menu": "Menu",
     "footerShopTitle": "Boutique",
     "footerHelpTitle": "Assistance",
@@ -267,7 +293,7 @@
     "privacyTitle": "Données personnelles",
     "privacyBody": "Au moment de la commande, seuls le nom, le numéro de téléphone, la ville et la preuve de paiement sont collectés — uniquement pour traiter la commande et vous contacter à son sujet. Ce site n'utilise aucun outil d'analyse ou de publicité tiers.",
     "returnsTitle": "Retours et remboursements",
-    "returnsBody": "[À compléter par la boutique — délai de retour accepté, conditions (produit défectueux, non conforme…) et modalités de remboursement.]",
+    "returnsBody": "Un retour ou un remboursement n'est accepté qu'en cas de produit défectueux, endommagé ou différent de ce qui a été commandé — pas pour un simple changement d'avis. Le problème doit être signalé dans les 48 heures suivant la réception, avec une photo ou une vidéo du produit envoyée via WhatsApp. Une fois le retour validé, le remboursement est effectué sur le même compte mobile money utilisé pour le paiement.",
     "contactTitle": "Contact et réclamations",
     "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement via WhatsApp."
   },
@@ -297,6 +323,8 @@
     "addToCart": "Ajouter au panier",
     "addedToCart": "Ajouté au panier.",
     "quantity": "Quantité",
+    "decreaseQuantity": "Diminuer la quantité",
+    "increaseQuantity": "Augmenter la quantité",
     "remove": "Retirer",
     "subtotal": "Sous-total",
     "checkoutButton": "Passer la commande",
@@ -335,6 +363,7 @@
     "discount": "Réduction",
     "total": "Total",
     "promoCodeInvalidError": "Code promo invalide.",
+    "promoDroppedAtSubmit": "Le code promo n'était plus valide au moment de la validation — le total a été mis à jour. Merci de réattacher votre preuve de paiement pour ce nouveau montant.",
     "promoCodeExpiredError": "Ce code promo a expiré.",
     "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
     "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
@@ -539,5 +568,35 @@
     "errorTitle": "Une erreur est survenue",
     "errorMessage": "Quelque chose s'est mal passé de notre côté. Réessayez, ou revenez un peu plus tard.",
     "retry": "Réessayer"
+  },
+  "auditLog": {
+    "title": "Historique des actions",
+    "subtitle": "Qui a fait quoi sur les commandes et les produits.",
+    "date": "Date",
+    "admin": "Administrateur",
+    "action": "Action",
+    "target": "Concerné",
+    "noEntries": "Aucune action enregistrée pour le moment.",
+    "actionOrderConfirm": "Commande confirmée",
+    "actionOrderReject": "Commande rejetée",
+    "actionOrderShip": "Commande expédiée",
+    "actionOrderDeliver": "Commande livrée",
+    "actionOrderCancel": "Commande annulée",
+    "actionProductUpdate": "Produit modifié",
+    "actionProductDelete": "Produit supprimé"
+  },
+  "trackOrder": {
+    "title": "Suivre ma commande",
+    "subtitle": "Entrez votre numéro de téléphone et la référence reçue à la commande pour voir son statut.",
+    "phoneLabel": "Numéro de téléphone",
+    "referenceLabel": "Référence de commande",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "Vérifier",
+    "notFoundError": "Aucune commande ne correspond à ces informations.",
+    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    "validationError": "Vérifiez le numéro de téléphone et la référence saisis.",
+    "resultTotal": "Total",
+    "resultDate": "Commandée le",
+    "resultStatus": "Statut"
   }
 }

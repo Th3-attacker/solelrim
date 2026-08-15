@@ -45,7 +45,7 @@ export function DeleteCategoryButton({ categoryId }: { categoryId: string }) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={pending}>
+        <Button variant="ghost" size="icon" disabled={pending} aria-label={tCommon("delete")}>
           <Trash2 className="size-4" />
         </Button>
       </AlertDialogTrigger>

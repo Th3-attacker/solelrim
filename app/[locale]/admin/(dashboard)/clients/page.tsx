@@ -1,10 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { Plus, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getAllClients } from "@/lib/queries/clients";
+import { getClientsPage, CLIENTS_PAGE_SIZE } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { StateMessage } from "@/components/ui/state-message";
+import { ListPagination } from "@/components/ui/list-pagination";
+import { ClientFilters } from "@/components/clients/client-filters";
 import {
   Table,
   TableBody,
@@ -14,11 +16,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function AdminClientsPage() {
+export default async function AdminClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
+  const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
+
   const scope = await getAdminScope();
-  const [t, clients] = await Promise.all([
+  const [t, tCommon, { clients, total }] = await Promise.all([
     getTranslations("clients"),
-    getAllClients(scope),
+    getTranslations("common"),
+    getClientsPage(scope, { search, page }),
   ]);
 
   return (
@@ -33,8 +44,10 @@ export default async function AdminClientsPage() {
         </Button>
       </div>
 
+      <ClientFilters />
+
       {clients.length === 0 ? (
-        <StateMessage icon={Users} title={t("noClients")} />
+        <StateMessage icon={Users} title={search ? tCommon("noResults") : t("noClients")} />
       ) : (
         <Table>
           <TableHeader>
@@ -66,6 +79,14 @@ export default async function AdminClientsPage() {
           </TableBody>
         </Table>
       )}
+
+      <ListPagination
+        page={page}
+        pageSize={CLIENTS_PAGE_SIZE}
+        total={total}
+        basePath="/admin/clients"
+        searchParams={{ q: search }}
+      />
     </div>
   );
 }

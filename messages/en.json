@@ -17,7 +17,14 @@
     "optional": "optional",
     "currency": "MRU",
     "close": "Close",
-    "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4)."
+    "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4).",
+    "resetFilters": "Reset",
+    "exportCsv": "Export CSV",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "previous": "Previous",
+    "next": "Next",
+    "paginationRange": "{from}–{to} of {total}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -36,7 +43,8 @@
     "adminSection": "Administration",
     "superadmin": "Super admin",
     "boutiqueAdmin": "Boutique admin",
-    "promoCodes": "Promo codes"
+    "promoCodes": "Promo codes",
+    "auditLog": "History"
   },
   "auth": {
     "login": {
@@ -120,9 +128,22 @@
     "inactive": "Inactive",
     "duplicateSkuError": "A variant with this SKU already exists.",
     "hasSalesError": "Can't delete a product with recorded sales. Deactivate it instead.",
+    "variantHasSalesError": "Can't remove a variant with recorded sales or orders. Set its stock to 0 to disable it instead.",
     "deleteError": "Deletion failed.",
     "compareAtPrice": "Compare-at price",
-    "isFeatured": "Best-seller"
+    "isFeatured": "Best-seller",
+    "searchPlaceholder": "Name or SKU...",
+    "allCategories": "All categories",
+    "addCategory": "Add category",
+    "selectedCount": "{count} selected",
+    "selectAll": "Select all",
+    "selectProduct": "Select {name}",
+    "activateSelected": "Activate",
+    "deactivateSelected": "Deactivate",
+    "deleteSelected": "Delete",
+    "bulkDeleteConfirmTitle": "Delete the selected products?",
+    "bulkDeleteConfirmDescription": "Products with recorded sales or orders will be kept — deactivate them instead.",
+    "bulkDeleteResult": "{deleted} deleted, {skipped} kept (recorded sales)."
   },
   "categories": {
     "title": "Categories",
@@ -146,7 +167,10 @@
     "address": "Address",
     "notes": "Notes",
     "purchaseHistory": "Purchase history",
-    "noClients": "No clients yet."
+    "onlineOrders": "Online orders",
+    "onlineOrdersNoPhone": "No phone number on file for this client — their online orders can't be matched.",
+    "noClients": "No clients yet.",
+    "searchPlaceholder": "Name or phone..."
   },
   "promoCodes": {
     "title": "Promo codes",
@@ -217,6 +241,7 @@
     "applyFilters": "Apply",
     "resetFilters": "Reset",
     "previousProduct": "Previous product",
+    "relatedProducts": "Similar products",
     "nextProduct": "Next product",
     "share": "Share",
     "linkCopied": "Link copied.",
@@ -236,6 +261,7 @@
     "aboutLink": "About",
     "contactLink": "Contact",
     "legalLink": "Legal information",
+    "trackOrderLink": "Track my order",
     "menu": "Menu",
     "footerShopTitle": "Shop",
     "footerHelpTitle": "Support",
@@ -267,7 +293,7 @@
     "privacyTitle": "Personal data",
     "privacyBody": "At checkout, only your name, phone number, city, and payment proof are collected — solely to process the order and contact you about it. This site does not use any third-party analytics or advertising tools.",
     "returnsTitle": "Returns and refunds",
-    "returnsBody": "[To be completed by the store — accepted return window, conditions (defective, not as described…), and refund process.]",
+    "returnsBody": "A return or refund is only accepted for a defective, damaged, or incorrect product — not for a simple change of mind. The issue must be reported within 48 hours of receiving the order, with a photo or video of the item sent via WhatsApp. Once the return is approved, the refund is sent back to the same mobile money account used for payment.",
     "contactTitle": "Contact and complaints",
     "contactBody": "For any question about an order or a complaint, contact us directly on WhatsApp."
   },
@@ -297,6 +323,8 @@
     "addToCart": "Add to cart",
     "addedToCart": "Added to cart.",
     "quantity": "Quantity",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
     "remove": "Remove",
     "subtotal": "Subtotal",
     "checkoutButton": "Checkout",
@@ -335,6 +363,7 @@
     "discount": "Discount",
     "total": "Total",
     "promoCodeInvalidError": "Invalid promo code.",
+    "promoDroppedAtSubmit": "The promo code was no longer valid when the order was submitted — the total has been updated. Please re-attach your payment proof for this new amount.",
     "promoCodeExpiredError": "This promo code has expired.",
     "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
     "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
@@ -539,5 +568,35 @@
     "errorTitle": "Something went wrong",
     "errorMessage": "Something broke on our end. Try again, or come back a little later.",
     "retry": "Try again"
+  },
+  "auditLog": {
+    "title": "Action history",
+    "subtitle": "Who did what on orders and products.",
+    "date": "Date",
+    "admin": "Admin",
+    "action": "Action",
+    "target": "Concerning",
+    "noEntries": "No recorded actions yet.",
+    "actionOrderConfirm": "Order confirmed",
+    "actionOrderReject": "Order rejected",
+    "actionOrderShip": "Order shipped",
+    "actionOrderDeliver": "Order delivered",
+    "actionOrderCancel": "Order cancelled",
+    "actionProductUpdate": "Product updated",
+    "actionProductDelete": "Product deleted"
+  },
+  "trackOrder": {
+    "title": "Track my order",
+    "subtitle": "Enter your phone number and the reference you received when you ordered to see its status.",
+    "phoneLabel": "Phone number",
+    "referenceLabel": "Order reference",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "Check",
+    "notFoundError": "No order matches these details.",
+    "rateLimitedError": "Too many attempts. Please try again in a few minutes.",
+    "validationError": "Check the phone number and reference you entered.",
+    "resultTotal": "Total",
+    "resultDate": "Ordered on",
+    "resultStatus": "Status"
   }
 }

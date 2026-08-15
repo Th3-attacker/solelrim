@@ -44,7 +44,7 @@ export function RenameCategoryDialog({
       open={open}
       onOpenChange={setOpen}
       trigger={
-        <Button type="button" variant="ghost" size="icon">
+        <Button type="button" variant="ghost" size="icon" aria-label={tCommon("edit")}>
           <Pencil className="size-4" />
         </Button>
       }

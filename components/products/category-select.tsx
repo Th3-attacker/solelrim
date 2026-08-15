@@ -64,7 +64,7 @@ export function CategorySelect({
         open={open}
         onOpenChange={setOpen}
         trigger={
-          <Button type="button" variant="outline" size="icon">
+          <Button type="button" variant="outline" size="icon" aria-label={t("addCategory")}>
             <Plus className="size-4" />
           </Button>
         }

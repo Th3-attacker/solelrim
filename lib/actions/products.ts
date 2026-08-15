@@ -8,6 +8,7 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { slugify } from "@/lib/shop/slug";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { detectImageSignature } from "@/lib/shop/image-signature";
+import { logAdminAction } from "@/lib/audit";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -35,6 +36,19 @@ export async function createProduct(
     return { error: "invalid" };
   }
   const { variants, ...product } = parsed.data;
+
+  // A category is either shared (productType: null) or scoped to one
+  // boutique — same ownership check as promo-codes.ts does for clientId,
+  // stopping an admin from attaching a product to another boutique's
+  // private category by guessing its id.
+  const category = await prisma.category.findFirst({
+    where: { id: product.categoryId, OR: [{ productType: null }, { productType }] },
+    select: { id: true },
+  });
+  if (!category) {
+    return { error: "invalid" };
+  }
+
   const slug = await generateUniqueSlug(product.name);
 
   try {
@@ -66,7 +80,7 @@ export async function updateProduct(
   productId: string,
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -81,20 +95,43 @@ export async function updateProduct(
     return { error: "notFound" };
   }
 
+  const category = await prisma.category.findFirst({
+    where: { id: product.categoryId, OR: [{ productType: null }, { productType }] },
+    select: { id: true },
+  });
+  if (!category) {
+    return { error: "invalid" };
+  }
+
+  const existing = await prisma.productVariant.findMany({
+    where: { productId },
+    select: { id: true },
+  });
+  const existingIds = new Set(existing.map((v) => v.id));
+  const submittedIds = new Set(variants.filter((v) => v.id).map((v) => v.id!));
+  const toDelete = [...existingIds].filter((id) => !submittedIds.has(id));
+
+  if (toDelete.length > 0) {
+    // Dropping a variant from the form would otherwise hit the DB's foreign
+    // key constraint and crash once it has sale/order history — same
+    // "can't erase history" rule deleteProduct already enforces, just at
+    // the variant level instead of the whole product.
+    const referenced = await prisma.productVariant.findFirst({
+      where: {
+        id: { in: toDelete },
+        OR: [{ saleItems: { some: {} } }, { orderItems: { some: {} } }],
+      },
+      select: { id: true },
+    });
+    if (referenced) {
+      return { error: "variantHasSales" };
+    }
+  }
+
   try {
     const slug = await prisma.$transaction(async (tx) => {
       const updated = await tx.product.update({ where: { id: productId }, data: product });
 
-      const existing = await tx.productVariant.findMany({
-        where: { productId },
-        select: { id: true },
-      });
-      const existingIds = new Set(existing.map((v) => v.id));
-      const submittedIds = new Set(
-        variants.filter((v) => v.id).map((v) => v.id!),
-      );
-
-      const toDelete = [...existingIds].filter((id) => !submittedIds.has(id));
       if (toDelete.length > 0) {
         await tx.productVariant.deleteMany({
           where: { id: { in: toDelete } },
@@ -110,7 +147,25 @@ export async function updateProduct(
         }
       }
 
+      // Colors are free text on both variants and images, not a shared
+      // model — a color renamed or dropped here would otherwise leave any
+      // photo tagged with the old string invisibly stuck to it, no longer
+      // matching anything in the color picker (admin or storefront). Untag
+      // instead of guessing which new color it should follow.
+      const remainingColors = [...new Set(variants.map((v) => v.color))];
+      await tx.productImage.updateMany({
+        where: { productId, color: { not: null, notIn: remainingColors } },
+        data: { color: null },
+      });
+
       return updated.slug;
+    });
+
+    await logAdminAction({
+      adminUserId: admin.id,
+      productType,
+      action: "product.update",
+      targetLabel: product.name,
     });
 
     revalidatePath("/admin/products");
@@ -132,11 +187,11 @@ export async function updateProduct(
 export async function deleteProduct(
   productId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
 
   const owned = await prisma.product.findFirst({
     where: { id: productId, productType },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (!owned) {
     return { error: "notFound" };
@@ -167,9 +222,53 @@ export async function deleteProduct(
       .remove(images.map((i) => i.storagePath));
   }
 
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "product.delete",
+    targetLabel: owned.name,
+  });
+
   revalidatePath("/admin/products");
   revalidatePath("/");
   return {};
+}
+
+// Just an updateMany scoped by productType — activating/deactivating
+// never touches sale/order history, so there's nothing to block here the
+// way bulkDeleteProducts has to.
+export async function bulkSetProductsActive(
+  productIds: string[],
+  isActive: boolean,
+): Promise<{ error?: string }> {
+  const { productType } = await requireAdminScope();
+  await prisma.product.updateMany({
+    where: { id: { in: productIds }, productType },
+    data: { isActive },
+  });
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return {};
+}
+
+// Runs deleteProduct per id rather than reimplementing its ownership/
+// sales-history/image-cleanup logic — a mixed selection (some deletable,
+// some not) is expected, not an error: whatever's blocked just gets
+// skipped and counted, the rest still goes through.
+export async function bulkDeleteProducts(
+  productIds: string[],
+): Promise<{ deletedCount: number; skippedCount: number }> {
+  let deletedCount = 0;
+  let skippedCount = 0;
+  for (const id of productIds) {
+    const result = await deleteProduct(id);
+    if (result.error) {
+      skippedCount++;
+    } else {
+      deletedCount++;
+    }
+  }
+  return { deletedCount, skippedCount };
 }
 
 export async function uploadProductImage(

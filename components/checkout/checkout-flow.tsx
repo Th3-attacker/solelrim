@@ -5,6 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +19,11 @@ import {
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
+import { computeDiscountAmount } from "@/lib/shop/promo-code";
+import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { Wallet, X, Pencil } from "lucide-react";
+import { Wallet, X, Pencil, PackageSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -63,6 +66,7 @@ export function CheckoutFlow({
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
+  const tTrackOrder = useTranslations("trackOrder");
   const locale = useLocale();
   const { storeType } = useParams<{ storeType: string }>();
   const cart = useCart();
@@ -72,6 +76,7 @@ export function CheckoutFlow({
     null,
   );
   const [file, setFile] = useState<File | null>(null);
+  const [promoDroppedMessage, setPromoDroppedMessage] = useState<string | null>(null);
   const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
@@ -82,9 +87,15 @@ export function CheckoutFlow({
   const [promoError, setPromoError] = useState<string | null>(null);
   const [appliedPromo, setAppliedPromo] = useState<{
     code: string;
-    discount: number;
+    discountType: PromoDiscountType;
+    discountValue: number;
   } | null>(null);
-  const discount = appliedPromo?.discount ?? 0;
+  // Derived from the live cart subtotal on every render, not frozen at
+  // whatever it was when the code was applied — a PERCENT code must track
+  // the cart if it changes afterward (e.g. a stock sync clamps a quantity).
+  const discount = appliedPromo
+    ? computeDiscountAmount(appliedPromo.discountType, appliedPromo.discountValue, cart.subtotal)
+    : 0;
   const total = Math.max(cart.subtotal - discount, 0);
 
   // Snapshot the cart at submission time — clear() empties the live cart
@@ -106,6 +117,7 @@ export function CheckoutFlow({
       setStep(1);
       setCustomerInfo(null);
       setFile(null);
+      setPromoDroppedMessage(null);
       setPaymentDetailsVisible(false);
       setReference(null);
     }
@@ -227,7 +239,11 @@ export function CheckoutFlow({
       return;
     }
 
-    setAppliedPromo({ code: promoInput.trim().toUpperCase(), discount: result.discount });
+    setAppliedPromo({
+      code: promoInput.trim().toUpperCase(),
+      discountType: result.discountType,
+      discountValue: result.discountValue,
+    });
   }
 
   function handleRemovePromoCode() {
@@ -269,9 +285,16 @@ export function CheckoutFlow({
       const promoErrors = ["notFound", "expired", "usageLimitReached", "notYours"];
       if (result.error && promoErrors.includes(result.error)) {
         // The code passed preview but became invalid by the time this
-        // submitted (deactivated, limit hit by someone else, etc) — drop it
-        // rather than block the order the customer already filled out.
+        // submitted (deactivated, limit hit by someone else, etc) — the
+        // total just went up from what the customer's screenshot was for.
+        // Clearing the file (and the native input, so re-picking the exact
+        // same one still fires onChange) forces them to look at the new
+        // total and re-confirm proof of payment, instead of the disabled
+        // state quietly lifting on a re-click they might not think twice about.
         setAppliedPromo(null);
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setPromoDroppedMessage(t("promoDroppedAtSubmit"));
         toast.error(promoCodeErrorMessage(result.error));
         return;
       }
@@ -326,7 +349,13 @@ export function CheckoutFlow({
           <Button onClick={handleSendWhatsApp} className="w-full">
             {t("sendWhatsApp")}
           </Button>
-          <Button variant="outline" className="w-full" onClick={onClose}>
+          <Button variant="outline" className="w-full" asChild>
+            <Link href={`/${storeType}/track-order`} onClick={onClose}>
+              <PackageSearch className="size-4" />
+              {tTrackOrder("title")}
+            </Link>
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={onClose}>
             {t("backToCatalog")}
           </Button>
         </CardContent>
@@ -563,12 +592,18 @@ export function CheckoutFlow({
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
+                    {promoDroppedMessage && (
+                      <p className="text-sm text-destructive">{promoDroppedMessage}</p>
+                    )}
                     <Input
                       id="screenshot"
                       ref={fileInputRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                      onChange={(e) => {
+                        setFile(e.target.files?.[0] ?? null);
+                        setPromoDroppedMessage(null);
+                      }}
                     />
                     <p className="text-xs text-muted-foreground">
                       {t("uploadScreenshotHint")}
