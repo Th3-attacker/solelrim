@@ -23,7 +23,7 @@ import { computeDiscountAmount } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { Wallet, X, Pencil } from "lucide-react";
+import { Wallet, X, Pencil, PackageSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -349,16 +349,15 @@ export function CheckoutFlow({
           <Button onClick={handleSendWhatsApp} className="w-full">
             {t("sendWhatsApp")}
           </Button>
-          <Button variant="outline" className="w-full" onClick={onClose}>
+          <Button variant="outline" className="w-full" asChild>
+            <Link href={`/${storeType}/track-order`} onClick={onClose}>
+              <PackageSearch className="size-4" />
+              {tTrackOrder("title")}
+            </Link>
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={onClose}>
             {t("backToCatalog")}
           </Button>
-          <Link
-            href={`/${storeType}/track-order`}
-            onClick={onClose}
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            {tTrackOrder("title")}
-          </Link>
         </CardContent>
       </Card>
     );

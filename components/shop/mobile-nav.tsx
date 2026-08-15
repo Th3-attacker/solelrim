@@ -105,6 +105,13 @@ export function MobileNav({
             >
               {t("contactLink")}
             </Link>
+            <Link
+              href={`${basePath}/track-order`}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              {tNav("trackOrderLink")}
+            </Link>
           </nav>
         </SheetContent>
       </Sheet>
