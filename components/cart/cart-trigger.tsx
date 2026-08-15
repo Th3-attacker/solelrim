@@ -45,6 +45,10 @@ export function CartTrigger() {
       storeType,
       items.map((i) => i.variantId),
     );
+    // null means the check didn't happen (rate-limited or invalid input) —
+    // leave the cart as-is rather than let an absent-from-the-map default
+    // read as "everything just sold out".
+    if (!stockByVariantId) return;
     const changed = items.some(
       (i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock,
     );
