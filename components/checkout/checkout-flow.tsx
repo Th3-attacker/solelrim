@@ -5,6 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ export function CheckoutFlow({
   const t = useTranslations("checkout");
   const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
+  const tTrackOrder = useTranslations("trackOrder");
   const locale = useLocale();
   const { storeType } = useParams<{ storeType: string }>();
   const cart = useCart();
@@ -350,6 +352,13 @@ export function CheckoutFlow({
           <Button variant="outline" className="w-full" onClick={onClose}>
             {t("backToCatalog")}
           </Button>
+          <Link
+            href={`/${storeType}/track-order`}
+            onClick={onClose}
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            {tTrackOrder("title")}
+          </Link>
         </CardContent>
       </Card>
     );

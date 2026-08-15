@@ -8,7 +8,9 @@ import {
   cancelReasonSchema,
   checkoutCustomerSchema,
   orderItemsSchema,
+  trackOrderSchema,
 } from "@/lib/validation/order";
+import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
@@ -233,6 +235,53 @@ export async function submitOrder(
   }
 
   return { error: "referenceCollision" };
+}
+
+// Public, unauthenticated lookup — capped per IP against enumeration
+// attempts. Requires the exact reference alongside the phone number (not
+// just the phone) precisely so knowing/guessing someone's number alone
+// isn't enough to see their order history.
+const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
+
+export type TrackOrderResult =
+  | { error: string }
+  | {
+      reference: string;
+      status: OrderStatus;
+      total: number;
+      createdAt: Date;
+    };
+
+export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
+  const ip = await getClientIp();
+  const allowed = await checkRateLimit(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
+  if (!allowed) {
+    return { error: "rateLimited" };
+  }
+
+  const parsed = trackOrderSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  const order = await prisma.order.findFirst({
+    where: {
+      customerPhone: parsed.data.phone,
+      reference: parsed.data.reference.toUpperCase(),
+      productType: parsed.data.productType,
+    },
+    select: { reference: true, status: true, total: true, createdAt: true },
+  });
+  if (!order) {
+    return { error: "notFound" };
+  }
+
+  return {
+    reference: order.reference,
+    status: order.status,
+    total: order.total.toNumber(),
+    createdAt: order.createdAt,
+  };
 }
 
 export async function confirmOrder(

@@ -261,6 +261,7 @@
     "aboutLink": "About",
     "contactLink": "Contact",
     "legalLink": "Legal information",
+    "trackOrderLink": "Track my order",
     "menu": "Menu",
     "footerShopTitle": "Shop",
     "footerHelpTitle": "Support",
@@ -583,5 +584,19 @@
     "actionOrderCancel": "Order cancelled",
     "actionProductUpdate": "Product updated",
     "actionProductDelete": "Product deleted"
+  },
+  "trackOrder": {
+    "title": "Track my order",
+    "subtitle": "Enter your phone number and the reference you received when you ordered to see its status.",
+    "phoneLabel": "Phone number",
+    "referenceLabel": "Order reference",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "Check",
+    "notFoundError": "No order matches these details.",
+    "rateLimitedError": "Too many attempts. Please try again in a few minutes.",
+    "validationError": "Check the phone number and reference you entered.",
+    "resultTotal": "Total",
+    "resultDate": "Ordered on",
+    "resultStatus": "Status"
   }
 }

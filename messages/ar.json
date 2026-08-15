@@ -261,6 +261,7 @@
     "aboutLink": "من نحن",
     "contactLink": "تواصل معنا",
     "legalLink": "معلومات قانونية",
+    "trackOrderLink": "تتبع طلبي",
     "menu": "القائمة",
     "footerShopTitle": "المتجر",
     "footerHelpTitle": "المساعدة",
@@ -583,5 +584,19 @@
     "actionOrderCancel": "تم إلغاء الطلب",
     "actionProductUpdate": "تم تعديل المنتج",
     "actionProductDelete": "تم حذف المنتج"
+  },
+  "trackOrder": {
+    "title": "تتبع طلبي",
+    "subtitle": "أدخل رقم هاتفك والمرجع الذي استلمته عند الطلب لمعرفة حالته.",
+    "phoneLabel": "رقم الهاتف",
+    "referenceLabel": "مرجع الطلب",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "تحقق",
+    "notFoundError": "لا يوجد طلب مطابق لهذه المعلومات.",
+    "rateLimitedError": "محاولات كثيرة جدًا. يُرجى المحاولة مرة أخرى خلال بضع دقائق.",
+    "validationError": "تحقق من رقم الهاتف والمرجع اللذين أدخلتهما.",
+    "resultTotal": "الإجمالي",
+    "resultDate": "تاريخ الطلب",
+    "resultStatus": "الحالة"
   }
 }

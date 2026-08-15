@@ -261,6 +261,7 @@
     "aboutLink": "À propos",
     "contactLink": "Contact",
     "legalLink": "Informations légales",
+    "trackOrderLink": "Suivre ma commande",
     "menu": "Menu",
     "footerShopTitle": "Boutique",
     "footerHelpTitle": "Assistance",
@@ -583,5 +584,19 @@
     "actionOrderCancel": "Commande annulée",
     "actionProductUpdate": "Produit modifié",
     "actionProductDelete": "Produit supprimé"
+  },
+  "trackOrder": {
+    "title": "Suivre ma commande",
+    "subtitle": "Entrez votre numéro de téléphone et la référence reçue à la commande pour voir son statut.",
+    "phoneLabel": "Numéro de téléphone",
+    "referenceLabel": "Référence de commande",
+    "referencePlaceholder": "CMD-20260815-1234",
+    "submit": "Vérifier",
+    "notFoundError": "Aucune commande ne correspond à ces informations.",
+    "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    "validationError": "Vérifiez le numéro de téléphone et la référence saisis.",
+    "resultTotal": "Total",
+    "resultDate": "Commandée le",
+    "resultStatus": "Statut"
   }
 }
