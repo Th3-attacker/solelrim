@@ -33,7 +33,15 @@ export async function generateMetadata({
   return {
     title,
     description,
-    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+    ...buildSocialMetadata({
+      title,
+      description,
+      imageUrl,
+      locale,
+      domain: boutique.domain,
+      storeKey: storeType,
+      path: "/about",
+    }),
   };
 }
 

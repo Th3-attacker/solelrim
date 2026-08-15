@@ -12,7 +12,7 @@ import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct } from "@/lib/shop/badges";
-import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { ProductDetailView } from "@/components/shop/product-detail-view";
@@ -45,11 +45,28 @@ export async function generateMetadata({
   const imageUrl = product.images[0]
     ? getProductImageUrl(product.images[0].storagePath)
     : null;
+  const keywords = [
+    ...new Set([
+      product.name,
+      product.category.name,
+      siteName,
+      ...product.variants.map((v) => v.color).filter((color): color is string => !!color),
+    ]),
+  ];
 
   return {
     title,
     description,
-    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+    keywords,
+    ...buildSocialMetadata({
+      title,
+      description,
+      imageUrl,
+      locale,
+      domain: boutique.domain,
+      storeKey: storeType,
+      path: `/products/${productSlug}`,
+    }),
   };
 }
 
@@ -59,9 +76,11 @@ export default async function ProductDetailPage({
   params: Promise<{ storeType: string; productSlug: string }>;
 }) {
   const { storeType, productSlug } = await params;
-  const [t, basePath] = await Promise.all([
+  const [t, basePath, locale, boutique] = await Promise.all([
     getTranslations("shop"),
     getStorefrontBasePath(storeType),
+    getLocale(),
+    getPublicBoutiqueSettings(storeType),
   ]);
   const productType = storeType;
   const product = await getActiveProductBySlug(productSlug, productType);
@@ -71,7 +90,6 @@ export default async function ProductDetailPage({
     // the canonical slug URL instead of a dead end.
     const legacy = await getProductSlugById(productSlug, productType);
     if (legacy) {
-      const locale = await getLocale();
       redirect({ href: `${basePath}/products/${legacy.slug}`, locale });
     }
     notFound();
@@ -102,8 +120,59 @@ export default async function ProductDetailPage({
     price: getVariantPrice(variant, product.basePrice),
   }));
 
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
+  const canonicalUrl = buildStoreUrl({
+    domain: boutique.domain,
+    storeKey: storeType,
+    path: `/products/${productSlug}`,
+    locale,
+  });
+  const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
+  const startingPrice = variants.length > 0
+    ? Math.min(...variants.map((v) => v.price))
+    : product.basePrice.toNumber();
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description?.trim() || t("heroSubtitle"),
+    image: images.map((image) => image.url),
+    category: product.category.name,
+    brand: { "@type": "Brand", name: siteName },
+    offers: {
+      "@type": "Offer",
+      price: startingPrice,
+      priceCurrency: "MRU",
+      availability: totalStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: canonicalUrl,
+    },
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: siteName,
+        item: buildStoreUrl({ domain: boutique.domain, storeKey: storeType, path: "", locale }),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.category.name,
+        item: buildStoreUrl({ domain: boutique.domain, storeKey: storeType, path: "/products", locale }),
+      },
+      { "@type": "ListItem", position: 3, name: product.name, item: canonicalUrl },
+    ],
+  };
+
   return (
     <div className="flex flex-col gap-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLdScriptProps([productJsonLd, breadcrumbJsonLd])}
+      />
       <nav className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
           <Link href={basePath || "/"} className="hover:text-foreground">

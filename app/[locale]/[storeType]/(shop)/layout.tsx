@@ -21,7 +21,7 @@ import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
-import { buildSocialMetadata } from "@/lib/shop/metadata";
+import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
 
 // Meta keywords have had no effect on Google ranking since 2009 — this
 // exists only because a couple of smaller engines/directories still read
@@ -65,7 +65,15 @@ export async function generateMetadata({
     title,
     description,
     keywords,
-    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+    ...buildSocialMetadata({
+      title,
+      description,
+      imageUrl,
+      locale,
+      domain: boutique.domain,
+      storeKey: storeType,
+      path: "",
+    }),
   };
 }
 
@@ -118,10 +126,35 @@ export default async function ShopLayout({
 
   const theme = getThemePreset(boutique.themeId);
 
+  const canonicalUrl = buildStoreUrl({ domain: boutique.domain, storeKey: storeType, path: "", locale });
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteName,
+    url: canonicalUrl,
+    ...(logoUrl ? { logo: logoUrl } : {}),
+    ...(socialLinks.length > 0 ? { sameAs: socialLinks.map((link) => link.href) } : {}),
+  };
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName,
+    url: canonicalUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${canonicalUrl}/products?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <FavoritesProvider storeType={storeType}>
       <CartProvider storeType={storeType}>
         <CheckoutDrawerProvider>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={jsonLdScriptProps([organizationJsonLd, websiteJsonLd])}
+          />
           {boutique.themeId !== DEFAULT_THEME_ID && (
             <style>{`
               .shop-theme { --primary: ${theme.light.primary}; --primary-foreground: ${theme.light.primaryForeground}; --ring: ${theme.light.ring}; }

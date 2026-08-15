@@ -28,10 +28,11 @@ export async function generateMetadata({
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, locale, boutique] = await Promise.all([
+  const [t, locale, boutique, categories] = await Promise.all([
     getTranslations("shop"),
     getLocale(),
     getPublicBoutiqueSettings(storeType),
+    getAllShopCategories(storeType),
   ]);
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
   const title = `${siteName} — ${t("allProductsTitle")}`;
@@ -39,11 +40,23 @@ export async function generateMetadata({
   const imageUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;
+  const keywords = [
+    ...new Set([siteName, ...categories.map((category) => category.name)]),
+  ];
 
   return {
     title,
     description,
-    ...buildSocialMetadata({ title, description, imageUrl, locale }),
+    keywords,
+    ...buildSocialMetadata({
+      title,
+      description,
+      imageUrl,
+      locale,
+      domain: boutique.domain,
+      storeKey: storeType,
+      path: "/products",
+    }),
   };
 }
 
