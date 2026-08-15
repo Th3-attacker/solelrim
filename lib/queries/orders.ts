@@ -46,6 +46,16 @@ export function getAllOrders(filters: OrderListFilters) {
   });
 }
 
+// Order has no Client relation — checkout is a guest flow, only ever
+// collects name/phone/city — so a client's online order history can only
+// be found by matching phone number, scoped to the same boutique.
+export function getOrdersByPhone(phone: string, productType: string) {
+  return prisma.order.findMany({
+    where: { customerPhone: phone, productType },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export function getOrderById(id: string, productType: string) {
   return prisma.order.findFirst({
     where: { id, productType },

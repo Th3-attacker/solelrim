@@ -19,6 +19,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
   ClipboardList,
+  History,
   LayoutDashboard,
   Package,
   Settings,
@@ -69,7 +70,10 @@ export function AppSidebar({
     },
     {
       label: t("adminSection"),
-      items: [{ href: "/admin/settings", label: t("settings"), icon: Settings }],
+      items: [
+        { href: "/admin/settings", label: t("settings"), icon: Settings },
+        { href: "/admin/audit-log", label: t("auditLog"), icon: History },
+      ],
     },
   ];
 

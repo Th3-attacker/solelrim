@@ -18,3 +18,9 @@ export const orderItemsSchema = z.array(orderItemInputSchema).min(1);
 export const cancelReasonSchema = z.object({
   reason: z.string().min(1),
 });
+
+export const trackOrderSchema = z.object({
+  phone: z.string().regex(/^[234]\d{7}$/, "invalidPhone"),
+  reference: z.string().trim().min(1, "required"),
+  productType: z.string().min(1),
+});

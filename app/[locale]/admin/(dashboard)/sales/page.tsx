@@ -9,6 +9,7 @@ import { getAdminScope } from "@/lib/shop/admin-scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StateMessage } from "@/components/ui/state-message";
+import { ExportCsvButton } from "@/components/ui/export-csv-button";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -28,16 +29,39 @@ export default async function AdminSalesPage() {
     getAllSales(scope),
   ]);
 
+  const csvColumns = [
+    { key: "reference", label: t("reference") },
+    { key: "client", label: t("client") },
+    { key: "total", label: t("total") },
+    { key: "status", label: t("status") },
+    { key: "date", label: t("date") },
+  ];
+  const csvRows = sales.map((sale) => ({
+    reference: sale.reference,
+    client: sale.client?.fullName ?? t("walkInClient"),
+    total: formatPrice(sale.total, tCommon("currency")),
+    status: sale.status === "COMPLETED" ? t("completed") : t("cancelled"),
+    date: format.dateTime(sale.createdAt, { dateStyle: "medium" }),
+  }));
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <Button asChild>
-          <Link href="/admin/sales/new">
-            <Plus className="size-4" />
-            {t("newSale")}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportCsvButton
+            label={tCommon("exportCsv")}
+            filename={`sales-${new Date().toISOString().slice(0, 10)}.csv`}
+            columns={csvColumns}
+            rows={csvRows}
+          />
+          <Button asChild>
+            <Link href="/admin/sales/new">
+              <Plus className="size-4" />
+              {t("newSale")}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {sales.length === 0 ? (

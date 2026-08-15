@@ -35,6 +35,7 @@ import {
   shipOrder,
   deliverOrder,
   cancelOrder,
+  trackOrder,
 } from "@/lib/actions/orders";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -816,4 +817,76 @@ describe("cancelOrder", () => {
       });
     },
   );
+});
+
+describe("trackOrder", () => {
+  it("returns invalid for a malformed phone or a blank reference", async () => {
+    const result = await trackOrder({
+      phone: "not-a-phone",
+      reference: "",
+      productType: "sport",
+    });
+
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("rejects with rateLimited and does no lookup when the caller's IP is over the limit", async () => {
+    headersMock.mockResolvedValue({
+      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9" : null),
+    });
+    prismaMock.rateLimitHit.count.mockResolvedValue(10);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "CMD-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(result).toEqual({ error: "rateLimited" });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("returns notFound when phone and reference don't both match", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "CMD-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(result).toEqual({ error: "notFound" });
+  });
+
+  it("scopes the lookup by phone, reference, and productType together", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      reference: "CMD-20260815-1234",
+      status: "CONFIRMED",
+      total: { toNumber: () => 3600 },
+      createdAt: new Date("2026-08-15T10:00:00Z"),
+    } as never);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "cmd-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(prismaMock.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          customerPhone: "37737353",
+          reference: "CMD-20260815-1234",
+          productType: "sport",
+        },
+      }),
+    );
+    expect(result).toEqual({
+      reference: "CMD-20260815-1234",
+      status: "CONFIRMED",
+      total: 3600,
+      createdAt: new Date("2026-08-15T10:00:00Z"),
+    });
+  });
 });

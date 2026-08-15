@@ -1,15 +1,25 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
-export function getActiveProducts(productType: string, categoryId?: string) {
+export function getActiveProducts(
+  productType: string,
+  categoryId?: string,
+  options?: { excludeId?: string; take?: number },
+) {
   return prisma.product.findMany({
-    where: { isActive: true, productType, ...(categoryId ? { categoryId } : {}) },
+    where: {
+      isActive: true,
+      productType,
+      ...(categoryId ? { categoryId } : {}),
+      ...(options?.excludeId ? { id: { not: options.excludeId } } : {}),
+    },
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
       variants: true,
     },
     orderBy: { createdAt: "desc" },
+    ...(options?.take ? { take: options.take } : {}),
   });
 }
 
@@ -21,7 +31,7 @@ export const getAllShopCategories = cache(function getAllShopCategories(
 ) {
   return prisma.category.findMany({
     where: { OR: [{ productType: null }, { productType }] },
-    orderBy: { name: "asc" },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
 });
 
@@ -46,8 +56,11 @@ export const getActiveProductBySlug = cache(function getActiveProductBySlug(
 // looked up regardless of isActive so an old link to a product that's since
 // been deactivated still redirects to its (now 404-ing) canonical URL
 // instead of a generic not-found with no further context.
-export function getProductSlugById(id: string) {
-  return prisma.product.findUnique({ where: { id }, select: { slug: true } });
+// Scoped by productType — an id from a different boutique 404s like any
+// other unknown product, instead of leaking that product's name/slug by
+// redirecting to it.
+export function getProductSlugById(id: string, productType: string) {
+  return prisma.product.findFirst({ where: { id, productType }, select: { slug: true } });
 }
 
 // Walks the same order as the catalog grid (getActiveProducts) so "next" on

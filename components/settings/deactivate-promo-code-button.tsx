@@ -43,7 +43,7 @@ export function DeactivatePromoCodeButton({ promoCodeId }: { promoCodeId: string
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={pending}>
+        <Button variant="ghost" size="icon" disabled={pending} aria-label={t("deactivate")}>
           <Ban className="size-4" />
         </Button>
       </AlertDialogTrigger>

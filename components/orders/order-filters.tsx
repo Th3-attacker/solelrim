@@ -17,15 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
 import { MAX_ORDER_DATE_RANGE_DAYS } from "@/lib/orders/filters";
-
-const STATUS_LABEL_KEY: Record<OrderStatus, string> = {
-  PENDING: "pending",
-  CONFIRMED: "confirmed",
-  SHIPPING: "shipping",
-  DELIVERED: "delivered",
-  REJECTED: "rejected",
-  CANCELLED: "cancelled",
-};
+import { ORDER_STATUS_LABEL_KEY as STATUS_LABEL_KEY } from "@/lib/shop/order-status";
 
 const STATUS_DOT_CLASS: Record<OrderStatus, string> = {
   PENDING: "bg-warning",

@@ -51,11 +51,25 @@ export async function findValidPromoCode(
 
 // Rounded to the currency's smallest practical unit (whole units, same as
 // formatPriceNumber) and never lets a fixed-amount code exceed the subtotal.
+// Plain-number core (no Decimal) so it can also run client-side, where a
+// PERCENT discount needs to be re-derived from the live cart subtotal
+// instead of staying frozen at whatever it was when the code was applied.
+export function computeDiscountAmount(
+  discountType: PromoDiscountType,
+  discountValue: number,
+  subtotal: number,
+): number {
+  const raw = discountType === "PERCENT" ? subtotal * (discountValue / 100) : discountValue;
+  return Math.min(Math.round(raw), subtotal);
+}
+
 export function computePromoDiscount(
   promoCode: { discountType: PromoDiscountType; discountValue: Decimal },
   subtotal: number,
 ): number {
-  const value = promoCode.discountValue.toNumber();
-  const raw = promoCode.discountType === "PERCENT" ? subtotal * (value / 100) : value;
-  return Math.min(Math.round(raw), subtotal);
+  return computeDiscountAmount(
+    promoCode.discountType,
+    promoCode.discountValue.toNumber(),
+    subtotal,
+  );
 }

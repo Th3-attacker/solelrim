@@ -3,10 +3,12 @@ import { getTranslations, getFormatter } from "next-intl/server";
 import { Gift } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getClientById } from "@/lib/queries/clients";
+import { getOrdersByPhone } from "@/lib/queries/orders";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
 import { PromoCodeFormDialog } from "@/components/settings/promo-code-form-dialog";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format/currency";
 import {
@@ -25,9 +27,10 @@ export default async function ClientDetailPage({
 }) {
   const { clientId } = await params;
   const scope = await getAdminScope();
-  const [t, tSales, tCommon, tPromo, format, client] = await Promise.all([
+  const [t, tSales, tOrders, tCommon, tPromo, format, client] = await Promise.all([
     getTranslations("clients"),
     getTranslations("sales"),
+    getTranslations("orders"),
     getTranslations("common"),
     getTranslations("promoCodes"),
     getFormatter(),
@@ -37,6 +40,10 @@ export default async function ClientDetailPage({
   if (!client) {
     notFound();
   }
+
+  // Only ever looked up once we know the client (need their phone), so this
+  // can't run in the same Promise.all above.
+  const onlineOrders = client.phone ? await getOrdersByPhone(client.phone, scope) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,6 +104,47 @@ export default async function ClientDetailPage({
                     {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
                   </TableCell>
                   <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-sm font-medium">{t("onlineOrders")}</h2>
+        {!client.phone ? (
+          <p className="text-sm text-muted-foreground">{t("onlineOrdersNoPhone")}</p>
+        ) : onlineOrders.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{tOrders("noOrders")}</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{tOrders("reference")}</TableHead>
+                <TableHead>{tOrders("date")}</TableHead>
+                <TableHead>{tOrders("total")}</TableHead>
+                <TableHead>{tOrders("status")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {onlineOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {order.reference}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {format.dateTime(order.createdAt, { dateStyle: "medium" })}
+                  </TableCell>
+                  <TableCell>{formatPrice(order.total, tCommon("currency"))}</TableCell>
+                  <TableCell>
+                    <OrderStatusBadge status={order.status} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

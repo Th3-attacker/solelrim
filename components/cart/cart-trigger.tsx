@@ -45,6 +45,10 @@ export function CartTrigger() {
       storeType,
       items.map((i) => i.variantId),
     );
+    // null means the check didn't happen (rate-limited or invalid input) —
+    // leave the cart as-is rather than let an absent-from-the-map default
+    // read as "everything just sold out".
+    if (!stockByVariantId) return;
     const changed = items.some(
       (i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock,
     );
@@ -104,7 +108,7 @@ export function CartTrigger() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-6"
+                        aria-label={t("decreaseQuantity")}
                         onClick={() =>
                           updateQuantity(line.variantId, line.quantity - 1)
                         }
@@ -118,7 +122,7 @@ export function CartTrigger() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-6"
+                        aria-label={t("increaseQuantity")}
                         disabled={line.quantity >= line.stock}
                         onClick={() =>
                           updateQuantity(line.variantId, line.quantity + 1)
@@ -136,7 +140,7 @@ export function CartTrigger() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="size-6"
+                      aria-label={t("remove")}
                       onClick={() => removeItem(line.variantId)}
                     >
                       <Trash2 className="size-3" />
