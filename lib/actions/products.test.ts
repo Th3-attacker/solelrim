@@ -133,8 +133,27 @@ describe("updateProduct", () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
+  it("returns invalid for a category outside the admin's boutique", async () => {
+    prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.category.findFirst.mockResolvedValue(null);
+
+    const result = await updateProduct("product-1", productInput());
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.category.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: "category-1",
+          OR: [{ productType: null }, { productType: "cosmetique" }],
+        },
+      }),
+    );
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
   it("blocks removing a variant that has a linked sale or order", async () => {
     prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.category.findFirst.mockResolvedValue({ id: "category-1" } as never);
     prismaMock.productVariant.findMany.mockResolvedValue([
       { id: "variant-1" },
       { id: "variant-2" },
@@ -158,6 +177,7 @@ describe("updateProduct", () => {
 
   it("allows removing a variant with no sale/order history", async () => {
     prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.category.findFirst.mockResolvedValue({ id: "category-1" } as never);
     prismaMock.productVariant.findMany.mockResolvedValue([
       { id: "variant-1" },
       { id: "variant-2" },
@@ -174,6 +194,30 @@ describe("updateProduct", () => {
     expect(result.productId).toBe("product-1");
     expect(prismaMock.productVariant.deleteMany).toHaveBeenCalledWith({
       where: { id: { in: ["variant-2"] } },
+    });
+  });
+
+  it("untags product images whose color no longer matches any submitted variant", async () => {
+    prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.category.findFirst.mockResolvedValue({ id: "category-1" } as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([
+      { id: "variant-1" },
+    ] as never);
+    prismaMock.$transaction.mockImplementation(async (fn) =>
+      (fn as (tx: typeof prismaMock) => unknown)(prismaMock),
+    );
+    prismaMock.product.update.mockResolvedValue({ slug: "produit" } as never);
+
+    await updateProduct(
+      "product-1",
+      productInput({
+        variants: [{ ...baseVariant, id: "variant-1", color: "Bleu" }],
+      }),
+    );
+
+    expect(prismaMock.productImage.updateMany).toHaveBeenCalledWith({
+      where: { productId: "product-1", color: { not: null, notIn: ["Bleu"] } },
+      data: { color: null },
     });
   });
 });

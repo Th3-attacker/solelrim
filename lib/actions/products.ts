@@ -35,6 +35,19 @@ export async function createProduct(
     return { error: "invalid" };
   }
   const { variants, ...product } = parsed.data;
+
+  // A category is either shared (productType: null) or scoped to one
+  // boutique — same ownership check as promo-codes.ts does for clientId,
+  // stopping an admin from attaching a product to another boutique's
+  // private category by guessing its id.
+  const category = await prisma.category.findFirst({
+    where: { id: product.categoryId, OR: [{ productType: null }, { productType }] },
+    select: { id: true },
+  });
+  if (!category) {
+    return { error: "invalid" };
+  }
+
   const slug = await generateUniqueSlug(product.name);
 
   try {
@@ -81,6 +94,14 @@ export async function updateProduct(
     return { error: "notFound" };
   }
 
+  const category = await prisma.category.findFirst({
+    where: { id: product.categoryId, OR: [{ productType: null }, { productType }] },
+    select: { id: true },
+  });
+  if (!category) {
+    return { error: "invalid" };
+  }
+
   const existing = await prisma.productVariant.findMany({
     where: { productId },
     select: { id: true },
@@ -124,6 +145,17 @@ export async function updateProduct(
           await tx.productVariant.create({ data: { ...data, productId } });
         }
       }
+
+      // Colors are free text on both variants and images, not a shared
+      // model — a color renamed or dropped here would otherwise leave any
+      // photo tagged with the old string invisibly stuck to it, no longer
+      // matching anything in the color picker (admin or storefront). Untag
+      // instead of guessing which new color it should follow.
+      const remainingColors = [...new Set(variants.map((v) => v.color))];
+      await tx.productImage.updateMany({
+        where: { productId, color: { not: null, notIn: remainingColors } },
+        data: { color: null },
+      });
 
       return updated.slug;
     });
