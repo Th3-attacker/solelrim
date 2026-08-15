@@ -157,6 +157,12 @@ model Category {
   productType String?
   storeType   StoreType? @relation(fields: [productType], references: [key])
   products    Product[]
+  // Merchandising order within its own scope — generic (productType: null)
+  // categories only ever reorder among themselves, a boutique's own only
+  // among its own, so moving one never shifts another boutique's or the
+  // shared generic set's positions as a side effect. Ties (everything
+  // starts at the same default) fall back to name until first reordered.
+  position    Int        @default(0)
   createdAt   DateTime   @default(now())
 
   @@index([productType])

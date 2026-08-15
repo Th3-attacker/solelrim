@@ -55,7 +55,7 @@ export function getAllCategories(activeProductType?: string) {
     where: activeProductType
       ? { OR: [{ productType: null }, { productType: activeProductType }] }
       : undefined,
-    orderBy: { name: "asc" },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
 }
 

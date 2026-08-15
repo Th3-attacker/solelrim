@@ -139,7 +139,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending || index === 0}
                 onClick={() => handleMove(wallet.id, "up")}
-                aria-label={t("moveUp")}
+                aria-label={tCommon("moveUp")}
               >
                 <ChevronUp className="size-4" />
               </Button>
@@ -149,7 +149,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending || index === wallets.length - 1}
                 onClick={() => handleMove(wallet.id, "down")}
-                aria-label={t("moveDown")}
+                aria-label={tCommon("moveDown")}
               >
                 <ChevronDown className="size-4" />
               </Button>

@@ -20,6 +20,8 @@
     "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4).",
     "resetFilters": "Reset",
     "exportCsv": "Export CSV",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
     "previous": "Previous",
     "next": "Next",
     "paginationRange": "{from}–{to} of {total}"
@@ -462,8 +464,6 @@
     "seoDescription": "Description",
 
     "walletsSection": "Payment wallets",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
     "addWallet": "Add a wallet",
     "editWallet": "Edit wallet",
     "walletProvider": "Provider",

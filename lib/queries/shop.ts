@@ -31,7 +31,7 @@ export const getAllShopCategories = cache(function getAllShopCategories(
 ) {
   return prisma.category.findMany({
     where: { OR: [{ productType: null }, { productType }] },
-    orderBy: { name: "asc" },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
 });
 

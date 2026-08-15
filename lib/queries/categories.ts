@@ -12,6 +12,6 @@ export function getCategoriesForAdmin(scopeFilter?: string) {
       storeType: true,
       _count: { select: { products: true } },
     },
-    orderBy: { name: "asc" },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
 }
