@@ -103,6 +103,7 @@
     "variants": "Variantes",
     "size": "Taille",
     "color": "Couleur",
+    "noColor": "Sans couleur",
     "sizeCosmetic": "Contenance",
     "colorCosmetic": "Teinte",
     "sku": "Référence (SKU)",

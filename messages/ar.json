@@ -103,6 +103,7 @@
     "variants": "المتغيرات",
     "size": "المقاس",
     "color": "اللون",
+    "noColor": "بدون لون",
     "sizeCosmetic": "الحجم",
     "colorCosmetic": "درجة اللون",
     "sku": "رمز المنتج (SKU)",

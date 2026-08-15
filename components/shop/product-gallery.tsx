@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -9,12 +8,15 @@ type GalleryImage = { id: string; url: string };
 export function ProductGallery({
   images,
   productName,
+  selectedIndex,
+  onSelect,
 }: {
   images: GalleryImage[];
   productName: string;
+  selectedIndex: number;
+  onSelect: (index: number) => void;
 }) {
-  const [selected, setSelected] = useState(0);
-  const current = images[selected];
+  const current = images[selectedIndex];
 
   return (
     <div
@@ -29,12 +31,12 @@ export function ProductGallery({
             <button
               key={image.id}
               type="button"
-              onClick={() => setSelected(index)}
+              onClick={() => onSelect(index)}
               aria-label={`${index + 1}`}
-              aria-current={index === selected}
+              aria-current={index === selectedIndex}
               className={cn(
                 "relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-inset transition-all",
-                index === selected
+                index === selectedIndex
                   ? "ring-2 ring-foreground"
                   : "ring-border hover:ring-foreground/40",
               )}

@@ -103,6 +103,7 @@
     "variants": "Variants",
     "size": "Size",
     "color": "Color",
+    "noColor": "No color",
     "sizeCosmetic": "Volume",
     "colorCosmetic": "Shade",
     "sku": "SKU",
