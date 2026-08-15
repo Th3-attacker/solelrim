@@ -88,6 +88,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 size="icon"
                 disabled={pending || index === 0}
                 onClick={() => handleMove(link.id, "up")}
+                aria-label={t("moveUp")}
               >
                 <ChevronUp className="size-4" />
               </Button>
@@ -97,6 +98,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 size="icon"
                 disabled={pending || index === links.length - 1}
                 onClick={() => handleMove(link.id, "down")}
+                aria-label={t("moveDown")}
               >
                 <ChevronDown className="size-4" />
               </Button>
@@ -106,6 +108,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 size="icon"
                 disabled={pending}
                 onClick={() => handleDelete(link.id)}
+                aria-label={tCommon("delete")}
               >
                 <Trash2 className="size-4" />
               </Button>

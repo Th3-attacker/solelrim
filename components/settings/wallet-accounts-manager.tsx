@@ -129,6 +129,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending}
                 onClick={() => openEdit(wallet)}
+                aria-label={tCommon("edit")}
               >
                 <Pencil className="size-4" />
               </Button>
@@ -138,6 +139,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending || index === 0}
                 onClick={() => handleMove(wallet.id, "up")}
+                aria-label={t("moveUp")}
               >
                 <ChevronUp className="size-4" />
               </Button>
@@ -147,6 +149,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending || index === wallets.length - 1}
                 onClick={() => handleMove(wallet.id, "down")}
+                aria-label={t("moveDown")}
               >
                 <ChevronDown className="size-4" />
               </Button>
@@ -156,6 +159,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 size="icon"
                 disabled={pending}
                 onClick={() => handleDelete(wallet.id)}
+                aria-label={tCommon("delete")}
               >
                 <Trash2 className="size-4" />
               </Button>

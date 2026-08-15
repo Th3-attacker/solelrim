@@ -83,6 +83,7 @@ export function AdminUsersManager({
                 size="icon"
                 disabled={pending}
                 onClick={() => handleDelete(admin.id)}
+                aria-label={tCommon("delete")}
               >
                 <Trash2 className="size-4" />
               </Button>

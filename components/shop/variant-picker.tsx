@@ -131,6 +131,7 @@ export function VariantPicker({
                     key={color}
                     type="button"
                     title={color}
+                    aria-label={color}
                     aria-pressed={selectedColor === color}
                     disabled={!available}
                     onClick={() => onColorChange(color)}

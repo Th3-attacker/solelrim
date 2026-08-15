@@ -214,6 +214,7 @@ export function SaleForm({
                   size="icon"
                   onClick={() => remove(index)}
                   disabled={fields.length <= 1}
+                  aria-label={tCommon("delete")}
                 >
                   <Trash2 className="size-4" />
                 </Button>
