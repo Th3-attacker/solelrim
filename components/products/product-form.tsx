@@ -70,7 +70,11 @@ export function ProductForm({
 
     if (result.error) {
       toast.error(
-        result.error === "duplicateSku" ? t("duplicateSkuError") : tCommon("error"),
+        result.error === "duplicateSku"
+          ? t("duplicateSkuError")
+          : result.error === "variantHasSales"
+            ? t("variantHasSalesError")
+            : tCommon("error"),
       );
       return;
     }

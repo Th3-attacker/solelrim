@@ -120,6 +120,7 @@
     "inactive": "Inactif",
     "duplicateSkuError": "Une variante avec cette référence (SKU) existe déjà.",
     "hasSalesError": "Impossible de supprimer un produit ayant des ventes enregistrées. Désactivez-le plutôt.",
+    "variantHasSalesError": "Impossible de supprimer une variante ayant des ventes ou commandes enregistrées. Mettez son stock à 0 pour la désactiver.",
     "deleteError": "La suppression a échoué.",
     "compareAtPrice": "Prix barré",
     "isFeatured": "Best-seller"

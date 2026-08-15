@@ -18,7 +18,8 @@ vi.mock("next/cache", () => ({
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deleteProduct, updateProductImageColor } from "@/lib/actions/products";
+import { deleteProduct, updateProduct, updateProductImageColor } from "@/lib/actions/products";
+import type { ProductInput } from "@/lib/validation/product";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -96,6 +97,84 @@ describe("deleteProduct", () => {
       "products/product-1/a.jpg",
       "products/product-1/b.jpg",
     ]);
+  });
+});
+
+const baseVariant = {
+  size: "M",
+  color: "Rouge",
+  sku: "SKU-1",
+  price: null,
+  stock: 5,
+  lowStockThreshold: 5,
+};
+
+function productInput(overrides: Partial<ProductInput> = {}): ProductInput {
+  return {
+    name: "Produit",
+    description: "",
+    basePrice: 100,
+    compareAtPrice: null,
+    isFeatured: false,
+    categoryId: "category-1",
+    isActive: true,
+    variants: [{ ...baseVariant, id: "variant-1" }],
+    ...overrides,
+  };
+}
+
+describe("updateProduct", () => {
+  it("returns notFound for a product outside the admin's boutique", async () => {
+    prismaMock.product.findFirst.mockResolvedValue(null);
+
+    const result = await updateProduct("product-1", productInput());
+
+    expect(result.error).toBe("notFound");
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks removing a variant that has a linked sale or order", async () => {
+    prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([
+      { id: "variant-1" },
+      { id: "variant-2" },
+    ] as never);
+    prismaMock.productVariant.findFirst.mockResolvedValue({ id: "variant-2" } as never);
+
+    // Submitted form only has variant-1 — variant-2 is being dropped.
+    const result = await updateProduct("product-1", productInput());
+
+    expect(result.error).toBe("variantHasSales");
+    expect(prismaMock.productVariant.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: { in: ["variant-2"] },
+          OR: [{ saleItems: { some: {} } }, { orderItems: { some: {} } }],
+        },
+      }),
+    );
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("allows removing a variant with no sale/order history", async () => {
+    prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([
+      { id: "variant-1" },
+      { id: "variant-2" },
+    ] as never);
+    prismaMock.productVariant.findFirst.mockResolvedValue(null);
+    prismaMock.$transaction.mockImplementation(async (fn) =>
+      (fn as (tx: typeof prismaMock) => unknown)(prismaMock),
+    );
+    prismaMock.product.update.mockResolvedValue({ slug: "produit" } as never);
+
+    const result = await updateProduct("product-1", productInput());
+
+    expect(result.error).toBeUndefined();
+    expect(result.productId).toBe("product-1");
+    expect(prismaMock.productVariant.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["variant-2"] } },
+    });
   });
 });
 

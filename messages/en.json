@@ -120,6 +120,7 @@
     "inactive": "Inactive",
     "duplicateSkuError": "A variant with this SKU already exists.",
     "hasSalesError": "Can't delete a product with recorded sales. Deactivate it instead.",
+    "variantHasSalesError": "Can't remove a variant with recorded sales or orders. Set its stock to 0 to disable it instead.",
     "deleteError": "Deletion failed.",
     "compareAtPrice": "Compare-at price",
     "isFeatured": "Best-seller"

@@ -81,20 +81,35 @@ export async function updateProduct(
     return { error: "notFound" };
   }
 
+  const existing = await prisma.productVariant.findMany({
+    where: { productId },
+    select: { id: true },
+  });
+  const existingIds = new Set(existing.map((v) => v.id));
+  const submittedIds = new Set(variants.filter((v) => v.id).map((v) => v.id!));
+  const toDelete = [...existingIds].filter((id) => !submittedIds.has(id));
+
+  if (toDelete.length > 0) {
+    // Dropping a variant from the form would otherwise hit the DB's foreign
+    // key constraint and crash once it has sale/order history — same
+    // "can't erase history" rule deleteProduct already enforces, just at
+    // the variant level instead of the whole product.
+    const referenced = await prisma.productVariant.findFirst({
+      where: {
+        id: { in: toDelete },
+        OR: [{ saleItems: { some: {} } }, { orderItems: { some: {} } }],
+      },
+      select: { id: true },
+    });
+    if (referenced) {
+      return { error: "variantHasSales" };
+    }
+  }
+
   try {
     const slug = await prisma.$transaction(async (tx) => {
       const updated = await tx.product.update({ where: { id: productId }, data: product });
 
-      const existing = await tx.productVariant.findMany({
-        where: { productId },
-        select: { id: true },
-      });
-      const existingIds = new Set(existing.map((v) => v.id));
-      const submittedIds = new Set(
-        variants.filter((v) => v.id).map((v) => v.id!),
-      );
-
-      const toDelete = [...existingIds].filter((id) => !submittedIds.has(id));
       if (toDelete.length > 0) {
         await tx.productVariant.deleteMany({
           where: { id: { in: toDelete } },
