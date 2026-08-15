@@ -309,6 +309,8 @@
     "addToCart": "أضف إلى السلة",
     "addedToCart": "تمت الإضافة إلى السلة.",
     "quantity": "الكمية",
+    "decreaseQuantity": "إنقاص الكمية",
+    "increaseQuantity": "زيادة الكمية",
     "remove": "إزالة",
     "subtotal": "المجموع الفرعي",
     "checkoutButton": "إتمام الطلب",

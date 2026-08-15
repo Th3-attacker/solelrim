@@ -309,6 +309,8 @@
     "addToCart": "Add to cart",
     "addedToCart": "Added to cart.",
     "quantity": "Quantity",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
     "remove": "Remove",
     "subtotal": "Subtotal",
     "checkoutButton": "Checkout",

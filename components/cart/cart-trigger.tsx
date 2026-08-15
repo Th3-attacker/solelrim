@@ -108,7 +108,7 @@ export function CartTrigger() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-6"
+                        aria-label={t("decreaseQuantity")}
                         onClick={() =>
                           updateQuantity(line.variantId, line.quantity - 1)
                         }
@@ -122,7 +122,7 @@ export function CartTrigger() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-6"
+                        aria-label={t("increaseQuantity")}
                         disabled={line.quantity >= line.stock}
                         onClick={() =>
                           updateQuantity(line.variantId, line.quantity + 1)
@@ -140,7 +140,7 @@ export function CartTrigger() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="size-6"
+                      aria-label={t("remove")}
                       onClick={() => removeItem(line.variantId)}
                     >
                       <Trash2 className="size-3" />
