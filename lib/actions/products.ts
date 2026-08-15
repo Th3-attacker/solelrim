@@ -219,6 +219,43 @@ export async function deleteProduct(
   return {};
 }
 
+// Just an updateMany scoped by productType — activating/deactivating
+// never touches sale/order history, so there's nothing to block here the
+// way bulkDeleteProducts has to.
+export async function bulkSetProductsActive(
+  productIds: string[],
+  isActive: boolean,
+): Promise<{ error?: string }> {
+  const { productType } = await requireAdminScope();
+  await prisma.product.updateMany({
+    where: { id: { in: productIds }, productType },
+    data: { isActive },
+  });
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return {};
+}
+
+// Runs deleteProduct per id rather than reimplementing its ownership/
+// sales-history/image-cleanup logic — a mixed selection (some deletable,
+// some not) is expected, not an error: whatever's blocked just gets
+// skipped and counted, the rest still goes through.
+export async function bulkDeleteProducts(
+  productIds: string[],
+): Promise<{ deletedCount: number; skippedCount: number }> {
+  let deletedCount = 0;
+  let skippedCount = 0;
+  for (const id of productIds) {
+    const result = await deleteProduct(id);
+    if (result.error) {
+      skippedCount++;
+    } else {
+      deletedCount++;
+    }
+  }
+  return { deletedCount, skippedCount };
+}
+
 export async function uploadProductImage(
   productId: string,
   formData: FormData,

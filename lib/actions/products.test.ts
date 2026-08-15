@@ -18,7 +18,13 @@ vi.mock("next/cache", () => ({
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deleteProduct, updateProduct, updateProductImageColor } from "@/lib/actions/products";
+import {
+  deleteProduct,
+  updateProduct,
+  updateProductImageColor,
+  bulkSetProductsActive,
+  bulkDeleteProducts,
+} from "@/lib/actions/products";
 import type { ProductInput } from "@/lib/validation/product";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -122,6 +128,41 @@ function productInput(overrides: Partial<ProductInput> = {}): ProductInput {
     ...overrides,
   };
 }
+
+describe("bulkSetProductsActive", () => {
+  it("updates only the admin's own boutique's products among the given ids", async () => {
+    await bulkSetProductsActive(["product-1", "product-2"], false);
+
+    expect(prismaMock.product.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ["product-1", "product-2"] }, productType: "cosmetique" },
+      data: { isActive: false },
+    });
+  });
+});
+
+describe("bulkDeleteProducts", () => {
+  it("deletes what it can and counts what it has to skip", async () => {
+    // product-1: deletable. product-2: blocked (has sales). product-3:
+    // not this admin's boutique at all.
+    prismaMock.product.findFirst.mockImplementation((args) => {
+      const id = (args as { where: { id: string } }).where.id;
+      if (id === "product-3") return Promise.resolve(null) as never;
+      return Promise.resolve({ id }) as never;
+    });
+    prismaMock.productVariant.findFirst.mockImplementation((args) => {
+      const productId = (args as { where: { productId: string } }).where.productId;
+      return Promise.resolve(productId === "product-2" ? { id: "variant-x" } : null) as never;
+    });
+    prismaMock.productImage.findMany.mockResolvedValue([]);
+    prismaMock.product.delete.mockResolvedValue({} as never);
+
+    const result = await bulkDeleteProducts(["product-1", "product-2", "product-3"]);
+
+    expect(result).toEqual({ deletedCount: 1, skippedCount: 2 });
+    expect(prismaMock.product.delete).toHaveBeenCalledTimes(1);
+    expect(prismaMock.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
+  });
+});
 
 describe("updateProduct", () => {
   it("returns notFound for a product outside the admin's boutique", async () => {

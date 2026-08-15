@@ -133,7 +133,16 @@
     "isFeatured": "Best-seller",
     "searchPlaceholder": "Name or SKU...",
     "allCategories": "All categories",
-    "addCategory": "Add category"
+    "addCategory": "Add category",
+    "selectedCount": "{count} selected",
+    "selectAll": "Select all",
+    "selectProduct": "Select {name}",
+    "activateSelected": "Activate",
+    "deactivateSelected": "Deactivate",
+    "deleteSelected": "Delete",
+    "bulkDeleteConfirmTitle": "Delete the selected products?",
+    "bulkDeleteConfirmDescription": "Products with recorded sales or orders will be kept — deactivate them instead.",
+    "bulkDeleteResult": "{deleted} deleted, {skipped} kept (recorded sales)."
   },
   "categories": {
     "title": "Categories",

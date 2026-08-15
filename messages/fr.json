@@ -133,7 +133,16 @@
     "isFeatured": "Best-seller",
     "searchPlaceholder": "Nom ou référence (SKU)...",
     "allCategories": "Toutes les catégories",
-    "addCategory": "Ajouter une catégorie"
+    "addCategory": "Ajouter une catégorie",
+    "selectedCount": "{count} sélectionné(s)",
+    "selectAll": "Tout sélectionner",
+    "selectProduct": "Sélectionner {name}",
+    "activateSelected": "Activer",
+    "deactivateSelected": "Désactiver",
+    "deleteSelected": "Supprimer",
+    "bulkDeleteConfirmTitle": "Supprimer les produits sélectionnés ?",
+    "bulkDeleteConfirmDescription": "Les produits ayant des ventes ou commandes enregistrées seront conservés — désactivez-les plutôt.",
+    "bulkDeleteResult": "{deleted} supprimé(s), {skipped} conservé(s) (ventes enregistrées)."
   },
   "categories": {
     "title": "Catégories",

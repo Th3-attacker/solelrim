@@ -133,7 +133,16 @@
     "isFeatured": "الأكثر مبيعًا",
     "searchPlaceholder": "الاسم أو رمز المنتج...",
     "allCategories": "كل الفئات",
-    "addCategory": "إضافة فئة"
+    "addCategory": "إضافة فئة",
+    "selectedCount": "{count} محدد",
+    "selectAll": "تحديد الكل",
+    "selectProduct": "تحديد {name}",
+    "activateSelected": "تفعيل",
+    "deactivateSelected": "إلغاء التفعيل",
+    "deleteSelected": "حذف",
+    "bulkDeleteConfirmTitle": "حذف المنتجات المحددة؟",
+    "bulkDeleteConfirmDescription": "المنتجات التي لها مبيعات أو طلبات مسجلة ستبقى — قم بإلغاء تفعيلها بدلاً من ذلك.",
+    "bulkDeleteResult": "تم حذف {deleted}، وتم الاحتفاظ بـ {skipped} (مبيعات مسجلة)."
   },
   "categories": {
     "title": "الفئات",
