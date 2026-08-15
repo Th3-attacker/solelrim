@@ -154,6 +154,8 @@
     "address": "Address",
     "notes": "Notes",
     "purchaseHistory": "Purchase history",
+    "onlineOrders": "Online orders",
+    "onlineOrdersNoPhone": "No phone number on file for this client — their online orders can't be matched.",
     "noClients": "No clients yet.",
     "searchPlaceholder": "Name or phone..."
   },

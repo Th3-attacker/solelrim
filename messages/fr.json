@@ -154,6 +154,8 @@
     "address": "Adresse",
     "notes": "Notes",
     "purchaseHistory": "Historique d'achats",
+    "onlineOrders": "Commandes en ligne",
+    "onlineOrdersNoPhone": "Aucun numéro de téléphone enregistré pour ce client — impossible de retrouver ses commandes en ligne.",
     "noClients": "Aucun client pour le moment.",
     "searchPlaceholder": "Nom ou téléphone..."
   },
