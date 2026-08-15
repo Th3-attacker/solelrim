@@ -19,6 +19,7 @@
     "close": "Close",
     "invalidPhone": "Invalid number (8 digits, must start with 2, 3, or 4).",
     "resetFilters": "Reset",
+    "exportCsv": "Export CSV",
     "previous": "Previous",
     "next": "Next",
     "paginationRange": "{from}–{to} of {total}"

@@ -19,6 +19,7 @@
     "close": "إغلاق",
     "invalidPhone": "رقم غير صالح (8 أرقام، يجب أن يبدأ بـ 2 أو 3 أو 4).",
     "resetFilters": "إعادة تعيين",
+    "exportCsv": "تصدير CSV",
     "previous": "السابق",
     "next": "التالي",
     "paginationRange": "{from}–{to} من {total}"
