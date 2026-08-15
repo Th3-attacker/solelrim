@@ -129,7 +129,8 @@
     "compareAtPrice": "السعر قبل الخصم",
     "isFeatured": "الأكثر مبيعًا",
     "searchPlaceholder": "الاسم أو رمز المنتج...",
-    "allCategories": "كل الفئات"
+    "allCategories": "كل الفئات",
+    "addCategory": "إضافة فئة"
   },
   "categories": {
     "title": "الفئات",
@@ -343,6 +344,7 @@
     "discount": "الخصم",
     "total": "الإجمالي",
     "promoCodeInvalidError": "كود خصم غير صالح.",
+    "promoDroppedAtSubmit": "لم يعد كود الخصم صالحًا عند تأكيد الطلب — تم تحديث الإجمالي. يُرجى إعادة إرفاق إثبات الدفع لهذا المبلغ الجديد.",
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
@@ -454,6 +456,8 @@
     "seoDescription": "الوصف",
 
     "walletsSection": "محافظ الدفع",
+    "moveUp": "تحريك للأعلى",
+    "moveDown": "تحريك للأسفل",
     "addWallet": "إضافة محفظة",
     "editWallet": "تعديل المحفظة",
     "walletProvider": "المزود",

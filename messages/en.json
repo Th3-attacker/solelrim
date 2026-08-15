@@ -129,7 +129,8 @@
     "compareAtPrice": "Compare-at price",
     "isFeatured": "Best-seller",
     "searchPlaceholder": "Name or SKU...",
-    "allCategories": "All categories"
+    "allCategories": "All categories",
+    "addCategory": "Add category"
   },
   "categories": {
     "title": "Categories",
@@ -343,6 +344,7 @@
     "discount": "Discount",
     "total": "Total",
     "promoCodeInvalidError": "Invalid promo code.",
+    "promoDroppedAtSubmit": "The promo code was no longer valid when the order was submitted — the total has been updated. Please re-attach your payment proof for this new amount.",
     "promoCodeExpiredError": "This promo code has expired.",
     "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
     "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
@@ -454,6 +456,8 @@
     "seoDescription": "Description",
 
     "walletsSection": "Payment wallets",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
     "addWallet": "Add a wallet",
     "editWallet": "Edit wallet",
     "walletProvider": "Provider",
