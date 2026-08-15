@@ -43,7 +43,8 @@
     "adminSection": "Administration",
     "superadmin": "Super administrateur",
     "boutiqueAdmin": "Administrateur boutique",
-    "promoCodes": "Codes promo"
+    "promoCodes": "Codes promo",
+    "auditLog": "Historique"
   },
   "auth": {
     "login": {
@@ -566,5 +567,21 @@
     "errorTitle": "Une erreur est survenue",
     "errorMessage": "Quelque chose s'est mal passé de notre côté. Réessayez, ou revenez un peu plus tard.",
     "retry": "Réessayer"
+  },
+  "auditLog": {
+    "title": "Historique des actions",
+    "subtitle": "Qui a fait quoi sur les commandes et les produits.",
+    "date": "Date",
+    "admin": "Administrateur",
+    "action": "Action",
+    "target": "Concerné",
+    "noEntries": "Aucune action enregistrée pour le moment.",
+    "actionOrderConfirm": "Commande confirmée",
+    "actionOrderReject": "Commande rejetée",
+    "actionOrderShip": "Commande expédiée",
+    "actionOrderDeliver": "Commande livrée",
+    "actionOrderCancel": "Commande annulée",
+    "actionProductUpdate": "Produit modifié",
+    "actionProductDelete": "Produit supprimé"
   }
 }

@@ -16,6 +16,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { detectImageSignature } from "@/lib/shop/image-signature";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
+import { logAdminAction } from "@/lib/audit";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -237,7 +238,8 @@ export async function submitOrder(
 export async function confirmOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
+  let orderReference = orderId;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -247,6 +249,7 @@ export async function confirmOrder(
       });
       if (!order) throw new Error("notFound");
       if (order.status !== "PENDING") throw new Error("notPending");
+      orderReference = order.reference;
 
       // The old read-then-update wasn't atomic on its own — under READ
       // COMMITTED, two concurrent confirms for the same variant could both
@@ -280,6 +283,13 @@ export async function confirmOrder(
     throw err;
   }
 
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "order.confirm",
+    targetLabel: orderReference,
+  });
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");
@@ -290,7 +300,7 @@ export async function rejectOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
 
   const parsed = cancelReasonSchema.safeParse({ reason });
   if (!parsed.success) {
@@ -309,6 +319,17 @@ export async function rejectOrder(
     return { error: "notPending" };
   }
 
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { reference: true },
+  });
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "order.reject",
+    targetLabel: order?.reference ?? orderId,
+  });
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
@@ -317,7 +338,7 @@ export async function rejectOrder(
 export async function shipOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
 
   const updated = await prisma.order.updateMany({
     where: { id: orderId, status: "CONFIRMED", productType },
@@ -326,6 +347,17 @@ export async function shipOrder(
   if (updated.count === 0) {
     return { error: "invalidTransition" };
   }
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { reference: true },
+  });
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "order.ship",
+    targetLabel: order?.reference ?? orderId,
+  });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
@@ -341,7 +373,8 @@ const BEST_SELLER_COUNT = 5;
 export async function deliverOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
+  let orderReference = orderId;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -359,6 +392,7 @@ export async function deliverOrder(
         where: { id: orderId },
         include: { items: true },
       });
+      orderReference = order.reference;
 
       // Best-sellers are scoped to the delivered order's own boutique —
       // otherwise a delivery in one boutique would reset/override the
@@ -430,6 +464,13 @@ export async function deliverOrder(
     throw err;
   }
 
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "order.deliver",
+    targetLabel: orderReference,
+  });
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/sales");
@@ -441,7 +482,8 @@ export async function cancelOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
+  let orderReference = orderId;
 
   const parsed = cancelReasonSchema.safeParse({ reason });
   if (!parsed.success) {
@@ -458,6 +500,7 @@ export async function cancelOrder(
       if (order.status !== "CONFIRMED" && order.status !== "SHIPPING") {
         throw new Error("invalidTransition");
       }
+      orderReference = order.reference;
 
       // Stock was decremented at confirmation time — give it back since
       // these items are no longer being fulfilled.
@@ -486,6 +529,13 @@ export async function cancelOrder(
     }
     throw err;
   }
+
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "order.cancel",
+    targetLabel: orderReference,
+  });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);

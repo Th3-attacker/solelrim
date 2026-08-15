@@ -43,7 +43,8 @@
     "adminSection": "الإدارة",
     "superadmin": "مدير عام",
     "boutiqueAdmin": "مدير متجر",
-    "promoCodes": "أكواد الخصم"
+    "promoCodes": "أكواد الخصم",
+    "auditLog": "السجل"
   },
   "auth": {
     "login": {
@@ -566,5 +567,21 @@
     "errorTitle": "حدث خطأ ما",
     "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
     "retry": "إعادة المحاولة"
+  },
+  "auditLog": {
+    "title": "سجل الإجراءات",
+    "subtitle": "من فعل ماذا في الطلبات والمنتجات.",
+    "date": "التاريخ",
+    "admin": "المسؤول",
+    "action": "الإجراء",
+    "target": "بخصوص",
+    "noEntries": "لا توجد إجراءات مسجلة بعد.",
+    "actionOrderConfirm": "تم تأكيد الطلب",
+    "actionOrderReject": "تم رفض الطلب",
+    "actionOrderShip": "تم شحن الطلب",
+    "actionOrderDeliver": "تم تسليم الطلب",
+    "actionOrderCancel": "تم إلغاء الطلب",
+    "actionProductUpdate": "تم تعديل المنتج",
+    "actionProductDelete": "تم حذف المنتج"
   }
 }

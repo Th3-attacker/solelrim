@@ -43,7 +43,8 @@
     "adminSection": "Administration",
     "superadmin": "Super admin",
     "boutiqueAdmin": "Boutique admin",
-    "promoCodes": "Promo codes"
+    "promoCodes": "Promo codes",
+    "auditLog": "History"
   },
   "auth": {
     "login": {
@@ -566,5 +567,21 @@
     "errorTitle": "Something went wrong",
     "errorMessage": "Something broke on our end. Try again, or come back a little later.",
     "retry": "Try again"
+  },
+  "auditLog": {
+    "title": "Action history",
+    "subtitle": "Who did what on orders and products.",
+    "date": "Date",
+    "admin": "Admin",
+    "action": "Action",
+    "target": "Concerning",
+    "noEntries": "No recorded actions yet.",
+    "actionOrderConfirm": "Order confirmed",
+    "actionOrderReject": "Order rejected",
+    "actionOrderShip": "Order shipped",
+    "actionOrderDeliver": "Order delivered",
+    "actionOrderCancel": "Order cancelled",
+    "actionProductUpdate": "Product updated",
+    "actionProductDelete": "Product deleted"
   }
 }

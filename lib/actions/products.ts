@@ -8,6 +8,7 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { slugify } from "@/lib/shop/slug";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { detectImageSignature } from "@/lib/shop/image-signature";
+import { logAdminAction } from "@/lib/audit";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -79,7 +80,7 @@ export async function updateProduct(
   productId: string,
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -160,6 +161,13 @@ export async function updateProduct(
       return updated.slug;
     });
 
+    await logAdminAction({
+      adminUserId: admin.id,
+      productType,
+      action: "product.update",
+      targetLabel: product.name,
+    });
+
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
     revalidatePath("/");
@@ -179,11 +187,11 @@ export async function updateProduct(
 export async function deleteProduct(
   productId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { admin, productType } = await requireAdminScope();
 
   const owned = await prisma.product.findFirst({
     where: { id: productId, productType },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (!owned) {
     return { error: "notFound" };
@@ -213,6 +221,13 @@ export async function deleteProduct(
       .from(PRODUCT_IMAGES_BUCKET)
       .remove(images.map((i) => i.storagePath));
   }
+
+  await logAdminAction({
+    adminUserId: admin.id,
+    productType,
+    action: "product.delete",
+    targetLabel: owned.name,
+  });
 
   revalidatePath("/admin/products");
   revalidatePath("/");

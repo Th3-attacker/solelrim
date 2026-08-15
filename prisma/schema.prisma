@@ -142,6 +142,23 @@ model AdminUser {
   @@index([productType])
 }
 
+// Records who did what for the handful of actions a boutique's staff
+// actually dispute later (order status changes, product edits) — not a
+// full action log of everything, that's a much bigger undertaking. No
+// relation to AdminUser: adminEmail is denormalized on purpose, so the
+// trail survives that admin account being deleted later.
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  adminEmail  String
+  action      String
+  targetLabel String
+  productType String
+  createdAt   DateTime @default(now())
+
+  @@index([productType, createdAt])
+}
+
 model Category {
   id          String     @id @default(cuid())
   // Not @unique here: uniqueness is enforced by two partial unique indexes
