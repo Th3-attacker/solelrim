@@ -74,7 +74,7 @@ export function MobileNav({
             </button>
             <div className="flex items-center justify-between rounded-lg ps-4 pe-1.5 py-3 text-sm font-medium transition-colors hover:bg-muted">
               <span>{tLanguage("label")}</span>
-              <LanguageSwitcher />
+              <LanguageSwitcher onSelect={() => setOpen(false)} />
             </div>
             <div className="my-1 border-t" />
             <Link

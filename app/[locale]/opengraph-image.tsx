@@ -1,11 +1,21 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 // Default social-share card, used whenever a page doesn't have its own
 // boutique logo or product photo to show instead (see lib/shop/metadata.ts).
-export default function OpengraphImage() {
+// Lives under [locale] (rather than app root) so it can render the tagline
+// in the visitor's language.
+export default async function OpengraphImage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "dashboard" });
+
   return new ImageResponse(
     (
       <div
@@ -32,7 +42,7 @@ export default function OpengraphImage() {
           SOLAL
         </div>
         <div style={{ fontSize: 32, color: "#a1a1aa" }}>
-          Rapidité. Simplicité.
+          {t("ogTagline")}
         </div>
       </div>
     ),

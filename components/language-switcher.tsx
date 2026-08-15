@@ -12,7 +12,17 @@ import {
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  onSelect,
+}: {
+  // MobileNav renders this inside its own Sheet — that outer Sheet never
+  // heard about the pick (nothing told it to close), so it sat there open
+  // on top of the page that had, in fact, already switched locale
+  // underneath it. Every other row in that same nav closes it on click;
+  // this was the one exception. Optional because the header's standalone
+  // instance has no outer sheet to close.
+  onSelect?: () => void;
+} = {}) {
   const t = useTranslations("language");
   const locale = useLocale();
   const router = useRouter();
@@ -30,7 +40,10 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={nextLocale}
             disabled={nextLocale === locale}
-            onClick={() => router.replace(pathname, { locale: nextLocale })}
+            onClick={() => {
+              router.replace(pathname, { locale: nextLocale });
+              onSelect?.();
+            }}
           >
             {t(nextLocale)}
           </DropdownMenuItem>
