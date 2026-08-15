@@ -181,7 +181,7 @@ export default async function ShopLayout({
                     href={`${basePath}/track-order`}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    {tNav("trackOrderLink")}
+                    {t("trackOrderLink")}
                   </Link>
                 </nav>
                 <div className="flex items-center justify-end gap-1">

@@ -110,7 +110,7 @@ export function MobileNav({
               onClick={() => setOpen(false)}
               className="rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
             >
-              {tNav("trackOrderLink")}
+              {t("trackOrderLink")}
             </Link>
           </nav>
         </SheetContent>

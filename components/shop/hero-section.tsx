@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
+import { PackageSearch } from "lucide-react";
 import Image from "next/image";
 
 type HeroSettings = {
@@ -22,12 +23,16 @@ function HeroFallback({
   subtitle,
   ctaLabel,
   ctaHref,
+  trackOrderLabel,
+  trackOrderHref,
 }: {
   badgeText: string | null;
   title: string;
   subtitle: string;
   ctaLabel: string;
   ctaHref: string;
+  trackOrderLabel: string;
+  trackOrderHref: string;
 }) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-foreground px-6 py-20 text-center sm:py-28">
@@ -53,9 +58,17 @@ function HeroFallback({
         <p className="max-w-md text-paragraph-lg text-background/70 sm:text-paragraph-lg">
           {subtitle}
         </p>
-        <Button asChild size="lg" className="mt-2">
-          <a href={ctaHref}>{ctaLabel}</a>
-        </Button>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+          <Button asChild size="lg">
+            <a href={ctaHref}>{ctaLabel}</a>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
+            <a href={trackOrderHref}>
+              <PackageSearch className="size-4" />
+              {trackOrderLabel}
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -75,6 +88,8 @@ export async function HeroSection({
   const subtitle = settings.heroSubtitle || t("heroSubtitle");
   const ctaLabel = settings.heroCtaLabel || t("heroCta");
   const ctaHref = `${basePath}/products`;
+  const trackOrderLabel = t("trackOrderLink");
+  const trackOrderHref = `${basePath}/track-order`;
 
   if (!settings.heroImagePath) {
     return (
@@ -84,6 +99,8 @@ export async function HeroSection({
         subtitle={subtitle}
         ctaLabel={ctaLabel}
         ctaHref={ctaHref}
+        trackOrderLabel={trackOrderLabel}
+        trackOrderHref={trackOrderHref}
       />
     );
   }
@@ -109,9 +126,17 @@ export async function HeroSection({
         <p className="max-w-sm text-paragraph-lg  text-muted-foreground sm:text-paragraph-xl">
           {subtitle}
         </p>
-        <Button asChild size="lg" className="mt-1">
-          <a href={ctaHref}>{ctaLabel}</a>
-        </Button>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <a href={ctaHref}>{ctaLabel}</a>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <a href={trackOrderHref}>
+              <PackageSearch className="size-4" />
+              {trackOrderLabel}
+            </a>
+          </Button>
+        </div>
       </div>
 
       <div
