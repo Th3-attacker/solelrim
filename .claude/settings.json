@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"next-image: %{http_code}\\\\n\" \"http://localhost:3000/_next/image?url=https%3A%2F%2Fpfuzlqgntqfiyfpctxel.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproduct-images%2Fproducts%2Fcmrt5mg370000roj6cxa5o0bp%2Ff9af421e-b57e-4ced-a64f-1d365cb93915.png&w=3840&q=75\" --max-time 15)",
+      "Bash(curl -s -o /dev/null -w \"product page: %{http_code}\\\\n\" \"http://localhost:3000/fr/sport/products/tshirt-plyester\" --max-time 15)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

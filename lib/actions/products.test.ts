@@ -18,7 +18,7 @@ vi.mock("next/cache", () => ({
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deleteProduct } from "@/lib/actions/products";
+import { deleteProduct, updateProductImageColor } from "@/lib/actions/products";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -96,5 +96,53 @@ describe("deleteProduct", () => {
       "products/product-1/a.jpg",
       "products/product-1/b.jpg",
     ]);
+  });
+});
+
+describe("updateProductImageColor", () => {
+  it("returns notFound for an image outside the admin's boutique", async () => {
+    prismaMock.productImage.findUnique.mockResolvedValue({
+      id: "image-1",
+      productId: "product-1",
+      product: { slug: "other-slug", productType: "sport" },
+    } as never);
+
+    const result = await updateProductImageColor("image-1", "Rouge");
+
+    expect(result.error).toBe("notFound");
+    expect(prismaMock.productImage.update).not.toHaveBeenCalled();
+  });
+
+  it("tags the image with the given color", async () => {
+    prismaMock.productImage.findUnique.mockResolvedValue({
+      id: "image-1",
+      productId: "product-1",
+      product: { slug: "product-1-slug", productType: "cosmetique" },
+    } as never);
+    prismaMock.productImage.update.mockResolvedValue({} as never);
+
+    const result = await updateProductImageColor("image-1", "Rouge");
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.productImage.update).toHaveBeenCalledWith({
+      where: { id: "image-1" },
+      data: { color: "Rouge" },
+    });
+  });
+
+  it("clears the color when passed null", async () => {
+    prismaMock.productImage.findUnique.mockResolvedValue({
+      id: "image-1",
+      productId: "product-1",
+      product: { slug: "product-1-slug", productType: "cosmetique" },
+    } as never);
+    prismaMock.productImage.update.mockResolvedValue({} as never);
+
+    await updateProductImageColor("image-1", null);
+
+    expect(prismaMock.productImage.update).toHaveBeenCalledWith({
+      where: { id: "image-1" },
+      data: { color: null },
+    });
   });
 });

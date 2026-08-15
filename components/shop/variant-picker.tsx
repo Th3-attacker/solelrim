@@ -14,7 +14,7 @@ import { useCart } from "@/components/cart/cart-provider";
 import { cn } from "@/lib/utils";
 import type { ProductType } from "@/lib/shop/product-type";
 
-type PlainVariant = {
+export type PlainVariant = {
   id: string;
   size: string;
   color: string;
@@ -29,12 +29,20 @@ export function VariantPicker({
   imageStoragePath,
   variants,
   productType,
+  selectedSize,
+  selectedColor,
+  onSizeChange,
+  onColorChange,
 }: {
   productId: string;
   productName: string;
   imageStoragePath: string | null;
   variants: PlainVariant[];
   productType: ProductType;
+  selectedSize: string | undefined;
+  selectedColor: string | undefined;
+  onSizeChange: (size: string) => void;
+  onColorChange: (color: string) => void;
 }) {
   const t = useTranslations("products");
   const tCart = useTranslations("cart");
@@ -52,9 +60,6 @@ export function VariantPicker({
     [variants],
   );
 
-  const firstInStock = variants.find((v) => v.stock > 0) ?? variants[0];
-  const [selectedSize, setSelectedSize] = useState(firstInStock?.size);
-  const [selectedColor, setSelectedColor] = useState(firstInStock?.color);
   const [rawQuantity, setQuantity] = useState(1);
 
   const resolvedVariant = variants.find(
@@ -105,7 +110,7 @@ export function VariantPicker({
                 variant={selectedSize === size ? "default" : "outline"}
                 size="sm"
                 disabled={!isSizeAvailable(size)}
-                onClick={() => setSelectedSize(size)}
+                onClick={() => onSizeChange(size)}
               >
                 {size}
               </Button>
@@ -128,7 +133,7 @@ export function VariantPicker({
                     title={color}
                     aria-pressed={selectedColor === color}
                     disabled={!available}
-                    onClick={() => setSelectedColor(color)}
+                    onClick={() => onColorChange(color)}
                     className={cn(
                       "size-6 rounded-full ring-1 ring-offset-2 ring-offset-background transition-all",
                       selectedColor === color

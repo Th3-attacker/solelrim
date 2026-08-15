@@ -63,14 +63,16 @@ export function CheckoutDrawer({ settings }: { settings: Settings }) {
         }
         className={cn(
           "flex flex-col gap-0",
-          side === "bottom" && "rounded-t-2xl transition-all duration-150 ease-out",
-          side === "bottom" && !keyboardOpen && "max-h-[90svh]",
+          // Full-screen on mobile — this is a whole task (fill in details,
+          // pay, confirm), not a quick peek, so it gets the same real
+          // estate as a dedicated page instead of a partial sheet.
+          side === "bottom" && "h-dvh transition-all duration-150 ease-out",
         )}
       >
-        <SheetHeader>
+        <SheetHeader className="shrink-0">
           <SheetTitle>{t("title")}</SheetTitle>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto px-4 pb-6">
+        <div className="flex min-h-0 flex-1 flex-col">
           <CheckoutFlow settings={settings} open={open} onClose={closeCheckout} />
         </div>
         {/* The iOS keyboard is translucent — extend our own background

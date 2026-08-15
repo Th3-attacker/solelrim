@@ -26,6 +26,8 @@ export default async function EditProductPage({
     notFound();
   }
 
+  const productColors = [...new Set(product.variants.map((v) => v.color))];
+
   let categories = await getAllCategories(productType);
   if (!categories.some((category) => category.id === product.categoryId)) {
     // The product's own category may be tagged for the other type (e.g. it
@@ -64,7 +66,11 @@ export default async function EditProductPage({
 
       <div>
         <h2 className="mb-2 text-sm font-medium">{t("images")}</h2>
-        <ProductImageManager productId={product.id} images={product.images} />
+        <ProductImageManager
+          productId={product.id}
+          images={product.images}
+          productColors={productColors}
+        />
       </div>
 
       <ProductForm

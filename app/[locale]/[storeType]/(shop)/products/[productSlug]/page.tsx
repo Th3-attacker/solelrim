@@ -9,15 +9,12 @@ import {
 } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
-import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
-import { isNewProduct, isPromo } from "@/lib/shop/badges";
+import { getVariantPrice } from "@/lib/shop/price";
+import { isNewProduct } from "@/lib/shop/badges";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { VariantPicker } from "@/components/shop/variant-picker";
-import { ProductGallery } from "@/components/shop/product-gallery";
-import { Price } from "@/components/shop/price";
-import { Badge } from "@/components/ui/badge";
+import { ProductDetailView } from "@/components/shop/product-detail-view";
 import { Button } from "@/components/ui/button";
 import { Link, redirect } from "@/i18n/navigation";
 
@@ -58,9 +55,8 @@ export default async function ProductDetailPage({
   params: Promise<{ storeType: string; productSlug: string }>;
 }) {
   const { storeType, productSlug } = await params;
-  const [t, tCommon, basePath] = await Promise.all([
+  const [t, basePath] = await Promise.all([
     getTranslations("shop"),
-    getTranslations("common"),
     getStorefrontBasePath(storeType),
   ]);
   const productType = storeType;
@@ -83,11 +79,19 @@ export default async function ProductDetailPage({
     productType,
   );
 
-  const { min, isRange } = getPriceRange(product.variants, product.basePrice);
-  const promo = isPromo(product.compareAtPrice, min);
   const images = product.images.map((image) => ({
     id: image.id,
     url: getProductImageUrl(image.storagePath),
+    storagePath: image.storagePath,
+    color: image.color,
+  }));
+  const variants = product.variants.map((variant) => ({
+    id: variant.id,
+    size: variant.size,
+    color: variant.color,
+    stock: variant.stock,
+    lowStockThreshold: variant.lowStockThreshold,
+    price: getVariantPrice(variant, product.basePrice),
   }));
 
   return (
@@ -143,62 +147,18 @@ export default async function ProductDetailPage({
         </div>
       </nav>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <ProductGallery images={images} productName={product.name} />
-
-        <div className="flex flex-col gap-2">
-          <h1 className="text-heading-sm">{product.name}</h1>
-
-          {(promo || isNewProduct(product.createdAt) || product.isFeatured) && (
-            <div className="flex flex-wrap gap-1">
-              {promo && (
-                <Badge className="border-0 bg-foreground text-background">
-                  {t("promoBadge")}
-                </Badge>
-              )}
-              {isNewProduct(product.createdAt) && (
-                <Badge variant="outline">{t("newBadge")}</Badge>
-              )}
-              {product.isFeatured && (
-                <Badge variant="outline">{t("bestSellerBadge")}</Badge>
-              )}
-            </div>
-          )}
-
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
-            {isRange && (
-              <span className="text-sm font-normal text-muted-foreground">
-                {t("startingFrom")}
-              </span>
-            )}
-            <Price value={min} currency={tCommon("currency")} size="lg" emphasize={promo} />
-            {promo && product.compareAtPrice && (
-              <Price value={product.compareAtPrice} size="lg" strikethrough />
-            )}
-          </p>
-
-          {product.description && (
-            <p className="text-paragraph-sm text-muted-foreground">{product.description}</p>
-          )}
-
-          <div className="mt-4">
-            <VariantPicker
-              productId={product.id}
-              productName={product.name}
-              imageStoragePath={product.images[0]?.storagePath ?? null}
-              productType={productType}
-              variants={product.variants.map((variant) => ({
-                id: variant.id,
-                size: variant.size,
-                color: variant.color,
-                stock: variant.stock,
-                lowStockThreshold: variant.lowStockThreshold,
-                price: getVariantPrice(variant, product.basePrice),
-              }))}
-            />
-          </div>
-        </div>
-      </div>
+      <ProductDetailView
+        productId={product.id}
+        productName={product.name}
+        productType={productType}
+        description={product.description}
+        basePrice={product.basePrice.toNumber()}
+        compareAtPrice={product.compareAtPrice?.toNumber() ?? null}
+        isNew={isNewProduct(product.createdAt)}
+        isFeatured={product.isFeatured}
+        images={images}
+        variants={variants}
+      />
     </div>
   );
 }

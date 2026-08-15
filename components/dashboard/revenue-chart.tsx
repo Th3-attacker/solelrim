@@ -19,13 +19,6 @@ import {
 } from "@/components/ui/select";
 import { formatPrice } from "@/lib/format/currency";
 
-const chartConfig = {
-  total: {
-    label: "Revenue",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
-
 const RANGE_DAYS: Record<string, number | null> = {
   all: null,
   "90d": 90,
@@ -41,6 +34,10 @@ export function RevenueChart({
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const [range, setRange] = useState<"all" | "90d" | "30d" | "7d">("90d");
+  const revenueLabel = t("revenue");
+  const chartConfig = {
+    total: { label: revenueLabel, color: "var(--chart-1)" },
+  } satisfies ChartConfig;
 
   const filtered = useMemo(() => {
     const days = RANGE_DAYS[range];
@@ -108,9 +105,9 @@ export function RevenueChart({
           <ChartTooltip
             content={
               <ChartTooltipContent
-                formatter={(value, name) => (
+                formatter={(value) => (
                   <div className="flex w-full items-center justify-between gap-4">
-                    <span className="text-muted-foreground">{name}</span>
+                    <span className="text-muted-foreground">{revenueLabel}</span>
                     <span className="font-mono font-medium text-foreground tabular-nums">
                       {formatPrice(Number(value), tCommon("currency"))}
                     </span>

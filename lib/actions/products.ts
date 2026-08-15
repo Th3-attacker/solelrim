@@ -250,3 +250,27 @@ export async function deleteProductImage(
   revalidatePath(`/products/${image.product.slug}`);
   return {};
 }
+
+export async function updateProductImageColor(
+  imageId: string,
+  color: string | null,
+): Promise<{ error?: string }> {
+  const { productType } = await requireAdminScope();
+
+  const image = await prisma.productImage.findUnique({
+    where: { id: imageId },
+    include: { product: { select: { slug: true, productType: true } } },
+  });
+  if (!image || image.product.productType !== productType) {
+    return { error: "notFound" };
+  }
+
+  await prisma.productImage.update({
+    where: { id: imageId },
+    data: { color },
+  });
+
+  revalidatePath(`/admin/products/${image.productId}`);
+  revalidatePath(`/products/${image.product.slug}`);
+  return {};
+}

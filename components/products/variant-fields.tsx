@@ -62,7 +62,7 @@ export function VariantFields({
       </div>
 
       {errors.variants?.root && (
-        <p className="text-sm text-destructive">{errors.variants.root.message}</p>
+        <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
       )}
 
       <div className="flex flex-col gap-3">

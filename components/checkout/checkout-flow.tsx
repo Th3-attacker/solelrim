@@ -10,12 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useCart } from "@/components/cart/cart-provider";
 import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { Wallet, X } from "lucide-react";
+import { Wallet, X, Pencil } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
   type CheckoutCustomerInput,
@@ -28,6 +34,22 @@ type Settings = {
 };
 
 type Step = 1 | 2 | 3 | "success";
+
+function StepDots({ current }: { current: 1 | 2 | 3 }) {
+  return (
+    <div className="flex items-center gap-1.5" aria-hidden>
+      {([1, 2, 3] as const).map((n) => (
+        <span
+          key={n}
+          className={cn(
+            "h-1.5 flex-1 rounded-full transition-colors",
+            n <= current ? "bg-primary" : "bg-muted",
+          )}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function CheckoutFlow({
   settings,
@@ -50,6 +72,7 @@ export function CheckoutFlow({
     null,
   );
   const [file, setFile] = useState<File | null>(null);
+  const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,25 +106,89 @@ export function CheckoutFlow({
       setStep(1);
       setCustomerInfo(null);
       setFile(null);
+      setPaymentDetailsVisible(false);
       setReference(null);
     }
   }
 
+  const storageKey = `solelrim-checkout-${storeType}`;
+  const previousVariantIdsRef = useRef<Set<string>>(new Set());
+
+  // A product disappearing from the cart (removed, or dropped by a stock
+  // sync) means the order the customer reviewed no longer matches what's
+  // in front of them — send them back to step 1 to re-confirm. Their info
+  // stays filled in; only pure growth (new items added, quantities bumped,
+  // nothing removed) keeps the resumed step as-is. A fully emptied cart
+  // additionally drops the saved draft — there's nothing left to resume.
   useEffect(() => {
-    if (open && cart.hydrated && cart.items.length === 0 && step !== "success") {
-      onClose();
+    if (!cart.hydrated) return;
+    const currentIds = new Set(cart.items.map((line) => line.variantId));
+    const hadRemoval = Array.from(previousVariantIdsRef.current).some(
+      (id) => !currentIds.has(id),
+    );
+    previousVariantIdsRef.current = currentIds;
+
+    if (cart.items.length === 0) {
+      localStorage.removeItem(storageKey);
+      if (step !== 1 && step !== "success") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setStep(1);
+      }
+      if (open && step !== "success") onClose();
+      return;
+    }
+
+    if (hadRemoval && step !== 1 && step !== "success") {
+      setStep(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, cart.hydrated, cart.items.length, step]);
+  }, [open, cart.hydrated, cart.items, step, storageKey]);
 
   const {
     register,
     handleSubmit,
+    reset: resetCustomerForm,
     formState: { errors },
   } = useForm<CheckoutCustomerInput>({
     resolver: zodResolver(checkoutCustomerSchema),
     defaultValues: { customerName: "", customerPhone: "", customerCity: "" },
   });
+
+  // Resuming an interrupted checkout: restores step 1's info (and which
+  // step they'd reached) so closing the drawer by accident doesn't mean
+  // retyping name/phone/city. Read in an effect, not a lazy useState
+  // initializer, so this never runs during SSR — same reasoning as
+  // CartProvider's own hydration (which reaches for the same localStorage
+  // -> setState-on-mount shape via a reducer's dispatch instead of a raw
+  // setter, which is why only this one trips the lint heuristic below).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        step: 1 | 2 | 3;
+        customerInfo: CheckoutCustomerInput;
+      };
+      if (!saved.customerInfo) return;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCustomerInfo(saved.customerInfo);
+      resetCustomerForm(saved.customerInfo);
+      setStep(saved.step === 3 ? 3 : saved.step === 1 ? 1 : 2);
+    } catch {
+      // Malformed/foreign value — ignore, checkout just starts at step 1.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
+
+  // Only step 1's data is worth restoring — the payment screenshot is a
+  // File (can't be serialized) and has to be re-picked either way, so
+  // there's nothing to save once past step 2. customerInfo can be set
+  // while step is back at 1 (a cart removal reset it) — that's saved as-is
+  // so a reload right after doesn't resume past the re-confirmation.
+  useEffect(() => {
+    if (!customerInfo || step === "success") return;
+    localStorage.setItem(storageKey, JSON.stringify({ step, customerInfo }));
+  }, [storageKey, customerInfo, step]);
 
   function fieldErrorMessage(message?: string) {
     if (message === "required") return tCommon("requiredField");
@@ -205,6 +292,7 @@ export function CheckoutFlow({
     };
     setReference(result.reference);
     cart.clear();
+    localStorage.removeItem(storageKey);
     setStep("success");
   }
 
@@ -247,212 +335,265 @@ export function CheckoutFlow({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {step === 1 && (
-        <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
-          <h2 className="text-label-xs">{t("step1Title")}</h2>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="customerName">{t("customerName")}</Label>
-            <Input
-              id="customerName"
-              aria-invalid={!!errors.customerName}
-              {...register("customerName")}
-            />
-            {errors.customerName && (
-              <p className="text-sm text-destructive">
-                {fieldErrorMessage(errors.customerName.message)}
-              </p>
-            )}
+    <div className="flex h-full flex-col">
+      <div className="flex flex-col gap-3 px-4 pb-4">
+        <StepDots current={step} />
+        {step > 1 && customerInfo && (
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
+          >
+            <span className="truncate">
+              {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
+              {customerInfo.customerCity}
+            </span>
+            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+              <Pencil className="size-3" />
+              {t("edit")}
+            </span>
+          </button>
+        )}
+        {step > 2 && (
+          <div className="flex items-center justify-between text-sm font-medium">
+            <span>{t("total")}</span>
+            <span>
+              {formatPrice(total, tCommon("currency"))}
+              {appliedPromo && ` · ${appliedPromo.code}`}
+            </span>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
-            <Input
-              id="customerPhone"
-              inputMode="numeric"
-              maxLength={8}
-              aria-invalid={!!errors.customerPhone}
-              {...register("customerPhone")}
-            />
-            {errors.customerPhone && (
-              <p className="text-sm text-destructive">
-                {fieldErrorMessage(errors.customerPhone.message)}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="customerCity">{t("customerCity")}</Label>
-            <Input
-              id="customerCity"
-              aria-invalid={!!errors.customerCity}
-              {...register("customerCity")}
-            />
-            {errors.customerCity && (
-              <p className="text-sm text-destructive">
-                {fieldErrorMessage(errors.customerCity.message)}
-              </p>
-            )}
-          </div>
-          <Button type="submit">{t("next")}</Button>
-        </form>
-      )}
+        )}
+      </div>
 
-      {step === 2 && customerInfo && (
-        <div className="flex flex-col gap-4">
-          <h2 className="text-label-xs">{t("step2Title")}</h2>
-          <div className="flex flex-col gap-2">
-            {cart.items.map((line) => (
-              <div key={line.variantId} className="flex justify-between text-sm">
-                <span>
-                  {line.productName} ({line.size}, {line.color}) x{line.quantity}
-                </span>
-                <span>{formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}</span>
-              </div>
-            ))}
-            <div className="flex justify-between border-t pt-2 text-sm">
-              <span>{tCart("subtotal")}</span>
-              <span>{formatPrice(cart.subtotal, tCommon("currency"))}</span>
-            </div>
-            {appliedPromo && (
-              <div className="flex justify-between text-sm text-primary">
-                <span>
-                  {t("discount")} ({appliedPromo.code})
-                </span>
-                <span>-{formatPrice(discount, tCommon("currency"))}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-sm font-medium">
-              <span>{t("total")}</span>
-              <span>{formatPrice(total, tCommon("currency"))}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="promoCode">{t("promoCode")}</Label>
-            {appliedPromo ? (
-              <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-                <span className="font-mono font-medium">{appliedPromo.code}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleRemovePromoCode}
-                  aria-label={t("removePromoCode")}
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-6">
+        <div
+          key={step}
+          className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-end-4"
+        >
+          {step === 1 && (
+            <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
+              <h2 className="text-label-xs">{t("step1Title")}</h2>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="customerName">{t("customerName")}</Label>
                 <Input
-                  id="promoCode"
-                  value={promoInput}
-                  onChange={(e) => {
-                    setPromoInput(e.target.value);
-                    setPromoError(null);
-                  }}
-                  placeholder={t("promoCodePlaceholder")}
-                  aria-invalid={!!promoError}
-                  className="flex-1"
+                  id="customerName"
+                  aria-invalid={!!errors.customerName}
+                  {...register("customerName")}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  loading={applyingPromo}
-                  disabled={!promoInput.trim()}
-                  onClick={handleApplyPromoCode}
-                >
-                  {t("applyPromoCode")}
-                </Button>
+                {errors.customerName && (
+                  <p className="text-sm text-destructive">
+                    {fieldErrorMessage(errors.customerName.message)}
+                  </p>
+                )}
               </div>
-            )}
-            {promoError && <p className="text-sm text-destructive">{promoError}</p>}
-          </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
+                <Input
+                  id="customerPhone"
+                  inputMode="numeric"
+                  maxLength={8}
+                  aria-invalid={!!errors.customerPhone}
+                  {...register("customerPhone")}
+                />
+                {errors.customerPhone && (
+                  <p className="text-sm text-destructive">
+                    {fieldErrorMessage(errors.customerPhone.message)}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="customerCity">{t("customerCity")}</Label>
+                <Input
+                  id="customerCity"
+                  aria-invalid={!!errors.customerCity}
+                  {...register("customerCity")}
+                />
+                {errors.customerCity && (
+                  <p className="text-sm text-destructive">
+                    {fieldErrorMessage(errors.customerCity.message)}
+                  </p>
+                )}
+              </div>
+              <Button type="submit">{t("next")}</Button>
+            </form>
+          )}
 
-          <div className="text-sm text-muted-foreground">
-            {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
-            {customerInfo.customerCity}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(1)}>
-              {t("back")}
-            </Button>
-            <Button onClick={() => setStep(3)}>{t("next")}</Button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="flex flex-col gap-4">
-          <h2 className="text-label-xs">{t("step3Title")}</h2>
-          <div className="flex flex-col gap-1 text-sm">
-            <h3 className="font-medium">{t("paymentInstructionsTitle")}</h3>
-            {settings.wallets.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 py-1">
-                {settings.wallets.map((wallet, index) => (
-                  <div
-                    key={index}
-                    className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center"
-                  >
-                    {wallet.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={wallet.logoUrl}
-                        alt=""
-                        className="size-8 shrink-0 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Wallet className="size-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex min-w-0 flex-col items-center">
-                      <span className="truncate text-xs font-medium text-muted-foreground">
-                        {wallet.provider}
-                      </span>
-                      <span dir="ltr" className="truncate text-sm font-semibold">
-                        {wallet.number}
-                      </span>
-                    </div>
+          {step === 2 && customerInfo && (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-label-xs">{t("step2Title")}</h2>
+              <div className="flex flex-col gap-2">
+                {cart.items.map((line) => (
+                  <div key={line.variantId} className="flex justify-between text-sm">
+                    <span>
+                      {line.productName} ({line.size}, {line.color}) x{line.quantity}
+                    </span>
+                    <span>{formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}</span>
                   </div>
                 ))}
+                <div className="flex justify-between border-t pt-2 text-sm">
+                  <span>{tCart("subtotal")}</span>
+                  <span>{formatPrice(cart.subtotal, tCommon("currency"))}</span>
+                </div>
+                {appliedPromo && (
+                  <div className="flex justify-between text-sm text-primary">
+                    <span>
+                      {t("discount")} ({appliedPromo.code})
+                    </span>
+                    <span>-{formatPrice(discount, tCommon("currency"))}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-medium">
+                  <span>{t("total")}</span>
+                  <span>{formatPrice(total, tCommon("currency"))}</span>
+                </div>
               </div>
-            )}
-            {settings.paymentInstructions && (
-              <p className="text-muted-foreground">
-                {settings.paymentInstructions}
-              </p>
-            )}
-          </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
-            <Input
-              id="screenshot"
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("uploadScreenshotHint")}
-            </p>
-          </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="promoCode">{t("promoCode")}</Label>
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                    <span className="font-mono font-medium">{appliedPromo.code}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={handleRemovePromoCode}
+                      aria-label={t("removePromoCode")}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      id="promoCode"
+                      value={promoInput}
+                      onChange={(e) => {
+                        setPromoInput(e.target.value);
+                        setPromoError(null);
+                      }}
+                      placeholder={t("promoCodePlaceholder")}
+                      aria-invalid={!!promoError}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      loading={applyingPromo}
+                      disabled={!promoInput.trim()}
+                      onClick={handleApplyPromoCode}
+                    >
+                      {t("applyPromoCode")}
+                    </Button>
+                  </div>
+                )}
+                {promoError && <p className="text-sm text-destructive">{promoError}</p>}
+              </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setStep(2)}>
-              {t("back")}
-            </Button>
-            <Button
-              onClick={handleFinalSubmit}
-              loading={submitting}
-              disabled={!file}
-              className="flex-1"
-            >
-              {t("submitOrder")}
-            </Button>
-          </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep(1)}>
+                  {t("back")}
+                </Button>
+                <Button onClick={() => setStep(3)}>{t("next")}</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-label-xs">{t("step3Title")}</h2>
+              {settings.paymentInstructions && (
+                <p className="text-sm text-muted-foreground">
+                  {settings.paymentInstructions}
+                </p>
+              )}
+
+              {!paymentDetailsVisible ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setStep(2)}>
+                    {t("back")}
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => setPaymentDetailsVisible(true)}
+                  >
+                    {t("next")}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {settings.wallets.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {settings.wallets.map((wallet, index) => (
+                        <Popover key={index}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center transition-colors hover:bg-muted/50"
+                            >
+                              {wallet.logoUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={wallet.logoUrl}
+                                  alt=""
+                                  className="size-8 shrink-0 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                  <Wallet className="size-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex min-w-0 flex-col items-center">
+                                <span className="truncate text-xs font-medium text-muted-foreground">
+                                  {wallet.provider}
+                                </span>
+                                <span dir="ltr" className="truncate text-sm font-semibold">
+                                  {wallet.number}
+                                </span>
+                              </div>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 text-center text-sm">
+                            {t("walletNumberHint", { provider: wallet.provider })}
+                          </PopoverContent>
+                        </Popover>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
+                    <Input
+                      id="screenshot"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("uploadScreenshotHint")}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setStep(2)}>
+                      {t("back")}
+                    </Button>
+                    <Button
+                      onClick={handleFinalSubmit}
+                      loading={submitting}
+                      disabled={!file}
+                      className="flex-1"
+                    >
+                      {t("submitOrder")}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
