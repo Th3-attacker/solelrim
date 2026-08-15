@@ -63,6 +63,9 @@
   },
   "dashboard": {
     "title": "لوحة التحكم",
+    "metaDescription": "سولال — سريع وبسيط.",
+    "ogTagline": "سرعة. بساطة.",
+    "revenue": "الإيرادات",
     "revenueThisMonth": "الإيرادات هذا الشهر",
     "revenueAllTime": "إجمالي الإيرادات",
     "salesAllTimeCount": "{count} مبيعات إجمالاً",

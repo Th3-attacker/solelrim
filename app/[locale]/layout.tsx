@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(getSiteUrl()),
     title: `SOLAL — ${t("title")}`,
-    description: "SOLAL — rapide et simple.",
+    description: t("metaDescription"),
     openGraph: { siteName: "SOLAL", type: "website" },
     twitter: { card: "summary" },
   };

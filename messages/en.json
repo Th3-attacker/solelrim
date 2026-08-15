@@ -63,6 +63,9 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "metaDescription": "SOLAL — fast and simple.",
+    "ogTagline": "Fast. Simple.",
+    "revenue": "Revenue",
     "revenueThisMonth": "Revenue this month",
     "revenueAllTime": "Total revenue",
     "salesAllTimeCount": "{count} sales total",

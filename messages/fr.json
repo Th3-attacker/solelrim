@@ -63,6 +63,9 @@
   },
   "dashboard": {
     "title": "Tableau de bord",
+    "metaDescription": "SOLAL — rapide et simple.",
+    "ogTagline": "Rapidité. Simplicité.",
+    "revenue": "Chiffre d'affaires",
     "revenueThisMonth": "Chiffre d'affaires ce mois-ci",
     "revenueAllTime": "Chiffre d'affaires total",
     "salesAllTimeCount": "{count} ventes au total",
