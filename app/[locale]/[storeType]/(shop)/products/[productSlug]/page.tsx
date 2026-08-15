@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
   if (!product) {
     // Pre-slug links shared as the raw cuid still land here — redirect to
     // the canonical slug URL instead of a dead end.
-    const legacy = await getProductSlugById(productSlug);
+    const legacy = await getProductSlugById(productSlug, productType);
     if (legacy) {
       const locale = await getLocale();
       redirect({ href: `${basePath}/products/${legacy.slug}`, locale });

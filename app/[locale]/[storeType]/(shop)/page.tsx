@@ -70,7 +70,7 @@ export default async function ShopHomePage({
               className="group flex items-center gap-2 text-sm font-semibold tracking-wide uppercase transition-colors hover:text-primary"
             >
               {t("loadMore")}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
             </Link>
           </>
         )}

@@ -56,8 +56,11 @@ export const getActiveProductBySlug = cache(function getActiveProductBySlug(
 // looked up regardless of isActive so an old link to a product that's since
 // been deactivated still redirects to its (now 404-ing) canonical URL
 // instead of a generic not-found with no further context.
-export function getProductSlugById(id: string) {
-  return prisma.product.findUnique({ where: { id }, select: { slug: true } });
+// Scoped by productType — an id from a different boutique 404s like any
+// other unknown product, instead of leaking that product's name/slug by
+// redirecting to it.
+export function getProductSlugById(id: string, productType: string) {
+  return prisma.product.findFirst({ where: { id, productType }, select: { slug: true } });
 }
 
 // Walks the same order as the catalog grid (getActiveProducts) so "next" on

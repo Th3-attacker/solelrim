@@ -122,11 +122,11 @@ export async function HeroSection({
       >
         <div
           aria-hidden
-          className="absolute -top-6 -left-6 size-28 rounded-full bg-primary/15 sm:size-36"
+          className="absolute -top-6 -start-6 size-28 rounded-full bg-primary/15 sm:size-36"
         />
         <div
           aria-hidden
-          className="absolute -right-4 -bottom-8 size-36 rounded-full bg-primary/25 sm:size-44"
+          className="absolute -end-4 -bottom-8 size-36 rounded-full bg-primary/25 sm:size-44"
         />
         <div className="relative size-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-sm ">
           <Image
