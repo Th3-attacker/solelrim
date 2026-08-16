@@ -117,6 +117,10 @@ export async function submitOrder(
     };
   });
 
+  // Fast-fail on an obviously stale cart before spending effort on the
+  // upload — the atomic decrement inside the transaction below is what
+  // actually enforces this against concurrent submissions; this is just a
+  // cheap early exit for the common case.
   const insufficient = orderItems.find(
     (item) => item.variantStock < item.quantity,
   );
@@ -153,12 +157,30 @@ export async function submitOrder(
     return { error: "uploadFailed" };
   }
 
-  const PROMO_CODE_ERRORS = ["notFound", "expired", "usageLimitReached", "notYours"];
+  const PROMO_CODE_ERRORS = ["notFound", "expired", "usageLimitReached", "notYours", "alreadyUsed"];
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const reference = buildOrderReference();
     try {
       const order = await prisma.$transaction(async (tx) => {
+        // Reserve stock now, not at admin confirmation — otherwise several
+        // orders (the same customer placing more than one, or different
+        // customers) can each pass the earlier fast-fail check and all get
+        // a "success" screen for stock that only covers one of them, and
+        // the conflict only surfaces later when an admin tries to confirm
+        // them one by one. The gte guard in the WHERE closes the same
+        // read-then-write race the promo-code increment below already
+        // guards against: whichever request's update lands first wins.
+        for (const item of orderItems) {
+          const updated = await tx.productVariant.updateMany({
+            where: { id: item.variantId, stock: { gte: item.quantity } },
+            data: { stock: { decrement: item.quantity } },
+          });
+          if (updated.count === 0) {
+            throw new Error("insufficientStock");
+          }
+        }
+
         // Re-validated from scratch here, inside the same transaction that
         // increments usedCount — never trusts whatever the checkout preview
         // (previewPromoCode) showed the customer, which could be stale by
@@ -227,6 +249,9 @@ export async function submitOrder(
       if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
         continue;
       }
+      if (err instanceof Error && err.message === "insufficientStock") {
+        return { error: "insufficientStock" };
+      }
       if (err instanceof Error && PROMO_CODE_ERRORS.includes(err.message)) {
         return { error: err.message };
       }
@@ -250,7 +275,37 @@ export type TrackOrderResult =
       status: OrderStatus;
       total: number;
       createdAt: Date;
+      // When the current status was reached — createdAt for PENDING,
+      // otherwise the matching *At column. Lets the UI say "no movement
+      // in N days" instead of just "ordered N days ago", which would
+      // misfire on an order that's already progressing normally.
+      statusSince: Date;
     };
+
+function getStatusSince(order: {
+  status: OrderStatus;
+  createdAt: Date;
+  confirmedAt: Date | null;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  rejectedAt: Date | null;
+  cancelledAt: Date | null;
+}): Date {
+  switch (order.status) {
+    case "CONFIRMED":
+      return order.confirmedAt ?? order.createdAt;
+    case "SHIPPING":
+      return order.shippedAt ?? order.createdAt;
+    case "DELIVERED":
+      return order.deliveredAt ?? order.createdAt;
+    case "REJECTED":
+      return order.rejectedAt ?? order.createdAt;
+    case "CANCELLED":
+      return order.cancelledAt ?? order.createdAt;
+    default:
+      return order.createdAt;
+  }
+}
 
 export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const ip = await getClientIp();
@@ -270,7 +325,17 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
       reference: parsed.data.reference.toUpperCase(),
       productType: parsed.data.productType,
     },
-    select: { reference: true, status: true, total: true, createdAt: true },
+    select: {
+      reference: true,
+      status: true,
+      total: true,
+      createdAt: true,
+      confirmedAt: true,
+      shippedAt: true,
+      deliveredAt: true,
+      rejectedAt: true,
+      cancelledAt: true,
+    },
   });
   if (!order) {
     return { error: "notFound" };
@@ -281,6 +346,7 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
     status: order.status,
     total: order.total.toNumber(),
     createdAt: order.createdAt,
+    statusSince: getStatusSince(order),
   };
 }
 
@@ -294,29 +360,13 @@ export async function confirmOrder(
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.findFirst({
         where: { id: orderId, productType },
-        include: { items: true },
       });
       if (!order) throw new Error("notFound");
       if (order.status !== "PENDING") throw new Error("notPending");
       orderReference = order.reference;
 
-      // The old read-then-update wasn't atomic on its own — under READ
-      // COMMITTED, two concurrent confirms for the same variant could both
-      // pass a separate stock check before either commits, driving stock
-      // negative. Re-asserting stock >= quantity in the UPDATE's WHERE
-      // closes that gap, same guard as usedCount above for promo codes:
-      // whichever update lands first wins, the other gets count === 0 and
-      // fails cleanly instead of overselling.
-      for (const item of order.items) {
-        const updated = await tx.productVariant.updateMany({
-          where: { id: item.variantId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (updated.count === 0) {
-          throw new Error("insufficientStock");
-        }
-      }
-
+      // Stock is reserved at submitOrder time now, not here — confirming
+      // just moves the order forward, nothing left to decrement.
       await tx.order.update({
         where: { id: orderId },
         data: { status: "CONFIRMED", confirmedAt: new Date() },
@@ -325,7 +375,7 @@ export async function confirmOrder(
   } catch (err) {
     if (
       err instanceof Error &&
-      ["notFound", "notPending", "insufficientStock"].includes(err.message)
+      ["notFound", "notPending"].includes(err.message)
     ) {
       return { error: err.message };
     }
@@ -350,37 +400,66 @@ export async function rejectOrder(
   reason: string,
 ): Promise<{ error?: string }> {
   const { admin, productType } = await requireAdminScope();
+  let orderReference = orderId;
 
   const parsed = cancelReasonSchema.safeParse({ reason });
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
-  const updated = await prisma.order.updateMany({
-    where: { id: orderId, status: "PENDING", productType },
-    data: {
-      status: "REJECTED",
-      rejectedAt: new Date(),
-      rejectReason: parsed.data.reason,
-    },
-  });
-  if (updated.count === 0) {
-    return { error: "notPending" };
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findFirst({
+        where: { id: orderId, productType },
+        include: { items: true },
+      });
+      if (!order) throw new Error("notFound");
+      if (order.status !== "PENDING") throw new Error("notPending");
+      orderReference = order.reference;
+
+      // Give back what submitOrder reserved — these items were never
+      // fulfilled, and the customer's promo redemption (if any) shouldn't
+      // count against them since findValidPromoCode's one-use-per-phone
+      // check excludes rejected orders precisely so they can try again.
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+      if (order.promoCodeId) {
+        await tx.promoCode.update({
+          where: { id: order.promoCodeId },
+          data: { usedCount: { decrement: 1 } },
+        });
+      }
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: "REJECTED",
+          rejectedAt: new Date(),
+          rejectReason: parsed.data.reason,
+        },
+      });
+    });
+  } catch (err) {
+    if (err instanceof Error && ["notFound", "notPending"].includes(err.message)) {
+      return { error: err.message };
+    }
+    throw err;
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: { reference: true },
-  });
   await logAdminAction({
     adminUserId: admin.id,
     productType,
     action: "order.reject",
-    targetLabel: order?.reference ?? orderId,
+    targetLabel: orderReference,
   });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/");
   return {};
 }
 
@@ -551,12 +630,20 @@ export async function cancelOrder(
       }
       orderReference = order.reference;
 
-      // Stock was decremented at confirmation time — give it back since
-      // these items are no longer being fulfilled.
+      // Stock was reserved at submission — give it back since these items
+      // are no longer being fulfilled. Same for the promo redemption, if
+      // any: it never actually benefited the customer, so it shouldn't
+      // block them from using the code again later.
       for (const item of order.items) {
         await tx.productVariant.update({
           where: { id: item.variantId },
           data: { stock: { increment: item.quantity } },
+        });
+      }
+      if (order.promoCodeId) {
+        await tx.promoCode.update({
+          where: { id: order.promoCodeId },
+          data: { usedCount: { decrement: 1 } },
         });
       }
 

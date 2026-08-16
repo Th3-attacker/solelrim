@@ -30,6 +30,13 @@ export async function generateMetadata({
   };
 }
 
-export default function TrackOrderPage() {
-  return <TrackOrderForm />;
+export default async function TrackOrderPage({
+  params,
+}: {
+  params: Promise<{ storeType: string }>;
+}) {
+  const { storeType } = await params;
+  const boutique = await getPublicBoutiqueSettings(storeType);
+
+  return <TrackOrderForm adminWhatsappNumber={boutique.adminWhatsappNumber} />;
 }

@@ -295,7 +295,8 @@
     "returnsTitle": "Retours et remboursements",
     "returnsBody": "Un retour ou un remboursement n'est accepté qu'en cas de produit défectueux, endommagé ou différent de ce qui a été commandé — pas pour un simple changement d'avis. Le problème doit être signalé dans les 48 heures suivant la réception, avec une photo ou une vidéo du produit envoyée via WhatsApp. Une fois le retour validé, le remboursement est effectué sur le même compte mobile money utilisé pour le paiement.",
     "contactTitle": "Contact et réclamations",
-    "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement via WhatsApp."
+    "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement sur",
+    "contactWhatsappLinkLabel": "WhatsApp"
   },
   "about": {
     "metaTitle": "À propos",
@@ -343,6 +344,9 @@
     "back": "Retour",
     "edit": "Modifier",
     "orderSummary": "Résumé",
+    "showPaymentNumbers": "Voir les numéros de paiement",
+    "paymentStepIntroHint": "Vous verrez ensuite les numéros de paiement. Revenez sur cette page une fois le virement effectué pour joindre votre preuve de paiement.",
+    "paymentStepHint": "Effectuez le virement vers l'un des comptes ci-dessous depuis votre application mobile money, puis revenez ici pour joindre une capture d'écran du paiement.",
     "walletNumberHint": "Ce numéro sert uniquement à recevoir votre paiement via {provider}. Ajoutez-le dans l'application {provider} pour envoyer le montant.",
     "uploadScreenshot": "Capture d'écran du paiement",
     "uploadScreenshotHint": "Envoyez une capture montrant que le paiement a bien été effectué.",
@@ -350,6 +354,9 @@
     "submitting": "Envoi en cours...",
     "successTitle": "Commande envoyée !",
     "successMessage": "Votre commande a bien été enregistrée. Nous la validerons après vérification du paiement.",
+    "keepReferenceHint": "Gardez cette référence pour suivre votre commande plus tard.",
+    "copyReference": "Copier la référence",
+    "referenceCopied": "Référence copiée !",
     "sendWhatsApp": "Envoyer la confirmation sur WhatsApp",
     "backToCatalog": "Retour au catalogue",
     "validationError": "Merci de vérifier les informations saisies.",
@@ -366,7 +373,8 @@
     "promoDroppedAtSubmit": "Le code promo n'était plus valide au moment de la validation — le total a été mis à jour. Merci de réattacher votre preuve de paiement pour ce nouveau montant.",
     "promoCodeExpiredError": "Ce code promo a expiré.",
     "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
-    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
+    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone.",
+    "promoCodeAlreadyUsedError": "Ce code promo a déjà été utilisé avec ce numéro de téléphone."
   },
   "orders": {
     "title": "Commandes",
@@ -597,6 +605,8 @@
     "validationError": "Vérifiez le numéro de téléphone et la référence saisis.",
     "resultTotal": "Total",
     "resultDate": "Commandée le",
-    "resultStatus": "Statut"
+    "resultStatus": "Statut",
+    "stuckNotice": "Toujours pas de nouvelles après 24h ? Écrivez-nous sur WhatsApp, on regarde votre commande tout de suite.",
+    "stuckCta": "Écrire sur WhatsApp"
   }
 }
