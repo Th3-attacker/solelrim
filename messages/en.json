@@ -597,6 +597,8 @@
     "validationError": "Check the phone number and reference you entered.",
     "resultTotal": "Total",
     "resultDate": "Ordered on",
-    "resultStatus": "Status"
+    "resultStatus": "Status",
+    "stuckNotice": "No update after 24h? Message us on WhatsApp and we'll check on your order right away.",
+    "stuckCta": "Message us on WhatsApp"
   }
 }

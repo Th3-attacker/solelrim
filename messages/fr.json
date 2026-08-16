@@ -597,6 +597,8 @@
     "validationError": "Vérifiez le numéro de téléphone et la référence saisis.",
     "resultTotal": "Total",
     "resultDate": "Commandée le",
-    "resultStatus": "Statut"
+    "resultStatus": "Statut",
+    "stuckNotice": "Toujours pas de nouvelles après 24h ? Écrivez-nous sur WhatsApp, on regarde votre commande tout de suite.",
+    "stuckCta": "Écrire sur WhatsApp"
   }
 }

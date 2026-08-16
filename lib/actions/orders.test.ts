@@ -865,6 +865,11 @@ describe("trackOrder", () => {
       status: "CONFIRMED",
       total: { toNumber: () => 3600 },
       createdAt: new Date("2026-08-15T10:00:00Z"),
+      confirmedAt: new Date("2026-08-15T12:00:00Z"),
+      shippedAt: null,
+      deliveredAt: null,
+      rejectedAt: null,
+      cancelledAt: null,
     } as never);
 
     const result = await trackOrder({
@@ -887,6 +892,29 @@ describe("trackOrder", () => {
       status: "CONFIRMED",
       total: 3600,
       createdAt: new Date("2026-08-15T10:00:00Z"),
+      statusSince: new Date("2026-08-15T12:00:00Z"),
     });
+  });
+
+  it("uses createdAt as statusSince while an order is still PENDING", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      reference: "CMD-20260815-1234",
+      status: "PENDING",
+      total: { toNumber: () => 3600 },
+      createdAt: new Date("2026-08-15T10:00:00Z"),
+      confirmedAt: null,
+      shippedAt: null,
+      deliveredAt: null,
+      rejectedAt: null,
+      cancelledAt: null,
+    } as never);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "CMD-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(result).toMatchObject({ statusSince: new Date("2026-08-15T10:00:00Z") });
   });
 });

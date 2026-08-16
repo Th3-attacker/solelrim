@@ -250,7 +250,37 @@ export type TrackOrderResult =
       status: OrderStatus;
       total: number;
       createdAt: Date;
+      // When the current status was reached — createdAt for PENDING,
+      // otherwise the matching *At column. Lets the UI say "no movement
+      // in N days" instead of just "ordered N days ago", which would
+      // misfire on an order that's already progressing normally.
+      statusSince: Date;
     };
+
+function getStatusSince(order: {
+  status: OrderStatus;
+  createdAt: Date;
+  confirmedAt: Date | null;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  rejectedAt: Date | null;
+  cancelledAt: Date | null;
+}): Date {
+  switch (order.status) {
+    case "CONFIRMED":
+      return order.confirmedAt ?? order.createdAt;
+    case "SHIPPING":
+      return order.shippedAt ?? order.createdAt;
+    case "DELIVERED":
+      return order.deliveredAt ?? order.createdAt;
+    case "REJECTED":
+      return order.rejectedAt ?? order.createdAt;
+    case "CANCELLED":
+      return order.cancelledAt ?? order.createdAt;
+    default:
+      return order.createdAt;
+  }
+}
 
 export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const ip = await getClientIp();
@@ -270,7 +300,17 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
       reference: parsed.data.reference.toUpperCase(),
       productType: parsed.data.productType,
     },
-    select: { reference: true, status: true, total: true, createdAt: true },
+    select: {
+      reference: true,
+      status: true,
+      total: true,
+      createdAt: true,
+      confirmedAt: true,
+      shippedAt: true,
+      deliveredAt: true,
+      rejectedAt: true,
+      cancelledAt: true,
+    },
   });
   if (!order) {
     return { error: "notFound" };
@@ -281,6 +321,7 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
     status: order.status,
     total: order.total.toNumber(),
     createdAt: order.createdAt,
+    statusSince: getStatusSince(order),
   };
 }
 
