@@ -5,6 +5,14 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Sentry's browser SDK posts error events straight to the DSN's ingest
+// host — CSP's connect-src would silently swallow every one of them
+// otherwise. Derived from the DSN itself (not hardcoded) so a DSN
+// rotation doesn't also require remembering to update this.
+const sentryIngestHost = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).host
+  : null;
+
 // No nonce/strict-dynamic here on purpose: several components set inline
 // `style` (color swatches whose color comes from admin-entered variant
 // data, the checkout sheet's keyboard-avoidance offset) which CSP's
@@ -19,7 +27,7 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https://*.supabase.co;
   font-src 'self';
-  connect-src 'self' https://*.supabase.co;
+  connect-src 'self' https://*.supabase.co${sentryIngestHost ? ` https://${sentryIngestHost}` : ""};
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -73,4 +81,10 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Deliberately not wrapped in withSentryConfig: that plugin's only jobs
+// beyond what instrumentation.ts/instrumentation-client.ts already do are
+// source-map upload (needs a SENTRY_AUTH_TOKEN we don't have yet) and
+// build-time webpack/turbopack tree-shaking — neither is required for
+// error capture to work, and skipping it keeps the build pipeline
+// untouched. Revisit if source-mapped stack traces become worth the setup.
 export default withNextIntl(nextConfig);
