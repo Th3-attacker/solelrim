@@ -91,8 +91,9 @@ export default async function LegalPage({
                   rel="noopener noreferrer"
                   className="font-medium text-foreground underline-offset-4 hover:underline"
                 >
-                  WhatsApp
+                  {t("contactWhatsappLinkLabel")}
                 </a>
+                .
               </>
             )}
           </p>

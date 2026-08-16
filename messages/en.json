@@ -295,7 +295,8 @@
     "returnsTitle": "Returns and refunds",
     "returnsBody": "A return or refund is only accepted for a defective, damaged, or incorrect product — not for a simple change of mind. The issue must be reported within 48 hours of receiving the order, with a photo or video of the item sent via WhatsApp. Once the return is approved, the refund is sent back to the same mobile money account used for payment.",
     "contactTitle": "Contact and complaints",
-    "contactBody": "For any question about an order or a complaint, contact us directly on WhatsApp."
+    "contactBody": "For any question about an order or a complaint, contact us directly on",
+    "contactWhatsappLinkLabel": "WhatsApp"
   },
   "about": {
     "metaTitle": "About",
@@ -343,6 +344,9 @@
     "back": "Back",
     "edit": "Edit",
     "orderSummary": "Summary",
+    "showPaymentNumbers": "See payment numbers",
+    "paymentStepIntroHint": "You'll see the payment numbers next. Come back to this page once you've sent the payment to attach your proof of payment.",
+    "paymentStepHint": "Send the payment to one of the accounts below from your mobile money app, then come back here to attach a screenshot of the payment.",
     "walletNumberHint": "This number is only for receiving your payment via {provider}. Add it in the {provider} app to send the amount.",
     "uploadScreenshot": "Payment screenshot",
     "uploadScreenshotHint": "Upload a screenshot showing the payment was completed.",
@@ -350,6 +354,9 @@
     "submitting": "Submitting...",
     "successTitle": "Order submitted!",
     "successMessage": "Your order has been saved. We'll confirm it once the payment is verified.",
+    "keepReferenceHint": "Keep this reference to track your order later.",
+    "copyReference": "Copy reference",
+    "referenceCopied": "Reference copied!",
     "sendWhatsApp": "Send confirmation on WhatsApp",
     "backToCatalog": "Back to catalog",
     "validationError": "Please check the information entered.",
@@ -366,7 +373,8 @@
     "promoDroppedAtSubmit": "The promo code was no longer valid when the order was submitted — the total has been updated. Please re-attach your payment proof for this new amount.",
     "promoCodeExpiredError": "This promo code has expired.",
     "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
-    "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
+    "promoCodeNotYoursError": "This promo code isn't valid for this phone number.",
+    "promoCodeAlreadyUsedError": "This promo code has already been used with this phone number."
   },
   "orders": {
     "title": "Orders",
@@ -597,6 +605,8 @@
     "validationError": "Check the phone number and reference you entered.",
     "resultTotal": "Total",
     "resultDate": "Ordered on",
-    "resultStatus": "Status"
+    "resultStatus": "Status",
+    "stuckNotice": "No update after 24h? Message us on WhatsApp and we'll check on your order right away.",
+    "stuckCta": "Message us on WhatsApp"
   }
 }

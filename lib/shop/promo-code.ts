@@ -9,7 +9,8 @@ export type PromoCodeValidationError =
   | "notFound"
   | "expired"
   | "usageLimitReached"
-  | "notYours";
+  | "notYours"
+  | "alreadyUsed";
 
 type ValidatedPromoCode = {
   id: string;
@@ -44,6 +45,23 @@ export async function findValidPromoCode(
   // given to. A client with no phone on file can never redeem one.
   if (promoCode.clientId && promoCode.client?.phone !== args.customerPhone) {
     return { error: "notYours" };
+  }
+
+  // One redemption per phone number, even for a general (non-personal) code
+  // shared by every customer — otherwise the same person can place several
+  // separate orders and consume several of a capped code's uses alone.
+  // Orders that were rejected or cancelled never actually got the benefit,
+  // so they don't count against this — the phone is free to try again.
+  const priorRedemption = await db.order.findFirst({
+    where: {
+      promoCodeId: promoCode.id,
+      customerPhone: args.customerPhone,
+      status: { notIn: ["REJECTED", "CANCELLED"] },
+    },
+    select: { id: true },
+  });
+  if (priorRedemption) {
+    return { error: "alreadyUsed" };
   }
 
   return { promoCode };

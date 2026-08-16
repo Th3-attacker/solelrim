@@ -10,7 +10,8 @@ passerelle de paiement.
 
 **Stack** : Next.js 16 (App Router, Turbopack) · TypeScript · Prisma +
 PostgreSQL (Supabase) · Supabase Auth (admin) & Storage (images) ·
-next-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest.
+next-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest · Sentry
+(suivi d'erreurs, optionnel — voir `NEXT_PUBLIC_SENTRY_DSN`).
 
 ## Installation locale
 
