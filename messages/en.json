@@ -295,7 +295,8 @@
     "returnsTitle": "Returns and refunds",
     "returnsBody": "A return or refund is only accepted for a defective, damaged, or incorrect product — not for a simple change of mind. The issue must be reported within 48 hours of receiving the order, with a photo or video of the item sent via WhatsApp. Once the return is approved, the refund is sent back to the same mobile money account used for payment.",
     "contactTitle": "Contact and complaints",
-    "contactBody": "For any question about an order or a complaint, contact us directly on WhatsApp."
+    "contactBody": "For any question about an order or a complaint, contact us directly on",
+    "contactWhatsappLinkLabel": "WhatsApp"
   },
   "about": {
     "metaTitle": "About",

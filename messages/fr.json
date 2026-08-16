@@ -295,7 +295,8 @@
     "returnsTitle": "Retours et remboursements",
     "returnsBody": "Un retour ou un remboursement n'est accepté qu'en cas de produit défectueux, endommagé ou différent de ce qui a été commandé — pas pour un simple changement d'avis. Le problème doit être signalé dans les 48 heures suivant la réception, avec une photo ou une vidéo du produit envoyée via WhatsApp. Une fois le retour validé, le remboursement est effectué sur le même compte mobile money utilisé pour le paiement.",
     "contactTitle": "Contact et réclamations",
-    "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement via WhatsApp."
+    "contactBody": "Pour toute question sur une commande ou une réclamation, contactez-nous directement sur",
+    "contactWhatsappLinkLabel": "WhatsApp"
   },
   "about": {
     "metaTitle": "À propos",
