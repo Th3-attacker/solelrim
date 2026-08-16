@@ -373,7 +373,8 @@
     "promoDroppedAtSubmit": "لم يعد كود الخصم صالحًا عند تأكيد الطلب — تم تحديث الإجمالي. يُرجى إعادة إرفاق إثبات الدفع لهذا المبلغ الجديد.",
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
-    "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم."
+    "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم.",
+    "promoCodeAlreadyUsedError": "تم استخدام كود الخصم هذا من قبل مع هذا الرقم."
   },
   "orders": {
     "title": "الطلبات",

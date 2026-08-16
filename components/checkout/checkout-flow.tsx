@@ -217,6 +217,8 @@ export function CheckoutFlow({
         return t("promoCodeUsageLimitError");
       case "notYours":
         return t("promoCodeNotYoursError");
+      case "alreadyUsed":
+        return t("promoCodeAlreadyUsedError");
       default:
         return t("promoCodeInvalidError");
     }
@@ -283,7 +285,7 @@ export function CheckoutFlow({
     setSubmitting(false);
 
     if (result.error || !result.reference) {
-      const promoErrors = ["notFound", "expired", "usageLimitReached", "notYours"];
+      const promoErrors = ["notFound", "expired", "usageLimitReached", "notYours", "alreadyUsed"];
       if (result.error && promoErrors.includes(result.error)) {
         // The code passed preview but became invalid by the time this
         // submitted (deactivated, limit hit by someone else, etc) — the

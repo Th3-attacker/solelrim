@@ -104,6 +104,10 @@ beforeEach(() => {
   // default, so existing tests don't need to know about it.
   headersMock.mockResolvedValue({ get: () => null });
   prismaMock.rateLimitHit.count.mockResolvedValue(0);
+  // submitOrder reserves stock atomically inside its transaction — default
+  // to "reservation succeeded" so tests that aren't specifically about
+  // running out of stock don't need to know about this.
+  prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
   // The boutique the checkout form claims to be submitted from — validated
   // against this registry, then must line up with baseVariant.product's
   // productType (below) for the happy path.
@@ -201,6 +205,64 @@ describe("submitOrder", () => {
     });
     const result = await submitOrder(form);
     expect(result).toEqual({ error: "insufficientStock" });
+  });
+
+  it("reserves stock atomically at submission and rejects if another request already claimed it", async () => {
+    // The pre-transaction snapshot still shows enough stock (10), but the
+    // guarded UPDATE inside the transaction is what's authoritative — this
+    // is what actually stops two concurrent orders (or the same customer
+    // submitting twice) from both succeeding against stock that only
+    // covers one of them.
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "insufficientStock" });
+    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "variant-1", stock: { gte: 2 } },
+      data: { stock: { decrement: 2 } },
+    });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a promo code the same phone number already redeemed on another order", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-1",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: null,
+      maxUses: 5,
+      usedCount: 1,
+      clientId: null,
+      client: null,
+    } as never);
+    prismaMock.order.findFirst.mockResolvedValue({ id: "earlier-order" } as never);
+
+    const result = await submitOrder(
+      buildOrderForm({ promoCode: "FIRST5", customerPhone: "22345678" }),
+    );
+
+    expect(result).toEqual({ error: "alreadyUsed" });
+    expect(prismaMock.order.findFirst).toHaveBeenCalledWith({
+      where: {
+        promoCodeId: "promo-1",
+        customerPhone: "22345678",
+        status: { notIn: ["REJECTED", "CANCELLED"] },
+      },
+      select: { id: true },
+    });
+    expect(prismaMock.promoCode.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("rejects a missing payment screenshot", async () => {
@@ -580,53 +642,22 @@ describe("confirmOrder", () => {
     prismaMock.order.findFirst.mockResolvedValue({
       id: "order-1",
       status: "CONFIRMED",
-      items: [],
     } as never);
     const result = await confirmOrder("order-1");
     expect(result).toEqual({ error: "notPending" });
   });
 
-  it("returns insufficientStock when a variant no longer has enough stock", async () => {
+  it("marks the order CONFIRMED and revalidates — stock was already reserved at submission", async () => {
     prismaMock.order.findFirst.mockResolvedValue({
       id: "order-1",
+      reference: "CMD-20260729-1234",
       status: "PENDING",
-      items: [{ variantId: "variant-1", quantity: 5 }],
     } as never);
-    // The WHERE guard (stock >= quantity) is what actually enforces this —
-    // count: 0 simulates it matching no row, whether because stock is
-    // really 2 or because a concurrent confirm already claimed it.
-    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
-    const result = await confirmOrder("order-1");
-    expect(result).toEqual({ error: "insufficientStock" });
-    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
-      where: { id: "variant-1", stock: { gte: 5 } },
-      data: { stock: { decrement: 5 } },
-    });
-    expect(prismaMock.order.update).not.toHaveBeenCalled();
-  });
-
-  it("decrements stock per line, marks the order CONFIRMED, and revalidates", async () => {
-    prismaMock.order.findFirst.mockResolvedValue({
-      id: "order-1",
-      status: "PENDING",
-      items: [
-        { variantId: "variant-1", quantity: 3 },
-        { variantId: "variant-2", quantity: 1 },
-      ],
-    } as never);
-    prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
 
     const result = await confirmOrder("order-1");
 
     expect(result).toEqual({});
-    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
-      where: { id: "variant-1", stock: { gte: 3 } },
-      data: { stock: { decrement: 3 } },
-    });
-    expect(prismaMock.productVariant.updateMany).toHaveBeenCalledWith({
-      where: { id: "variant-2", stock: { gte: 1 } },
-      data: { stock: { decrement: 1 } },
-    });
+    expect(prismaMock.productVariant.updateMany).not.toHaveBeenCalled();
     expect(prismaMock.order.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "order-1" },
@@ -646,22 +677,69 @@ describe("rejectOrder", () => {
     expect(prismaMock.order.updateMany).not.toHaveBeenCalled();
   });
 
-  it("returns notPending when no PENDING order matched the update", async () => {
-    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+  it("returns notFound when the order does not exist", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    const result = await rejectOrder("order-1", "Rupture de stock");
+    expect(result).toEqual({ error: "notFound" });
+  });
+
+  it("returns notPending when the order already moved on", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      id: "order-1",
+      status: "CONFIRMED",
+      items: [],
+    } as never);
     const result = await rejectOrder("order-1", "Rupture de stock");
     expect(result).toEqual({ error: "notPending" });
   });
 
-  it("rejects a pending order with the given reason", async () => {
-    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+  it("gives back reserved stock and rejects a pending order with the given reason", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+      status: "PENDING",
+      promoCodeId: null,
+      items: [
+        { variantId: "variant-1", quantity: 2 },
+        { variantId: "variant-2", quantity: 1 },
+      ],
+    } as never);
+
     const result = await rejectOrder("order-1", "Rupture de stock");
+
     expect(result).toEqual({});
-    expect(prismaMock.order.updateMany).toHaveBeenCalledWith({
-      where: { id: "order-1", status: "PENDING", productType: "cosmetique" },
+    expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
+      where: { id: "variant-1" },
+      data: { stock: { increment: 2 } },
+    });
+    expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
+      where: { id: "variant-2" },
+      data: { stock: { increment: 1 } },
+    });
+    expect(prismaMock.promoCode.update).not.toHaveBeenCalled();
+    expect(prismaMock.order.update).toHaveBeenCalledWith({
+      where: { id: "order-1" },
       data: expect.objectContaining({
         status: "REJECTED",
         rejectReason: "Rupture de stock",
       }),
+    });
+  });
+
+  it("frees up the promo code's usedCount so the same phone can try again", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-20260729-1234",
+      status: "PENDING",
+      promoCodeId: "promo-1",
+      items: [{ variantId: "variant-1", quantity: 1 }],
+    } as never);
+
+    await rejectOrder("order-1", "Capture illisible");
+
+    expect(prismaMock.promoCode.update).toHaveBeenCalledWith({
+      where: { id: "promo-1" },
+      data: { usedCount: { decrement: 1 } },
     });
   });
 });
@@ -817,6 +895,22 @@ describe("cancelOrder", () => {
       });
     },
   );
+
+  it("frees up the promo code's usedCount when cancelling an order that used one", async () => {
+    prismaMock.order.findFirst.mockResolvedValue({
+      id: "order-1",
+      status: "CONFIRMED",
+      promoCodeId: "promo-1",
+      items: [{ variantId: "variant-1", quantity: 1 }],
+    } as never);
+
+    await cancelOrder("order-1", "Client injoignable");
+
+    expect(prismaMock.promoCode.update).toHaveBeenCalledWith({
+      where: { id: "promo-1" },
+      data: { usedCount: { decrement: 1 } },
+    });
+  });
 });
 
 describe("trackOrder", () => {

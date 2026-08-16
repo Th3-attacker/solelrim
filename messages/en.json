@@ -373,7 +373,8 @@
     "promoDroppedAtSubmit": "The promo code was no longer valid when the order was submitted — the total has been updated. Please re-attach your payment proof for this new amount.",
     "promoCodeExpiredError": "This promo code has expired.",
     "promoCodeUsageLimitError": "This promo code has reached its usage limit.",
-    "promoCodeNotYoursError": "This promo code isn't valid for this phone number."
+    "promoCodeNotYoursError": "This promo code isn't valid for this phone number.",
+    "promoCodeAlreadyUsedError": "This promo code has already been used with this phone number."
   },
   "orders": {
     "title": "Orders",

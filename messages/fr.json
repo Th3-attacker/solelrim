@@ -373,7 +373,8 @@
     "promoDroppedAtSubmit": "Le code promo n'était plus valide au moment de la validation — le total a été mis à jour. Merci de réattacher votre preuve de paiement pour ce nouveau montant.",
     "promoCodeExpiredError": "Ce code promo a expiré.",
     "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
-    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone."
+    "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone.",
+    "promoCodeAlreadyUsedError": "Ce code promo a déjà été utilisé avec ce numéro de téléphone."
   },
   "orders": {
     "title": "Commandes",
