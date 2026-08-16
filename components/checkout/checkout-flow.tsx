@@ -23,7 +23,7 @@ import { computeDiscountAmount } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { formatPrice } from "@/lib/format/currency";
-import { Wallet, X, Pencil, PackageSearch } from "lucide-react";
+import { Wallet, X, Pencil, PackageSearch, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -80,6 +80,7 @@ export function CheckoutFlow({
   const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [referenceCopied, setReferenceCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [promoInput, setPromoInput] = useState("");
@@ -339,13 +340,39 @@ export function CheckoutFlow({
     window.open(link, "_blank");
   }
 
+  async function handleCopyReference() {
+    if (!reference) return;
+    await navigator.clipboard.writeText(reference);
+    setReferenceCopied(true);
+    toast.success(t("referenceCopied"));
+    setTimeout(() => setReferenceCopied(false), 2000);
+  }
+
   if (step === "success") {
     return (
       <Card className="border-none shadow-none">
         <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
           <h1 className="text-xl font-semibold">{t("successTitle")}</h1>
           <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
-          <p className="font-mono text-sm">{reference}</p>
+          <div className="flex w-full flex-col items-center gap-1.5">
+            <div className="flex items-center gap-1 rounded-md border bg-muted/30 py-1.5 pr-1.5 pl-3">
+              <span className="font-mono text-sm">{reference}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleCopyReference}
+                aria-label={t("copyReference")}
+              >
+                {referenceCopied ? (
+                  <Check className="size-4 text-success" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">{t("keepReferenceHint")}</p>
+          </div>
           <Button onClick={handleSendWhatsApp} className="w-full">
             {t("sendWhatsApp")}
           </Button>
@@ -538,21 +565,28 @@ export function CheckoutFlow({
               )}
 
               {!paymentDetailsVisible ? (
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setStep(2)}>
-                    {t("back")}
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => setPaymentDetailsVisible(true)}
-                  >
-                    {t("next")}
-                  </Button>
-                </div>
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    {t("paymentStepIntroHint")}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setStep(2)}>
+                      {t("back")}
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={() => setPaymentDetailsVisible(true)}
+                    >
+                      {t("showPaymentNumbers")}
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <>
                   {settings.wallets.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
+                    <>
+                      <p className="text-sm text-muted-foreground">{t("paymentStepHint")}</p>
+                      <div className="grid grid-cols-2 gap-2">
                       {settings.wallets.map((wallet, index) => (
                         <Popover key={index}>
                           <PopoverTrigger asChild>
@@ -587,7 +621,8 @@ export function CheckoutFlow({
                           </PopoverContent>
                         </Popover>
                       ))}
-                    </div>
+                      </div>
+                    </>
                   )}
 
                   <div className="flex flex-col gap-2">
