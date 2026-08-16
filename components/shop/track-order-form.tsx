@@ -41,6 +41,10 @@ function getStuckWhatsAppHref(
   ) {
     return null;
   }
+  // Pre-filled message body is deliberately hardcoded French, not run
+  // through next-intl — same rationale as lib/shop/whatsapp.ts and
+  // lib/shop/contact.ts: it's addressed to the store's French-speaking
+  // admin regardless of the customer's browsing locale.
   return buildWhatsAppLink(
     adminWhatsappNumber,
     `Bonjour, je n'ai pas de nouvelles de ma commande ${outcome.reference} depuis un moment, pouvez-vous vérifier ?`,
