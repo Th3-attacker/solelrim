@@ -1,7 +1,15 @@
 export type CsvColumn = { key: string; label: string };
 
+// A cell starting with one of these is interpreted as a live formula by
+// Excel/Sheets/LibreOffice on open — customerName (Orders export) is public,
+// unauthenticated checkout input, so this isn't just theoretical.
+const RISKY_LEADING_CHAR = /^[=+\-@\t\r]/;
+
 function escapeCsvCell(value: string | number): string {
-  const str = String(value);
+  let str = String(value);
+  if (RISKY_LEADING_CHAR.test(str)) {
+    str = `'${str}`; // leading quote forces spreadsheet apps to treat it as text
+  }
   return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 

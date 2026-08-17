@@ -61,6 +61,18 @@ function collisionError() {
   });
 }
 
+// Distinct from collisionError() above: same P2002 code, but raised by the
+// promo-phone partial unique index (Order_promoCodeId_customerPhone_active_key)
+// rather than the order reference collision — submitOrder must tell the two
+// apart via meta.target instead of blindly retrying both the same way.
+function promoPhoneRaceError() {
+  return new PrismaClientKnownRequestError("Unique constraint failed", {
+    code: "P2002",
+    clientVersion: "test",
+    meta: { target: ["Order_promoCodeId_customerPhone_active_key"] },
+  });
+}
+
 // Modeled as a BOUTIQUE_ADMIN rather than SUPERADMIN: requireAdminScope()
 // short-circuits straight to admin.productType for this role without ever
 // touching getAdminScope()'s cookie/StoreType lookups, so this is the
@@ -263,6 +275,40 @@ describe("submitOrder", () => {
     });
     expect(prismaMock.promoCode.updateMany).not.toHaveBeenCalled();
     expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects with alreadyUsed when a concurrent submission wins the promo-phone race", async () => {
+    // Both requests' priorRedemption read passes (findValidPromoCode has no
+    // atomic guard of its own — the partial unique index on Order is what
+    // closes the race) but the second Order.create hits the DB constraint.
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.promoCode.findUnique.mockResolvedValue({
+      id: "promo-1",
+      isActive: true,
+      productType: "cosmetique",
+      discountType: "PERCENT",
+      discountValue: decimal(10),
+      expiresAt: null,
+      maxUses: null,
+      usedCount: 0,
+      clientId: null,
+      client: null,
+    } as never);
+    prismaMock.order.findFirst.mockResolvedValue(null); // priorRedemption: none seen yet
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 1 } as never);
+    prismaMock.order.create.mockRejectedValue(promoPhoneRaceError());
+
+    const result = await submitOrder(
+      buildOrderForm({ promoCode: "WELCOME10", customerPhone: "22345678" }),
+    );
+
+    expect(result).toEqual({ error: "alreadyUsed" });
+    // Unlike a reference collision, this must not retry with a fresh
+    // reference — the same phone+code pair would just collide again.
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
   });
 
   it("rejects a missing payment screenshot", async () => {
@@ -678,26 +724,27 @@ describe("rejectOrder", () => {
   });
 
   it("returns notFound when the order does not exist", async () => {
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.order.findFirst.mockResolvedValue(null);
     const result = await rejectOrder("order-1", "Rupture de stock");
     expect(result).toEqual({ error: "notFound" });
   });
 
   it("returns notPending when the order already moved on", async () => {
-    prismaMock.order.findFirst.mockResolvedValue({
-      id: "order-1",
-      status: "CONFIRMED",
-      items: [],
-    } as never);
+    // The guarded updateMany's WHERE (status: "PENDING") is what actually
+    // rejects this — the order existing with some other status is enough
+    // to distinguish notPending from notFound below.
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.order.findFirst.mockResolvedValue({ id: "order-1" } as never);
     const result = await rejectOrder("order-1", "Rupture de stock");
     expect(result).toEqual({ error: "notPending" });
   });
 
   it("gives back reserved stock and rejects a pending order with the given reason", async () => {
-    prismaMock.order.findFirst.mockResolvedValue({
+    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.order.findUniqueOrThrow.mockResolvedValue({
       id: "order-1",
       reference: "CMD-20260729-1234",
-      status: "PENDING",
       promoCodeId: null,
       items: [
         { variantId: "variant-1", quantity: 2 },
@@ -708,6 +755,16 @@ describe("rejectOrder", () => {
     const result = await rejectOrder("order-1", "Rupture de stock");
 
     expect(result).toEqual({});
+    // The status flip is the concurrency gate — it must happen via a
+    // guarded updateMany, not a plain read-then-write, so two concurrent
+    // rejects of the same order can't both pass.
+    expect(prismaMock.order.updateMany).toHaveBeenCalledWith({
+      where: { id: "order-1", productType: "cosmetique", status: "PENDING" },
+      data: expect.objectContaining({
+        status: "REJECTED",
+        rejectReason: "Rupture de stock",
+      }),
+    });
     expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
       where: { id: "variant-1" },
       data: { stock: { increment: 2 } },
@@ -717,20 +774,13 @@ describe("rejectOrder", () => {
       data: { stock: { increment: 1 } },
     });
     expect(prismaMock.promoCode.update).not.toHaveBeenCalled();
-    expect(prismaMock.order.update).toHaveBeenCalledWith({
-      where: { id: "order-1" },
-      data: expect.objectContaining({
-        status: "REJECTED",
-        rejectReason: "Rupture de stock",
-      }),
-    });
   });
 
   it("frees up the promo code's usedCount so the same phone can try again", async () => {
-    prismaMock.order.findFirst.mockResolvedValue({
+    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.order.findUniqueOrThrow.mockResolvedValue({
       id: "order-1",
       reference: "CMD-20260729-1234",
-      status: "PENDING",
       promoCodeId: "promo-1",
       items: [{ variantId: "variant-1", quantity: 1 }],
     } as never);
@@ -845,30 +895,29 @@ describe("cancelOrder", () => {
   });
 
   it("returns notFound when the order does not exist", async () => {
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.order.findFirst.mockResolvedValue(null);
     const result = await cancelOrder("order-1", "Client injoignable");
     expect(result).toEqual({ error: "notFound" });
   });
 
-  it.each(["PENDING", "DELIVERED", "REJECTED", "CANCELLED"] as const)(
-    "returns invalidTransition from %s",
-    async (status) => {
-      prismaMock.order.findFirst.mockResolvedValue({
-        id: "order-1",
-        status,
-        items: [],
-      } as never);
-      const result = await cancelOrder("order-1", "Client injoignable");
-      expect(result).toEqual({ error: "invalidTransition" });
-    },
-  );
+  it("returns invalidTransition when the order exists but isn't CONFIRMED or SHIPPING", async () => {
+    // The guarded updateMany's WHERE (status: { in: [CONFIRMED, SHIPPING] })
+    // is what actually rejects this regardless of the order's real status —
+    // existing at all is enough to distinguish this from notFound above.
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.order.findFirst.mockResolvedValue({ id: "order-1" } as never);
+    const result = await cancelOrder("order-1", "Client injoignable");
+    expect(result).toEqual({ error: "invalidTransition" });
+  });
 
   it.each(["CONFIRMED", "SHIPPING"] as const)(
     "restocks every line and cancels from %s",
-    async (status) => {
-      prismaMock.order.findFirst.mockResolvedValue({
+    async (_status) => {
+      prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+      prismaMock.order.findUniqueOrThrow.mockResolvedValue({
         id: "order-1",
-        status,
+        promoCodeId: null,
         items: [
           { variantId: "variant-1", quantity: 2 },
           { variantId: "variant-2", quantity: 1 },
@@ -878,6 +927,19 @@ describe("cancelOrder", () => {
       const result = await cancelOrder("order-1", "Client injoignable");
 
       expect(result).toEqual({});
+      // The status flip is the concurrency gate — guarded updateMany, not a
+      // plain read-then-write, so two concurrent cancels can't both refund.
+      expect(prismaMock.order.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: "order-1",
+          productType: "cosmetique",
+          status: { in: ["CONFIRMED", "SHIPPING"] },
+        },
+        data: expect.objectContaining({
+          status: "CANCELLED",
+          cancelReason: "Client injoignable",
+        }),
+      });
       expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
         where: { id: "variant-1" },
         data: { stock: { increment: 2 } },
@@ -886,20 +948,13 @@ describe("cancelOrder", () => {
         where: { id: "variant-2" },
         data: { stock: { increment: 1 } },
       });
-      expect(prismaMock.order.update).toHaveBeenCalledWith({
-        where: { id: "order-1" },
-        data: expect.objectContaining({
-          status: "CANCELLED",
-          cancelReason: "Client injoignable",
-        }),
-      });
     },
   );
 
   it("frees up the promo code's usedCount when cancelling an order that used one", async () => {
-    prismaMock.order.findFirst.mockResolvedValue({
+    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.order.findUniqueOrThrow.mockResolvedValue({
       id: "order-1",
-      status: "CONFIRMED",
       promoCodeId: "promo-1",
       items: [{ variantId: "variant-1", quantity: 1 }],
     } as never);

@@ -24,7 +24,9 @@ jobs:
 
       - run: pnpm typecheck
 
-      - run: pnpm test
+      # Report-only (see vitest.config.ts — no `thresholds` configured), so
+      # a low or dropping number is visible in the log but never blocks a PR.
+      - run: pnpm test:coverage
 
   build:
     name: Build

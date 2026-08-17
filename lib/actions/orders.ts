@@ -247,6 +247,17 @@ export async function submitOrder(
       return { reference: order.reference, orderId: order.id };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
+        // Two distinct unique constraints can raise P2002 here: the order
+        // reference (retry with a fresh one) and, since this Order.create,
+        // the promo-phone partial unique index (see migration
+        // 20260817090000_promo_phone_unique_index) — a concurrent
+        // submission for the same phone + code just won that race.
+        const target = Array.isArray(err.meta?.target)
+          ? err.meta.target.join(",")
+          : String(err.meta?.target ?? "");
+        if (target.includes("promoCodeId_customerPhone")) {
+          return { error: "alreadyUsed" };
+        }
         continue;
       }
       if (err instanceof Error && err.message === "insufficientStock") {
@@ -409,12 +420,32 @@ export async function rejectOrder(
 
   try {
     await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({
-        where: { id: orderId, productType },
+      // Atomically transition PENDING -> REJECTED first — this is the
+      // concurrency gate. Two concurrent rejects (a double-click, two
+      // admin tabs) can no longer both pass a status check taken before
+      // either commits: only the one that actually flips the row here
+      // goes on to restitute stock/promo below, so it can never happen
+      // twice for the same order.
+      const updated = await tx.order.updateMany({
+        where: { id: orderId, productType, status: "PENDING" },
+        data: {
+          status: "REJECTED",
+          rejectedAt: new Date(),
+          rejectReason: parsed.data.reason,
+        },
+      });
+      if (updated.count === 0) {
+        const exists = await tx.order.findFirst({
+          where: { id: orderId, productType },
+          select: { id: true },
+        });
+        throw new Error(exists ? "notPending" : "notFound");
+      }
+
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
         include: { items: true },
       });
-      if (!order) throw new Error("notFound");
-      if (order.status !== "PENDING") throw new Error("notPending");
       orderReference = order.reference;
 
       // Give back what submitOrder reserved — these items were never
@@ -433,15 +464,6 @@ export async function rejectOrder(
           data: { usedCount: { decrement: 1 } },
         });
       }
-
-      await tx.order.update({
-        where: { id: orderId },
-        data: {
-          status: "REJECTED",
-          rejectedAt: new Date(),
-          rejectReason: parsed.data.reason,
-        },
-      });
     });
   } catch (err) {
     if (err instanceof Error && ["notFound", "notPending"].includes(err.message)) {
@@ -514,7 +536,7 @@ export async function deliverOrder(
 
       // Delivered online orders otherwise never show up as revenue: the
       // dashboard's stats/best-sellers are computed from Sale, not Order.
-      // Stock was already decremented at confirmOrder, so this only
+      // Stock was already decremented at submitOrder, so this only
       // records the sale — it must never touch stock itself.
       const order = await tx.order.findUniqueOrThrow({
         where: { id: orderId },
@@ -620,14 +642,29 @@ export async function cancelOrder(
 
   try {
     await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({
-        where: { id: orderId, productType },
+      // Atomically transition CONFIRMED/SHIPPING -> CANCELLED first — same
+      // concurrency gate as rejectOrder, so two concurrent cancels of the
+      // same order can't both restitute stock/promo usage.
+      const updated = await tx.order.updateMany({
+        where: { id: orderId, productType, status: { in: ["CONFIRMED", "SHIPPING"] } },
+        data: {
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelReason: parsed.data.reason,
+        },
+      });
+      if (updated.count === 0) {
+        const exists = await tx.order.findFirst({
+          where: { id: orderId, productType },
+          select: { id: true },
+        });
+        throw new Error(exists ? "invalidTransition" : "notFound");
+      }
+
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
         include: { items: true },
       });
-      if (!order) throw new Error("notFound");
-      if (order.status !== "CONFIRMED" && order.status !== "SHIPPING") {
-        throw new Error("invalidTransition");
-      }
       orderReference = order.reference;
 
       // Stock was reserved at submission — give it back since these items
@@ -646,15 +683,6 @@ export async function cancelOrder(
           data: { usedCount: { decrement: 1 } },
         });
       }
-
-      await tx.order.update({
-        where: { id: orderId },
-        data: {
-          status: "CANCELLED",
-          cancelledAt: new Date(),
-          cancelReason: parsed.data.reason,
-        },
-      });
     });
   } catch (err) {
     if (
