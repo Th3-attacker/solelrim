@@ -56,16 +56,20 @@ model StoreType {
   heroCtaLabel        String?
   seoTitle            String?
   seoDescription      String?
-  // Arabic overrides for the handful of fields worth translating (name,
-  // hero copy, SEO) — optional, fall back to the base (French) column above
-  // when null. English reuses the base column too (no separate en field):
-  // only fr/ar diverge, by explicit choice. Everything else on this model
+  // Arabic and English overrides for the handful of fields worth
+  // translating (name, hero copy, SEO) — optional, fall back to the base
+  // (French) column above when null/blank. Everything else on this model
   // (announcement bar, hero badge/CTA, payment info) stays single-language.
   siteNameAr          String?
   heroTitleAr         String?
   heroSubtitleAr      String?
   seoTitleAr          String?
   seoDescriptionAr    String?
+  siteNameEn          String?
+  heroTitleEn         String?
+  heroSubtitleEn      String?
+  seoTitleEn          String?
+  seoDescriptionEn    String?
   // Infrastructure-level, superadmin-only — never editable via
   // updateBoutiqueSettings/requireAdminScope like everything above. domain
   // lets proxy.ts route a custom hostname straight to this boutique with no
