@@ -29,25 +29,23 @@ function resolveLocale(locale: string | null | undefined): SupportedLocale {
     : (routing.defaultLocale as SupportedLocale);
 }
 
-function reasonLabelKey(reason: string): keyof typeof MESSAGE_BUNDLES["fr"]["orders"] | null {
-  switch (reason) {
-    case "invalid_payment":
-      return "reasonInvalidPayment";
-    case "out_of_stock":
-      return "reasonOutOfStock";
-    case "undeliverable_location":
-      return "reasonUndeliverableLocation";
-    default:
-      return null;
-  }
-}
+// Maps each reject-reason preset to its translation key under the "orders"
+// namespace — shared by the admin reject dialog (order-actions.tsx), the
+// order detail page (which redisplays a stored reason), and
+// resolveReasonLabel below. A free-typed ("other") reason has no entry here
+// and is shown/sent as whatever text the admin wrote.
+export const REASON_LABEL_KEY: Record<string, keyof typeof MESSAGE_BUNDLES["fr"]["orders"]> = {
+  invalid_payment: "reasonInvalidPayment",
+  out_of_stock: "reasonOutOfStock",
+  undeliverable_location: "reasonUndeliverableLocation",
+};
 
 // Preset reasons are translated into the customer's locale; free-typed
 // ("other") reasons stay in whatever language the admin wrote them in —
 // there's no translation engine here for arbitrary admin text.
 export function resolveReasonLabel(reason: string, locale: string | null): string {
   const bundle = MESSAGE_BUNDLES[resolveLocale(locale)];
-  const key = reasonLabelKey(reason);
+  const key = REASON_LABEL_KEY[reason];
   return key ? bundle.orders[key] : reason;
 }
 

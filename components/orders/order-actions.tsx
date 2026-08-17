@@ -27,13 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { confirmOrder, rejectOrder } from "@/lib/actions/orders";
-import { REJECT_REASON_PRESETS } from "@/lib/shop/client-messages";
-
-const REASON_LABEL_KEYS: Record<(typeof REJECT_REASON_PRESETS)[number], string> = {
-  invalid_payment: "reasonInvalidPayment",
-  out_of_stock: "reasonOutOfStock",
-  undeliverable_location: "reasonUndeliverableLocation",
-};
+import { REASON_LABEL_KEY, REJECT_REASON_PRESETS } from "@/lib/shop/client-messages";
 
 export function OrderActions({ orderId }: { orderId: string }) {
   const t = useTranslations("orders");
@@ -140,7 +134,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
           <SelectContent>
             {REJECT_REASON_PRESETS.map((preset) => (
               <SelectItem key={preset} value={preset}>
-                {t(REASON_LABEL_KEYS[preset])}
+                {t(REASON_LABEL_KEY[preset])}
               </SelectItem>
             ))}
             <SelectItem value="other">{t("reasonOther")}</SelectItem>

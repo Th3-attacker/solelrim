@@ -24,7 +24,12 @@
     "moveDown": "تحريك للأسفل",
     "previous": "السابق",
     "next": "التالي",
-    "paginationRange": "{from}–{to} من {total}"
+    "paginationRange": "{from}–{to} من {total}",
+    "applyFilter": "تطبيق الفلتر",
+    "presetToday": "اليوم",
+    "presetYesterday": "أمس",
+    "presetLast7Days": "آخر 7 أيام",
+    "presetLast15Days": "آخر 15 يومًا"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -44,7 +49,10 @@
     "superadmin": "مدير عام",
     "boutiqueAdmin": "مدير متجر",
     "promoCodes": "أكواد الخصم",
-    "auditLog": "السجل"
+    "auditLog": "السجل",
+    "sidebarTitle": "قائمة التنقل",
+    "sidebarDescription": "يعرض قائمة التنقل للجوال.",
+    "toggleSidebar": "تبديل القائمة"
   },
   "auth": {
     "login": {
@@ -593,7 +601,9 @@
     "actionOrderDeliver": "تم تسليم الطلب",
     "actionOrderCancel": "تم إلغاء الطلب",
     "actionProductUpdate": "تم تعديل المنتج",
-    "actionProductDelete": "تم حذف المنتج"
+    "actionProductDelete": "تم حذف المنتج",
+    "searchPlaceholder": "ابحث عن مسؤول أو عنصر...",
+    "allActions": "كل الإجراءات"
   },
   "trackOrder": {
     "title": "تتبع طلبي",
