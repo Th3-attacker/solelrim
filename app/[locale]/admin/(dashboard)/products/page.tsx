@@ -49,6 +49,11 @@ export default async function AdminProductsPage({
         />
       ) : (
         <ProductsTable
+          // Remounts (and so resets the internal bulk-selection Set) when
+          // the visible list changes via search/filter/pagination —
+          // otherwise a selection can silently keep referencing ids that
+          // are no longer even on screen.
+          key={`${search ?? ""}-${categoryId ?? ""}-${page}`}
           products={products.map((product) => ({
             id: product.id,
             name: product.name,

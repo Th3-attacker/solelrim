@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
+import { differenceInHours } from "date-fns";
 import { Tag } from "lucide-react";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { getAdminScope } from "@/lib/shop/admin-scope";
+import { STALE_PENDING_HOURS } from "@/lib/shop/order-status";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
 import { OrderProgressActions } from "@/components/orders/order-progress-actions";
@@ -52,7 +54,18 @@ export default async function OrderDetailPage({
           </h1>
           <OrderStatusBadge status={order.status} />
         </div>
-        {order.status === "PENDING" && <OrderActions orderId={order.id} />}
+        {order.status === "PENDING" && (
+          <div className="flex flex-wrap items-center gap-3">
+            {differenceInHours(new Date(), order.createdAt) >= STALE_PENDING_HOURS && (
+              <p className="text-sm text-warning">
+                {t("pendingSince", {
+                  time: format.relativeTime(order.createdAt, new Date()),
+                })}
+              </p>
+            )}
+            <OrderActions orderId={order.id} />
+          </div>
+        )}
         {order.status === "CONFIRMED" && (
           <div className="flex flex-wrap items-center gap-3">
             {order.confirmedAt && (

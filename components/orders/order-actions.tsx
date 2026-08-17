@@ -53,11 +53,9 @@ export function OrderActions({ orderId }: { orderId: string }) {
     startTransition(async () => {
       const result = await confirmOrder(orderId);
       if (result.error) {
-        toast.error(
-          result.error === "insufficientStock"
-            ? t("insufficientStockError")
-            : t("alreadyProcessed"),
-        );
+        // confirmOrder can only fail with notFound/notPending now — stock
+        // reservation happens at submitOrder, not here.
+        toast.error(t("alreadyProcessed"));
         return;
       }
       setConfirmOpen(false);
@@ -92,7 +90,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>{t("confirmActionConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("insufficientStockError")}
+              {t("confirmActionDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
