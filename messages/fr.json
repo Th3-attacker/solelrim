@@ -24,7 +24,12 @@
     "moveDown": "Descendre",
     "previous": "Précédent",
     "next": "Suivant",
-    "paginationRange": "{from}–{to} sur {total}"
+    "paginationRange": "{from}–{to} sur {total}",
+    "applyFilter": "Appliquer le filtre",
+    "presetToday": "Aujourd'hui",
+    "presetYesterday": "Hier",
+    "presetLast7Days": "7 derniers jours",
+    "presetLast15Days": "15 derniers jours"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -44,7 +49,10 @@
     "superadmin": "Super administrateur",
     "boutiqueAdmin": "Administrateur boutique",
     "promoCodes": "Codes promo",
-    "auditLog": "Historique"
+    "auditLog": "Historique",
+    "sidebarTitle": "Menu de navigation",
+    "sidebarDescription": "Affiche le menu de navigation mobile.",
+    "toggleSidebar": "Afficher/masquer le menu"
   },
   "auth": {
     "login": {
@@ -593,7 +601,9 @@
     "actionOrderDeliver": "Commande livrée",
     "actionOrderCancel": "Commande annulée",
     "actionProductUpdate": "Produit modifié",
-    "actionProductDelete": "Produit supprimé"
+    "actionProductDelete": "Produit supprimé",
+    "searchPlaceholder": "Rechercher un admin ou un élément...",
+    "allActions": "Toutes les actions"
   },
   "trackOrder": {
     "title": "Suivre ma commande",

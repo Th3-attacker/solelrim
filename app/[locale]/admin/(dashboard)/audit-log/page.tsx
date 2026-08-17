@@ -1,10 +1,12 @@
 import { getTranslations, getFormatter } from "next-intl/server";
 import { History } from "lucide-react";
+import { endOfDay, isValid, parseISO, startOfDay } from "date-fns";
 import { getAuditLog, AUDIT_LOG_PAGE_SIZE } from "@/lib/queries/audit";
 import { AUDIT_ACTION_LABEL_KEY } from "@/lib/audit-actions";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { StateMessage } from "@/components/ui/state-message";
 import { ListPagination } from "@/components/ui/list-pagination";
+import { AuditLogFilters } from "@/components/audit-log/audit-log-filters";
 import {
   Table,
   TableBody,
@@ -14,6 +16,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+function parseDateParam(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  const parsed = parseISO(value);
+  return isValid(parsed) ? parsed : undefined;
+}
+
 export default async function AdminAuditLogPage({
   searchParams,
 }: {
@@ -21,12 +29,25 @@ export default async function AdminAuditLogPage({
 }) {
   const params = await searchParams;
   const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
+  const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
+  const action =
+    typeof params.action === "string" && AUDIT_ACTION_LABEL_KEY[params.action]
+      ? params.action
+      : undefined;
+  const fromParam = typeof params.from === "string" ? params.from : undefined;
+  const toParam = typeof params.to === "string" ? params.to : undefined;
+  const from = parseDateParam(fromParam);
+  const to = parseDateParam(toParam);
+  const dateFrom = from ? startOfDay(from) : undefined;
+  const dateTo = to ? endOfDay(to) : undefined;
+  const hasFilters = Boolean(search || action || dateFrom || dateTo);
 
   const scope = await getAdminScope();
-  const [t, format, { entries, total }] = await Promise.all([
+  const [t, tCommon, format, { entries, total }] = await Promise.all([
     getTranslations("auditLog"),
+    getTranslations("common"),
     getFormatter(),
-    getAuditLog(scope, { page }),
+    getAuditLog(scope, { page, search, action, dateFrom, dateTo }),
   ]);
 
   return (
@@ -36,8 +57,13 @@ export default async function AdminAuditLogPage({
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
+      <AuditLogFilters />
+
       {entries.length === 0 ? (
-        <StateMessage icon={History} title={t("noEntries")} />
+        <StateMessage
+          icon={History}
+          title={hasFilters ? tCommon("noResults") : t("noEntries")}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -72,7 +98,7 @@ export default async function AdminAuditLogPage({
         pageSize={AUDIT_LOG_PAGE_SIZE}
         total={total}
         basePath="/admin/audit-log"
-        searchParams={{}}
+        searchParams={{ q: search, action, from: fromParam, to: toParam }}
       />
     </div>
   );
