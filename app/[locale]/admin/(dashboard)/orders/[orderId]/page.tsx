@@ -5,6 +5,7 @@ import { Tag } from "lucide-react";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { getAdminScope } from "@/lib/shop/admin-scope";
+import { REASON_LABEL_KEY } from "@/lib/shop/client-messages";
 import { STALE_PENDING_HOURS } from "@/lib/shop/order-status";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
@@ -115,7 +116,10 @@ export default async function OrderDetailPage({
               )}
               {order.rejectReason && (
                 <p className="text-sm text-muted-foreground">
-                  {t("cancelReasonLabel")}: {order.rejectReason}
+                  {t("cancelReasonLabel")}:{" "}
+                  {REASON_LABEL_KEY[order.rejectReason]
+                    ? t(REASON_LABEL_KEY[order.rejectReason])
+                    : order.rejectReason}
                 </p>
               )}
             </div>

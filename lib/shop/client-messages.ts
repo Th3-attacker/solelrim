@@ -29,25 +29,23 @@ function resolveLocale(locale: string | null | undefined): SupportedLocale {
     : (routing.defaultLocale as SupportedLocale);
 }
 
-function reasonLabelKey(reason: string): keyof typeof MESSAGE_BUNDLES["fr"]["orders"] | null {
-  switch (reason) {
-    case "invalid_payment":
-      return "reasonInvalidPayment";
-    case "out_of_stock":
-      return "reasonOutOfStock";
-    case "undeliverable_location":
-      return "reasonUndeliverableLocation";
-    default:
-      return null;
-  }
-}
+// Maps each reject-reason preset to its translation key under the "orders"
+// namespace — shared by the admin reject dialog (order-actions.tsx), the
+// order detail page (which redisplays a stored reason), and
+// resolveReasonLabel below. A free-typed ("other") reason has no entry here
+// and is shown/sent as whatever text the admin wrote.
+export const REASON_LABEL_KEY: Record<string, keyof typeof MESSAGE_BUNDLES["fr"]["orders"]> = {
+  invalid_payment: "reasonInvalidPayment",
+  out_of_stock: "reasonOutOfStock",
+  undeliverable_location: "reasonUndeliverableLocation",
+};
 
 // Preset reasons are translated into the customer's locale; free-typed
 // ("other") reasons stay in whatever language the admin wrote them in —
 // there's no translation engine here for arbitrary admin text.
 export function resolveReasonLabel(reason: string, locale: string | null): string {
   const bundle = MESSAGE_BUNDLES[resolveLocale(locale)];
-  const key = reasonLabelKey(reason);
+  const key = REASON_LABEL_KEY[reason];
   return key ? bundle.orders[key] : reason;
 }
 
@@ -87,6 +85,11 @@ export function buildClientRejectionMessage(params: {
 }
 
 export function buildClientWhatsAppLink(phone: string, message: string): string {
+  // customerPhone is stored as a bare 8-digit local number (see
+  // checkoutCustomerSchema / /^[234]\d{7}$/), with no country code — wa.me
+  // needs the full international number, so without this prefix WhatsApp
+  // guesses a country from the leading digits (e.g. "32..." reads as
+  // Belgium +32) instead of Mauritania.
   const digits = phone.replace(/\D/g, "");
-  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/222${digits}?text=${encodeURIComponent(message)}`;
 }

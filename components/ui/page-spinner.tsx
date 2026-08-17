@@ -1,11 +1,14 @@
+import { useTranslations } from "next-intl";
+
 const TICKS = Array.from({ length: 8 });
 
 export function PageSpinner() {
+  const t = useTranslations("common");
   return (
     <div className="flex min-h-[50vh] items-center justify-center">
       <svg
         role="status"
-        aria-label="Loading"
+        aria-label={t("loading")}
         viewBox="0 0 24 24"
         className="size-8 animate-spin text-muted-foreground"
       >

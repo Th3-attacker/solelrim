@@ -29,7 +29,11 @@ export function buildOrderWhatsAppLink(params: {
     `Total: ${formatPrice(params.total, "MRU")}`,
     "",
     `Client: ${params.customerName}`,
-    `Téléphone: ${params.customerPhone}`,
+    // +222 prefix so WhatsApp's own auto-detection of phone-shaped text in
+    // the message body resolves to Mauritania instead of guessing another
+    // country from the leading digits — same root cause as
+    // buildClientWhatsAppLink in client-messages.ts.
+    `Téléphone: +222 ${params.customerPhone}`,
     `Ville: ${params.customerCity}`,
     "",
     "Une capture d'écran du paiement a été envoyée via le site.",

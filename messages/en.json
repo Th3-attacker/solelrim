@@ -24,7 +24,12 @@
     "moveDown": "Move down",
     "previous": "Previous",
     "next": "Next",
-    "paginationRange": "{from}–{to} of {total}"
+    "paginationRange": "{from}–{to} of {total}",
+    "applyFilter": "Apply filter",
+    "presetToday": "Today",
+    "presetYesterday": "Yesterday",
+    "presetLast7Days": "Last 7 days",
+    "presetLast15Days": "Last 15 days"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -44,7 +49,10 @@
     "superadmin": "Super admin",
     "boutiqueAdmin": "Boutique admin",
     "promoCodes": "Promo codes",
-    "auditLog": "History"
+    "auditLog": "History",
+    "sidebarTitle": "Navigation menu",
+    "sidebarDescription": "Displays the mobile navigation menu.",
+    "toggleSidebar": "Toggle menu"
   },
   "auth": {
     "login": {
@@ -593,7 +601,9 @@
     "actionOrderDeliver": "Order delivered",
     "actionOrderCancel": "Order cancelled",
     "actionProductUpdate": "Product updated",
-    "actionProductDelete": "Product deleted"
+    "actionProductDelete": "Product deleted",
+    "searchPlaceholder": "Search admin or item...",
+    "allActions": "All actions"
   },
   "trackOrder": {
     "title": "Track my order",

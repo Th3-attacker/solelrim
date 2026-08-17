@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Share } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -76,6 +77,12 @@ function getViewportServerSnapshot() {
 // so a refresh mid-display can't bring it back either.
 export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   const t = useTranslations("shop");
+  const pathname = usePathname();
+  // Track-order shows a time-sensitive "still no news? message us" nudge
+  // once an order looks stuck — this full-screen sheet popping up over it
+  // 3s in (same delay as everywhere else) reads as the nudge never
+  // appeared. Skip it here; every other storefront page still gets it.
+  const isTrackOrderPage = pathname.endsWith("/track-order");
   const isEligibleViewport = useSyncExternalStore(
     subscribeToViewport,
     getViewportSnapshot,
@@ -125,7 +132,7 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
     setOpen(false);
   }
 
-  if (!isEligibleViewport) return null;
+  if (!isEligibleViewport || isTrackOrderPage) return null;
 
   // Plain <img>, not next/image: this is our own /icon-192 route (already
   // exactly the right size, generated on the fly via ImageResponse), and
