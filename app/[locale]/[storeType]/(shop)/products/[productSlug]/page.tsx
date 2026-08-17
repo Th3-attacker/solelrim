@@ -225,6 +225,10 @@ export default async function ProductDetailPage({
       </nav>
 
       <ProductDetailView
+        // Remounts on navigation between products (prev/next arrows,
+        // related-products grid) — otherwise selectedSize/selectedColor/
+        // selectedImageIndex state from the previous product carries over.
+        key={product.id}
         productId={product.id}
         productName={product.name}
         productType={productType}

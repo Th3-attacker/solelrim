@@ -8,9 +8,10 @@ export async function register() {
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
-      // Error tracking only for now — no performance/tracing quota spent
-      // until it's actually wanted.
-      tracesSampleRate: 0,
+      // Low, fixed sample rate for performance tracing — enough signal to
+      // spot slow requests on a low-traffic storefront without spending
+      // much of Sentry's quota. Bump if traffic grows and headroom allows.
+      tracesSampleRate: 0.1,
     });
   }
 }

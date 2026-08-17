@@ -1,12 +1,13 @@
 import { getTranslations, getFormatter } from "next-intl/server";
 import Image from "next/image";
+import { differenceInHours } from "date-fns";
 import { ClipboardList } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
-import { ORDER_STATUS_LABEL_KEY } from "@/lib/shop/order-status";
+import { ORDER_STATUS_LABEL_KEY, STALE_PENDING_HOURS } from "@/lib/shop/order-status";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderFilters } from "@/components/orders/order-filters";
@@ -103,6 +104,9 @@ export default async function AdminOrdersPage({
           <TableBody>
             {orders.map((order) => {
               const image = order.items[0]?.variant.product.images[0];
+              const isStale =
+                order.status === "PENDING" &&
+                differenceInHours(new Date(), order.createdAt) >= STALE_PENDING_HOURS;
               return (
                 <TableRow key={order.id}>
                   <TableCell>
@@ -136,6 +140,13 @@ export default async function AdminOrdersPage({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {format.dateTime(order.createdAt, { dateStyle: "medium" })}
+                    {isStale && (
+                      <p className="text-warning">
+                        {t("pendingSince", {
+                          time: format.relativeTime(order.createdAt, new Date()),
+                        })}
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               );

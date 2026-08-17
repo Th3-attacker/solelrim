@@ -27,6 +27,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // vitest --coverage output (lib/shop/*.test.ts and friends) — generated,
+    // gitignored, and its bundled html-reporter assets aren't this
+    // project's own code.
+    "coverage/**",
   ]),
 ]);
 

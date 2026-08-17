@@ -44,4 +44,22 @@ describe("toCsv", () => {
     const csv = toCsv(columns, [{ name: "Solo" }]);
     expect(csv.slice(1)).toBe("Name,Note\r\nSolo,");
   });
+
+  it.each(["=cmd", "+1", "-1", "@SUM(A1)"])(
+    "neutralizes a formula-injection payload starting with %j",
+    (payload) => {
+      const csv = toCsv(columns, [{ name: payload, note: "" }]);
+      const cell = csv.slice(1).split("\r\n")[1].split(",")[0];
+      // Spreadsheet apps treat a leading apostrophe as "force text" and
+      // drop it from the displayed value — the point is it no longer
+      // starts with a formula-triggering character.
+      expect(cell.startsWith("'")).toBe(true);
+      expect(cell).not.toBe(payload);
+    },
+  );
+
+  it("does not alter a value that merely contains (not starts with) a risky character", () => {
+    const csv = toCsv(columns, [{ name: "Total = 100", note: "" }]);
+    expect(csv.slice(1)).toContain("Total = 100");
+  });
 });

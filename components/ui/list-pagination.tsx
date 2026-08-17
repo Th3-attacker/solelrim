@@ -20,6 +20,11 @@ export async function ListPagination({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) return null;
 
+  // A hand-edited or stale `?page=` outside [1, totalPages] (e.g. the list
+  // shrank after a delete) would otherwise produce a nonsensical from/to
+  // range below — clamp once, use the clamped value everywhere.
+  const currentPage = Math.min(Math.max(page, 1), totalPages);
+
   function hrefFor(targetPage: number) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(searchParams)) {
@@ -34,8 +39,8 @@ export async function ListPagination({
     return `${basePath}${query ? `?${query}` : ""}`;
   }
 
-  const from = (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
+  const from = (currentPage - 1) * pageSize + 1;
+  const to = Math.min(currentPage * pageSize, total);
 
   return (
     <div className="flex items-center justify-between gap-3">
@@ -43,9 +48,9 @@ export async function ListPagination({
         {t("paginationRange", { from, to, total })}
       </p>
       <div className="flex items-center gap-2">
-        {page > 1 ? (
+        {currentPage > 1 ? (
           <Button asChild variant="outline" size="icon-sm">
-            <Link href={hrefFor(page - 1)} aria-label={t("previous")}>
+            <Link href={hrefFor(currentPage - 1)} aria-label={t("previous")}>
               <ChevronLeft className="rtl:rotate-180" />
             </Link>
           </Button>
@@ -54,9 +59,9 @@ export async function ListPagination({
             <ChevronLeft className="rtl:rotate-180" />
           </Button>
         )}
-        {page < totalPages ? (
+        {currentPage < totalPages ? (
           <Button asChild variant="outline" size="icon-sm">
-            <Link href={hrefFor(page + 1)} aria-label={t("next")}>
+            <Link href={hrefFor(currentPage + 1)} aria-label={t("next")}>
               <ChevronRight className="rtl:rotate-180" />
             </Link>
           </Button>
