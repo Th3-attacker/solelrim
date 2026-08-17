@@ -450,7 +450,7 @@
     "paymentInstructions": "Payment instructions",
     "logo": "Logo",
     "contentLanguage": "Content language",
-    "contentLanguageHint": "The site name, hero title/subtitle, and SEO can have different text in Arabic. Pick which language to edit below.",
+    "contentLanguageHint": "The site name, hero title/subtitle, and SEO can have different text in English and Arabic. Pick which language to edit below.",
     "brandingSection": "Store",
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
