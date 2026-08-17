@@ -57,18 +57,23 @@ export default async function SettingsPage() {
           paymentInstructions: boutique.paymentInstructions ?? "",
           siteName: boutique.siteName ?? "",
           siteNameAr: boutique.siteNameAr ?? "",
+          siteNameEn: boutique.siteNameEn ?? "",
           announcementText: boutique.announcementText ?? "",
           heroTitle: boutique.heroTitle ?? "",
           heroTitleAr: boutique.heroTitleAr ?? "",
+          heroTitleEn: boutique.heroTitleEn ?? "",
           heroSubtitle: boutique.heroSubtitle ?? "",
           heroSubtitleAr: boutique.heroSubtitleAr ?? "",
+          heroSubtitleEn: boutique.heroSubtitleEn ?? "",
           heroBadgeText: boutique.heroBadgeText ?? "",
           heroCtaLabel: boutique.heroCtaLabel ?? "",
           heroImagePosition: boutique.heroImagePosition === "left" ? "left" : "right",
           seoTitle: boutique.seoTitle ?? "",
           seoTitleAr: boutique.seoTitleAr ?? "",
+          seoTitleEn: boutique.seoTitleEn ?? "",
           seoDescription: boutique.seoDescription ?? "",
           seoDescriptionAr: boutique.seoDescriptionAr ?? "",
+          seoDescriptionEn: boutique.seoDescriptionEn ?? "",
         }}
       />
 

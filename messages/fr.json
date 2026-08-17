@@ -450,7 +450,7 @@
     "paymentInstructions": "Instructions de paiement",
     "logo": "Logo",
     "contentLanguage": "Langue du contenu",
-    "contentLanguageHint": "Le nom du site, le titre/sous-titre du hero et le SEO peuvent avoir un texte différent en arabe. Choisissez la langue à modifier ci-dessous.",
+    "contentLanguageHint": "Le nom du site, le titre/sous-titre du hero et le SEO peuvent avoir un texte différent en anglais et en arabe. Choisissez la langue à modifier ci-dessous.",
     "brandingSection": "Boutique",
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",

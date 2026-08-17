@@ -8,18 +8,23 @@ export const boutiqueSettingsSchema = z.object({
   paymentInstructions: z.string().optional(),
   siteName: z.string().optional(),
   siteNameAr: z.string().optional(),
+  siteNameEn: z.string().optional(),
   announcementText: z.string().optional(),
   heroTitle: z.string().optional(),
   heroTitleAr: z.string().optional(),
+  heroTitleEn: z.string().optional(),
   heroSubtitle: z.string().optional(),
   heroSubtitleAr: z.string().optional(),
+  heroSubtitleEn: z.string().optional(),
   heroBadgeText: z.string().optional(),
   heroCtaLabel: z.string().optional(),
   heroImagePosition: z.enum(["left", "right"]).optional(),
   seoTitle: z.string().optional(),
   seoTitleAr: z.string().optional(),
+  seoTitleEn: z.string().optional(),
   seoDescription: z.string().optional(),
   seoDescriptionAr: z.string().optional(),
+  seoDescriptionEn: z.string().optional(),
 });
 
 export type BoutiqueSettingsInput = z.infer<typeof boutiqueSettingsSchema>;
