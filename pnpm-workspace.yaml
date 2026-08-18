@@ -8,3 +8,11 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+
+# Transitive-only build-tool deps flagged by `pnpm audit` (nanoid via
+# postcss/webpack pulled in by @sentry/nextjs's build plugin; deepmerge-ts
+# via the Prisma CLI's config loader) — neither ships in the app's runtime
+# bundle, but pinning to the patched range closes the advisory outright.
+overrides:
+  nanoid: '>=3.3.18'
+  deepmerge-ts: '>=8.0.0'

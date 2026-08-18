@@ -1,3 +1,9 @@
+// Matches the Supabase Storage bucket's own fileSizeLimit for
+// product-images (see scripts/setup-supabase.ts) — checked here too so a
+// too-large branding/product/wallet image fails fast with the app's own
+// "invalidFile" error instead of an opaque Storage rejection.
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 // Detects an image's real format from its magic bytes, instead of trusting
 // the client-declared File.type (or the filename extension) — both are
 // just metadata the uploader controls and say nothing about what's

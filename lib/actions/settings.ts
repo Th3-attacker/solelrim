@@ -17,7 +17,7 @@ import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
-import { detectImageSignature } from "@/lib/shop/image-signature";
+import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -51,6 +51,9 @@ export async function uploadStoreLogo(
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return { error: "invalid" };
+  }
+  if (file.size === 0 || file.size > MAX_IMAGE_BYTES) {
+    return { error: "invalidFile" };
   }
 
   // File.type/file.name are client-declared metadata — trust the actual
@@ -123,6 +126,9 @@ export async function uploadStoreHeroImage(
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return { error: "invalid" };
+  }
+  if (file.size === 0 || file.size > MAX_IMAGE_BYTES) {
+    return { error: "invalidFile" };
   }
 
   const fileBuffer = await file.arrayBuffer();
