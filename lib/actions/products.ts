@@ -7,7 +7,7 @@ import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
-import { detectImageSignature } from "@/lib/shop/image-signature";
+import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { logAdminAction } from "@/lib/audit";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
@@ -288,6 +288,9 @@ export async function uploadProductImage(
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return { error: "invalid" };
+  }
+  if (file.size === 0 || file.size > MAX_IMAGE_BYTES) {
+    return { error: "invalidFile" };
   }
 
   const fileBuffer = await file.arrayBuffer();

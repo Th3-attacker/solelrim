@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// Storefront layout variants — superadmin-only (lib/actions/settings.ts:
+// setHeroVariant/setCardVariant), kept out of boutiqueSettingsSchema below
+// so a BOUTIQUE_ADMIN posting to updateBoutiqueSettings can't smuggle a
+// change to either in, even with the picker UI hidden from them.
+export const heroVariantSchema = z.enum(["split", "fullbleed", "minimal"]);
+export const cardVariantSchema = z.enum(["default", "bordered", "cart"]);
+
 // Everything a boutique's own admin can edit about their boutique — payment
 // contact info, and (since each boutique has its own public storefront
 // route) its storefront's own name, announcement bar, hero, and SEO too.
@@ -19,6 +26,7 @@ export const boutiqueSettingsSchema = z.object({
   heroBadgeText: z.string().optional(),
   heroCtaLabel: z.string().optional(),
   heroImagePosition: z.enum(["left", "right"]).optional(),
+  testimonialsEnabled: z.boolean().optional(),
   seoTitle: z.string().optional(),
   seoTitleAr: z.string().optional(),
   seoTitleEn: z.string().optional(),
@@ -42,6 +50,22 @@ export const walletAccountSchema = z.object({
 });
 
 export type WalletAccountInput = z.infer<typeof walletAccountSchema>;
+
+export const testimonialSchema = z.object({
+  customerName: z.string().trim().min(1).max(80),
+  quote: z.string().trim().min(1).max(500),
+  rating: z.number().int().min(1).max(5).optional(),
+});
+
+export type TestimonialInput = z.infer<typeof testimonialSchema>;
+
+export const customThemeColorSchema = z.object({
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "invalid"),
+});
+
+export type CustomThemeColorInput = z.infer<typeof customThemeColorSchema>;
+
+export const colorModeSchema = z.enum(["auto", "light", "dark"]);
 
 export const productTypeInputSchema = z.object({
   name: z.string().trim().min(1).max(40),

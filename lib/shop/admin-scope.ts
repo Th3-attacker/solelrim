@@ -48,3 +48,19 @@ export async function requireAdminScope(): Promise<{
     admin.role === "BOUTIQUE_ADMIN" ? admin.productType! : await getAdminScope();
   return { admin, productType };
 }
+
+// For settings reserved to SUPERADMIN (theme/color, color mode, hero/card
+// layout variants) but still scoped to whichever boutique they're currently
+// managing, same as requireAdminScope — unlike requireSuperAdmin() alone,
+// this also resolves productType instead of leaving the caller to pass it
+// explicitly (that pattern is for the global, cross-boutique table instead).
+export async function requireSuperAdminScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireAdminScope();
+  if (admin.role !== "SUPERADMIN") {
+    throw new Error("forbidden");
+  }
+  return { admin, productType };
+}

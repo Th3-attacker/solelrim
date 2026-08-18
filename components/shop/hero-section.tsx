@@ -8,10 +8,22 @@ import Image from "next/image";
 type HeroSettings = {
   heroImagePath: string | null;
   heroImagePosition: string;
+  heroVariant: string;
   heroTitle: string | null;
   heroSubtitle: string | null;
   heroBadgeText: string | null;
   heroCtaLabel: string | null;
+};
+
+type HeroContent = {
+  imagePath: string | null;
+  badgeText: string | null;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaHref: string;
+  trackOrderLabel: string;
+  trackOrderHref: string;
 };
 
 // No photo uploaded yet: a typographic hero (giant watermark + theme-colored
@@ -25,15 +37,7 @@ function HeroFallback({
   ctaHref,
   trackOrderLabel,
   trackOrderHref,
-}: {
-  badgeText: string | null;
-  title: string;
-  subtitle: string;
-  ctaLabel: string;
-  ctaHref: string;
-  trackOrderLabel: string;
-  trackOrderHref: string;
-}) {
+}: Omit<HeroContent, "imagePath">) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-foreground px-6 py-20 text-center sm:py-28">
       <span
@@ -74,39 +78,19 @@ function HeroFallback({
   );
 }
 
-export async function HeroSection({
-  settings,
-  basePath,
-}: {
-  settings: HeroSettings;
-  basePath: string;
-}) {
-  const t = await getTranslations("shop");
-
-  const badgeText = settings.heroBadgeText;
-  const title = settings.heroTitle || t("heroTitle");
-  const subtitle = settings.heroSubtitle || t("heroSubtitle");
-  const ctaLabel = settings.heroCtaLabel || t("heroCta");
-  const ctaHref = `${basePath}/products`;
-  const trackOrderLabel = t("trackOrderLink");
-  const trackOrderHref = `${basePath}/track-order`;
-
-  if (!settings.heroImagePath) {
-    return (
-      <HeroFallback
-        badgeText={badgeText}
-        title={title}
-        subtitle={subtitle}
-        ctaLabel={ctaLabel}
-        ctaHref={ctaHref}
-        trackOrderLabel={trackOrderLabel}
-        trackOrderHref={trackOrderHref}
-      />
-    );
-  }
-
-  const imageOnLeft = settings.heroImagePosition === "left";
-
+// "split" (default) — the original layout: text on one side, a blob-shaped
+// photo on the other, position configurable via heroImagePosition.
+function HeroSplit({
+  imagePath,
+  badgeText,
+  title,
+  subtitle,
+  ctaLabel,
+  ctaHref,
+  trackOrderLabel,
+  trackOrderHref,
+  imageOnLeft,
+}: HeroContent & { imageOnLeft: boolean }) {
   return (
     <div className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
       <div
@@ -155,7 +139,7 @@ export async function HeroSection({
         />
         <div className="relative size-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-sm ">
           <Image
-            src={getStoreHeroImageUrl(settings.heroImagePath)}
+            src={getStoreHeroImageUrl(imagePath!)}
             alt=""
             fill
             className="object-cover"
@@ -165,5 +149,170 @@ export async function HeroSection({
         </div>
       </div>
     </div>
+  );
+}
+
+// "fullbleed" — a poster-style banner: the photo fills the whole width with
+// a dark gradient for legibility, content centered on top. With no photo it
+// falls back to the same watermark/gradient treatment as HeroFallback
+// instead of a distinct empty state, so the layout never has a "half done"
+// look while an admin is still filling in the photo.
+function HeroFullbleed({
+  imagePath,
+  badgeText,
+  title,
+  subtitle,
+  ctaLabel,
+  ctaHref,
+  trackOrderLabel,
+  trackOrderHref,
+}: HeroContent) {
+  return (
+    <div className="relative isolate overflow-hidden rounded-3xl bg-foreground px-6 py-24 text-center sm:py-32">
+      {imagePath ? (
+        <>
+          <Image
+            src={getStoreHeroImageUrl(imagePath)}
+            alt=""
+            fill
+            className="absolute inset-0 -z-20 object-cover"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 -z-10 bg-linear-to-t from-foreground via-foreground/70 to-foreground/20" />
+        </>
+      ) : (
+        <>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-background/5 select-none"
+          >
+            SOLAL
+          </span>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,var(--color-primary)/35,transparent_60%)]"
+          />
+        </>
+      )}
+      <div className="animate-in fade-in slide-in-from-bottom-6 relative flex flex-col items-center gap-5 duration-1000">
+        {badgeText && (
+          <span className="rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
+            {badgeText}
+          </span>
+        )}
+        <h1 className="max-w-3xl text-heading-lg text-balance text-background sm:text-heading-2xl">
+          {title}
+        </h1>
+        <p className="max-w-md text-paragraph-lg text-background/70 sm:text-paragraph-lg">
+          {subtitle}
+        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+          <Button asChild size="lg">
+            <a href={ctaHref}>{ctaLabel}</a>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
+            <a href={trackOrderHref}>
+              <PackageSearch className="size-4" />
+              {trackOrderLabel}
+            </a>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// "minimal" — a compact banner: no decorative shapes, text always
+// left-aligned, photo (if any) shown as a small thumbnail rather than a big
+// showpiece. For boutiques that want something lighter/faster than the
+// other two.
+function HeroMinimal({
+  imagePath,
+  badgeText,
+  title,
+  subtitle,
+  ctaLabel,
+  ctaHref,
+  trackOrderLabel,
+  trackOrderHref,
+}: HeroContent) {
+  return (
+    <div className="flex flex-col items-start gap-6 border-b pb-10 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+      <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col items-start gap-3 duration-700">
+        {badgeText && (
+          <span className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium tracking-widest text-primary uppercase">
+            {badgeText}
+          </span>
+        )}
+        <h1 className="max-w-lg text-heading-md text-balance sm:text-heading-lg">
+          {title}
+        </h1>
+        <p className="max-w-sm text-paragraph-md text-muted-foreground">
+          {subtitle}
+        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <Button asChild>
+            <a href={ctaHref}>{ctaLabel}</a>
+          </Button>
+          <Button asChild variant="outline">
+            <a href={trackOrderHref}>
+              <PackageSearch className="size-4" />
+              {trackOrderLabel}
+            </a>
+          </Button>
+        </div>
+      </div>
+
+      {imagePath && (
+        <div className="relative aspect-square w-full max-w-45 shrink-0 overflow-hidden rounded-xl sm:max-w-55">
+          <Image
+            src={getStoreHeroImageUrl(imagePath)}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="220px"
+            priority
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export async function HeroSection({
+  settings,
+  basePath,
+}: {
+  settings: HeroSettings;
+  basePath: string;
+}) {
+  const t = await getTranslations("shop");
+
+  const content: HeroContent = {
+    imagePath: settings.heroImagePath,
+    badgeText: settings.heroBadgeText,
+    title: settings.heroTitle || t("heroTitle"),
+    subtitle: settings.heroSubtitle || t("heroSubtitle"),
+    ctaLabel: settings.heroCtaLabel || t("heroCta"),
+    ctaHref: `${basePath}/products`,
+    trackOrderLabel: t("trackOrderLink"),
+    trackOrderHref: `${basePath}/track-order`,
+  };
+
+  if (settings.heroVariant === "fullbleed") {
+    return <HeroFullbleed {...content} />;
+  }
+
+  if (settings.heroVariant === "minimal") {
+    return <HeroMinimal {...content} />;
+  }
+
+  if (!content.imagePath) {
+    return <HeroFallback {...content} />;
+  }
+
+  return (
+    <HeroSplit {...content} imageOnLeft={settings.heroImagePosition === "left"} />
   );
 }

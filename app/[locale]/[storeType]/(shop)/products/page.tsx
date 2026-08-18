@@ -79,9 +79,10 @@ export default async function ProductsPage({
     params,
     searchParams,
   ]);
-  const [t, basePath] = await Promise.all([
+  const [t, basePath, boutique] = await Promise.all([
     getTranslations("shop"),
     getStorefrontBasePath(storeType),
+    getPublicBoutiqueSettings(storeType),
   ]);
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
@@ -133,6 +134,7 @@ export default async function ProductsPage({
                 product={product}
                 basePath={basePath}
                 priority={index < 4}
+                cardVariant={boutique.cardVariant}
               />
             ))}
           </div>
