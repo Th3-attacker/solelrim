@@ -14,17 +14,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { getDirection } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { useCart } from "@/components/cart/cart-provider";
-import { useCheckoutDrawer } from "@/components/checkout/checkout-drawer-provider";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
 import { StateMessage } from "@/components/ui/state-message";
 import { toast } from "@/components/ui/toast";
 import { getVariantStocks } from "@/lib/actions/cart";
 
-export function CartTrigger() {
+export function CartTrigger({ basePath }: { basePath: string }) {
   const t = useTranslations("cart");
   const tCommon = useTranslations("common");
   const locale = useLocale();
@@ -32,7 +32,6 @@ export function CartTrigger() {
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } =
     useCart();
-  const { openCheckout } = useCheckoutDrawer();
 
   // The stock cached on each cart line is a snapshot from whenever it was
   // added — it can go stale (another sale, an admin adjusting stock, or
@@ -159,8 +158,8 @@ export function CartTrigger() {
               <span>{formatPrice(subtotal, tCommon("currency"))}</span>
             </div>
             <SheetClose asChild>
-              <Button type="button" className="w-full" onClick={openCheckout}>
-                {t("checkoutButton")}
+              <Button asChild className="w-full">
+                <Link href={`${basePath}/checkout`}>{t("checkoutButton")}</Link>
               </Button>
             </SheetClose>
           </SheetFooter>
