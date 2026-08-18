@@ -1,12 +1,14 @@
 import { FavoriteButton } from "@/components/shop/favorite-button";
 import { Price } from "@/components/shop/price";
+import { QuickAddButton } from "@/components/shop/quick-add-button";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import type { getActiveProducts } from "@/lib/queries/shop";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { getSwatchStyle } from "@/lib/shop/color-swatch";
-import { getPriceRange } from "@/lib/shop/price";
+import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { getAggregateStockStatus } from "@/lib/shop/stock";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
@@ -21,10 +23,12 @@ export function ProductCard({
   product,
   basePath,
   priority = false,
+  cardVariant = "default",
 }: {
   product: Product;
   basePath: string;
   priority?: boolean;
+  cardVariant?: string;
 }) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
@@ -37,6 +41,17 @@ export function ProductCard({
     promo && product.compareAtPrice
       ? Math.round((1 - min / product.compareAtPrice.toNumber()) * 100)
       : null;
+  const productHref = `${basePath}/products/${product.slug}`;
+  const firstInStockVariant = product.variants.find((v) => v.stock > 0);
+  const defaultVariant = firstInStockVariant
+    ? {
+        id: firstInStockVariant.id,
+        size: firstInStockVariant.size,
+        color: firstInStockVariant.color,
+        stock: firstInStockVariant.stock,
+        unitPrice: getVariantPrice(firstInStockVariant, product.basePrice),
+      }
+    : null;
 
   const badges = (
     [
@@ -96,7 +111,7 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
           {/* Stretched-link pattern: the anchor only wraps the product name
               (valid HTML), but its ::after pseudo-element covers the whole
@@ -114,7 +129,7 @@ export function ProductCard({
             </span>
           ) : (
             <Link
-              href={`${basePath}/products/${product.slug}`}
+              href={productHref}
               className="truncate text-sm text-foreground after:absolute after:inset-0 after:content-['']"
             >
               {product.name}
@@ -131,7 +146,11 @@ export function ProductCard({
             {isRange && (
               <span className="text-muted-foreground">{t("startingFrom")}</span>
             )}
-            <Price value={min} currency={tCommon("currency")} emphasize={promo} />
+            <Price
+              value={min}
+              currency={tCommon("currency")}
+              emphasize={promo}
+            />
             {promo && product.compareAtPrice && (
               <Price value={product.compareAtPrice} strikethrough />
             )}
@@ -153,6 +172,43 @@ export function ProductCard({
               <span className="text-xs text-muted-foreground">
                 +{colors.length - MAX_SWATCHES}
               </span>
+            )}
+          </div>
+        )}
+
+        {cardVariant === "bordered" && !isOutOfStock && (
+          <div className="mt-auto pt-1">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="relative z-10 w-full"
+            >
+              <Link href={productHref}>{t("viewProduct")}</Link>
+            </Button>
+          </div>
+        )}
+
+        {cardVariant === "cart" && !isOutOfStock && (
+          <div className="mt-auto flex items-center gap-2 pt-1">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="relative z-10 min-w-0 basis-[80%]"
+            >
+              <Link href={productHref}>
+                <span className="truncate">{t("viewProduct")}</span>
+              </Link>
+            </Button>
+            {defaultVariant && (
+              <QuickAddButton
+                productId={product.id}
+                productName={product.name}
+                imageStoragePath={image?.storagePath ?? null}
+                variant={defaultVariant}
+                className="basis-[18%] shrink-0"
+              />
             )}
           </div>
         )}

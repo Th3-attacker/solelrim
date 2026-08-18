@@ -6,16 +6,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { parseISO, isValid } from "date-fns";
 import {
   boutiqueSettingsSchema,
+  cardVariantSchema,
+  colorModeSchema,
+  customThemeColorSchema,
+  heroVariantSchema,
   productTypeInputSchema,
   storeDomainSchema,
   type BoutiqueSettingsInput,
 } from "@/lib/validation/settings";
-import { THEME_PRESETS } from "@/lib/theme/presets";
+import { CUSTOM_THEME_ID, THEME_PRESETS } from "@/lib/theme/presets";
 import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/product-type";
 import { slugify } from "@/lib/shop/slug";
 import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireAdminScope, requireSuperAdminScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
@@ -188,7 +192,7 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
 }
 
 export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireSuperAdminScope();
 
   if (!THEME_PRESETS.some((preset) => preset.id === themeId)) {
     return { error: "invalid" };
@@ -196,7 +200,82 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
 
   await prisma.storeType.update({
     where: { key: productType },
-    data: { themeId },
+    data: { themeId, customThemeColor: null },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// Picking a custom color switches themeId to the "custom" sentinel, same
+// as picking any other preset switches it to that preset's id — the two
+// pickers are mutually exclusive views onto the same underlying field.
+export async function setCustomThemeColor(color: string): Promise<{ error?: string }> {
+  const { productType } = await requireSuperAdminScope();
+
+  const parsed = customThemeColorSchema.safeParse({ color });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { themeId: CUSTOM_THEME_ID, customThemeColor: parsed.data.color },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setColorMode(mode: string): Promise<{ error?: string }> {
+  const { productType } = await requireSuperAdminScope();
+
+  const parsed = colorModeSchema.safeParse(mode);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { colorMode: parsed.data },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setHeroVariant(variant: string): Promise<{ error?: string }> {
+  const { productType } = await requireSuperAdminScope();
+
+  const parsed = heroVariantSchema.safeParse(variant);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { heroVariant: parsed.data },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setCardVariant(variant: string): Promise<{ error?: string }> {
+  const { productType } = await requireSuperAdminScope();
+
+  const parsed = cardVariantSchema.safeParse(variant);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { cardVariant: parsed.data },
   });
 
   revalidatePath("/admin/settings");

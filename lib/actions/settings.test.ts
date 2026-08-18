@@ -15,12 +15,20 @@ vi.mock("@/lib/supabase/admin", () => ({
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(),
+}));
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import {
   updateBoutiqueSettings,
   setStoreTheme,
+  setCustomThemeColor,
+  setColorMode,
+  setHeroVariant,
+  setCardVariant,
   setProductType,
   createProductType,
   updateStoreDomain,
@@ -29,6 +37,20 @@ import {
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
+const cookiesMock = cookies as unknown as Mock;
+
+// setStoreTheme/setHeroVariant/setCardVariant/etc. are superadmin-only but
+// still scoped to "whichever boutique they're currently managing" — that
+// resolution (requireAdminScope -> getAdminScope) reads the scope cookie
+// and validates it against the real StoreType table, both mocked here the
+// same way lib/shop/admin-scope.test.ts does.
+const STORE_TYPES = [{ key: "cosmetique", label: "Cosmétique", createdAt: new Date() }];
+
+function asSuperAdminScopedTo(productType: string) {
+  asSuperAdmin();
+  prismaMock.storeType.findMany.mockResolvedValue(STORE_TYPES as never);
+  cookiesMock.mockResolvedValue({ get: () => ({ value: productType }) });
+}
 
 function collisionError() {
   return new PrismaClientKnownRequestError("Unique constraint failed", {
@@ -69,6 +91,7 @@ function asSuperAdmin() {
 beforeEach(() => {
   mockReset(prismaMock);
   createClientMock.mockReset();
+  cookiesMock.mockReset();
 });
 
 describe("updateBoutiqueSettings", () => {
@@ -98,9 +121,16 @@ describe("updateBoutiqueSettings", () => {
   });
 });
 
-describe("setStoreTheme", () => {
-  it("accepts a known theme preset", async () => {
+describe("setStoreTheme (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin("cosmetique");
+
+    await expect(setStoreTheme("default")).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("accepts a known theme preset from a SUPERADMIN", async () => {
+    asSuperAdminScopedTo("cosmetique");
     prismaMock.storeType.update.mockResolvedValue({} as never);
 
     const result = await setStoreTheme("default");
@@ -108,14 +138,89 @@ describe("setStoreTheme", () => {
     expect(result.error).toBeUndefined();
     expect(prismaMock.storeType.update).toHaveBeenCalledWith({
       where: { key: "cosmetique" },
-      data: { themeId: "default" },
+      data: { themeId: "default", customThemeColor: null },
     });
   });
 
   it("rejects an unknown theme id", async () => {
-    asBoutiqueAdmin();
+    asSuperAdminScopedTo("cosmetique");
 
     const result = await setStoreTheme("not-a-real-theme");
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("setCustomThemeColor / setColorMode (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin("cosmetique");
+
+    await expect(setCustomThemeColor("#123456")).rejects.toThrow("forbidden");
+    await expect(setColorMode("dark")).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("accepts valid input from a SUPERADMIN", async () => {
+    asSuperAdminScopedTo("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const colorResult = await setCustomThemeColor("#123456");
+    const modeResult = await setColorMode("dark");
+
+    expect(colorResult.error).toBeUndefined();
+    expect(modeResult.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "cosmetique" },
+      data: { themeId: "custom", customThemeColor: "#123456" },
+    });
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "cosmetique" },
+      data: { colorMode: "dark" },
+    });
+  });
+
+  it("rejects an invalid hex color and color mode", async () => {
+    asSuperAdminScopedTo("cosmetique");
+
+    expect((await setCustomThemeColor("not-a-color")).error).toBe("invalid");
+    expect((await setColorMode("purple")).error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("setHeroVariant / setCardVariant (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin("cosmetique");
+
+    await expect(setHeroVariant("fullbleed")).rejects.toThrow("forbidden");
+    await expect(setCardVariant("cart")).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("accepts a known variant from a SUPERADMIN", async () => {
+    asSuperAdminScopedTo("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const heroResult = await setHeroVariant("fullbleed");
+    const cardResult = await setCardVariant("cart");
+
+    expect(heroResult.error).toBeUndefined();
+    expect(cardResult.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "cosmetique" },
+      data: { heroVariant: "fullbleed" },
+    });
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "cosmetique" },
+      data: { cardVariant: "cart" },
+    });
+  });
+
+  it("rejects an unknown variant", async () => {
+    asSuperAdminScopedTo("cosmetique");
+
+    const result = await setHeroVariant("not-a-real-variant");
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();

@@ -1,3 +1,5 @@
+import { buildCustomThemePreset } from "@/lib/theme/custom-color";
+
 type ThemeColors = {
   primary: string;
   primaryForeground: string;
@@ -42,6 +44,24 @@ export const THEME_PRESETS: ThemePreset[] = [
 
 export const DEFAULT_THEME_ID = "default";
 
+// Sentinel themeId meaning "use customThemeColor" instead of one of the
+// fixed THEME_PRESETS entries above.
+export const CUSTOM_THEME_ID = "custom";
+
 export function getThemePreset(id: string | null | undefined): ThemePreset {
   return THEME_PRESETS.find((preset) => preset.id === id) ?? THEME_PRESETS[0];
+}
+
+// Resolves a boutique's actual accent theme — a fixed preset, or a
+// generated one from its picked hex color when themeId is the "custom"
+// sentinel (falls back to the default preset if the color is somehow
+// missing, e.g. themeId was set to "custom" without a color yet).
+export function resolveStoreTheme(store: {
+  themeId: string | null;
+  customThemeColor: string | null;
+}): ThemePreset {
+  if (store.themeId === CUSTOM_THEME_ID && store.customThemeColor) {
+    return buildCustomThemePreset(store.customThemeColor);
+  }
+  return getThemePreset(store.themeId);
 }

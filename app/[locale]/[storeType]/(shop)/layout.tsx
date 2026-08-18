@@ -13,14 +13,16 @@ import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { MobileNav } from "@/components/shop/mobile-nav";
 import { PwaInstallPrompt } from "@/components/shop/pwa-install-prompt";
 import { SearchTrigger } from "@/components/shop/search-trigger";
+import { ExpiredStorefront } from "@/components/shop/expired-storefront";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getLicenseStatus } from "@/lib/shop/license";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
-import { DEFAULT_THEME_ID, getThemePreset } from "@/lib/theme/presets";
+import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
 
 // Meta keywords have had no effect on Google ranking since 2009 — this
@@ -92,6 +94,16 @@ export default async function ShopLayout({
     getStorefrontBasePath(storeType),
     getLocale(),
   ]);
+
+  if (getLicenseStatus(boutique.licenseExpiresAt) === "expired") {
+    return (
+      <ExpiredStorefront
+        siteName={resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName")}
+        logoUrl={boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null}
+      />
+    );
+  }
+
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
     getAllShopCategories(storeType),
@@ -124,7 +136,10 @@ export default async function ShopLayout({
     ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
     : null;
 
-  const theme = getThemePreset(boutique.themeId);
+  const theme = resolveStoreTheme(boutique);
+  const forcedColorMode = boutique.colorMode === "light" || boutique.colorMode === "dark"
+    ? boutique.colorMode
+    : undefined;
 
   const canonicalUrl = buildStoreUrl({ domain: boutique.domain, storeKey: storeType, path: "", locale });
   const organizationJsonLd = {
@@ -160,6 +175,19 @@ export default async function ShopLayout({
               .shop-theme { --primary: ${theme.light.primary}; --primary-foreground: ${theme.light.primaryForeground}; --ring: ${theme.light.ring}; }
               .dark .shop-theme { --primary: ${theme.dark.primary}; --primary-foreground: ${theme.dark.primaryForeground}; --ring: ${theme.dark.ring}; }
             `}</style>
+          )}
+          {forcedColorMode && (
+            // The root ThemeProvider (app/[locale]/layout.tsx) is shared with
+            // the admin dashboard, so it can't be locked per-boutique — this
+            // runs right after its own anti-flash script and overrides both
+            // the live <html> class and the stored preference it reads next,
+            // so a returning visitor's opposite preference can't win and
+            // React's own hydration doesn't fight this back afterward.
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `(function(){try{var m=${JSON.stringify(forcedColorMode)};localStorage.setItem("theme",m);var c=document.documentElement.classList;c.remove("light","dark");c.add(m);document.documentElement.style.colorScheme=m;}catch(e){}})();`,
+              }}
+            />
           )}
           <div className="shop-theme flex min-h-screen flex-col">
             <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
@@ -226,7 +254,7 @@ export default async function ShopLayout({
                   <div className="hidden md:block">
                     <LanguageSwitcher />
                   </div>
-                  <ModeToggle />
+                  {boutique.colorMode === "auto" && <ModeToggle />}
                 </div>
               </div>
             </header>

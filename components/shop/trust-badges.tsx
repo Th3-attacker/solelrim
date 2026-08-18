@@ -1,6 +1,7 @@
 import { CreditCard, MessageCircle, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { OrderProcedureTrigger } from "@/components/shop/order-procedure-trigger";
+import { SectionTitle } from "@/components/shop/section-title";
 
 export async function TrustBadges() {
   const t = await getTranslations("shop");
@@ -24,7 +25,8 @@ export async function TrustBadges() {
   ];
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-6">
+      <SectionTitle>{t("trustSectionTitle")}</SectionTitle>
       <div className="grid w-full gap-3 desktop:gap-4 rounded-2xl border bg-muted/30 p-6 sm:grid-cols-3 sm:p-8">
         {items.map((item, index) => (
           <div

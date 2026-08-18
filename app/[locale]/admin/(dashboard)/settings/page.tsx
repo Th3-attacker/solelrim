@@ -5,8 +5,11 @@ import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-fo
 import { LogoUpload } from "@/components/settings/logo-upload";
 import { HeroImageUpload } from "@/components/settings/hero-image-upload";
 import { ThemePicker } from "@/components/settings/theme-picker";
+import { ColorModePicker } from "@/components/settings/color-mode-picker";
+import { LayoutVariantsPicker } from "@/components/settings/layout-variants-picker";
 import { SocialLinksManager } from "@/components/settings/social-links-manager";
 import { WalletAccountsManager } from "@/components/settings/wallet-accounts-manager";
+import { TestimonialsManager } from "@/components/settings/testimonials-manager";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
@@ -46,12 +49,25 @@ export default async function SettingsPage() {
         }
       />
 
-      <ThemePicker
-        presets={THEME_PRESETS}
-        currentThemeId={boutique.themeId ?? DEFAULT_THEME_ID}
-      />
+      {admin.role === "SUPERADMIN" && (
+        <>
+          <ThemePicker
+            presets={THEME_PRESETS}
+            currentThemeId={boutique.themeId ?? DEFAULT_THEME_ID}
+            customColor={boutique.customThemeColor}
+          />
+
+          <ColorModePicker currentMode={boutique.colorMode} />
+
+          <LayoutVariantsPicker
+            heroVariant={boutique.heroVariant}
+            cardVariant={boutique.cardVariant}
+          />
+        </>
+      )}
 
       <BoutiqueSettingsForm
+        heroVariant={boutique.heroVariant}
         defaultValues={{
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
           paymentInstructions: boutique.paymentInstructions ?? "",
@@ -91,6 +107,16 @@ export default async function SettingsPage() {
           id: link.id,
           platform: link.platform,
           url: link.url,
+        }))}
+      />
+
+      <TestimonialsManager
+        enabled={boutique.testimonialsEnabled}
+        testimonials={boutique.testimonials.map((item) => ({
+          id: item.id,
+          customerName: item.customerName,
+          quote: item.quote,
+          rating: item.rating,
         }))}
       />
     </div>

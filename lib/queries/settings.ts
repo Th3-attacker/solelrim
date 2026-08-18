@@ -32,6 +32,7 @@ export const getBoutiqueSettings = cache(function getBoutiqueSettings(
     include: {
       socialLinks: { orderBy: { position: "asc" } },
       walletAccounts: { orderBy: { position: "asc" } },
+      testimonials: { orderBy: { position: "asc" } },
     },
   });
 });
@@ -51,6 +52,7 @@ export const getPublicBoutiqueSettings = cache(async function getPublicBoutiqueS
     include: {
       socialLinks: { orderBy: { position: "asc" } },
       walletAccounts: { orderBy: { position: "asc" } },
+      testimonials: { orderBy: { position: "asc" } },
     },
   });
   if (!boutique) {

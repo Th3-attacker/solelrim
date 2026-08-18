@@ -17,6 +17,7 @@ import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { detectImageSignature } from "@/lib/shop/image-signature";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { getLicenseStatus } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
 
@@ -68,13 +69,19 @@ export async function submitOrder(
   // checked against the real registry, same as any other form input.
   const requestedProductType = formData.get("productType");
   const storeTypes = await getStoreTypes();
-  if (
-    typeof requestedProductType !== "string" ||
-    !storeTypes.some((type) => type.key === requestedProductType)
-  ) {
+  const matchedStoreType = storeTypes.find((type) => type.key === requestedProductType);
+  if (typeof requestedProductType !== "string" || !matchedStoreType) {
     return { error: "invalid" };
   }
   const productType = requestedProductType;
+
+  // Belt-and-suspenders: the (shop) layout already blocks every page once
+  // the license expires, so this only matters for a tab left open across
+  // that moment — same rule, checked again server-side before an order can
+  // actually be created.
+  if (getLicenseStatus(matchedStoreType.licenseExpiresAt) === "expired") {
+    return { error: "storefrontExpired" };
+  }
 
   let rawItems: unknown;
   try {
