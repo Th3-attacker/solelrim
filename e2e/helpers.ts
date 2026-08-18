@@ -20,7 +20,13 @@ export async function submitCheckoutOrder(page: Page): Promise<string> {
   await expect(page.getByText("Ajouté au panier.")).toBeVisible();
 
   await page.getByRole("button", { name: "Panier" }).click();
-  await page.getByRole("button", { name: "Passer la commande" }).click();
+  // "Passer la commande" now navigates to the dedicated /checkout page
+  // (checkout used to be a Sheet, so this was a "button" click that opened
+  // it in place) — it's a Link styled as a button, so its accessible role
+  // is "link", and the click closes the cart Sheet while the browser
+  // navigates.
+  await page.getByRole("link", { name: "Passer la commande" }).click();
+  await page.waitForURL(/\/checkout$/);
 
   // Step 1 — customer info
   await expect(page.getByText("Vos informations")).toBeVisible();
@@ -35,7 +41,7 @@ export async function submitCheckoutOrder(page: Page): Promise<string> {
 
   // Step 3 — payment: reveal wallets + upload, then submit
   await expect(page.getByText("Paiement", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Suivant" }).click();
+  await page.getByRole("button", { name: "Voir les numéros de paiement" }).click();
   await page.getByLabel("Capture d'écran du paiement").setInputFiles(PAYMENT_PROOF);
 
   await page.getByRole("button", { name: "Confirmer la commande" }).click();

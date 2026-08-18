@@ -6,8 +6,6 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartTrigger } from "@/components/cart/cart-trigger";
-import { CheckoutDrawerProvider } from "@/components/checkout/checkout-drawer-provider";
-import { CheckoutDrawer } from "@/components/checkout/checkout-drawer";
 import { FavoritesProvider } from "@/components/shop/favorites-provider";
 import { FavoritesTrigger } from "@/components/shop/favorites-trigger";
 import { MobileNav } from "@/components/shop/mobile-nav";
@@ -21,7 +19,7 @@ import { getPriceRange } from "@/lib/shop/price";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { getLicenseStatus } from "@/lib/shop/license";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { getProductImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
 
@@ -165,11 +163,10 @@ export default async function ShopLayout({
   return (
     <FavoritesProvider storeType={storeType}>
       <CartProvider storeType={storeType}>
-        <CheckoutDrawerProvider>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={jsonLdScriptProps([organizationJsonLd, websiteJsonLd])}
-          />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLdScriptProps([organizationJsonLd, websiteJsonLd])}
+        />
           {boutique.themeId !== DEFAULT_THEME_ID && (
             <style>{`
               .shop-theme { --primary: ${theme.light.primary}; --primary-foreground: ${theme.light.primaryForeground}; --ring: ${theme.light.ring}; }
@@ -250,7 +247,7 @@ export default async function ShopLayout({
                     <SearchTrigger categories={categories} products={favoriteCandidates} basePath={basePath} />
                   </div>
                   <FavoritesTrigger products={favoriteCandidates} basePath={basePath} />
-                  <CartTrigger />
+                  <CartTrigger basePath={basePath} />
                   <div className="hidden md:block">
                     <LanguageSwitcher />
                   </div>
@@ -369,20 +366,6 @@ export default async function ShopLayout({
             </footer>
           </div>
           <PwaInstallPrompt siteName={siteName} />
-          <CheckoutDrawer
-            settings={{
-              wallets: boutique.walletAccounts.map((wallet) => ({
-                provider: wallet.provider,
-                number: wallet.number,
-                logoUrl: wallet.logoStoragePath
-                  ? getWalletLogoUrl(wallet.logoStoragePath)
-                  : null,
-              })),
-              adminWhatsappNumber: boutique.adminWhatsappNumber,
-              paymentInstructions: boutique.paymentInstructions,
-            }}
-          />
-        </CheckoutDrawerProvider>
       </CartProvider>
     </FavoritesProvider>
   );

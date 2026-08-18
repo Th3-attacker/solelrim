@@ -3,27 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { StateMessage } from "@/components/ui/state-message";
 import { useCart } from "@/components/cart/cart-provider";
+import { CheckoutStepper } from "@/components/checkout/checkout-stepper";
+import { OrderSummary } from "@/components/checkout/order-summary";
 import { submitOrder } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { computeDiscountAmount } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
-import { formatPrice } from "@/lib/format/currency";
-import { Wallet, X, Pencil, PackageSearch, Copy, Check } from "lucide-react";
+import { Wallet, X, Pencil, PackageSearch, Copy, Check, ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -38,37 +38,19 @@ type Settings = {
 
 type Step = 1 | 2 | 3 | "success";
 
-function StepDots({ current }: { current: 1 | 2 | 3 }) {
-  return (
-    <div className="flex items-center gap-1.5" aria-hidden>
-      {([1, 2, 3] as const).map((n) => (
-        <span
-          key={n}
-          className={cn(
-            "h-1.5 flex-1 rounded-full transition-colors",
-            n <= current ? "bg-primary" : "bg-muted",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
 export function CheckoutFlow({
   settings,
-  open,
-  onClose,
+  storeType,
+  basePath,
 }: {
   settings: Settings;
-  open: boolean;
-  onClose: () => void;
+  storeType: string;
+  basePath: string;
 }) {
   const t = useTranslations("checkout");
-  const tCart = useTranslations("cart");
   const tCommon = useTranslations("common");
   const tTrackOrder = useTranslations("trackOrder");
   const locale = useLocale();
-  const { storeType } = useParams<{ storeType: string }>();
   const cart = useCart();
 
   const [step, setStep] = useState<Step>(1);
@@ -107,23 +89,6 @@ export function CheckoutFlow({
     customer: CheckoutCustomerInput;
   } | null>(null);
 
-  // The drawer stays mounted across opens, so a fresh order after a
-  // previous success shouldn't reopen straight onto the success screen.
-  // Adjusted during render (on the `open` transition) rather than in an
-  // effect, per react-hooks/set-state-in-effect.
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (open !== prevOpen) {
-    setPrevOpen(open);
-    if (open && step === "success") {
-      setStep(1);
-      setCustomerInfo(null);
-      setFile(null);
-      setPromoDroppedMessage(null);
-      setPaymentDetailsVisible(false);
-      setReference(null);
-    }
-  }
-
   const storageKey = `solelrim-checkout-${storeType}`;
   const previousVariantIdsRef = useRef<Set<string>>(new Set());
 
@@ -131,8 +96,7 @@ export function CheckoutFlow({
   // sync) means the order the customer reviewed no longer matches what's
   // in front of them — send them back to step 1 to re-confirm. Their info
   // stays filled in; only pure growth (new items added, quantities bumped,
-  // nothing removed) keeps the resumed step as-is. A fully emptied cart
-  // additionally drops the saved draft — there's nothing left to resume.
+  // nothing removed) keeps the resumed step as-is.
   useEffect(() => {
     if (!cart.hydrated) return;
     const currentIds = new Set(cart.items.map((line) => line.variantId));
@@ -147,15 +111,13 @@ export function CheckoutFlow({
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setStep(1);
       }
-      if (open && step !== "success") onClose();
       return;
     }
 
     if (hadRemoval && step !== 1 && step !== "success") {
       setStep(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, cart.hydrated, cart.items, step, storageKey]);
+  }, [cart.hydrated, cart.items, step, storageKey]);
 
   const {
     register,
@@ -168,12 +130,9 @@ export function CheckoutFlow({
   });
 
   // Resuming an interrupted checkout: restores step 1's info (and which
-  // step they'd reached) so closing the drawer by accident doesn't mean
-  // retyping name/phone/city. Read in an effect, not a lazy useState
-  // initializer, so this never runs during SSR — same reasoning as
-  // CartProvider's own hydration (which reaches for the same localStorage
-  // -> setState-on-mount shape via a reducer's dispatch instead of a raw
-  // setter, which is why only this one trips the lint heuristic below).
+  // step they'd reached) so a reload or an accidental navigation away
+  // doesn't mean retyping name/phone/city. Read in an effect, not a lazy
+  // useState initializer, so this never runs during SSR.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -195,9 +154,7 @@ export function CheckoutFlow({
 
   // Only step 1's data is worth restoring — the payment screenshot is a
   // File (can't be serialized) and has to be re-picked either way, so
-  // there's nothing to save once past step 2. customerInfo can be set
-  // while step is back at 1 (a cart removal reset it) — that's saved as-is
-  // so a reload right after doesn't resume past the re-confirmation.
+  // there's nothing to save once past step 2.
   useEffect(() => {
     if (!customerInfo || step === "success") return;
     localStorage.setItem(storageKey, JSON.stringify({ step, customerInfo }));
@@ -352,158 +309,156 @@ export function CheckoutFlow({
 
   if (step === "success") {
     return (
-      <Card className="border-none shadow-none">
-        <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
-          <h1 className="text-xl font-semibold">{t("successTitle")}</h1>
-          <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
-          <div className="flex w-full flex-col items-center gap-1.5">
-            <div className="flex items-center gap-1 rounded-md border bg-muted/30 py-1.5 pr-1.5 pl-3">
-              <span className="font-mono text-sm">{reference}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleCopyReference}
-                aria-label={t("copyReference")}
-              >
-                {referenceCopied ? (
-                  <Check className="size-4 text-success" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">{t("keepReferenceHint")}</p>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-12 text-center">
+        <h1 className="text-heading-xs">{t("successTitle")}</h1>
+        <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
+        <div className="flex w-full flex-col items-center gap-1.5">
+          <div className="flex items-center gap-1 rounded-md border bg-muted/30 py-1.5 pr-1.5 pl-3">
+            <span className="font-mono text-sm">{reference}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleCopyReference}
+              aria-label={t("copyReference")}
+            >
+              {referenceCopied ? (
+                <Check className="size-4 text-success" />
+              ) : (
+                <Copy className="size-4" />
+              )}
+            </Button>
           </div>
-          <Button onClick={handleSendWhatsApp} className="w-full">
-            {t("sendWhatsApp")}
+          <p className="text-xs text-muted-foreground">{t("keepReferenceHint")}</p>
+        </div>
+        <Button onClick={handleSendWhatsApp} className="w-full">
+          {t("sendWhatsApp")}
+        </Button>
+        <Button variant="outline" className="w-full" asChild>
+          <Link href={`${basePath}/track-order`}>
+            <PackageSearch className="size-4" />
+            {tTrackOrder("title")}
+          </Link>
+        </Button>
+        <Button variant="ghost" className="w-full" asChild>
+          <Link href={basePath || "/"}>{t("backToCatalog")}</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // Visiting /checkout directly with nothing in the cart (or right after a
+  // stock sync empties it) — nothing to check out, so send them shopping
+  // instead of showing three empty steps.
+  if (cart.hydrated && cart.items.length === 0) {
+    return (
+      <StateMessage
+        icon={ShoppingBag}
+        title={t("emptyCartTitle")}
+        message={t("emptyCartMessage")}
+        action={
+          <Button asChild>
+            <Link href={`${basePath}/products`}>{t("backToCatalog")}</Link>
           </Button>
-          <Button variant="outline" className="w-full" asChild>
-            <Link href={`/${storeType}/track-order`} onClick={onClose}>
-              <PackageSearch className="size-4" />
-              {tTrackOrder("title")}
-            </Link>
-          </Button>
-          <Button variant="ghost" className="w-full" onClick={onClose}>
-            {t("backToCatalog")}
-          </Button>
-        </CardContent>
-      </Card>
+        }
+      />
     );
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-3 px-4 pb-4">
-        <StepDots current={step} />
-        {step > 1 && customerInfo && (
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
-          >
-            <span className="truncate">
-              {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
-              {customerInfo.customerCity}
-            </span>
-            <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
-              <Pencil className="size-3" />
-              {t("edit")}
-            </span>
-          </button>
-        )}
-        {step > 2 && (
-          <div className="flex items-center justify-between text-sm font-medium">
-            <span>{t("total")}</span>
-            <span>
-              {formatPrice(total, tCommon("currency"))}
-              {appliedPromo && ` · ${appliedPromo.code}`}
-            </span>
-          </div>
-        )}
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4">
+        <Link
+          href={basePath || "/"}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5 rtl:rotate-180" />
+          {t("backToShop")}
+        </Link>
+        <CheckoutStepper current={step} />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
+      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div
           key={step}
-          className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-end-4"
+          className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
         >
           {step === 1 && (
             <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
-              <h2 className="text-label-xs">{t("step1Title")}</h2>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="customerName">{t("customerName")}</Label>
-                <Input
-                  id="customerName"
-                  aria-invalid={!!errors.customerName}
-                  {...register("customerName")}
-                />
-                {errors.customerName && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrorMessage(errors.customerName.message)}
-                  </p>
-                )}
+              <div>
+                <h1 className="text-heading-xs">{t("step1Title")}</h1>
+                <p className="text-sm text-muted-foreground">{t("step1Hint")}</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
-                <Input
-                  id="customerPhone"
-                  inputMode="numeric"
-                  maxLength={8}
-                  aria-invalid={!!errors.customerPhone}
-                  {...register("customerPhone")}
-                />
-                {errors.customerPhone && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrorMessage(errors.customerPhone.message)}
-                  </p>
-                )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <Label htmlFor="customerName">{t("customerName")}</Label>
+                  <Input
+                    id="customerName"
+                    aria-invalid={!!errors.customerName}
+                    {...register("customerName")}
+                  />
+                  {errors.customerName && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrorMessage(errors.customerName.message)}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
+                  <Input
+                    id="customerPhone"
+                    inputMode="numeric"
+                    maxLength={8}
+                    aria-invalid={!!errors.customerPhone}
+                    {...register("customerPhone")}
+                  />
+                  {errors.customerPhone && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrorMessage(errors.customerPhone.message)}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="customerCity">{t("customerCity")}</Label>
+                  <Input
+                    id="customerCity"
+                    aria-invalid={!!errors.customerCity}
+                    {...register("customerCity")}
+                  />
+                  {errors.customerCity && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrorMessage(errors.customerCity.message)}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="customerCity">{t("customerCity")}</Label>
-                <Input
-                  id="customerCity"
-                  aria-invalid={!!errors.customerCity}
-                  {...register("customerCity")}
-                />
-                {errors.customerCity && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrorMessage(errors.customerCity.message)}
-                  </p>
-                )}
-              </div>
-              <Button type="submit">{t("next")}</Button>
+              <Button type="submit" size="lg" className="self-start">
+                {t("next")}
+                <ArrowRight className="size-4 rtl:rotate-180" />
+              </Button>
             </form>
           )}
 
           {step === 2 && customerInfo && (
             <div className="flex flex-col gap-4">
-              <h2 className="text-label-xs">{t("step2Title")}</h2>
-              <div className="flex flex-col gap-2">
-                {cart.items.map((line) => (
-                  <div key={line.variantId} className="flex justify-between text-sm">
-                    <span>
-                      {line.productName} ({line.size}, {line.color}) x{line.quantity}
-                    </span>
-                    <span>{formatPrice(line.unitPrice * line.quantity, tCommon("currency"))}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between border-t pt-2 text-sm">
-                  <span>{tCart("subtotal")}</span>
-                  <span>{formatPrice(cart.subtotal, tCommon("currency"))}</span>
-                </div>
-                {appliedPromo && (
-                  <div className="flex justify-between text-sm text-primary">
-                    <span>
-                      {t("discount")} ({appliedPromo.code})
-                    </span>
-                    <span>-{formatPrice(discount, tCommon("currency"))}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm font-medium">
-                  <span>{t("total")}</span>
-                  <span>{formatPrice(total, tCommon("currency"))}</span>
-                </div>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex items-center justify-between gap-2 self-start rounded-lg bg-muted/50 px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
+              >
+                <span className="truncate">
+                  {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
+                  {customerInfo.customerCity}
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+                  <Pencil className="size-3" />
+                  {t("edit")}
+                </span>
+              </button>
+
+              <div>
+                <h1 className="text-heading-xs">{t("step2Title")}</h1>
+                <p className="text-sm text-muted-foreground">{t("step2Hint")}</p>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -550,21 +505,27 @@ export function CheckoutFlow({
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)}>
+                  <ArrowLeft className="size-4 rtl:rotate-180" />
                   {t("back")}
                 </Button>
-                <Button onClick={() => setStep(3)}>{t("next")}</Button>
+                <Button onClick={() => setStep(3)}>
+                  {t("next")}
+                  <ArrowRight className="size-4 rtl:rotate-180" />
+                </Button>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div className="flex flex-col gap-4">
-              <h2 className="text-label-xs">{t("step3Title")}</h2>
-              {settings.paymentInstructions && (
-                <p className="text-sm text-muted-foreground">
-                  {settings.paymentInstructions}
-                </p>
-              )}
+              <div>
+                <h1 className="text-heading-xs">{t("step3Title")}</h1>
+                {settings.paymentInstructions && (
+                  <p className="text-sm text-muted-foreground">
+                    {settings.paymentInstructions}
+                  </p>
+                )}
+              </div>
 
               {!paymentDetailsVisible ? (
                 <>
@@ -573,12 +534,10 @@ export function CheckoutFlow({
                   </p>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)}>
+                      <ArrowLeft className="size-4 rtl:rotate-180" />
                       {t("back")}
                     </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={() => setPaymentDetailsVisible(true)}
-                    >
+                    <Button onClick={() => setPaymentDetailsVisible(true)}>
                       {t("showPaymentNumbers")}
                     </Button>
                   </div>
@@ -588,41 +547,41 @@ export function CheckoutFlow({
                   {settings.wallets.length > 0 && (
                     <>
                       <p className="text-sm text-muted-foreground">{t("paymentStepHint")}</p>
-                      <div className="grid grid-cols-2 gap-2">
-                      {settings.wallets.map((wallet, index) => (
-                        <Popover key={index}>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-2.5 text-center transition-colors hover:bg-muted/50"
-                            >
-                              {wallet.logoUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={wallet.logoUrl}
-                                  alt=""
-                                  className="size-8 shrink-0 rounded-lg object-cover"
-                                />
-                              ) : (
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                                  <Wallet className="size-4 text-muted-foreground" />
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {settings.wallets.map((wallet, index) => (
+                          <Popover key={index}>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-3 text-center transition-colors hover:bg-muted/50"
+                              >
+                                {wallet.logoUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={wallet.logoUrl}
+                                    alt=""
+                                    className="size-8 shrink-0 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <Wallet className="size-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="flex min-w-0 flex-col items-center">
+                                  <span className="truncate text-xs font-medium text-muted-foreground">
+                                    {wallet.provider}
+                                  </span>
+                                  <span dir="ltr" className="truncate text-sm font-semibold">
+                                    {wallet.number}
+                                  </span>
                                 </div>
-                              )}
-                              <div className="flex min-w-0 flex-col items-center">
-                                <span className="truncate text-xs font-medium text-muted-foreground">
-                                  {wallet.provider}
-                                </span>
-                                <span dir="ltr" className="truncate text-sm font-semibold">
-                                  {wallet.number}
-                                </span>
-                              </div>
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-64 text-center text-sm">
-                            {t("walletNumberHint", { provider: wallet.provider })}
-                          </PopoverContent>
-                        </Popover>
-                      ))}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 text-center text-sm">
+                              {t("walletNumberHint", { provider: wallet.provider })}
+                            </PopoverContent>
+                          </Popover>
+                        ))}
                       </div>
                     </>
                   )}
@@ -649,13 +608,14 @@ export function CheckoutFlow({
 
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)}>
+                      <ArrowLeft className="size-4 rtl:rotate-180" />
                       {t("back")}
                     </Button>
                     <Button
                       onClick={handleFinalSubmit}
                       loading={submitting}
                       disabled={!file}
-                      className="flex-1"
+                      className="flex-1 sm:flex-none"
                     >
                       {t("submitOrder")}
                     </Button>
@@ -664,6 +624,17 @@ export function CheckoutFlow({
               )}
             </div>
           )}
+        </div>
+
+        <div className={cn("lg:sticky lg:top-24 lg:self-start", "order-first lg:order-0")}>
+          <OrderSummary
+            items={cart.items}
+            subtotal={cart.subtotal}
+            discount={discount}
+            discountCode={appliedPromo?.code ?? null}
+            total={total}
+            currency={tCommon("currency")}
+          />
         </div>
       </div>
     </div>
