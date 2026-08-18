@@ -14,7 +14,7 @@ vi.mock("next/headers", () => ({
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { cookies } from "next/headers";
-import { getAdminScope, requireAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope, requireAdminScope, requireSuperAdminScope } from "@/lib/shop/admin-scope";
 
 const getCurrentAdminMock = getCurrentAdmin as unknown as Mock;
 const getStoreSettingsMock = getStoreSettings as unknown as Mock;
@@ -56,6 +56,23 @@ describe("requireAdminScope", () => {
     cookieValue("cosmetique");
 
     const result = await requireAdminScope();
+
+    expect(result.productType).toBe("cosmetique");
+  });
+});
+
+describe("requireSuperAdminScope", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "BOUTIQUE_ADMIN", productType: "sport" });
+
+    await expect(requireSuperAdminScope()).rejects.toThrow("forbidden");
+  });
+
+  it("resolves the SUPERADMIN's current scope, same as requireAdminScope", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SUPERADMIN", productType: null });
+    cookieValue("cosmetique");
+
+    const result = await requireSuperAdminScope();
 
     expect(result.productType).toBe("cosmetique");
   });

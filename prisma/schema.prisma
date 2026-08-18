@@ -38,6 +38,8 @@ model StoreType {
   key                 String    @unique
   label               String
   themeId             String?
+  customThemeColor    String?
+  colorMode           String    @default("auto")
   // Per-boutique contact/branding/storefront — each boutique has its own
   // public route (/{locale}/{key}), so everything a visitor sees (name,
   // announcement bar, hero, SEO, theme, payment numbers, logo) lives here
@@ -50,6 +52,9 @@ model StoreType {
   announcementText    String?
   heroImagePath       String?
   heroImagePosition   String    @default("right")
+  heroVariant         String    @default("split")
+  cardVariant         String    @default("default")
+  testimonialsEnabled Boolean   @default(false)
   heroTitle           String?
   heroSubtitle        String?
   heroBadgeText       String?
@@ -91,6 +96,7 @@ model StoreType {
   socialLinks    SocialLink[]
   promoCodes     PromoCode[]
   walletAccounts WalletAccount[]
+  testimonials   Testimonial[]
 }
 
 model SocialLink {
@@ -101,6 +107,24 @@ model SocialLink {
   url         String
   position    Int       @default(0)
   createdAt   DateTime  @default(now())
+
+  @@index([productType])
+}
+
+// Customer quotes for the optional storefront testimonials section — shown
+// only when StoreType.testimonialsEnabled is true (mirrors SocialLink: a
+// repeatable, admin-ordered list scoped to one boutique). rating is
+// free-standing (1-5), not tied to any Order/Sale — these are manually
+// entered by the boutique admin, not verified purchase reviews.
+model Testimonial {
+  id           String    @id @default(cuid())
+  productType  String
+  storeType    StoreType @relation(fields: [productType], references: [key])
+  customerName String
+  quote        String
+  rating       Int?
+  position     Int       @default(0)
+  createdAt    DateTime  @default(now())
 
   @@index([productType])
 }

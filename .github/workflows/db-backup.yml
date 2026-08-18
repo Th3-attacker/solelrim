@@ -1,0 +1,56 @@
+name: db-backup
+
+# Nightly Postgres dump, kept as a downloadable workflow artifact for 30
+# days. This is a lightweight, zero-extra-infra safety net — it does NOT
+# replace Supabase's own Point-in-Time Recovery (Pro plan and above),
+# which is continuous and restore-tested by Supabase itself. Enable that
+# in the Supabase dashboard (Database > Backups) for the real production
+# guarantee; this workflow is the free-tier/defense-in-depth fallback.
+#
+# Requires a `DIRECT_URL` repo secret (Settings > Secrets and variables >
+# Actions) — the same direct (non-pooled) connection string used by
+# `prisma migrate deploy` (see prisma.config.ts), so this step is added
+# with zero new credentials to provision.
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Dump database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check DIRECT_URL secret is configured
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          if [ -z "$DIRECT_URL" ]; then
+            echo "::error::DIRECT_URL secret is not set — add it under Settings > Secrets and variables > Actions before this workflow can back anything up."
+            exit 1
+          fi
+
+      - name: pg_dump
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          mkdir -p backup
+          # Runs pg_dump from a container matching the CI Postgres version
+          # (see .github/workflows/ci.yml) rather than relying on
+          # whatever client version happens to be preinstalled on the
+          # runner image.
+          docker run --rm -e PGSSLMODE=require postgres:16-alpine \
+            pg_dump "$DIRECT_URL" --format=custom --no-owner --no-privileges \
+            > "backup/solelrim-$(date -u +%Y%m%d-%H%M%S).dump"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backup/*.dump
+          retention-days: 30
+          if-no-files-found: error

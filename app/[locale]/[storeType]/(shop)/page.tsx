@@ -2,14 +2,15 @@ import { FeaturedShowcase } from "@/components/shop/featured-showcase";
 import { HeroSection } from "@/components/shop/hero-section";
 import { ProductCard } from "@/components/shop/product-card";
 import { SectionTitle } from "@/components/shop/section-title";
+import { TestimonialsSection } from "@/components/shop/testimonials-section";
 import { TrustBadges } from "@/components/shop/trust-badges";
 import { StateMessage } from "@/components/ui/state-message";
 import { Link } from "@/i18n/navigation";
-import { ArrowRight, PackageSearch } from "lucide-react";
-import { getActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getActiveProducts } from "@/lib/queries/shop";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
+import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { ArrowRight, PackageSearch } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 // Just a teaser on the homepage — the full catalog with search/filters
@@ -61,6 +62,7 @@ export default async function ShopHomePage({
                     product={product}
                     basePath={basePath}
                     priority={index < 4}
+                    cardVariant={boutique.cardVariant}
                   />
                 </div>
               ))}
@@ -75,6 +77,10 @@ export default async function ShopHomePage({
           </>
         )}
       </div>
+      
+      {boutique.testimonialsEnabled && (
+        <TestimonialsSection testimonials={boutique.testimonials} />
+      )}
 
       <TrustBadges />
     </div>

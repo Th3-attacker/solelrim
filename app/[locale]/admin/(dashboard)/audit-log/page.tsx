@@ -4,6 +4,7 @@ import { endOfDay, isValid, parseISO, startOfDay } from "date-fns";
 import { getAuditLog, AUDIT_LOG_PAGE_SIZE } from "@/lib/queries/audit";
 import { AUDIT_ACTION_LABEL_KEY } from "@/lib/audit-actions";
 import { getAdminScope } from "@/lib/shop/admin-scope";
+import { requireSuperAdminPage } from "@/lib/auth/admin";
 import { StateMessage } from "@/components/ui/state-message";
 import { ListPagination } from "@/components/ui/list-pagination";
 import { AuditLogFilters } from "@/components/audit-log/audit-log-filters";
@@ -27,6 +28,8 @@ export default async function AdminAuditLogPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await requireSuperAdminPage();
+
   const params = await searchParams;
   const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
   const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;

@@ -246,7 +246,12 @@ export default async function ProductDetailPage({
           <h2 className="text-heading-xs">{t("relatedProducts")}</h2>
           <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
             {relatedProducts.map((related) => (
-              <ProductCard key={related.id} product={related} basePath={basePath} />
+              <ProductCard
+                key={related.id}
+                product={related}
+                basePath={basePath}
+                cardVariant={boutique.cardVariant}
+              />
             ))}
           </div>
         </div>

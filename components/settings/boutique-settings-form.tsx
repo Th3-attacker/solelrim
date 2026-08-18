@@ -26,8 +26,12 @@ import { updateBoutiqueSettings } from "@/lib/actions/settings";
 
 export function BoutiqueSettingsForm({
   defaultValues,
+  heroVariant,
 }: {
   defaultValues: BoutiqueSettingsInput;
+  // Read-only here — editing it is superadmin-only (LayoutVariantsPicker).
+  // Only used to decide whether heroImagePosition is still relevant to show.
+  heroVariant: string;
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -141,6 +145,30 @@ export function BoutiqueSettingsForm({
           <CardTitle className="text-base">{t("heroSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+          {heroVariant === "split" && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
+              <Select
+                value={watch("heroImagePosition") ?? "right"}
+                onValueChange={(value) =>
+                  setValue("heroImagePosition", value as "left" | "right")
+                }
+              >
+                <SelectTrigger id="heroImagePosition" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="right">
+                    {t("heroImagePositionRight")}
+                  </SelectItem>
+                  <SelectItem value="left">
+                    {t("heroImagePositionLeft")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             <Label htmlFor="heroBadgeText">{t("heroBadgeText")}</Label>
             <Input
@@ -148,28 +176,6 @@ export function BoutiqueSettingsForm({
               placeholder={t("heroBadgeTextPlaceholder")}
               {...register("heroBadgeText")}
             />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
-            <Select
-              value={watch("heroImagePosition") ?? "right"}
-              onValueChange={(value) =>
-                setValue("heroImagePosition", value as "left" | "right")
-              }
-            >
-              <SelectTrigger id="heroImagePosition" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="right">
-                  {t("heroImagePositionRight")}
-                </SelectItem>
-                <SelectItem value="left">
-                  {t("heroImagePositionLeft")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">

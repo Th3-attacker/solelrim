@@ -5,13 +5,16 @@ import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
-import { detectImageSignature } from "@/lib/shop/image-signature";
+import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
 async function uploadWalletLogo(
   file: File,
 ): Promise<{ path: string } | { error: "uploadFailed" | "invalidFile" }> {
+  if (file.size > MAX_IMAGE_BYTES) {
+    return { error: "invalidFile" };
+  }
   const fileBuffer = await file.arrayBuffer();
   const detected = detectImageSignature(new Uint8Array(fileBuffer));
   if (!detected) {
