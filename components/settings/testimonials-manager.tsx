@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, ChevronUp, ChevronDown, Star } from "lucide-react";
+import { Plus, Trash, CaretUp, CaretDown, Star } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -144,7 +144,7 @@ export function TestimonialsManager({
                 onClick={() => handleMove(item.id, "up")}
                 aria-label={tCommon("moveUp")}
               >
-                <ChevronUp className="size-4" />
+                <CaretUp className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -154,7 +154,7 @@ export function TestimonialsManager({
                 onClick={() => handleMove(item.id, "down")}
                 aria-label={tCommon("moveDown")}
               >
-                <ChevronDown className="size-4" />
+                <CaretDown className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -164,7 +164,7 @@ export function TestimonialsManager({
                 onClick={() => handleDelete(item.id)}
                 aria-label={tCommon("delete")}
               >
-                <Trash2 className="size-4" />
+                <Trash className="size-4" />
               </Button>
             </div>
           ))}

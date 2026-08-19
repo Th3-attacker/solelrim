@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 

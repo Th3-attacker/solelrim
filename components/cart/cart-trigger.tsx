@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Trash } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -142,7 +142,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
                       aria-label={t("remove")}
                       onClick={() => removeItem(line.variantId)}
                     >
-                      <Trash2 className="size-3" />
+                      <Trash className="size-3" />
                     </Button>
                   </div>
                 </div>

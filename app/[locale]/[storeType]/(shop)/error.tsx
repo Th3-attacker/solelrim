@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { TriangleAlert } from "lucide-react";
+import { Warning } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { StateMessage } from "@/components/ui/state-message";
@@ -21,7 +21,7 @@ export default function ShopError({
 
   return (
     <StateMessage
-      icon={TriangleAlert}
+      icon={Warning}
       title={t("errorTitle")}
       message={t("errorMessage")}
       action={

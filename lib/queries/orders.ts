@@ -56,6 +56,31 @@ export function getOrdersByPhone(phone: string, productType: string) {
   });
 }
 
+export const CLIENT_ORDERS_PAGE_SIZE = 20;
+
+// Paginated counterpart to getOrdersByPhone, for a client detail page whose
+// online order history can grow past a single page.
+export async function getOrdersByPhonePage(
+  phone: string,
+  productType: string,
+  page = 1,
+) {
+  const currentPage = Math.max(1, page);
+  const where = { customerPhone: phone, productType };
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (currentPage - 1) * CLIENT_ORDERS_PAGE_SIZE,
+      take: CLIENT_ORDERS_PAGE_SIZE,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return { orders, total, page: currentPage };
+}
+
 export function getOrderById(id: string, productType: string) {
   return prisma.order.findFirst({
     where: { id, productType },

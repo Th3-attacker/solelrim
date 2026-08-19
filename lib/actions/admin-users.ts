@@ -14,7 +14,7 @@ export async function createBoutiqueAdmin(
   if (!parsed.success) {
     return { error: "invalid" };
   }
-  const { email, password, productType } = parsed.data;
+  const { email, password, productType, canManageAppearance } = parsed.data;
 
   const storeType = await prisma.storeType.findUnique({ where: { key: productType } });
   if (!storeType) {
@@ -33,7 +33,12 @@ export async function createBoutiqueAdmin(
 
   try {
     await prisma.adminUser.create({
-      data: { supabaseUserId: data.user.id, role: "BOUTIQUE_ADMIN", productType },
+      data: {
+        supabaseUserId: data.user.id,
+        role: "BOUTIQUE_ADMIN",
+        productType,
+        canManageAppearance,
+      },
     });
   } catch (err) {
     // No cross-system transaction between Supabase Auth and Postgres —
@@ -63,6 +68,30 @@ export async function deleteBoutiqueAdmin(
   const supabase = createAdminClient();
   await supabase.auth.admin.deleteUser(admin.supabaseUserId).catch(() => {});
   await prisma.adminUser.delete({ where: { id: adminUserId } });
+
+  revalidatePath("/admin/settings/global");
+  return {};
+}
+
+// Grants/revokes the one appearance exception (theme/color, color mode,
+// hero/card layout — see requireAppearanceScope) a BOUTIQUE_ADMIN can hold.
+// No effect either way for a SUPERADMIN row, but this never targets one
+// anyway (same restriction as deleteBoutiqueAdmin above).
+export async function setAdminCanManageAppearance(
+  adminUserId: string,
+  canManageAppearance: boolean,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const admin = await prisma.adminUser.findUnique({ where: { id: adminUserId } });
+  if (!admin || admin.role !== "BOUTIQUE_ADMIN") {
+    return { error: "invalid" };
+  }
+
+  await prisma.adminUser.update({
+    where: { id: adminUserId },
+    data: { canManageAppearance },
+  });
 
   revalidatePath("/admin/settings/global");
   return {};

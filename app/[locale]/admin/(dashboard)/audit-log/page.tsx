@@ -1,5 +1,5 @@
 import { getTranslations, getFormatter } from "next-intl/server";
-import { History } from "lucide-react";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { endOfDay, isValid, parseISO, startOfDay } from "date-fns";
 import { getAuditLog, AUDIT_LOG_PAGE_SIZE } from "@/lib/queries/audit";
 import { AUDIT_ACTION_LABEL_KEY } from "@/lib/audit-actions";
@@ -64,7 +64,7 @@ export default async function AdminAuditLogPage({
 
       {entries.length === 0 ? (
         <StateMessage
-          icon={History}
+          icon={ClockCounterClockwise}
           title={hasFilters ? tCommon("noResults") : t("noEntries")}
         />
       ) : (

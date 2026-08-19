@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Ban } from "lucide-react";
+import { Prohibit } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -44,7 +44,7 @@ export function DeactivatePromoCodeButton({ promoCodeId }: { promoCodeId: string
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" disabled={pending} aria-label={t("deactivate")}>
-          <Ban className="size-4" />
+          <Prohibit className="size-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

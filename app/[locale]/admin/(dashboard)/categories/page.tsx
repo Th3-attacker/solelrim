@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Tags } from "lucide-react";
+import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { getCategoriesForAdmin } from "@/lib/queries/categories";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { CreateCategoryButton } from "@/components/categories/create-category-button";
@@ -48,7 +48,7 @@ export default async function AdminCategoriesPage() {
       </div>
 
       {categories.length === 0 ? (
-        <StateMessage icon={Tags} title={t("noCategories")} />
+        <StateMessage icon={Tag} title={t("noCategories")} />
       ) : (
         <Table>
           <TableHeader>

@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, AlertTriangle, UserPlus } from "lucide-react";
+import { TrendDown, TrendUp, Warning, UserPlus } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import {
   getRevenueByDay,
@@ -54,9 +54,9 @@ export default async function DashboardPage() {
             revenueTrend !== null && (
               <Badge variant="outline" className="gap-1">
                 {revenueTrend >= 0 ? (
-                  <TrendingUp className="size-3" />
+                  <TrendUp className="size-3" />
                 ) : (
-                  <TrendingDown className="size-3" />
+                  <TrendDown className="size-3" />
                 )}
                 {revenueTrend >= 0 ? "+" : ""}
                 {revenueTrend.toFixed(1)}%
@@ -70,9 +70,9 @@ export default async function DashboardPage() {
                 : t("trendDown")}
               {revenueTrend !== null &&
                 (revenueTrend >= 0 ? (
-                  <TrendingUp className="size-4" />
+                  <TrendUp className="size-4" />
                 ) : (
-                  <TrendingDown className="size-4" />
+                  <TrendDown className="size-4" />
                 ))}
             </>
           }
@@ -86,9 +86,9 @@ export default async function DashboardPage() {
             salesTrend !== null && (
               <Badge variant="outline" className="gap-1">
                 {salesTrend >= 0 ? (
-                  <TrendingUp className="size-3" />
+                  <TrendUp className="size-3" />
                 ) : (
-                  <TrendingDown className="size-3" />
+                  <TrendDown className="size-3" />
                 )}
                 {salesTrend >= 0 ? "+" : ""}
                 {salesTrend.toFixed(1)}%
@@ -100,9 +100,9 @@ export default async function DashboardPage() {
               {salesTrend !== null && salesTrend >= 0 ? t("trendUp") : t("trendDown")}
               {salesTrend !== null &&
                 (salesTrend >= 0 ? (
-                  <TrendingUp className="size-4" />
+                  <TrendUp className="size-4" />
                 ) : (
-                  <TrendingDown className="size-4" />
+                  <TrendDown className="size-4" />
                 ))}
             </>
           }
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
           badge={
             lowStock.length > 0 && (
               <Badge variant="destructive" className="gap-1">
-                <AlertTriangle className="size-3" />
+                <Warning className="size-3" />
                 {lowStock.length}
               </Badge>
             )

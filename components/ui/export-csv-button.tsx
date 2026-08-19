@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { toCsv, type CsvColumn } from "@/lib/shop/csv";
 

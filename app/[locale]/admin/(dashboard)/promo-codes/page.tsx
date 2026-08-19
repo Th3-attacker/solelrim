@@ -1,5 +1,5 @@
 import { getTranslations, getFormatter } from "next-intl/server";
-import { Plus, Ticket } from "lucide-react";
+import { Plus, Ticket } from "@phosphor-icons/react/dist/ssr";
 import { getAllPromoCodes } from "@/lib/queries/promo-codes";
 import { getAllClients } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";

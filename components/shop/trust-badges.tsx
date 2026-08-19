@@ -1,4 +1,4 @@
-import { CreditCard, MessageCircle, ShieldCheck } from "lucide-react";
+import { CreditCard, ChatCircle, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import { OrderProcedureTrigger } from "@/components/shop/order-procedure-trigger";
 import { SectionTitle } from "@/components/shop/section-title";
@@ -13,7 +13,7 @@ export async function TrustBadges() {
       desc: t("trustPaymentDesc"),
     },
     {
-      icon: MessageCircle,
+      icon: ChatCircle,
       title: t("trustWhatsappTitle"),
       desc: t("trustWhatsappDesc"),
     },

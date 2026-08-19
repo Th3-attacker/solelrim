@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getAllProducts, getAllCategories, PRODUCTS_PAGE_SIZE } from "@/lib/queries/products";
 import { getAdminScope } from "@/lib/shop/admin-scope";

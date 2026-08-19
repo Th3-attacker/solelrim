@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
+import { ChatCircle } from "@phosphor-icons/react/dist/ssr";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -330,7 +330,7 @@ export default async function ShopLayout({
                           rel="noopener noreferrer"
                           className="flex items-center gap-1.5 transition-colors hover:text-white"
                         >
-                          <MessageCircle className="size-4" />
+                          <ChatCircle className="size-4" />
                           {t("contactWhatsapp")}
                         </a>
                       )}

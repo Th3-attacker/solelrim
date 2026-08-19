@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { differenceInHours } from "date-fns";
-import { Tag } from "lucide-react";
+import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { getOrderById } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { getAdminScope } from "@/lib/shop/admin-scope";

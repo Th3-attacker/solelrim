@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, ChevronUp, ChevronDown, Pencil, Wallet, X } from "lucide-react";
+import { Plus, Trash, CaretUp, CaretDown, Pencil, Wallet, X } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -141,7 +141,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 onClick={() => handleMove(wallet.id, "up")}
                 aria-label={tCommon("moveUp")}
               >
-                <ChevronUp className="size-4" />
+                <CaretUp className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -151,7 +151,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 onClick={() => handleMove(wallet.id, "down")}
                 aria-label={tCommon("moveDown")}
               >
-                <ChevronDown className="size-4" />
+                <CaretDown className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -161,7 +161,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                 onClick={() => handleDelete(wallet.id)}
                 aria-label={tCommon("delete")}
               >
-                <Trash2 className="size-4" />
+                <Trash className="size-4" />
               </Button>
             </div>
           ))}

@@ -1,7 +1,7 @@
 
 import { getTranslations, getFormatter } from "next-intl/server";
 
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt } from "@phosphor-icons/react/dist/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Check, Pipette } from "lucide-react";
+import { Check, Eyedropper } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { setCustomThemeColor, setStoreTheme } from "@/lib/actions/settings";
@@ -100,7 +100,7 @@ export function ThemePicker({
                 style={{ color: customColor ? undefined : "var(--muted-foreground)" }}
               />
             ) : (
-              <Pipette className="size-4 text-muted-foreground" />
+              <Eyedropper className="size-4 text-muted-foreground" />
             )}
           </span>
           <input

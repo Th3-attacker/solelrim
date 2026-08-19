@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -46,7 +46,7 @@ export function DeleteCategoryButton({ categoryId }: { categoryId: string }) {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" disabled={pending} aria-label={tCommon("delete")}>
-          <Trash2 className="size-4" />
+          <Trash className="size-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

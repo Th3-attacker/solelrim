@@ -19,7 +19,7 @@ import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/produ
 import { slugify } from "@/lib/shop/slug";
 import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireAdminScope, requireSuperAdminScope } from "@/lib/shop/admin-scope";
+import { requireAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
@@ -192,7 +192,7 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
 }
 
 export async function setStoreTheme(themeId: string): Promise<{ error?: string }> {
-  const { productType } = await requireSuperAdminScope();
+  const { productType } = await requireAppearanceScope();
 
   if (!THEME_PRESETS.some((preset) => preset.id === themeId)) {
     return { error: "invalid" };
@@ -212,7 +212,7 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
 // as picking any other preset switches it to that preset's id — the two
 // pickers are mutually exclusive views onto the same underlying field.
 export async function setCustomThemeColor(color: string): Promise<{ error?: string }> {
-  const { productType } = await requireSuperAdminScope();
+  const { productType } = await requireAppearanceScope();
 
   const parsed = customThemeColorSchema.safeParse({ color });
   if (!parsed.success) {
@@ -230,7 +230,7 @@ export async function setCustomThemeColor(color: string): Promise<{ error?: stri
 }
 
 export async function setColorMode(mode: string): Promise<{ error?: string }> {
-  const { productType } = await requireSuperAdminScope();
+  const { productType } = await requireAppearanceScope();
 
   const parsed = colorModeSchema.safeParse(mode);
   if (!parsed.success) {
@@ -248,7 +248,7 @@ export async function setColorMode(mode: string): Promise<{ error?: string }> {
 }
 
 export async function setHeroVariant(variant: string): Promise<{ error?: string }> {
-  const { productType } = await requireSuperAdminScope();
+  const { productType } = await requireAppearanceScope();
 
   const parsed = heroVariantSchema.safeParse(variant);
   if (!parsed.success) {
@@ -266,7 +266,7 @@ export async function setHeroVariant(variant: string): Promise<{ error?: string 
 }
 
 export async function setCardVariant(variant: string): Promise<{ error?: string }> {
-  const { productType } = await requireSuperAdminScope();
+  const { productType } = await requireAppearanceScope();
 
   const parsed = cardVariantSchema.safeParse(variant);
   if (!parsed.success) {

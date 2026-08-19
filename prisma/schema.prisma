@@ -159,6 +159,12 @@ model AdminUser {
   supabaseUserId String     @unique
   role           AdminRole
   productType    String?
+  // BOUTIQUE_ADMIN-only exception, granted per account by a superadmin —
+  // lets this specific admin manage their boutique's theme/color, color
+  // mode, and hero/card layout variants, which stay superadmin-only for
+  // everyone else (lib/shop/admin-scope.ts: requireAppearanceScope). No
+  // effect for SUPERADMIN, who already has access to everything.
+  canManageAppearance Boolean @default(false)
   // Explicit Restrict (not Prisma's implicit SetNull default for an
   // optional relation) — matches the original migration's raw SQL and the
   // DB-level CHECK below: a BOUTIQUE_ADMIN's productType must never become

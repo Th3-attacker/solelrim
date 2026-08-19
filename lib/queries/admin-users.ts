@@ -20,6 +20,7 @@ export async function listBoutiqueAdmins() {
     id: admin.id,
     email: emailById.get(admin.supabaseUserId) ?? null,
     boutiqueLabel: admin.storeType?.label ?? admin.productType,
+    canManageAppearance: admin.canManageAppearance,
     createdAt: admin.createdAt,
   }));
 }

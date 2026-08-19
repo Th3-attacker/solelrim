@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations, useFormatter } from "next-intl";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageCircle } from "lucide-react";
+import { ChatCircle } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,7 +161,7 @@ export function TrackOrderForm({
                 <p className="text-sm text-muted-foreground">{t("stuckNotice")}</p>
                 <Button asChild variant="outline" size="sm">
                   <a href={stuckWhatsAppHref} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="size-4" />
+                    <ChatCircle className="size-4" />
                     {t("stuckCta")}
                   </a>
                 </Button>

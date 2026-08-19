@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { CaretUpDown, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertDialog,
@@ -77,7 +77,7 @@ export function NavUser({
                 <span className="truncate font-medium">{roleLabel}</span>
                 <span className="truncate text-xs text-muted-foreground">{email}</span>
               </div>
-              <ChevronsUpDown className="ms-auto size-4 group-data-[collapsible=icon]:hidden" />
+              <CaretUpDown className="ms-auto size-4 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -101,7 +101,7 @@ export function NavUser({
                 setConfirmOpen(true);
               }}
             >
-              {loggingOut ? <Spinner className="size-4" /> : <LogOut />}
+              {loggingOut ? <Spinner className="size-4" /> : <SignOut />}
               {t("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>

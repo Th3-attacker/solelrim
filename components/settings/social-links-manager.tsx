@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
+import { Plus, Trash, CaretUp, CaretDown, ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -79,7 +79,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                   className="flex items-center gap-1 truncate text-xs text-muted-foreground hover:underline"
                 >
                   <span className="truncate">{link.url}</span>
-                  <ExternalLink className="size-3 shrink-0" />
+                  <ArrowSquareOut className="size-3 shrink-0" />
                 </a>
               </div>
               <Button
@@ -90,7 +90,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 onClick={() => handleMove(link.id, "up")}
                 aria-label={tCommon("moveUp")}
               >
-                <ChevronUp className="size-4" />
+                <CaretUp className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -100,7 +100,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 onClick={() => handleMove(link.id, "down")}
                 aria-label={tCommon("moveDown")}
               >
-                <ChevronDown className="size-4" />
+                <CaretDown className="size-4" />
               </Button>
               <Button
                 type="button"
@@ -110,7 +110,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
                 onClick={() => handleDelete(link.id)}
                 aria-label={tCommon("delete")}
               >
-                <Trash2 className="size-4" />
+                <Trash className="size-4" />
               </Button>
             </div>
           ))}

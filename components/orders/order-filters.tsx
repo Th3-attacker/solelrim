@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { CalendarIcon, ListFilter, Search } from "lucide-react";
+import { CalendarBlank, FunnelSimple, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { startOfDay, subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -183,7 +183,7 @@ export function OrderFilters() {
         {isSyncing ? (
           <Spinner className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         ) : (
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         )}
         <Input
           aria-label={t("searchPlaceholder")}
@@ -197,7 +197,7 @@ export function OrderFilters() {
       <Popover open={statusOpen} onOpenChange={handleStatusOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="rounded-md">
-            <ListFilter className="size-3.5 text-muted-foreground" />
+            <FunnelSimple className="size-3.5 text-muted-foreground" />
             {filters.status ? t(STATUS_LABEL_KEY[filters.status as OrderStatus]) : t("status")}
           </Button>
         </PopoverTrigger>
@@ -228,7 +228,7 @@ export function OrderFilters() {
       <Popover open={dateOpen} onOpenChange={handleDateOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="rounded-md">
-            <CalendarIcon className="size-3.5 text-muted-foreground" />
+            <CalendarBlank className="size-3.5 text-muted-foreground" />
             {dateLabel}
           </Button>
         </PopoverTrigger>

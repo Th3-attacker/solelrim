@@ -18,20 +18,20 @@ import { NavUser } from "@/components/dashboard/nav-user";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
-  ClipboardList,
-  History,
-  LayoutDashboard,
+  ClipboardText,
+  ClockCounterClockwise,
+  SquaresFour,
   Package,
-  Settings,
+  Gear,
   ShoppingCart,
   Tag,
   Ticket,
   Users,
-} from "lucide-react";
+} from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 
 type StoreTypeOption = { key: string; label: string };
-type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
+type NavItem = { href: string; label: string; icon: typeof SquaresFour };
 
 export function AppSidebar({
   storeTypes,
@@ -51,7 +51,7 @@ export function AppSidebar({
   const { setOpenMobile } = useSidebar();
 
   const sections: { label?: string; items: NavItem[] }[] = [
-    { items: [{ href: "/admin", label: t("dashboard"), icon: LayoutDashboard }] },
+    { items: [{ href: "/admin", label: t("dashboard"), icon: SquaresFour }] },
     {
       label: t("catalogSection"),
       items: [
@@ -63,7 +63,7 @@ export function AppSidebar({
       label: t("activitySection"),
       items: [
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
-        { href: "/admin/orders", label: t("orders"), icon: ClipboardList },
+        { href: "/admin/orders", label: t("orders"), icon: ClipboardText },
         { href: "/admin/clients", label: t("clients"), icon: Users },
         { href: "/admin/promo-codes", label: t("promoCodes"), icon: Ticket },
       ],
@@ -71,12 +71,12 @@ export function AppSidebar({
     {
       label: t("adminSection"),
       items: [
-        { href: "/admin/settings", label: t("settings"), icon: Settings },
+        { href: "/admin/settings", label: t("settings"), icon: Gear },
         // Superadmin-only (app/[locale]/admin/(dashboard)/audit-log/page.tsx
         // enforces this server-side too — hidden here just to not show a
         // link a boutique admin would hit a 404 on).
         ...(role === "SUPERADMIN"
-          ? [{ href: "/admin/audit-log", label: t("auditLog"), icon: History }]
+          ? [{ href: "/admin/audit-log", label: t("auditLog"), icon: ClockCounterClockwise }]
           : []),
       ],
     },
