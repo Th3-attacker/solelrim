@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -198,7 +198,7 @@ export function SearchTrigger({
     return (
       <form onSubmit={handleSubmit}>
         <div className="relative flex items-center">
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={inputRef}
             autoFocus={autoFocus}
@@ -223,7 +223,7 @@ export function SearchTrigger({
         aria-label={t("search")}
         onClick={() => setOpen(true)}
       >
-        <Search className="size-4" />
+        <MagnifyingGlass className="size-4" />
       </Button>
       <Sheet open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
         {isMobile ? (

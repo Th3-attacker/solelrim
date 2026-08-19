@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HelpCircle } from "lucide-react";
+import { Question } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { OrderProcedure } from "@/components/shop/order-procedure";
 
@@ -16,7 +16,7 @@ export function OrderProcedureTrigger() {
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-foreground"
       >
-        <HelpCircle className="size-4" />
+        <Question className="size-4" />
         {t("trigger")}
       </button>
       <OrderProcedure open={open} onOpenChange={setOpen} />

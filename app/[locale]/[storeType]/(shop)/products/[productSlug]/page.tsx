@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import {
   getActiveProductBySlug,
   getActiveProducts,
@@ -199,12 +199,12 @@ export default async function ProductDetailPage({
                 href={`${basePath}/products/${prevSlug}`}
                 aria-label={t("previousProduct")}
               >
-                <ChevronLeft className="rtl:rotate-180" />
+                <CaretLeft className="rtl:rotate-180" />
               </Link>
             </Button>
           ) : (
             <Button variant="outline" size="icon-sm" disabled>
-              <ChevronLeft className="rtl:rotate-180" />
+              <CaretLeft className="rtl:rotate-180" />
             </Button>
           )}
           {nextSlug ? (
@@ -213,12 +213,12 @@ export default async function ProductDetailPage({
                 href={`${basePath}/products/${nextSlug}`}
                 aria-label={t("nextProduct")}
               >
-                <ChevronRight className="rtl:rotate-180" />
+                <CaretRight className="rtl:rotate-180" />
               </Link>
             </Button>
           ) : (
             <Button variant="outline" size="icon-sm" disabled>
-              <ChevronRight className="rtl:rotate-180" />
+              <CaretRight className="rtl:rotate-180" />
             </Button>
           )}
         </div>

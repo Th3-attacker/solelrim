@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { StockBadge } from "@/components/shop/stock-badge";
 import { FavoriteButton } from "@/components/shop/favorite-button";

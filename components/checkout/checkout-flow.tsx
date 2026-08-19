@@ -23,7 +23,7 @@ import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { computeDiscountAmount } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
-import { Wallet, X, Pencil, PackageSearch, Copy, Check, ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
+import { Wallet, X, Pencil, Package, Copy, Check, ArrowLeft, ArrowRight, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -336,7 +336,7 @@ export function CheckoutFlow({
         </Button>
         <Button variant="outline" className="w-full" asChild>
           <Link href={`${basePath}/track-order`}>
-            <PackageSearch className="size-4" />
+            <Package className="size-4" />
             {tTrackOrder("title")}
           </Link>
         </Button>

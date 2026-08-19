@@ -1,6 +1,6 @@
 "use client";
 
-import { Share } from "lucide-react";
+import { Share } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";

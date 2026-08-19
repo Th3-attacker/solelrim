@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { login, type LoginState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -18,6 +19,7 @@ const initialState: LoginState = {};
 
 export function LoginForm() {
   const t = useTranslations("auth.login");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const [state, formAction, pending] = useActionState(login, initialState);
 
@@ -43,12 +45,13 @@ export function LoginForm() {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">{t("password")}</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               required
               aria-invalid={!!state.error}
+              showLabel={tCommon("showPassword")}
+              hideLabel={tCommon("hidePassword")}
             />
           </div>
           {state.error && (

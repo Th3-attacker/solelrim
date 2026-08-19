@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { ChatCircle } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +50,7 @@ export function ClientMessageButton(props: Props) {
   return (
     <Button asChild variant="outline" size="sm">
       <a href={href} target="_blank" rel="noopener noreferrer">
-        <MessageCircle className="size-4" />
+        <ChatCircle className="size-4" />
         {props.type === "confirmation"
           ? t("sendConfirmationToClient")
           : t("sendRejectionToClient")}

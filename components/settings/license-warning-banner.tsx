@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { Warning } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export async function LicenseWarningBanner({
       )}
     >
       <Badge variant={variant} className="gap-1">
-        <AlertTriangle className="size-3" />
+        <Warning className="size-3" />
         {t(`licenseStatus.${status}`)}
       </Badge>
       <span className="text-muted-foreground">

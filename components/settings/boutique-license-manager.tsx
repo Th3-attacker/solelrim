@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarIcon, Pencil } from "lucide-react";
+import { CalendarBlank, Pencil } from "@phosphor-icons/react/dist/ssr";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
@@ -139,7 +139,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
       <Popover open={dateOpen} onOpenChange={setDateOpen}>
         <PopoverTrigger asChild>
           <Button type="button" variant="outline" size="sm">
-            <CalendarIcon className="size-3.5" />
+            <CalendarBlank className="size-3.5" />
             {storeType.licenseExpiresAt
               ? format.dateTime(storeType.licenseExpiresAt, { dateStyle: "medium" })
               : t("licenseExtend")}

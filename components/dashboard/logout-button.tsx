@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { LogOut } from "lucide-react";
+import { SignOut } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export function LogoutButton() {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("logout")}>
-          <LogOut className="size-4" />
+          <SignOut className="size-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

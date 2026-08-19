@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { CaretUp, CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -42,7 +42,7 @@ export function MoveCategoryButtons({
         onClick={() => handleMove("up")}
         aria-label={tCommon("moveUp")}
       >
-        <ChevronUp className="size-4" />
+        <CaretUp className="size-4" />
       </Button>
       <Button
         type="button"
@@ -52,7 +52,7 @@ export function MoveCategoryButtons({
         onClick={() => handleMove("down")}
         aria-label={tCommon("moveDown")}
       >
-        <ChevronDown className="size-4" />
+        <CaretDown className="size-4" />
       </Button>
     </>
   );

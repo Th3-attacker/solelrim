@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { FilterPanel } from "@/components/shop/filter-panel";
 import { FilterTrigger } from "@/components/shop/filter-trigger";
@@ -81,7 +81,7 @@ export function CategoryFilters({
           className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           {t("categoriesLabel")}
-          <ChevronDown
+          <CaretDown
             className={cn("size-4 transition-transform", categoriesOpen && "rotate-180")}
           />
         </button>

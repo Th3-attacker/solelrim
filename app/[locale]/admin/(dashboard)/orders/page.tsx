@@ -1,7 +1,7 @@
 import { getTranslations, getFormatter } from "next-intl/server";
 import Image from "next/image";
 import { differenceInHours } from "date-fns";
-import { ClipboardList } from "lucide-react";
+import { ClipboardText } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
@@ -85,7 +85,7 @@ export default async function AdminOrdersPage({
 
       {orders.length === 0 ? (
         <StateMessage
-          icon={ClipboardList}
+          icon={ClipboardText}
           title={hasFilters ? tCommon("noResults") : t("noOrders")}
         />
       ) : (

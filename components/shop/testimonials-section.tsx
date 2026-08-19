@@ -1,5 +1,5 @@
 import { SectionTitle } from "@/components/shop/section-title";
-import { Star } from "lucide-react";
+import { Star } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 

@@ -3,7 +3,7 @@ import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategoryFilters } from "@/components/shop/category-filters";
 import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
-import { PackageSearch } from "lucide-react";
+import { Package } from "@phosphor-icons/react/dist/ssr";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
@@ -125,7 +125,7 @@ export default async function ProductsPage({
 
       <div id="catalog" className="scroll-mt-20">
         {displayedProducts.length === 0 ? (
-          <StateMessage icon={PackageSearch} title={t("noProducts")} />
+          <StateMessage icon={Package} title={t("noProducts")} />
         ) : (
           <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
             {displayedProducts.map((product, index) => (

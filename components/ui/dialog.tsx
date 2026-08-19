@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
+import { X } from "@phosphor-icons/react/dist/ssr"
 
 function Dialog({
   ...props
@@ -76,7 +76,7 @@ function DialogContent({
               className="absolute top-4 end-4"
               size="icon-sm"
             >
-              <XIcon
+              <X
               />
               <span className="sr-only">{t("close")}</span>
             </Button>
