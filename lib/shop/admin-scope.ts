@@ -64,3 +64,18 @@ export async function requireSuperAdminScope(): Promise<{
   }
   return { admin, productType };
 }
+
+// Theme/color, color mode, and hero/card layout variants: superadmin-only
+// by default, but a BOUTIQUE_ADMIN can be granted a per-account exception
+// (AdminUser.canManageAppearance, set via setAdminCanManageAppearance) to
+// manage their own boutique's appearance without full superadmin access.
+export async function requireAppearanceScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireAdminScope();
+  if (admin.role !== "SUPERADMIN" && !admin.canManageAppearance) {
+    throw new Error("forbidden");
+  }
+  return { admin, productType };
+}

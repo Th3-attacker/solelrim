@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Palette } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -16,12 +17,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
-import { createBoutiqueAdmin, deleteBoutiqueAdmin } from "@/lib/actions/admin-users";
+import {
+  createBoutiqueAdmin,
+  deleteBoutiqueAdmin,
+  setAdminCanManageAppearance,
+} from "@/lib/actions/admin-users";
+import { cn } from "@/lib/utils";
 
 type BoutiqueAdmin = {
   id: string;
   email: string | null;
   boutiqueLabel: string | null;
+  canManageAppearance: boolean;
 };
 
 type StoreTypeOption = { key: string; label: string };
@@ -40,17 +47,24 @@ export function AdminUsersManager({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [productType, setProductType] = useState(storeTypes[0]?.key ?? "");
+  const [canManageAppearance, setCanManageAppearance] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleCreate() {
     startTransition(async () => {
-      const result = await createBoutiqueAdmin({ email, password, productType });
+      const result = await createBoutiqueAdmin({
+        email,
+        password,
+        productType,
+        canManageAppearance,
+      });
       if (result.error) {
         toast.error(tCommon("error"));
         return;
       }
       setEmail("");
       setPassword("");
+      setCanManageAppearance(false);
       setOpen(false);
       router.refresh();
     });
@@ -59,6 +73,17 @@ export function AdminUsersManager({
   function handleDelete(id: string) {
     startTransition(async () => {
       const result = await deleteBoutiqueAdmin(id);
+      if (result.error) {
+        toast.error(tCommon("error"));
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  function handleToggleAppearance(id: string, next: boolean) {
+    startTransition(async () => {
+      const result = await setAdminCanManageAppearance(id, next);
       if (result.error) {
         toast.error(tCommon("error"));
         return;
@@ -77,6 +102,23 @@ export function AdminUsersManager({
                 <span className="truncate text-sm font-medium">{admin.email}</span>
                 <span className="text-xs text-muted-foreground">{admin.boutiqueLabel}</span>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={pending}
+                onClick={() => handleToggleAppearance(admin.id, !admin.canManageAppearance)}
+                aria-label={t("adminUserAppearanceToggle")}
+                aria-pressed={admin.canManageAppearance}
+                title={
+                  admin.canManageAppearance
+                    ? t("adminUserAppearanceOn")
+                    : t("adminUserAppearanceOff")
+                }
+                className={cn(admin.canManageAppearance && "text-primary")}
+              >
+                <Palette className="size-4" />
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
@@ -149,6 +191,21 @@ export function AdminUsersManager({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="admin-user-appearance"
+              checked={canManageAppearance}
+              onCheckedChange={(checked) => setCanManageAppearance(checked === true)}
+            />
+            <div className="flex flex-col gap-0.5">
+              <Label htmlFor="admin-user-appearance" className="font-normal">
+                {t("adminUserAppearanceCheckbox")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("adminUserAppearanceCheckboxHint")}
+              </p>
+            </div>
           </div>
         </div>
       </ResponsiveFormDialog>

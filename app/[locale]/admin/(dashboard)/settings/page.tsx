@@ -49,7 +49,7 @@ export default async function SettingsPage() {
         }
       />
 
-      {admin.role === "SUPERADMIN" && (
+      {(admin.role === "SUPERADMIN" || admin.canManageAppearance) && (
         <>
           <ThemePicker
             presets={THEME_PRESETS}
