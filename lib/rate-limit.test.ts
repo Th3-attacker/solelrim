@@ -75,7 +75,33 @@ describe("getClientIp", () => {
     await expect(getClientIp()).resolves.toBe("198.51.100.7");
   });
 
-  it("falls back to \"unknown\" when neither header is present", async () => {
+  it("falls back to a stable per-visitor hash when neither IP header is present", async () => {
+    headersMock.mockResolvedValue({
+      get: (name: string) => {
+        if (name === "user-agent") return "Mozilla/5.0 Test";
+        if (name === "accept-language") return "fr-FR";
+        return null;
+      },
+    });
+
+    const result = await getClientIp();
+    expect(result).toMatch(/^unknown:[0-9a-f]{16}$/);
+  });
+
+  it("gives two visitors with different user-agents different fallback buckets", async () => {
+    headersMock.mockResolvedValue({
+      get: (name: string) => (name === "user-agent" ? "Browser A" : null),
+    });
+    const a = await getClientIp();
+    headersMock.mockResolvedValue({
+      get: (name: string) => (name === "user-agent" ? "Browser B" : null),
+    });
+    const b = await getClientIp();
+
+    expect(a).not.toBe(b);
+  });
+
+  it("falls back to the literal \"unknown\" only when every signal is missing", async () => {
     headersMock.mockResolvedValue({ get: () => null });
 
     await expect(getClientIp()).resolves.toBe("unknown");

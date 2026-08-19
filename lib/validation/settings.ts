@@ -55,6 +55,9 @@ export const testimonialSchema = z.object({
   customerName: z.string().trim().min(1).max(80),
   quote: z.string().trim().min(1).max(500),
   rating: z.number().int().min(1).max(5).optional(),
+  // Re-validated server-side (scope + DELIVERED status) in createTestimonial
+  // — this only shapes the input, it isn't the trust boundary.
+  orderId: z.string().trim().min(1).optional(),
 });
 
 export type TestimonialInput = z.infer<typeof testimonialSchema>;

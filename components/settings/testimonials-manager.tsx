@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
-import { Plus, Trash, CaretUp, CaretDown, Star } from "@phosphor-icons/react/dist/ssr";
+import { useTranslations, useFormatter } from "next-intl";
+import { Plus, Trash, CaretUp, CaretDown, Star, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import {
   createTestimonial,
@@ -24,22 +31,36 @@ type Testimonial = {
   customerName: string;
   quote: string;
   rating: number | null;
+  orderId: string | null;
 };
+
+type DeliveredOrder = {
+  id: string;
+  reference: string;
+  customerName: string;
+  deliveredAt: Date | null;
+};
+
+const NO_ORDER = "__none__";
 
 export function TestimonialsManager({
   testimonials,
   enabled,
+  deliveredOrders,
 }: {
   testimonials: Testimonial[];
   enabled: boolean;
+  deliveredOrders: DeliveredOrder[];
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
+  const format = useFormatter();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [quote, setQuote] = useState("");
   const [rating, setRating] = useState<number | null>(null);
+  const [orderId, setOrderId] = useState<string>(NO_ORDER);
   const [pending, startTransition] = useTransition();
   const [togglePending, startToggleTransition] = useTransition();
 
@@ -49,14 +70,18 @@ export function TestimonialsManager({
         customerName,
         quote,
         rating: rating ?? undefined,
+        orderId: orderId === NO_ORDER ? undefined : orderId,
       });
       if (result.error) {
-        toast.error(tCommon("error"));
+        toast.error(
+          result.error === "invalidOrder" ? t("testimonialInvalidOrder") : tCommon("error"),
+        );
         return;
       }
       setCustomerName("");
       setQuote("");
       setRating(null);
+      setOrderId(NO_ORDER);
       setOpen(false);
       router.refresh();
     });
@@ -118,6 +143,12 @@ export function TestimonialsManager({
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{item.customerName}</span>
+                  {item.orderId && (
+                    <span className="flex items-center gap-1 text-xs text-primary">
+                      <SealCheck className="size-3.5" weight="fill" />
+                      {t("testimonialVerified")}
+                    </span>
+                  )}
                   {item.rating && (
                     <span className="flex items-center gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -235,6 +266,26 @@ export function TestimonialsManager({
                 );
               })}
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="testimonial-order">{t("testimonialLinkOrder")}</Label>
+            <Select value={orderId} onValueChange={setOrderId}>
+              <SelectTrigger id="testimonial-order">
+                <SelectValue placeholder={t("testimonialLinkOrderNone")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_ORDER}>{t("testimonialLinkOrderNone")}</SelectItem>
+                {deliveredOrders.map((order) => (
+                  <SelectItem key={order.id} value={order.id}>
+                    {order.reference} — {order.customerName}
+                    {order.deliveredAt
+                      ? ` (${format.dateTime(order.deliveredAt, { dateStyle: "medium" })})`
+                      : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t("testimonialLinkOrderHint")}</p>
           </div>
         </div>
       </ResponsiveFormDialog>

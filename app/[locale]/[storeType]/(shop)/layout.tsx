@@ -40,11 +40,12 @@ export async function generateMetadata({
   params: Promise<{ storeType: string }>;
 }): Promise<Metadata> {
   const { storeType } = await params;
-  const [t, locale, boutique, categories] = await Promise.all([
+  const [t, locale, boutique, categories, basePathForManifest] = await Promise.all([
     getTranslations("shop"),
     getLocale(),
     getPublicBoutiqueSettings(storeType),
     getAllShopCategories(storeType),
+    getStorefrontBasePath(storeType),
   ]);
   const localized = resolveBoutiqueText(boutique, locale);
   const siteName = localized.siteName?.trim() || t("siteName");
@@ -65,6 +66,7 @@ export async function generateMetadata({
     title,
     description,
     keywords,
+    manifest: `/${locale}${basePathForManifest}/manifest.webmanifest`,
     ...buildSocialMetadata({
       title,
       description,

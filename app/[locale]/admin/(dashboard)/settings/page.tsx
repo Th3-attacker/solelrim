@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getBoutiqueSettings } from "@/lib/queries/settings";
+import { getDeliveredOrders } from "@/lib/queries/orders";
 import { getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
 import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
@@ -21,7 +22,10 @@ export default async function SettingsPage() {
     requireAdminScope(),
   ]);
 
-  const boutique = await getBoutiqueSettings(productType);
+  const [boutique, deliveredOrders] = await Promise.all([
+    getBoutiqueSettings(productType),
+    getDeliveredOrders(productType),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -117,7 +121,9 @@ export default async function SettingsPage() {
           customerName: item.customerName,
           quote: item.quote,
           rating: item.rating,
+          orderId: item.orderId,
         }))}
+        deliveredOrders={deliveredOrders}
       />
     </div>
   );
