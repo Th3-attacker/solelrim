@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -9,12 +9,17 @@ export async function ListPagination({
   total,
   basePath,
   searchParams,
+  paramName = "page",
 }: {
   page: number;
   pageSize: number;
   total: number;
   basePath: string;
   searchParams: Record<string, string | undefined>;
+  // Lets two independent paginated lists coexist on the same page (each
+  // keeping its own ?xPage= / ?yPage= param instead of fighting over one
+  // shared "page").
+  paramName?: string;
 }) {
   const t = await getTranslations("common");
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -31,9 +36,9 @@ export async function ListPagination({
       if (value) params.set(key, value);
     }
     if (targetPage > 1) {
-      params.set("page", String(targetPage));
+      params.set(paramName, String(targetPage));
     } else {
-      params.delete("page");
+      params.delete(paramName);
     }
     const query = params.toString();
     return `${basePath}${query ? `?${query}` : ""}`;
@@ -51,23 +56,23 @@ export async function ListPagination({
         {currentPage > 1 ? (
           <Button asChild variant="outline" size="icon-sm">
             <Link href={hrefFor(currentPage - 1)} aria-label={t("previous")}>
-              <ChevronLeft className="rtl:rotate-180" />
+              <CaretLeft className="rtl:rotate-180" />
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="icon-sm" disabled aria-label={t("previous")}>
-            <ChevronLeft className="rtl:rotate-180" />
+            <CaretLeft className="rtl:rotate-180" />
           </Button>
         )}
         {currentPage < totalPages ? (
           <Button asChild variant="outline" size="icon-sm">
             <Link href={hrefFor(currentPage + 1)} aria-label={t("next")}>
-              <ChevronRight className="rtl:rotate-180" />
+              <CaretRight className="rtl:rotate-180" />
             </Link>
           </Button>
         ) : (
           <Button variant="outline" size="icon-sm" disabled aria-label={t("next")}>
-            <ChevronRight className="rtl:rotate-180" />
+            <CaretRight className="rtl:rotate-180" />
           </Button>
         )}
       </div>

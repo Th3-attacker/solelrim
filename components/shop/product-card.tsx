@@ -5,6 +5,7 @@ import { StockBadge } from "@/components/shop/stock-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { Eye } from "@phosphor-icons/react/dist/ssr";
 import type { getActiveProducts } from "@/lib/queries/shop";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { getSwatchStyle } from "@/lib/shop/color-swatch";
@@ -195,10 +196,11 @@ export function ProductCard({
               asChild
               variant="outline"
               size="sm"
-              className="relative z-10 min-w-0 basis-[80%]"
+              className="relative z-10 min-w-0 flex-1 sm:flex-none sm:basis-[80%]"
             >
               <Link href={productHref}>
-                <span className="truncate">{t("viewProduct")}</span>
+                <Eye className="size-3.5" />
+                <span className="hidden truncate sm:inline">{t("viewProduct")}</span>
               </Link>
             </Button>
             {defaultVariant && (
@@ -207,7 +209,7 @@ export function ProductCard({
                 productName={product.name}
                 imageStoragePath={image?.storagePath ?? null}
                 variant={defaultVariant}
-                className="basis-[18%] shrink-0"
+                className="flex-1 sm:flex-none sm:shrink-0 sm:basis-[18%]"
               />
             )}
           </div>

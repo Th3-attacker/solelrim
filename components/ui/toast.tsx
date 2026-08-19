@@ -4,13 +4,13 @@ import * as React from "react"
 import { Toast as ToastPrimitive } from "@base-ui/react/toast"
 import { useTranslations } from "next-intl"
 import {
-  CircleCheckIcon,
+  CheckCircle,
   InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-  XIcon,
-} from "lucide-react"
+  Warning,
+  XCircle,
+  CircleNotch,
+  X,
+} from "@phosphor-icons/react/dist/ssr"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -134,17 +134,17 @@ function ToastClose({
       )}
       {...props}
     >
-      {children ?? <XIcon aria-hidden="true" />}
+      {children ?? <X aria-hidden="true" />}
     </ToastPrimitive.Close>
   )
 }
 
 const TOAST_ICONS: Record<string, React.ReactNode> = {
-  success: <CircleCheckIcon className="size-4 text-success" aria-hidden="true" />,
+  success: <CheckCircle className="size-4 text-success" aria-hidden="true" />,
   info: <InfoIcon className="size-4 text-info" aria-hidden="true" />,
-  warning: <TriangleAlertIcon className="size-4 text-warning" aria-hidden="true" />,
-  error: <OctagonXIcon className="size-4 text-destructive" aria-hidden="true" />,
-  loading: <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />,
+  warning: <Warning className="size-4 text-warning" aria-hidden="true" />,
+  error: <XCircle className="size-4 text-destructive" aria-hidden="true" />,
+  loading: <CircleNotch className="size-4 animate-spin" aria-hidden="true" />,
 }
 
 function ToastIcon({ type }: { type: string | undefined }) {

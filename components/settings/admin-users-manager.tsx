@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, Palette } from "lucide-react";
+import { Plus, Trash, Palette } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -127,7 +128,7 @@ export function AdminUsersManager({
                 onClick={() => handleDelete(admin.id)}
                 aria-label={tCommon("delete")}
               >
-                <Trash2 className="size-4" />
+                <Trash className="size-4" />
               </Button>
             </div>
           ))}
@@ -167,11 +168,12 @@ export function AdminUsersManager({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="admin-user-password">{t("adminUserPassword")}</Label>
-            <Input
+            <PasswordInput
               id="admin-user-password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              showLabel={tCommon("showPassword")}
+              hideLabel={tCommon("hidePassword")}
             />
             <p className="text-xs text-muted-foreground">
               {t("adminUserPasswordHint")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Laptop, Moon, Sun } from "lucide-react";
+import { Laptop, Moon, Sun } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { setColorMode } from "@/lib/actions/settings";

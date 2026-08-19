@@ -2,7 +2,7 @@
 
 import { useRef, useTransition } from "react";
 import Image from "next/image";
-import { ImageIcon, Trash2, Upload } from "lucide-react";
+import { ImageSquare, Trash, Upload } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
               className="size-full object-contain"
             />
           ) : (
-            <ImageIcon className="size-6 text-muted-foreground" />
+            <ImageSquare className="size-6 text-muted-foreground" />
           )}
         </div>
         <input
@@ -82,7 +82,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
             loading={pending}
             onClick={handleRemove}
           >
-            <Trash2 className="size-4" />
+            <Trash className="size-4" />
           </Button>
         )}
       </div>

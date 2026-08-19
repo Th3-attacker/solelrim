@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Heart } from "lucide-react";
+import { Heart } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { PackageX } from "lucide-react";
+import { Package } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 
 // Replaces the entire storefront (rendered by the (shop) layout instead of
@@ -28,7 +28,7 @@ export async function ExpiredStorefront({
         />
       ) : (
         <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <PackageX className="size-6" />
+          <Package className="size-6" />
         </div>
       )}
       <div className="flex flex-col gap-2">

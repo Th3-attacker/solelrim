@@ -2,10 +2,10 @@
 
 import {
   CreditCard,
-  MessageCircle,
-  PackageCheck,
+  ChatCircle,
+  Package,
   ShoppingBag,
-} from "lucide-react";
+} from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export type OrderProcedureVariant = "auto" | "modal" | "sheet";
 
-const STEP_ICONS = [ShoppingBag, CreditCard, MessageCircle, PackageCheck] as const;
+const STEP_ICONS = [ShoppingBag, CreditCard, ChatCircle, Package] as const;
 
 function OrderProcedureSteps() {
   const t = useTranslations("orderProcedure");

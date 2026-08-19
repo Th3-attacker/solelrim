@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import type { z } from "zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash } from "@phosphor-icons/react/dist/ssr";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,7 +216,7 @@ export function SaleForm({
                   disabled={fields.length <= 1}
                   aria-label={tCommon("delete")}
                 >
-                  <Trash2 className="size-4" />
+                  <Trash className="size-4" />
                 </Button>
               </div>
             </div>

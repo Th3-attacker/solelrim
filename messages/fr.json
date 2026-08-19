@@ -3,6 +3,8 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "edit": "Modifier",
     "create": "Créer",
     "search": "Rechercher",

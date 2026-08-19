@@ -1,4 +1,4 @@
-import { SearchX } from "lucide-react";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ export default async function ShopNotFound() {
 
   return (
     <StateMessage
-      icon={SearchX}
+      icon={MagnifyingGlass}
       title={t("notFoundTitle")}
       message={t("notFoundMessage")}
       action={

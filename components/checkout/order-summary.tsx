@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/format/currency";
 import type { CartLine } from "@/components/cart/cart-provider";

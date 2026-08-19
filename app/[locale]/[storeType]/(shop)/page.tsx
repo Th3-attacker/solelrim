@@ -10,7 +10,7 @@ import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getActiveProducts } from "@/lib/queries/shop";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
-import { ArrowRight, PackageSearch } from "lucide-react";
+import { ArrowRight, Package } from "@phosphor-icons/react/dist/ssr";
 import { getLocale, getTranslations } from "next-intl/server";
 
 // Just a teaser on the homepage — the full catalog with search/filters
@@ -48,7 +48,7 @@ export default async function ShopHomePage({
         <SectionTitle>{t("allProductsTitle")}</SectionTitle>
 
         {previewProducts.length === 0 ? (
-          <StateMessage icon={PackageSearch} title={t("noProducts")} />
+          <StateMessage icon={Package} title={t("noProducts")} />
         ) : (
           <>
             <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">

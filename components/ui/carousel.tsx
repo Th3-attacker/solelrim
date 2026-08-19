@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -211,7 +211,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ChevronLeftIcon className="rtl:rotate-180" />
+      <CaretLeft className="rtl:rotate-180" />
       <span className="sr-only">{t("previous")}</span>
     </Button>
   )
@@ -242,7 +242,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ChevronRightIcon className="rtl:rotate-180" />
+      <CaretRight className="rtl:rotate-180" />
       <span className="sr-only">{t("next")}</span>
     </Button>
   )

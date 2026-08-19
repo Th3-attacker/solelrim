@@ -6,7 +6,7 @@ import {
   type FieldErrors,
   type UseFormRegister,
 } from "react-hook-form";
-import { Trash2, Plus } from "lucide-react";
+import { Trash, Plus } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import type { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -113,7 +113,7 @@ export function VariantFields({
                 disabled={fields.length <= 1}
                 aria-label={tCommon("delete")}
               >
-                <Trash2 className="size-4" />
+                <Trash className="size-4" />
               </Button>
             </div>
           </div>

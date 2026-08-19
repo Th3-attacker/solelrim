@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { Icon } from "@phosphor-icons/react";
 
 export function StateMessage({
   icon: Icon,
@@ -6,7 +6,7 @@ export function StateMessage({
   message,
   action,
 }: {
-  icon: LucideIcon;
+  icon: Icon;
   title: string;
   message?: string;
   action?: React.ReactNode;

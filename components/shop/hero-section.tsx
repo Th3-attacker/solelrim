@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
-import { PackageSearch } from "lucide-react";
+import { Package } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 
 type HeroSettings = {
@@ -68,7 +68,7 @@ function HeroFallback({
           </Button>
           <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
             <a href={trackOrderHref}>
-              <PackageSearch className="size-4" />
+              <Package className="size-4" />
               {trackOrderLabel}
             </a>
           </Button>
@@ -116,7 +116,7 @@ function HeroSplit({
           </Button>
           <Button asChild size="lg" variant="outline">
             <a href={trackOrderHref}>
-              <PackageSearch className="size-4" />
+              <Package className="size-4" />
               {trackOrderLabel}
             </a>
           </Button>
@@ -213,7 +213,7 @@ function HeroFullbleed({
           </Button>
           <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
             <a href={trackOrderHref}>
-              <PackageSearch className="size-4" />
+              <Package className="size-4" />
               {trackOrderLabel}
             </a>
           </Button>
@@ -257,7 +257,7 @@ function HeroMinimal({
           </Button>
           <Button asChild variant="outline">
             <a href={trackOrderHref}>
-              <PackageSearch className="size-4" />
+              <Package className="size-4" />
               {trackOrderLabel}
             </a>
           </Button>

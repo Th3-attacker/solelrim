@@ -42,11 +42,32 @@ export async function getClientsPage(
 export function getClientById(id: string, productType: string) {
   return prisma.client.findFirst({
     where: { id, productType },
-    include: {
-      sales: {
-        orderBy: { createdAt: "desc" },
-        include: { items: true },
-      },
-    },
   });
+}
+
+export const CLIENT_SALES_PAGE_SIZE = 20;
+
+// Separate from getClientById — a loyal client's purchase history can grow
+// past a single page, so it's fetched (and paginated) independently rather
+// than as an unbounded include on the client record.
+export async function getClientSalesPage(
+  clientId: string,
+  productType: string,
+  page = 1,
+) {
+  const currentPage = Math.max(1, page);
+  const where = { clientId, productType };
+
+  const [sales, total] = await Promise.all([
+    prisma.sale.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+      skip: (currentPage - 1) * CLIENT_SALES_PAGE_SIZE,
+      take: CLIENT_SALES_PAGE_SIZE,
+    }),
+    prisma.sale.count({ where }),
+  ]);
+
+  return { sales, total, page: currentPage };
 }

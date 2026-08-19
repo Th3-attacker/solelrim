@@ -3,6 +3,8 @@
     "save": "حفظ",
     "cancel": "إلغاء",
     "delete": "حذف",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
     "edit": "تعديل",
     "create": "إنشاء",
     "search": "بحث",

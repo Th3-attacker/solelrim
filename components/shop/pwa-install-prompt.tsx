@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Share } from "lucide-react";
+import { Share } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ function getViewportServerSnapshot() {
 }
 
 // Suggests installing the PWA on a visitor's first eligible visit, as a
-// single bottom sheet (same shape as Cart/Favorites/Search — no separate
+// single bottom sheet (same shape as Cart/Favorites/MagnifyingGlass — no separate
 // desktop dialog to keep in sync). Phones and tablets only; skipped on
 // desktop entirely. Android/Chrome capture the native beforeinstallprompt
 // event; iOS Safari never fires it at all (no programmatic install API

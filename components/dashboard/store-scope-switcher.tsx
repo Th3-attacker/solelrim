@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { ChevronsUpDown, Store } from "lucide-react";
+import { CaretUpDown, Storefront } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
@@ -60,10 +60,10 @@ export function StoreScopeSwitcher({
           disabled={pending}
         >
           <span className="flex min-w-0 items-center gap-2">
-            <Store className="size-4 shrink-0" />
+            <Storefront className="size-4 shrink-0" />
             <span className="truncate">{currentLabel}</span>
           </span>
-          <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+          <CaretUpDown className="size-4 shrink-0 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">

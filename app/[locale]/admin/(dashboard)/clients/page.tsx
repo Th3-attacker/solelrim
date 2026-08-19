@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getClientsPage, CLIENTS_PAGE_SIZE } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";

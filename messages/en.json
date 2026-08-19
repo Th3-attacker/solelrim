@@ -3,6 +3,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "edit": "Edit",
     "create": "Create",
     "search": "Search",
