@@ -8,6 +8,13 @@ jobs:
   checks:
     name: Lint, typecheck, test
     runs-on: ubuntu-latest
+    # `pnpm install`'s own postinstall hook runs `prisma generate`, and
+    # prisma.config.ts reads DIRECT_URL eagerly just to load the config —
+    # `generate` never opens a connection, so these never need to resolve
+    # to a real database, just be set to something.
+    env:
+      DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+      DIRECT_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
     steps:
       - uses: actions/checkout@v4
 
@@ -70,13 +77,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # 20260720111215_enable_row_level_security grants to Supabase's
-      # anon/authenticated PostgREST roles — real on every actual Supabase
-      # project, but this service is a bare postgres:16-alpine image with
-      # neither, so `prisma migrate deploy` would otherwise fail with
-      # P3018 (role "anon" does not exist) before next build ever runs.
+      # Bare postgres:16-alpine has neither of two things every real
+      # Supabase project has by default, and two migrations assume:
+      # - 20260720111215_enable_row_level_security grants to the
+      #   anon/authenticated PostgREST roles (P3018 without them).
+      # - 20260820110000_enable_unaccent installs the unaccent extension
+      #   into an "extensions" schema (P3018 without it existing first).
+      # Both created here rather than made defensive in the migrations
+      # themselves — those already applied against the real dev/staging
+      # database, so editing their SQL now would just make Prisma see a
+      # checksum mismatch against what's recorded there next deploy.
       - run: |
-          psql "$DATABASE_URL" -c 'CREATE ROLE anon;' -c 'CREATE ROLE authenticated;'
+          psql "$DATABASE_URL" -c 'CREATE ROLE anon;' -c 'CREATE ROLE authenticated;' -c 'CREATE SCHEMA IF NOT EXISTS extensions;'
 
       - run: pnpm build
 
