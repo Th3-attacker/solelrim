@@ -3,7 +3,7 @@ import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategoryFilters } from "@/components/shop/category-filters";
 import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
-import { Package } from "@phosphor-icons/react/dist/ssr";
+import { Package, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { getActiveProducts, getAllShopCategories, searchActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
@@ -78,11 +78,13 @@ export default async function ProductsPage({
     params,
     searchParams,
   ]);
-  const [t, basePath, boutique] = await Promise.all([
+  const [t, tCommon, basePath, boutique] = await Promise.all([
     getTranslations("shop"),
+    getTranslations("common"),
     getStorefrontBasePath(storeType),
     getPublicBoutiqueSettings(storeType),
   ]);
+  const hasFilters = Boolean(category || color || price || q?.trim());
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
     getAllShopCategories(storeType),
@@ -129,7 +131,10 @@ export default async function ProductsPage({
 
       <div id="catalog" className="scroll-mt-20">
         {displayedProducts.length === 0 ? (
-          <StateMessage icon={Package} title={t("noProducts")} />
+          <StateMessage
+            icon={hasFilters ? MagnifyingGlass : Package}
+            title={hasFilters ? tCommon("noResults") : t("noProducts")}
+          />
         ) : (
           <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
             {displayedProducts.map((product, index) => (
