@@ -24,6 +24,7 @@ import { StateMessage } from "@/components/ui/state-message";
 import { toast } from "@/components/ui/toast";
 import { getVariantStocks } from "@/lib/actions/cart";
 import { buildCartShareText } from "@/lib/shop/cart-share";
+import { encodeCartEntries } from "@/lib/shop/cart-link";
 import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
 
 export function CartTrigger({ basePath }: { basePath: string }) {
@@ -37,7 +38,14 @@ export function CartTrigger({ basePath }: { basePath: string }) {
 
   async function handleShareCart() {
     const text = buildCartShareText(items, subtotal, tCommon("currency"), t("shareTotal"));
-    const url = `${window.location.origin}/${locale}${basePath}`;
+    // Carries the cart itself, not just a link to browse from scratch —
+    // whoever opens it lands on this same boutique with these exact lines
+    // already added to their own cart (see the ?cart= import in
+    // CartProvider), on top of anything already there.
+    const cartParam = encodeCartEntries(
+      items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+    );
+    const url = `${window.location.origin}/${locale}${basePath}?cart=${encodeURIComponent(cartParam)}`;
     try {
       const result = await shareContent({ title: t("shareTitle"), text, url });
       if (result === "copied") toast.success(t("linkCopied"));

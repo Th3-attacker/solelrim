@@ -350,7 +350,8 @@
     "shareLabel": "Share cart",
     "shareTitle": "My cart",
     "shareTotal": "Total:",
-    "linkCopied": "Link copied."
+    "linkCopied": "Link copied.",
+    "sharedCartAdded": "Shared cart added to yours."
   },
   "checkout": {
     "title": "Checkout",

@@ -350,7 +350,8 @@
     "shareLabel": "مشاركة السلة",
     "shareTitle": "سلتي",
     "shareTotal": "المجموع:",
-    "linkCopied": "تم نسخ الرابط."
+    "linkCopied": "تم نسخ الرابط.",
+    "sharedCartAdded": "تمت إضافة السلة المشتركة إلى سلتك."
   },
   "checkout": {
     "title": "إتمام الطلب",

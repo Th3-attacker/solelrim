@@ -350,7 +350,8 @@
     "shareLabel": "Partager le panier",
     "shareTitle": "Mon panier",
     "shareTotal": "Total :",
-    "linkCopied": "Lien copié."
+    "linkCopied": "Lien copié.",
+    "sharedCartAdded": "Panier partagé ajouté au vôtre."
   },
   "checkout": {
     "title": "Commande",
