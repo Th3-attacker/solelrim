@@ -346,7 +346,12 @@
     "subtotal": "Subtotal",
     "checkoutButton": "Checkout",
     "continueShopping": "Continue shopping",
-    "stockUpdated": "Stock changed for some items — quantities updated."
+    "stockUpdated": "Stock changed for some items — quantities updated.",
+    "shareLabel": "Share cart",
+    "shareTitle": "My cart",
+    "shareTotal": "Total:",
+    "linkCopied": "Link copied.",
+    "sharedCartAdded": "Shared cart added to yours."
   },
   "checkout": {
     "title": "Checkout",

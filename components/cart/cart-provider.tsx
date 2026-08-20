@@ -6,7 +6,13 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
 } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { toast } from "@/components/ui/toast";
+import { resolveSharedCartLines } from "@/lib/actions/cart";
+import { decodeCartEntries } from "@/lib/shop/cart-link";
 
 export type CartLine = {
   variantId: string;
@@ -135,6 +141,14 @@ export function CartProvider({
     hydrated: false,
   });
   const storageKey = `solelrim-cart-${storeType}`;
+  const t = useTranslations("cart");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  // StrictMode double-invokes effects in dev, and the async resolve below
+  // can still be in flight when that happens — without this, a fast dev
+  // reload could add every shared line twice before the URL is cleaned up.
+  const importingSharedCart = useRef(false);
 
   useEffect(() => {
     try {
@@ -154,6 +168,46 @@ export function CartProvider({
     if (!state.hydrated) return;
     localStorage.setItem(storageKey, JSON.stringify(state.items));
   }, [storageKey, state.items, state.hydrated]);
+
+  // A "share cart" link (see CartTrigger) carries {variantId, quantity}
+  // pairs in ?cart= — the cart itself only ever lives in localStorage, so
+  // there's nothing server-side to fetch by id, only variants to re-resolve
+  // to their current name/price/stock. Added on top of whatever's already
+  // in this visitor's own cart, never replacing it — someone opening a
+  // friend's shared link shouldn't lose what they'd already picked out.
+  useEffect(() => {
+    if (!state.hydrated || importingSharedCart.current) return;
+    const raw = searchParams.get("cart");
+    if (!raw) return;
+    importingSharedCart.current = true;
+
+    const entries = decodeCartEntries(raw);
+    if (entries.length === 0) {
+      router.replace(pathname);
+      return;
+    }
+
+    resolveSharedCartLines(storeType, entries).then((lines) => {
+      for (const line of lines) {
+        dispatch({
+          type: "ADD_ITEM",
+          line: {
+            variantId: line.variantId,
+            productId: line.productId,
+            productName: line.productName,
+            size: line.size,
+            color: line.color,
+            unitPrice: line.unitPrice,
+            imageStoragePath: line.imageStoragePath,
+            stock: line.stock,
+          },
+          quantity: line.quantity,
+        });
+      }
+      if (lines.length > 0) toast.success(t("sharedCartAdded"));
+      router.replace(pathname);
+    });
+  }, [state.hydrated, searchParams, pathname, router, storeType, t]);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotal = state.items.reduce(

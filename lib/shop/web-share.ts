@@ -1,0 +1,28 @@
+export type ShareResult = "shared" | "copied";
+
+// navigator.share and navigator.clipboard both require a secure context
+// (HTTPS, or localhost) — over plain HTTP (a LAN IP during testing, or a
+// misconfigured deploy) both are simply undefined, and a caller that only
+// checks `navigator.share` before falling through to
+// `navigator.clipboard.writeText` throws on that second call too, with
+// nothing catching it. This always either opens the native share sheet,
+// copies to the clipboard, or throws — so the caller can show real
+// feedback in every case instead of the click silently doing nothing.
+export async function shareContent(data: ShareData): Promise<ShareResult> {
+  if (typeof navigator !== "undefined" && navigator.share) {
+    if (!navigator.canShare || navigator.canShare(data)) {
+      await navigator.share(data);
+      return "shared";
+    }
+  }
+  if (typeof navigator === "undefined" || !navigator.clipboard) {
+    throw new Error("share-unavailable");
+  }
+  const text = [data.title, data.text, data.url].filter(Boolean).join("\n");
+  await navigator.clipboard.writeText(text);
+  return "copied";
+}
+
+export function isShareCancelled(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
