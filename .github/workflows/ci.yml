@@ -70,6 +70,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # 20260720111215_enable_row_level_security grants to Supabase's
+      # anon/authenticated PostgREST roles — real on every actual Supabase
+      # project, but this service is a bare postgres:16-alpine image with
+      # neither, so `prisma migrate deploy` would otherwise fail with
+      # P3018 (role "anon" does not exist) before next build ever runs.
+      - run: |
+          psql "$DATABASE_URL" -c 'CREATE ROLE anon;' -c 'CREATE ROLE authenticated;'
+
       - run: pnpm build
 
   pr-title:
