@@ -6,6 +6,7 @@ import { z } from "zod";
 // change to either in, even with the picker UI hidden from them.
 export const heroVariantSchema = z.enum(["split", "fullbleed", "minimal"]);
 export const cardVariantSchema = z.enum(["default", "bordered", "cart"]);
+export const footerVariantSchema = z.enum(["columns", "minimal", "centered"]);
 
 // Everything a boutique's own admin can edit about their boutique — payment
 // contact info, and (since each boutique has its own public storefront

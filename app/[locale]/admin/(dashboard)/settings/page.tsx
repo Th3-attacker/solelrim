@@ -66,6 +66,7 @@ export default async function SettingsPage() {
           <LayoutVariantsPicker
             heroVariant={boutique.heroVariant}
             cardVariant={boutique.cardVariant}
+            footerVariant={boutique.footerVariant}
           />
         </>
       )}

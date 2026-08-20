@@ -521,7 +521,12 @@
     "cardVariantDefault": "الحالية (خلفية رمادية)",
     "cardVariantBordered": "بزر \"عرض المنتج\"",
     "cardVariantCart": "بزر إضافة إلى السلة",
-    "layoutVariantsSection": "التخطيط (الصورة الرئيسية وبطاقات المنتجات)",
+
+    "footerVariant": "التخطيط",
+    "footerVariantColumns": "أعمدة (روابط تفصيلية)",
+    "footerVariantMinimal": "بسيط (سطر واحد)",
+    "footerVariantCentered": "في المنتصف",
+    "layoutVariantsSection": "التخطيط (الصورة الرئيسية، بطاقات المنتجات، وتذييل الصفحة)",
     "layoutVariantsSectionHint": "خاص بالمدير العام فقط — المتجر يتحكم بالمحتوى، ويبقى التخطيط مُدارًا مركزيًا.",
 
     "seoSection": "تحسين محركات البحث (SEO)",

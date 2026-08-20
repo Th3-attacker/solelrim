@@ -54,6 +54,7 @@ model StoreType {
   heroImagePosition   String    @default("right")
   heroVariant         String    @default("split")
   cardVariant         String    @default("default")
+  footerVariant       String    @default("columns")
   testimonialsEnabled Boolean   @default(false)
   heroTitle           String?
   heroSubtitle        String?

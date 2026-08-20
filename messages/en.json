@@ -521,7 +521,12 @@
     "cardVariantDefault": "Current (grey background)",
     "cardVariantBordered": "With \"View product\" button",
     "cardVariantCart": "With cart button",
-    "layoutVariantsSection": "Layout (hero and product cards)",
+
+    "footerVariant": "Layout",
+    "footerVariantColumns": "Columns (detailed links)",
+    "footerVariantMinimal": "Minimal (single row)",
+    "footerVariantCentered": "Centered",
+    "layoutVariantsSection": "Layout (hero, product cards, and footer)",
     "layoutVariantsSectionHint": "Superadmin only — the boutique controls content, layout stays centrally managed.",
 
     "seoSection": "SEO",
