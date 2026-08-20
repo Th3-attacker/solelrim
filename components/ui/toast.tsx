@@ -29,8 +29,14 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   return (
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
+      // Above every overlay (Sheet/Dialog/Popover/etc. all use z-50) on
+      // purpose: the Toaster mounts once in the root layout, so its portal
+      // is already in the DOM before any later-opened sheet's portal —
+      // at equal z-index that later portal paints on top and silently
+      // hides any toast fired while it's open (e.g. sharing the cart from
+      // inside the cart sheet itself).
       className={cn(
-        "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-sm outline-none sm:end-4 sm:start-auto sm:mx-0 sm:w-full",
+        "pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto w-auto max-w-sm outline-none sm:end-4 sm:start-auto sm:mx-0 sm:w-full",
         className
       )}
       {...props}

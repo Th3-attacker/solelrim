@@ -3,6 +3,7 @@
 import { Share } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
+import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
 import { cn } from "@/lib/utils";
 
 export function ShareButton({
@@ -13,19 +14,16 @@ export function ShareButton({
   className?: string;
 }) {
   const t = useTranslations("shop");
+  const tCommon = useTranslations("common");
 
   async function handleShare() {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // User cancelled the native share sheet — not an error.
-      }
-      return;
+    try {
+      const result = await shareContent({ title, url: window.location.href });
+      if (result === "copied") toast.success(t("linkCopied"));
+    } catch (error) {
+      if (isShareCancelled(error)) return;
+      toast.error(tCommon("error"));
     }
-    await navigator.clipboard.writeText(url);
-    toast.success(t("linkCopied"));
   }
 
   return (

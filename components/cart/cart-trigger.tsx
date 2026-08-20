@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ShoppingCart, Minus, Plus, Trash } from "@phosphor-icons/react/dist/ssr";
+import { ShoppingCart, Minus, Plus, Trash, Share } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,9 @@ import { cn } from "@/lib/utils";
 import { StateMessage } from "@/components/ui/state-message";
 import { toast } from "@/components/ui/toast";
 import { getVariantStocks } from "@/lib/actions/cart";
+import { buildCartShareText } from "@/lib/shop/cart-share";
+import { encodeCartEntries } from "@/lib/shop/cart-link";
+import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
 
 export function CartTrigger({ basePath }: { basePath: string }) {
   const t = useTranslations("cart");
@@ -32,6 +35,25 @@ export function CartTrigger({ basePath }: { basePath: string }) {
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } =
     useCart();
+
+  async function handleShareCart() {
+    const text = buildCartShareText(items, subtotal, tCommon("currency"), t("shareTotal"));
+    // Carries the cart itself, not just a link to browse from scratch —
+    // whoever opens it lands on this same boutique with these exact lines
+    // already added to their own cart (see the ?cart= import in
+    // CartProvider), on top of anything already there.
+    const cartParam = encodeCartEntries(
+      items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+    );
+    const url = `${window.location.origin}/${locale}${basePath}?cart=${encodeURIComponent(cartParam)}`;
+    try {
+      const result = await shareContent({ title: t("shareTitle"), text, url });
+      if (result === "copied") toast.success(t("linkCopied"));
+    } catch (error) {
+      if (isShareCancelled(error)) return;
+      toast.error(tCommon("error"));
+    }
+  }
 
   // The stock cached on each cart line is a snapshot from whenever it was
   // added — it can go stale (another sale, an admin adjusting stock, or
@@ -75,8 +97,19 @@ export function CartTrigger({ basePath }: { basePath: string }) {
           side === "bottom" && "max-h-[85svh] rounded-t-2xl",
         )}
       >
-        <SheetHeader>
+        <SheetHeader className="flex-row items-center justify-between gap-2">
           <SheetTitle>{t("title")}</SheetTitle>
+          {items.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t("shareLabel")}
+              onClick={handleShareCart}
+            >
+              <Share className="size-4" />
+            </Button>
+          )}
         </SheetHeader>
 
         {items.length === 0 ? (

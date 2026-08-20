@@ -346,7 +346,12 @@
     "subtotal": "Sous-total",
     "checkoutButton": "Passer la commande",
     "continueShopping": "Continuer mes achats",
-    "stockUpdated": "Le stock de certains articles a changé — quantités mises à jour."
+    "stockUpdated": "Le stock de certains articles a changé — quantités mises à jour.",
+    "shareLabel": "Partager le panier",
+    "shareTitle": "Mon panier",
+    "shareTotal": "Total :",
+    "linkCopied": "Lien copié.",
+    "sharedCartAdded": "Panier partagé ajouté au vôtre."
   },
   "checkout": {
     "title": "Commande",

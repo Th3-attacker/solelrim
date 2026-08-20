@@ -346,7 +346,12 @@
     "subtotal": "المجموع الفرعي",
     "checkoutButton": "إتمام الطلب",
     "continueShopping": "متابعة التسوق",
-    "stockUpdated": "تغيّر مخزون بعض المنتجات — تم تحديث الكميات."
+    "stockUpdated": "تغيّر مخزون بعض المنتجات — تم تحديث الكميات.",
+    "shareLabel": "مشاركة السلة",
+    "shareTitle": "سلتي",
+    "shareTotal": "المجموع:",
+    "linkCopied": "تم نسخ الرابط.",
+    "sharedCartAdded": "تمت إضافة السلة المشتركة إلى سلتك."
   },
   "checkout": {
     "title": "إتمام الطلب",
