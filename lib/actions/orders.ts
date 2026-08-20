@@ -15,7 +15,7 @@ import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { detectImageSignature } from "@/lib/shop/image-signature";
+import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { getLicenseStatus } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
@@ -27,10 +27,6 @@ const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 // so it can't be used to spam Storage or flood the admin with fake orders.
 const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 5 };
 
-// Payment screenshots are small phone captures in practice; well under the
-// Server Action's global 2mb body limit (next.config.ts), which covers the
-// whole multipart request, not just this field.
-const MAX_SCREENSHOT_BYTES = 1.5 * 1024 * 1024;
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
   const locales: readonly string[] = routing.locales;
@@ -143,8 +139,15 @@ export async function submitOrder(
     typeof rawPromoCode === "string" && rawPromoCode.trim() ? rawPromoCode.trim() : null;
 
   const file = formData.get("screenshot");
-  if (!(file instanceof File) || file.size === 0 || file.size > MAX_SCREENSHOT_BYTES) {
+  if (!(file instanceof File) || file.size === 0) {
     return { error: "invalidFile" };
+  }
+  // Checked as its own case (not folded into "invalidFile") so the client
+  // can tell the customer exactly what's wrong — checkout-flow.tsx already
+  // rejects an oversized pick before it ever uploads, this is the
+  // server-side backstop for a request built some other way.
+  if (file.size > MAX_IMAGE_BYTES) {
+    return { error: "fileTooLarge" };
   }
 
   // File.type is whatever the browser guessed from the filename — trust the
