@@ -236,6 +236,7 @@
     "loadMore": "Voir plus",
     "featuredShowcaseTitle": "Nos meilleures ventes",
     "testimonialsTitle": "Ce que nos clients disent",
+    "testimonialsVerified": "Achat vérifié",
     "announcementBar": "Paiement mobile sécurisé · Confirmation instantanée par WhatsApp",
     "trustSectionTitle": "Pourquoi nous faire confiance",
     "trustPaymentTitle": "Paiement mobile",
@@ -520,7 +521,12 @@
     "cardVariantDefault": "Actuelle (fond gris)",
     "cardVariantBordered": "Avec bouton \"Voir le produit\"",
     "cardVariantCart": "Avec bouton panier",
-    "layoutVariantsSection": "Mise en page (hero et fiches produits)",
+
+    "footerVariant": "Mise en page",
+    "footerVariantColumns": "Colonnes (liens détaillés)",
+    "footerVariantMinimal": "Minimaliste (une ligne)",
+    "footerVariantCentered": "Centré",
+    "layoutVariantsSection": "Mise en page (hero, fiches produits et pied de page)",
     "layoutVariantsSectionHint": "Réservé au super-admin — la boutique choisit le contenu, la mise en page reste centralisée.",
 
     "seoSection": "Référencement (SEO)",
@@ -552,6 +558,11 @@
     "testimonialQuote": "Avis",
     "testimonialQuotePlaceholder": "Ex. Livraison rapide, produit conforme à la description.",
     "testimonialRating": "Note (facultatif)",
+    "testimonialLinkOrder": "Lier à une commande livrée (facultatif)",
+    "testimonialLinkOrderNone": "Aucune commande liée",
+    "testimonialLinkOrderHint": "Si un avis correspond à une vraie commande livrée, liez-le pour afficher un badge « achat vérifié » sur la boutique.",
+    "testimonialInvalidOrder": "Cette commande n'est plus disponible pour un lien.",
+    "testimonialVerified": "Achat vérifié",
 
     "adminUsersSection": "Comptes admin boutique",
     "newAdminUser": "Nouvel admin boutique",

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Plus, Users } from "@phosphor-icons/react/dist/ssr";
+import { Plus, Users, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getClientsPage, CLIENTS_PAGE_SIZE } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
@@ -47,7 +47,10 @@ export default async function AdminClientsPage({
       <ClientFilters />
 
       {clients.length === 0 ? (
-        <StateMessage icon={Users} title={search ? tCommon("noResults") : t("noClients")} />
+        <StateMessage
+          icon={search ? MagnifyingGlass : Users}
+          title={search ? tCommon("noResults") : t("noClients")}
+        />
       ) : (
         <Table>
           <TableHeader>

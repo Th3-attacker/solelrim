@@ -54,6 +54,7 @@ model StoreType {
   heroImagePosition   String    @default("right")
   heroVariant         String    @default("split")
   cardVariant         String    @default("default")
+  footerVariant       String    @default("columns")
   testimonialsEnabled Boolean   @default(false)
   heroTitle           String?
   heroSubtitle        String?
@@ -123,10 +124,22 @@ model Testimonial {
   customerName String
   quote        String
   rating       Int?
+  // Optional link to the real DELIVERED order this quote came from — set
+  // by the admin picking from their own boutique's delivered orders
+  // (createTestimonial re-checks both the scope and the DELIVERED status
+  // server-side, never trusts the picker alone). Null means "admin-entered
+  // copy, not tied to a specific purchase" — both are legitimate, but only
+  // a linked one is shown with a "verified purchase" badge on the
+  // storefront, so this distinction is never blurred client-side.
+  // SetNull (not Restrict) so deleting the order later doesn't force
+  // deleting the testimonial — it just quietly loses its verified badge.
+  orderId      String?
+  order        Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
   position     Int       @default(0)
   createdAt    DateTime  @default(now())
 
   @@index([productType])
+  @@index([orderId])
 }
 
 // Payment wallet numbers (Bankily, Masrivy, or any other provider the
@@ -200,6 +213,10 @@ model Category {
   // (name, productType) pair) — Prisma's schema DSL can't express a
   // partial/filtered unique index, but the DB-level constraint still
   // applies and createCategory/updateCategory still catch its P2002.
+  // See prisma/migrations/20260731191000_category_partial_unique — if you
+  // ever touch this model, that migration (not this file) is where the
+  // real uniqueness rule lives; `prisma db push`/`migrate diff` won't
+  // surface it since Prisma can't express it here to begin with.
   name        String
   // null = generic, shown regardless of the active store product type.
   // Set only on categories created by the type switch (setProductType) —
@@ -366,6 +383,7 @@ model Order {
   deliveredAt      DateTime?
   cancelledAt      DateTime?
   cancelReason     String?
+  testimonials     Testimonial[]
 
   @@index([status])
   @@index([createdAt])

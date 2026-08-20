@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Translate } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
@@ -27,11 +28,17 @@ export function LanguageSwitcher({
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  // Switching locale re-renders the whole route from the server (every
+  // layout/page under [locale] refetches its data), so there's a real gap
+  // between the click and the new page landing — without this, the menu
+  // just closes and nothing visibly happens until it does. startTransition
+  // surfaces that gap as an immediate spinner instead of dead air.
+  const [pending, startTransition] = useTransition();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("label")}>
+        <Button variant="ghost" size="icon" aria-label={t("label")} loading={pending}>
           <Translate className="size-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -39,9 +46,11 @@ export function LanguageSwitcher({
         {routing.locales.map((nextLocale) => (
           <DropdownMenuItem
             key={nextLocale}
-            disabled={nextLocale === locale}
+            disabled={nextLocale === locale || pending}
             onClick={() => {
-              router.replace(pathname, { locale: nextLocale });
+              startTransition(() => {
+                router.replace(pathname, { locale: nextLocale });
+              });
               onSelect?.();
             }}
           >

@@ -6,6 +6,7 @@ import { z } from "zod";
 // change to either in, even with the picker UI hidden from them.
 export const heroVariantSchema = z.enum(["split", "fullbleed", "minimal"]);
 export const cardVariantSchema = z.enum(["default", "bordered", "cart"]);
+export const footerVariantSchema = z.enum(["columns", "minimal", "centered"]);
 
 // Everything a boutique's own admin can edit about their boutique — payment
 // contact info, and (since each boutique has its own public storefront
@@ -55,6 +56,9 @@ export const testimonialSchema = z.object({
   customerName: z.string().trim().min(1).max(80),
   quote: z.string().trim().min(1).max(500),
   rating: z.number().int().min(1).max(5).optional(),
+  // Re-validated server-side (scope + DELIVERED status) in createTestimonial
+  // — this only shapes the input, it isn't the trust boundary.
+  orderId: z.string().trim().min(1).optional(),
 });
 
 export type TestimonialInput = z.infer<typeof testimonialSchema>;

@@ -1,5 +1,5 @@
 import { SectionTitle } from "@/components/shop/section-title";
-import { Star } from "@phosphor-icons/react/dist/ssr";
+import { Star, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
@@ -8,6 +8,7 @@ type Testimonial = {
   customerName: string;
   quote: string;
   rating: number | null;
+  orderId: string | null;
 };
 
 // Optional, admin-toggled (StoreType.testimonialsEnabled) — the caller
@@ -48,9 +49,17 @@ export async function TestimonialsSection({
             <p className="text-paragraph-md text-foreground">
               &ldquo;{item.quote}&rdquo;
             </p>
-            <span className="text-sm font-medium text-muted-foreground">
-              — {item.customerName}
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                — {item.customerName}
+              </span>
+              {item.orderId && (
+                <span className="flex items-center gap-1 text-xs font-medium text-primary">
+                  <SealCheck className="size-3.5" weight="fill" />
+                  {t("testimonialsVerified")}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

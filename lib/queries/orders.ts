@@ -81,6 +81,17 @@ export async function getOrdersByPhonePage(
   return { orders, total, page: currentPage };
 }
 
+// Powers the testimonial "link to a real order" picker — only ever offers
+// delivered orders (the only status createTestimonial will actually accept
+// as a link), and only this boutique's own.
+export function getDeliveredOrders(productType: string) {
+  return prisma.order.findMany({
+    where: { productType, status: "DELIVERED" },
+    select: { id: true, reference: true, customerName: true, deliveredAt: true },
+    orderBy: { deliveredAt: "desc" },
+  });
+}
+
 export function getOrderById(id: string, productType: string) {
   return prisma.order.findFirst({
     where: { id, productType },
