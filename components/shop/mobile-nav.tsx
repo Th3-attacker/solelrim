@@ -1,7 +1,6 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
-import type { FavoriteProductSummary } from "@/components/shop/favorites-trigger";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,11 +18,11 @@ type SearchCategory = { id: string; name: string };
 
 export function MobileNav({
   categories,
-  products,
+  productType,
   basePath,
 }: {
   categories: SearchCategory[];
-  products: FavoriteProductSummary[];
+  productType: string;
   basePath: string;
 }) {
   const t = useTranslations("shop");
@@ -56,7 +55,7 @@ export function MobileNav({
         <List className="size-4" />
       </Button>
       <div ref={searchTriggerRef} className="hidden">
-        <SearchTrigger categories={categories} products={products} basePath={basePath} />
+        <SearchTrigger categories={categories} productType={productType} basePath={basePath} />
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" showHandle className="rounded-t-2xl">

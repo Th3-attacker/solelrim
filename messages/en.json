@@ -236,6 +236,7 @@
     "loadMore": "Show more",
     "featuredShowcaseTitle": "Our best sellers",
     "testimonialsTitle": "What our customers say",
+    "testimonialsVerified": "Verified purchase",
     "announcementBar": "Secure mobile payment · Instant WhatsApp confirmation",
     "trustSectionTitle": "Why shop with us",
     "trustPaymentTitle": "Mobile payment",
@@ -520,7 +521,12 @@
     "cardVariantDefault": "Current (grey background)",
     "cardVariantBordered": "With \"View product\" button",
     "cardVariantCart": "With cart button",
-    "layoutVariantsSection": "Layout (hero and product cards)",
+
+    "footerVariant": "Layout",
+    "footerVariantColumns": "Columns (detailed links)",
+    "footerVariantMinimal": "Minimal (single row)",
+    "footerVariantCentered": "Centered",
+    "layoutVariantsSection": "Layout (hero, product cards, and footer)",
     "layoutVariantsSectionHint": "Superadmin only — the boutique controls content, layout stays centrally managed.",
 
     "seoSection": "SEO",
@@ -552,6 +558,11 @@
     "testimonialQuote": "Testimonial",
     "testimonialQuotePlaceholder": "E.g. Fast delivery, product as described.",
     "testimonialRating": "Rating (optional)",
+    "testimonialLinkOrder": "Link to a delivered order (optional)",
+    "testimonialLinkOrderNone": "No order linked",
+    "testimonialLinkOrderHint": "If a testimonial matches a real delivered order, link it to show a \"verified purchase\" badge on the storefront.",
+    "testimonialInvalidOrder": "This order is no longer available to link.",
+    "testimonialVerified": "Verified purchase",
 
     "adminUsersSection": "Boutique admin accounts",
     "newAdminUser": "New boutique admin",

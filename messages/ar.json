@@ -236,6 +236,7 @@
     "loadMore": "عرض المزيد",
     "featuredShowcaseTitle": "الأكثر مبيعًا لدينا",
     "testimonialsTitle": "ماذا يقول عملاؤنا",
+    "testimonialsVerified": "شراء موثّق",
     "announcementBar": "دفع آمن عبر الهاتف · تأكيد فوري عبر واتساب",
     "trustSectionTitle": "لماذا تثق بنا",
     "trustPaymentTitle": "دفع عبر الهاتف",
@@ -520,7 +521,12 @@
     "cardVariantDefault": "الحالية (خلفية رمادية)",
     "cardVariantBordered": "بزر \"عرض المنتج\"",
     "cardVariantCart": "بزر إضافة إلى السلة",
-    "layoutVariantsSection": "التخطيط (الصورة الرئيسية وبطاقات المنتجات)",
+
+    "footerVariant": "التخطيط",
+    "footerVariantColumns": "أعمدة (روابط تفصيلية)",
+    "footerVariantMinimal": "بسيط (سطر واحد)",
+    "footerVariantCentered": "في المنتصف",
+    "layoutVariantsSection": "التخطيط (الصورة الرئيسية، بطاقات المنتجات، وتذييل الصفحة)",
     "layoutVariantsSectionHint": "خاص بالمدير العام فقط — المتجر يتحكم بالمحتوى، ويبقى التخطيط مُدارًا مركزيًا.",
 
     "seoSection": "تحسين محركات البحث (SEO)",
@@ -552,6 +558,11 @@
     "testimonialQuote": "الرأي",
     "testimonialQuotePlaceholder": "مثال: توصيل سريع، منتج مطابق للوصف.",
     "testimonialRating": "التقييم (اختياري)",
+    "testimonialLinkOrder": "ربط بطلبية تم تسليمها (اختياري)",
+    "testimonialLinkOrderNone": "بدون طلبية مرتبطة",
+    "testimonialLinkOrderHint": "إذا كان الرأي يطابق طلبية حقيقية تم تسليمها، اربطه لإظهار شارة «شراء موثّق» في المتجر.",
+    "testimonialInvalidOrder": "هذه الطلبية لم تعد متاحة للربط.",
+    "testimonialVerified": "شراء موثّق",
 
     "adminUsersSection": "حسابات إدارة المتاجر",
     "newAdminUser": "مدير متجر جديد",

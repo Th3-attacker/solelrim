@@ -3,8 +3,8 @@ import { CategoryFilterBar } from "@/components/shop/category-filter-bar";
 import { CategoryFilters } from "@/components/shop/category-filters";
 import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
-import { Package } from "@phosphor-icons/react/dist/ssr";
-import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { Package, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import { getActiveProducts, getAllShopCategories, searchActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import {
@@ -14,7 +14,6 @@ import {
   sortProducts,
 } from "@/lib/shop/filters";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
-import { matchesSearch } from "@/lib/shop/search-text";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -79,22 +78,29 @@ export default async function ProductsPage({
     params,
     searchParams,
   ]);
-  const [t, basePath, boutique] = await Promise.all([
+  const [t, tCommon, basePath, boutique] = await Promise.all([
     getTranslations("shop"),
+    getTranslations("common"),
     getStorefrontBasePath(storeType),
     getPublicBoutiqueSettings(storeType),
   ]);
+  const hasFilters = Boolean(category || color || price || q?.trim());
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
     getAllShopCategories(storeType),
   ]);
 
-  let displayedProducts = category
-    ? allProducts.filter((p) => p.categoryId === category)
-    : allProducts;
-  if (q) {
-    displayedProducts = displayedProducts.filter((p) => matchesSearch(p.name, q));
-  }
+  // A text query is answered by the database (accent-insensitive ILIKE,
+  // bounded by LIMIT) instead of scanning allProducts in JS — that scan
+  // would otherwise re-run, unbounded, on every search as the catalog
+  // grows. allProducts itself still gets fetched unconditionally for
+  // catalogColors below, which intentionally reflects the whole catalog
+  // regardless of the current filters.
+  let displayedProducts = q?.trim()
+    ? await searchActiveProducts(storeType, q, { categoryId: category })
+    : category
+      ? allProducts.filter((p) => p.categoryId === category)
+      : allProducts;
   if (color) {
     displayedProducts = filterByColor(displayedProducts, color);
   }
@@ -125,7 +131,10 @@ export default async function ProductsPage({
 
       <div id="catalog" className="scroll-mt-20">
         {displayedProducts.length === 0 ? (
-          <StateMessage icon={Package} title={t("noProducts")} />
+          <StateMessage
+            icon={hasFilters ? MagnifyingGlass : Package}
+            title={hasFilters ? tCommon("noResults") : t("noProducts")}
+          />
         ) : (
           <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
             {displayedProducts.map((product, index) => (

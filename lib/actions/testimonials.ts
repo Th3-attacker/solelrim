@@ -12,6 +12,20 @@ export async function createTestimonial(input: unknown) {
     return { error: "invalid" as const };
   }
 
+  // The picker only ever offers this boutique's own delivered orders, but
+  // that's a UI convenience, not the trust boundary — re-checked here so a
+  // crafted request can't badge a testimonial as "verified" against
+  // another boutique's order, or one that was never actually delivered.
+  if (parsed.data.orderId) {
+    const order = await prisma.order.findFirst({
+      where: { id: parsed.data.orderId, productType, status: "DELIVERED" },
+      select: { id: true },
+    });
+    if (!order) {
+      return { error: "invalidOrder" as const };
+    }
+  }
+
   const maxPosition = await prisma.testimonial.aggregate({
     where: { productType },
     _max: { position: true },

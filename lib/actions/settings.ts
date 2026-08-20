@@ -9,6 +9,7 @@ import {
   cardVariantSchema,
   colorModeSchema,
   customThemeColorSchema,
+  footerVariantSchema,
   heroVariantSchema,
   productTypeInputSchema,
   storeDomainSchema,
@@ -276,6 +277,24 @@ export async function setCardVariant(variant: string): Promise<{ error?: string 
   await prisma.storeType.update({
     where: { key: productType },
     data: { cardVariant: parsed.data },
+  });
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setFooterVariant(variant: string): Promise<{ error?: string }> {
+  const { productType } = await requireAppearanceScope();
+
+  const parsed = footerVariantSchema.safeParse(variant);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { footerVariant: parsed.data },
   });
 
   revalidatePath("/admin/settings");

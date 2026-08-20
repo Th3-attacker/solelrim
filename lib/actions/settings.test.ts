@@ -29,6 +29,7 @@ import {
   setColorMode,
   setHeroVariant,
   setCardVariant,
+  setFooterVariant,
   setProductType,
   createProductType,
   updateStoreDomain,
@@ -189,12 +190,13 @@ describe("setCustomThemeColor / setColorMode (superadmin only)", () => {
   });
 });
 
-describe("setHeroVariant / setCardVariant (superadmin only)", () => {
+describe("setHeroVariant / setCardVariant / setFooterVariant (superadmin only)", () => {
   it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin("cosmetique");
 
     await expect(setHeroVariant("fullbleed")).rejects.toThrow("forbidden");
     await expect(setCardVariant("cart")).rejects.toThrow("forbidden");
+    await expect(setFooterVariant("centered")).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 
@@ -204,9 +206,11 @@ describe("setHeroVariant / setCardVariant (superadmin only)", () => {
 
     const heroResult = await setHeroVariant("fullbleed");
     const cardResult = await setCardVariant("cart");
+    const footerResult = await setFooterVariant("centered");
 
     expect(heroResult.error).toBeUndefined();
     expect(cardResult.error).toBeUndefined();
+    expect(footerResult.error).toBeUndefined();
     expect(prismaMock.storeType.update).toHaveBeenCalledWith({
       where: { key: "cosmetique" },
       data: { heroVariant: "fullbleed" },
@@ -215,14 +219,20 @@ describe("setHeroVariant / setCardVariant (superadmin only)", () => {
       where: { key: "cosmetique" },
       data: { cardVariant: "cart" },
     });
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "cosmetique" },
+      data: { footerVariant: "centered" },
+    });
   });
 
   it("rejects an unknown variant", async () => {
     asSuperAdminScopedTo("cosmetique");
 
-    const result = await setHeroVariant("not-a-real-variant");
+    const heroResult = await setHeroVariant("not-a-real-variant");
+    const footerResult = await setFooterVariant("not-a-real-variant");
 
-    expect(result.error).toBe("invalid");
+    expect(heroResult.error).toBe("invalid");
+    expect(footerResult.error).toBe("invalid");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 });

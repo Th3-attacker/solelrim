@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 export function getActiveProducts(
   productType: string,
@@ -21,6 +22,50 @@ export function getActiveProducts(
     orderBy: { createdAt: "desc" },
     ...(options?.take ? { take: options.take } : {}),
   });
+}
+
+// Accent-insensitive product name search, done in the database via the
+// unaccent extension (prisma/migrations/20260820110000_enable_unaccent)
+// instead of fetching the whole active catalog and filtering it in JS —
+// that doesn't scale once a boutique's catalog grows past a few dozen
+// products, since every page load (and every keystroke in the search box)
+// would ship and re-scan the entire thing. $queryRaw only gets ids back
+// (Prisma can't express unaccent() in a normal `where`), then a second,
+// ordinary findMany hydrates just those rows with their relations.
+export async function searchActiveProducts(
+  productType: string,
+  query: string,
+  options?: { categoryId?: string; take?: number },
+) {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const take = options?.take ?? 20;
+  const pattern = `%${trimmed}%`;
+
+  const matches = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "Product"
+    WHERE "productType" = ${productType}
+      AND "isActive" = true
+      ${options?.categoryId ? Prisma.sql`AND "categoryId" = ${options.categoryId}` : Prisma.empty}
+      AND unaccent(lower(name)) ILIKE unaccent(lower(${pattern}))
+    ORDER BY "createdAt" DESC
+    LIMIT ${take}
+  `;
+  if (matches.length === 0) return [];
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: matches.map((m) => m.id) } },
+    include: {
+      category: true,
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: true,
+    },
+  });
+
+  // findMany({ id: { in } }) doesn't preserve that list's order — restore
+  // the raw query's order (newest match first) instead of DB-arbitrary.
+  const byId = new Map(products.map((product) => [product.id, product]));
+  return matches.map((match) => byId.get(match.id)).filter((p) => p !== undefined);
 }
 
 // Wrapped in React's per-request cache — generateMetadata and the shop

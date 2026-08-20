@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { ArrowRight, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
@@ -21,8 +21,8 @@ import {
   SHEET_PEEK_INSET,
 } from "@/hooks/use-visual-viewport";
 import { matchesSearch } from "@/lib/shop/search-text";
+import { searchProductSuggestions } from "@/lib/actions/search";
 import { formatPrice } from "@/lib/format/currency";
-import type { FavoriteProductSummary } from "@/components/shop/favorites-trigger";
 import { cn } from "@/lib/utils";
 
 type SearchCategory = { id: string; name: string };
@@ -38,16 +38,16 @@ type SearchItem =
       price: number;
     };
 
-const MAX_PRODUCT_SUGGESTIONS = 6;
 const MAX_CATEGORY_SUGGESTIONS = 3;
+const SEARCH_DEBOUNCE_MS = 250;
 
 export function SearchTrigger({
   categories,
-  products,
+  productType,
   basePath,
 }: {
   categories: SearchCategory[];
-  products: FavoriteProductSummary[];
+  productType: string;
   basePath: string;
 }) {
   const t = useTranslations("shop");
@@ -75,6 +75,37 @@ export function SearchTrigger({
     [categories, basePath],
   );
 
+  // Product matches come from the database (lib/actions/search.ts), not a
+  // full in-memory catalog filtered here — the catalog can grow well past
+  // what's reasonable to ship to every visitor just to power the search
+  // box. Debounced so it isn't a query per keystroke.
+  const [matchedProducts, setMatchedProducts] = useState<SearchItem[]>([]);
+  const [searchPending, startSearchTransition] = useTransition();
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    // Nothing to clear here on purpose — matchedItems below already
+    // returns [] whenever the query is empty, so a stale matchedProducts
+    // value from a previous query never actually surfaces.
+    if (!trimmed) return;
+    const timeout = setTimeout(() => {
+      startSearchTransition(async () => {
+        const results = await searchProductSuggestions(productType, trimmed);
+        setMatchedProducts(
+          results.map((product) => ({
+            type: "product",
+            id: product.id,
+            href: `${basePath}/products/${product.slug}`,
+            label: product.name,
+            imageUrl: product.imageUrl,
+            price: product.price,
+          })),
+        );
+      });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [query, productType, basePath]);
+
   const matchedItems = useMemo<SearchItem[]>(() => {
     const trimmed = query.trim();
     if (!trimmed) return [];
@@ -87,19 +118,8 @@ export function SearchTrigger({
         href: `${basePath}/products?category=${category.id}`,
         label: category.name,
       }));
-    const matchedProducts: SearchItem[] = products
-      .filter((product) => matchesSearch(product.name, trimmed))
-      .slice(0, MAX_PRODUCT_SUGGESTIONS)
-      .map((product) => ({
-        type: "product",
-        id: product.id,
-        href: `${basePath}/products/${product.slug}`,
-        label: product.name,
-        imageUrl: product.imageUrl,
-        price: product.price,
-      }));
     return [...matchedCategories, ...matchedProducts];
-  }, [categories, products, query, basePath]);
+  }, [categories, matchedProducts, query, basePath]);
 
   const items = hasQuery ? matchedItems : quickLinkItems;
 
@@ -191,7 +211,9 @@ export function SearchTrigger({
         ))}
       </div>
     ) : (
-      <p className="py-3 text-sm text-muted-foreground">{tCommon("noResults")}</p>
+      <p className="py-3 text-sm text-muted-foreground">
+        {hasQuery && searchPending ? tCommon("loading") : tCommon("noResults")}
+      </p>
     );
 
   function renderSearchInput(autoFocus: boolean) {
