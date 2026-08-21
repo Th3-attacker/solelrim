@@ -11,8 +11,17 @@ export type ShareResult = "shared" | "copied";
 export async function shareContent(data: ShareData): Promise<ShareResult> {
   if (typeof navigator !== "undefined" && navigator.share) {
     if (!navigator.canShare || navigator.canShare(data)) {
-      await navigator.share(data);
-      return "shared";
+      try {
+        await navigator.share(data);
+        return "shared";
+      } catch (error) {
+        // A user-initiated cancel must stay a cancel, not silently become a
+        // clipboard copy the user never asked for. Anything else — e.g. some
+        // Huawei/HMS browsers expose navigator.share but it throws instead
+        // of opening a working share sheet — falls through to the clipboard
+        // fallback below instead of surfacing a dead end.
+        if (isShareCancelled(error)) throw error;
+      }
     }
   }
   if (typeof navigator === "undefined" || !navigator.clipboard) {

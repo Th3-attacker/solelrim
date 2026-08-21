@@ -51,7 +51,12 @@ export function CartTrigger({ basePath }: { basePath: string }) {
       if (result === "copied") toast.success(t("linkCopied"));
     } catch (error) {
       if (isShareCancelled(error)) return;
-      toast.error(tCommon("error"));
+      console.error("cart share failed", error);
+      toast.error(
+        error instanceof Error
+          ? `${tCommon("error")} (${error.name}: ${error.message})`
+          : tCommon("error"),
+      );
     }
   }
 

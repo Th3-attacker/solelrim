@@ -48,11 +48,35 @@ describe("shareContent", () => {
     await expect(shareContent({ title: "t" })).rejects.toThrow("share-unavailable");
   });
 
-  it("propagates a real navigator.share failure instead of swallowing it", async () => {
+  it("falls back to the clipboard when navigator.share exists but fails", async () => {
+    // Some browsers (e.g. Huawei/HMS builds without Google Play Services)
+    // expose navigator.share but it rejects instead of opening a working
+    // share sheet — that's not a user cancel, so it should still end in a
+    // successful copy rather than a dead-end error.
+    const share = vi.fn().mockRejectedValue(new Error("boom"));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { share, clipboard: { writeText } });
+
+    const result = await shareContent({ title: "t", url: "https://x.co" });
+
+    expect(result).toBe("copied");
+    expect(writeText).toHaveBeenCalledWith("t\nhttps://x.co");
+  });
+
+  it("propagates a real navigator.share failure when the clipboard fallback also fails", async () => {
     const share = vi.fn().mockRejectedValue(new Error("boom"));
     vi.stubGlobal("navigator", { share });
 
-    await expect(shareContent({ title: "t" })).rejects.toThrow("boom");
+    await expect(shareContent({ title: "t" })).rejects.toThrow("share-unavailable");
+  });
+
+  it("still treats a user cancel as a cancel, without falling back to the clipboard", async () => {
+    const share = vi.fn().mockRejectedValue(Object.assign(new Error("cancelled"), { name: "AbortError" }));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { share, clipboard: { writeText } });
+
+    await expect(shareContent({ title: "t" })).rejects.toThrow("cancelled");
+    expect(writeText).not.toHaveBeenCalled();
   });
 });
 
