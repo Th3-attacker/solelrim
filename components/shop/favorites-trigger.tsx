@@ -1,24 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import { Heart } from "@phosphor-icons/react/dist/ssr";
-import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { getDirection } from "@/i18n/routing";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useFavorites } from "@/components/shop/favorites-provider";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
-import { useFavorites } from "@/components/shop/favorites-provider";
+import { StateMessage } from "@/components/ui/state-message";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Link } from "@/i18n/navigation";
+import { getDirection } from "@/i18n/routing";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
-import { StateMessage } from "@/components/ui/state-message";
+import { Heart } from "@phosphor-icons/react/dist/ssr";
+import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 
 export type FavoriteProductSummary = {
   id: string;
@@ -39,7 +39,11 @@ export function FavoritesTrigger({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const isMobile = useIsMobile();
-  const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
+  const side = isMobile
+    ? "bottom"
+    : getDirection(locale) === "rtl"
+      ? "left"
+      : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
 
   const favoriteProducts = products.filter((p) => ids.includes(p.id));
@@ -47,7 +51,12 @@ export function FavoritesTrigger({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={t("favoritesTitle")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={t("favoritesTitle")}
+        >
           <Heart className="size-4" />
           {hydrated && favoriteProducts.length > 0 && (
             <span className="absolute -top-1 -end-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
@@ -107,7 +116,10 @@ export function FavoritesTrigger({
                     aria-label={t("removeFromFavorites")}
                     onClick={() => toggleFavorite(product.id)}
                   >
-                    <Heart className="size-3 fill-destructive text-destructive" />
+                    <Heart
+                      weight="fill"
+                      className="size-3 fill-destructive text-destructive"
+                    />
                   </Button>
                 </div>
               ))}

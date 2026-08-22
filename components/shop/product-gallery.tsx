@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ImageSquare } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 
 type GalleryImage = { id: string; url: string };
@@ -58,8 +59,8 @@ export function ProductGallery({
             priority
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-            SOLAL
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/40">
+            <ImageSquare className="size-10" />
           </div>
         )}
       </div>

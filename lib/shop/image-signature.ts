@@ -9,7 +9,7 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 // just metadata the uploader controls and say nothing about what's
 // actually in the file.
 export type DetectedImage = {
-  type: "jpeg" | "png" | "webp" | "gif";
+  type: "jpeg" | "png" | "webp";
   contentType: string;
   extension: string;
 };
@@ -50,19 +50,6 @@ const SIGNATURES: (DetectedImage & { matches: (bytes: Uint8Array) => boolean })[
       b[9] === 0x45 &&
       b[10] === 0x42 &&
       b[11] === 0x50,
-  },
-  {
-    type: "gif",
-    contentType: "image/gif",
-    extension: "gif",
-    matches: (b) =>
-      b.length >= 6 &&
-      b[0] === 0x47 && // "GIF8"
-      b[1] === 0x49 &&
-      b[2] === 0x46 &&
-      b[3] === 0x38 &&
-      (b[4] === 0x37 || b[4] === 0x39) && // "7" or "9"
-      b[5] === 0x61, // "a"
   },
 ];
 

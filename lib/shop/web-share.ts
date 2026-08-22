@@ -11,8 +11,12 @@ export type ShareResult = "shared" | "copied";
 export async function shareContent(data: ShareData): Promise<ShareResult> {
   if (typeof navigator !== "undefined" && navigator.share) {
     if (!navigator.canShare || navigator.canShare(data)) {
-      await navigator.share(data);
-      return "shared";
+      try {
+        await navigator.share(data);
+        return "shared";
+      } catch (error) {
+        if (isShareCancelled(error)) throw error;
+      }
     }
   }
   if (typeof navigator === "undefined" || !navigator.clipboard) {

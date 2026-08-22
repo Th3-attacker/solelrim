@@ -25,7 +25,7 @@ export async function generateMetadata({
   ]);
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
-  const description = t("metaDescription");
+  const description = t("metaDescription", { siteName });
   const imageUrl = boutique.logoStoragePath
     ? getStoreLogoUrl(boutique.logoStoragePath)
     : null;

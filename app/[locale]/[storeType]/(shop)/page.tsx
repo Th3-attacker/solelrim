@@ -33,12 +33,12 @@ export default async function ShopHomePage({
 
   const previewProducts = allProducts.slice(0, PREVIEW_COUNT);
   const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 5);
-  const { heroTitle, heroSubtitle } = resolveBoutiqueText(boutique, locale);
+  const { siteName, heroTitle, heroSubtitle } = resolveBoutiqueText(boutique, locale);
 
   return (
     <div className="flex flex-col gap-14">
       <HeroSection
-        settings={{ ...boutique, heroTitle, heroSubtitle }}
+        settings={{ ...boutique, siteName, heroTitle, heroSubtitle }}
         basePath={basePath}
       />
 
