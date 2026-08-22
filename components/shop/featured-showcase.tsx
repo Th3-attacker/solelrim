@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageSquare } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,8 @@ export async function FeaturedShowcase({
             sizes="(max-width: 640px) 62vw, (max-width: 960px) 46vw, 31vw"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-            SOLAL
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/40">
+            <ImageSquare className="size-8" />
           </div>
         )}
       </div>

@@ -32,13 +32,9 @@ describe("detectImageSignature", () => {
     });
   });
 
-  it("detects a GIF from its GIF87a/GIF89a header", () => {
+  it("returns null for a GIF, since no bucket accepts that format", () => {
     const bytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
-    expect(detectImageSignature(bytes)).toEqual({
-      type: "gif",
-      contentType: "image/gif",
-      extension: "gif",
-    });
+    expect(detectImageSignature(bytes)).toBeNull();
   });
 
   it("returns null for content that isn't a recognized image format", () => {

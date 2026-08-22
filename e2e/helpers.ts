@@ -19,7 +19,7 @@ export async function submitCheckoutOrder(page: Page): Promise<string> {
   await page.getByRole("button", { name: "Ajouter au panier" }).click();
   await expect(page.getByText("Ajouté au panier.")).toBeVisible();
 
-  await page.getByRole("button", { name: "Panier" }).click();
+  await page.getByRole("button", { name: "Panier", exact: true }).click();
   // "Passer la commande" now navigates to the dedicated /checkout page
   // (checkout used to be a Sheet, so this was a "button" click that opened
   // it in place) — it's a Link styled as a button, so its accessible role
@@ -29,18 +29,18 @@ export async function submitCheckoutOrder(page: Page): Promise<string> {
   await page.waitForURL(/\/checkout$/);
 
   // Step 1 — customer info
-  await expect(page.getByText("Vos informations")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vos informations" })).toBeVisible();
   await page.getByLabel("Nom complet").fill("Test E2E");
   await page.getByLabel("Numéro de téléphone").fill("37737353");
   await page.getByLabel("Ville").fill("Nouakchott");
   await page.getByRole("button", { name: "Suivant" }).click();
 
   // Step 2 — order summary, no promo code
-  await expect(page.getByText("Résumé de la commande")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Résumé de la commande" })).toBeVisible();
   await page.getByRole("button", { name: "Suivant" }).click();
 
   // Step 3 — payment: reveal wallets + upload, then submit
-  await expect(page.getByText("Paiement", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Paiement" })).toBeVisible();
   await page.getByRole("button", { name: "Voir les numéros de paiement" }).click();
   await page.getByLabel("Capture d'écran du paiement").setInputFiles(PAYMENT_PROOF);
 
@@ -64,9 +64,9 @@ export async function loginAsAdmin(page: Page): Promise<void> {
 
   await page.goto("/fr/admin/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Mot de passe").fill(password);
+  await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  await expect(page).toHaveURL(/\/admin(?!\/login)/);
+  await expect(page).toHaveURL(/\/admin(?!\/login)/, { timeout: 15_000 });
 }
 
 // Search-and-click is how every admin order test reaches a specific order's
@@ -74,10 +74,11 @@ export async function loginAsAdmin(page: Page): Promise<void> {
 export async function openOrderByReference(page: Page, reference: string): Promise<void> {
   await page.goto("/fr/admin/orders");
   await page.getByLabel("Téléphone ou référence...").fill(reference);
-  // The search box syncs to the URL (and re-fetches server-side) on a debounce
-  // — wait for the filtered row instead of racing it.
+  await page.waitForURL(new RegExp(`[?&]q=${encodeURIComponent(reference)}`), {
+    timeout: 10_000,
+  });
   const link = page.getByRole("link", { name: reference });
   await expect(link).toBeVisible({ timeout: 10_000 });
   await link.click();
-  await expect(page).toHaveURL(/\/admin\/orders\/.+/);
+  await expect(page).toHaveURL(/\/admin\/orders\/.+/, { timeout: 10_000 });
 }

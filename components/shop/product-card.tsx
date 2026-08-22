@@ -5,7 +5,7 @@ import { StockBadge } from "@/components/shop/stock-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { Eye } from "@phosphor-icons/react/dist/ssr";
+import { Eye, ImageSquare } from "@phosphor-icons/react/dist/ssr";
 import type { getActiveProducts } from "@/lib/queries/shop";
 import { isNewProduct, isPromo } from "@/lib/shop/badges";
 import { getSwatchStyle } from "@/lib/shop/color-swatch";
@@ -92,8 +92,8 @@ export function ProductCard({
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-            SOLAL
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/40">
+            <ImageSquare className="size-8" />
           </div>
         )}
 

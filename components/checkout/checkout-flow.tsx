@@ -23,6 +23,7 @@ import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { computeDiscountAmount } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
+import { MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { Wallet, X, Pencil, Package, Copy, Check, ArrowLeft, ArrowRight, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import {
@@ -58,6 +59,7 @@ export function CheckoutFlow({
     null,
   );
   const [file, setFile] = useState<File | null>(null);
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null);
   const [promoDroppedMessage, setPromoDroppedMessage] = useState<string | null>(null);
   const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -258,12 +260,24 @@ export function CheckoutFlow({
         toast.error(promoCodeErrorMessage(result.error));
         return;
       }
+      if (result.error === "fileTooLarge") {
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setFileSizeError(t("fileTooLarge"));
+      }
+      if (result.error === "insufficientStock") {
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setStep(1);
+      }
       toast.error(
         result.error === "insufficientStock"
           ? t("insufficientStockError")
           : result.error === "rateLimited"
             ? t("rateLimitedError")
-            : t("validationError"),
+            : result.error === "fileTooLarge"
+              ? t("fileTooLarge")
+              : t("validationError"),
       );
       return;
     }
@@ -591,13 +605,28 @@ export function CheckoutFlow({
                     {promoDroppedMessage && (
                       <p className="text-sm text-destructive">{promoDroppedMessage}</p>
                     )}
+                    {fileSizeError && (
+                      <p className="text-sm text-destructive">{fileSizeError}</p>
+                    )}
                     <Input
                       id="screenshot"
                       ref={fileInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      accept="image/jpeg,image/png,image/webp"
                       onChange={(e) => {
-                        setFile(e.target.files?.[0] ?? null);
+                        const picked = e.target.files?.[0] ?? null;
+                        // Rejected before it ever reaches the network — the
+                        // server re-checks this too (defense in depth), but
+                        // failing here means no wasted upload on a slow
+                        // connection and an error that actually says why.
+                        if (picked && picked.size > MAX_IMAGE_BYTES) {
+                          setFile(null);
+                          setFileSizeError(t("fileTooLarge"));
+                          e.target.value = "";
+                          return;
+                        }
+                        setFile(picked);
+                        setFileSizeError(null);
                         setPromoDroppedMessage(null);
                       }}
                     />

@@ -9,6 +9,7 @@ type HeroSettings = {
   heroImagePath: string | null;
   heroImagePosition: string;
   heroVariant: string;
+  siteName: string | null;
   heroTitle: string | null;
   heroSubtitle: string | null;
   heroBadgeText: string | null;
@@ -17,6 +18,7 @@ type HeroSettings = {
 
 type HeroContent = {
   imagePath: string | null;
+  siteName: string;
   badgeText: string | null;
   title: string;
   subtitle: string;
@@ -30,6 +32,7 @@ type HeroContent = {
 // gradient) rather than an empty split panel — still uses the same
 // badge/CTA config so it stays consistent once a photo is added later.
 function HeroFallback({
+  siteName,
   badgeText,
   title,
   subtitle,
@@ -44,7 +47,7 @@ function HeroFallback({
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-background/5 select-none"
       >
-        SOLAL
+        {siteName}
       </span>
       <div
         aria-hidden
@@ -159,6 +162,7 @@ function HeroSplit({
 // look while an admin is still filling in the photo.
 function HeroFullbleed({
   imagePath,
+  siteName,
   badgeText,
   title,
   subtitle,
@@ -187,7 +191,7 @@ function HeroFullbleed({
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[18vw] leading-none font-black whitespace-nowrap text-background/5 select-none"
           >
-            SOLAL
+            {siteName}
           </span>
           <div
             aria-hidden
@@ -291,6 +295,7 @@ export async function HeroSection({
 
   const content: HeroContent = {
     imagePath: settings.heroImagePath,
+    siteName: settings.siteName?.trim() || t("siteName"),
     badgeText: settings.heroBadgeText,
     title: settings.heroTitle || t("heroTitle"),
     subtitle: settings.heroSubtitle || t("heroSubtitle"),

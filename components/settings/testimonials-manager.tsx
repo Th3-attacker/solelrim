@@ -154,6 +154,7 @@ export function TestimonialsManager({
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
+                          weight={i < item.rating! ? "fill" : "regular"}
                           className={cn(
                             "size-3",
                             i < item.rating!
@@ -257,6 +258,7 @@ export function TestimonialsManager({
                     onClick={() => setRating(rating === value ? null : value)}
                   >
                     <Star
+                      weight={active ? "fill" : "regular"}
                       className={cn(
                         "size-5",
                         active ? "fill-primary text-primary" : "text-muted-foreground/30",

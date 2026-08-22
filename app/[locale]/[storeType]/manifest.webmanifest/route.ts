@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
@@ -16,12 +17,13 @@ export async function GET(
   { params }: { params: Promise<{ locale: string; storeType: string }> },
 ) {
   const { locale, storeType } = await params;
-  const [boutique, basePath] = await Promise.all([
+  const [boutique, basePath, tShop] = await Promise.all([
     getPublicBoutiqueSettings(storeType),
     getStorefrontBasePath(storeType),
+    getTranslations({ locale, namespace: "shop" }),
   ]);
 
-  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || "SOLAL";
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const theme = resolveStoreTheme(boutique);
   // basePath alone omits the locale (it's meant to be used inside an
   // already-locale-scoped <Link>) — these URLs go straight into manifest

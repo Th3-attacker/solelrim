@@ -153,9 +153,10 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
       new File(["not-actually-an-image"], "proof.png", { type: "image/png" }),
     );
   } else if (overrides.screenshot === "too-large") {
+    // MAX_IMAGE_BYTES is 5 * 1024 * 1024 (5,242,880) — comfortably over that.
     form.set(
       "screenshot",
-      new File([new Uint8Array(1_600_000)], "proof.png", { type: "image/png" }),
+      new File([new Uint8Array(6_000_000)], "proof.png", { type: "image/png" }),
     );
   } else {
     form.set(
@@ -326,11 +327,11 @@ describe("submitOrder", () => {
     expect(createAdminClientMock).not.toHaveBeenCalled();
   });
 
-  it("rejects a screenshot over the size limit", async () => {
+  it("rejects a screenshot over the size limit, as a distinct error from a bad format", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const form = buildOrderForm({ screenshot: "too-large" });
     const result = await submitOrder(form);
-    expect(result).toEqual({ error: "invalidFile" });
+    expect(result).toEqual({ error: "fileTooLarge" });
     expect(createAdminClientMock).not.toHaveBeenCalled();
   });
 

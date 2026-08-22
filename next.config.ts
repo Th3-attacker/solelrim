@@ -55,7 +55,14 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "2mb",
+      // This is a global ceiling on every Server Action's whole multipart
+      // body, not per-field — every image-upload action (products, wallet
+      // logos, branding, payment screenshots) validates its own file
+      // against MAX_IMAGE_BYTES (5MB, lib/shop/image-signature.ts), so this
+      // needs enough headroom above that for the upload to ever reach that
+      // check instead of being rejected by the framework first with a
+      // generic "body too large" error.
+      bodySizeLimit: "6mb",
     },
   },
   async headers() {
