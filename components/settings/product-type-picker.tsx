@@ -9,6 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
 import { setProductType, createProductType } from "@/lib/actions/settings";
 import { isProductType } from "@/lib/shop/product-type";
 
@@ -27,6 +38,9 @@ export function ProductTypePicker({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [categoriesText, setCategoriesText] = useState("");
+  const [pendingSwitch, setPendingSwitch] = useState<{ key: string; displayName: string } | null>(
+    null,
+  );
 
   function handleSelect(productType: string) {
     if (productType === currentProductType || pending) return;
@@ -38,6 +52,11 @@ export function ProductTypePicker({
       }
       window.location.reload();
     });
+  }
+
+  function handleConfirmSwitch() {
+    if (!pendingSwitch) return;
+    handleSelect(pendingSwitch.key);
   }
 
   function handleCreate() {
@@ -61,17 +80,23 @@ export function ProductTypePicker({
       <span className="text-sm font-medium">{t("productTypeSection")}</span>
       <p className="text-sm text-muted-foreground">{t("productTypeHint")}</p>
       <div className="flex flex-wrap gap-2">
-        {storeTypes.map(({ key, label }) => (
-          <Button
-            key={key}
-            type="button"
-            variant={key === currentProductType ? "default" : "outline"}
-            disabled={pending}
-            onClick={() => handleSelect(key)}
-          >
-            {isProductType(key) ? t(`productTypes.${key}`) : label}
-          </Button>
-        ))}
+        {storeTypes.map(({ key, label }) => {
+          const displayName = isProductType(key) ? t(`productTypes.${key}`) : label;
+          return (
+            <Button
+              key={key}
+              type="button"
+              variant={key === currentProductType ? "default" : "outline"}
+              disabled={pending}
+              onClick={() => {
+                if (key === currentProductType) return;
+                setPendingSwitch({ key, displayName });
+              }}
+            >
+              {displayName}
+            </Button>
+          );
+        })}
 
         <ResponsiveFormDialog
           open={open}
@@ -121,6 +146,29 @@ export function ProductTypePicker({
           </div>
         </ResponsiveFormDialog>
       </div>
+
+      <AlertDialog
+        open={pendingSwitch !== null}
+        onOpenChange={(next) => {
+          if (!next) setPendingSwitch(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("productTypeSwitchConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingSwitch &&
+                t("productTypeSwitchConfirmBody", { name: pendingSwitch.displayName })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSwitch} disabled={pending}>
+              {pending ? <Spinner /> : tCommon("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -478,6 +478,8 @@
 
     "productTypeSection": "Default store",
     "productTypeHint": "Sets which store shows when a visitor arrives without a store in the address. Every store stays reachable at its own address either way.",
+    "productTypeSwitchConfirmTitle": "Change the default store?",
+    "productTypeSwitchConfirmBody": "\"{name}\" will become the store shown to any visitor arriving without a store in the address. Other stores stay reachable at their own address.",
     "productTypes": {
       "sport": "Sport",
       "cosmetique": "Cosmetics"

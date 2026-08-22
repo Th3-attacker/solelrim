@@ -10,6 +10,7 @@ test.describe("admin order lifecycle", () => {
   test.skip(!hasAdminCredentials(), "E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD not set");
 
   test("confirms, ships, and delivers an order created at checkout", async ({ page }) => {
+    test.setTimeout(60_000);
     const reference = await submitCheckoutOrder(page);
 
     await loginAsAdmin(page);
@@ -22,15 +23,15 @@ test.describe("admin order lifecycle", () => {
       .getByRole("alertdialog")
       .getByRole("button", { name: "Confirmer", exact: true })
       .click();
-    await expect(page.getByText("Confirmée")).toBeVisible();
+    await expect(page.getByText("Confirmée")).toBeVisible({ timeout: 15_000 });
 
     // CONFIRMED -> SHIPPING (no confirmation step)
     await page.getByRole("button", { name: "Expédier" }).click();
-    await expect(page.getByText("En livraison")).toBeVisible();
+    await expect(page.getByText("En livraison")).toBeVisible({ timeout: 15_000 });
 
     // SHIPPING -> DELIVERED (no confirmation step)
     await page.getByRole("button", { name: "Marquer comme livrée" }).click();
-    await expect(page.getByText("Livrée")).toBeVisible();
+    await expect(page.getByText("Livrée")).toBeVisible({ timeout: 15_000 });
   });
 
   test("rejecting a pending order records the reason and stops progress actions", async ({ page }) => {

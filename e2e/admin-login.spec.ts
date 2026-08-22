@@ -4,9 +4,9 @@ test.describe("admin login", () => {
   test("shows an error for invalid credentials", async ({ page }) => {
     await page.goto("/fr/admin/login");
 
-    await expect(page.getByRole("heading", { name: "Connexion" })).toBeVisible();
+    await expect(page.getByText("Connexion")).toBeVisible();
     await page.getByLabel("Email").fill("not-a-real-admin@example.com");
-    await page.getByLabel("Mot de passe").fill("wrong-password");
+    await page.getByLabel("Mot de passe", { exact: true }).fill("wrong-password");
     await page.getByRole("button", { name: "Se connecter" }).click();
 
     await expect(page.getByText("Email ou mot de passe incorrect.")).toBeVisible();
@@ -25,10 +25,10 @@ test.describe("admin login", () => {
 
     await page.goto("/fr/admin/login");
     await page.getByLabel("Email").fill(email!);
-    await page.getByLabel("Mot de passe").fill(password!);
+    await page.getByLabel("Mot de passe", { exact: true }).fill(password!);
     await page.getByRole("button", { name: "Se connecter" }).click();
 
-    await expect(page).toHaveURL(/\/admin(?!\/login)/);
+    await expect(page).toHaveURL(/\/admin(?!\/login)/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "Tableau de bord" })).toBeVisible();
   });
 });

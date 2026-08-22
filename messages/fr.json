@@ -478,6 +478,8 @@
 
     "productTypeSection": "Boutique par défaut",
     "productTypeHint": "Détermine la boutique affichée quand un visiteur arrive sans préciser de boutique dans l'adresse. Chaque boutique reste accessible à sa propre adresse quel que soit ce choix.",
+    "productTypeSwitchConfirmTitle": "Changer la boutique par défaut ?",
+    "productTypeSwitchConfirmBody": "\"{name}\" deviendra la boutique affichée pour tout visiteur arrivant sans préciser de boutique dans l'adresse. Les autres boutiques restent accessibles à leur propre adresse.",
     "productTypes": {
       "sport": "Sport",
       "cosmetique": "Cosmétique"

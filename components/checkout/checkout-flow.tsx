@@ -266,11 +266,6 @@ export function CheckoutFlow({
         setFileSizeError(t("fileTooLarge"));
       }
       if (result.error === "insufficientStock") {
-        // The server doesn't say which line ran out — it's just told stock
-        // changed since the screenshot was taken, so the safest move is the
-        // same as a promo going stale: clear the proof of payment and send
-        // the customer back to the cart to see current stock/quantities
-        // rather than let them retry blindly against the same rejection.
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setStep(1);
