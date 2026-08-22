@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { resolveStoreTheme } from "@/lib/theme/presets";
@@ -14,8 +15,11 @@ export async function GET(
   { params }: { params: Promise<{ locale: string; storeType: string }> },
 ) {
   const { locale, storeType } = await params;
-  const boutique = await getPublicBoutiqueSettings(storeType);
-  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || "SOLAL";
+  const [boutique, tShop] = await Promise.all([
+    getPublicBoutiqueSettings(storeType),
+    getTranslations({ locale, namespace: "shop" }),
+  ]);
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const theme = resolveStoreTheme(boutique);
 
   if (boutique.logoStoragePath) {

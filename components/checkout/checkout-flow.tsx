@@ -265,6 +265,16 @@ export function CheckoutFlow({
         if (fileInputRef.current) fileInputRef.current.value = "";
         setFileSizeError(t("fileTooLarge"));
       }
+      if (result.error === "insufficientStock") {
+        // The server doesn't say which line ran out — it's just told stock
+        // changed since the screenshot was taken, so the safest move is the
+        // same as a promo going stale: clear the proof of payment and send
+        // the customer back to the cart to see current stock/quantities
+        // rather than let them retry blindly against the same rejection.
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setStep(1);
+      }
       toast.error(
         result.error === "insufficientStock"
           ? t("insufficientStockError")
@@ -607,7 +617,7 @@ export function CheckoutFlow({
                       id="screenshot"
                       ref={fileInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      accept="image/jpeg,image/png,image/webp"
                       onChange={(e) => {
                         const picked = e.target.files?.[0] ?? null;
                         // Rejected before it ever reaches the network — the
