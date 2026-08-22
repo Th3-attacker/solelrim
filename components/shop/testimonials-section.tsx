@@ -36,6 +36,7 @@ export async function TestimonialsSection({
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
+                    weight={i < item.rating! ? "fill" : "regular"}
                     className={cn(
                       "size-4",
                       i < item.rating!

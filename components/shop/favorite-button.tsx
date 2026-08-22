@@ -32,10 +32,8 @@ export function FavoriteButton({
       )}
     >
       <Heart
-        className={cn(
-          "size-4 transition-colors",
-          active && "fill-destructive text-destructive",
-        )}
+        weight={active ? "fill" : "regular"}
+        className={cn("size-4 transition-colors", active && "fill-destructive text-destructive")}
       />
     </button>
   );
