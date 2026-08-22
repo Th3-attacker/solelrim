@@ -6,7 +6,6 @@ import { BoutiqueLicenseManager } from "@/components/settings/boutique-license-m
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireSuperAdminPage } from "@/lib/auth/admin";
 import { listBoutiqueAdmins } from "@/lib/queries/admin-users";
-import { isProductType } from "@/lib/shop/product-type";
 
 export default async function GlobalSettingsPage() {
   await requireSuperAdminPage();
@@ -20,7 +19,7 @@ export default async function GlobalSettingsPage() {
 
   const boutiqueRows = storeTypes.map((type) => ({
     key: type.key,
-    label: isProductType(type.key) ? t(`productTypes.${type.key}`) : type.label,
+    label: type.label,
     domain: type.domain,
     licenseExpiresAt: type.licenseExpiresAt,
   }));

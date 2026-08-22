@@ -78,6 +78,16 @@ export const productTypeInputSchema = z.object({
 
 export type ProductTypeInput = z.infer<typeof productTypeInputSchema>;
 
+// Renaming a boutique only ever touches its label — the key stays
+// immutable post-creation (it's baked into existing URLs and every
+// productType foreign key), so this is deliberately narrower than
+// productTypeInputSchema.
+export const storeTypeLabelSchema = z.object({
+  label: z.string().trim().min(1).max(40),
+});
+
+export type StoreTypeLabelInput = z.infer<typeof storeTypeLabelSchema>;
+
 // A bare hostname, no protocol/path — e.g. "solel.com", not
 // "https://solel.com/". Superadmin-only (lib/actions/settings.ts).
 const HOSTNAME_RE =

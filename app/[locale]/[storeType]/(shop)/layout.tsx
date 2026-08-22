@@ -12,6 +12,7 @@ import { MobileNav } from "@/components/shop/mobile-nav";
 import { PwaInstallPrompt } from "@/components/shop/pwa-install-prompt";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { ExpiredStorefront } from "@/components/shop/expired-storefront";
+import { ComingSoonStorefront } from "@/components/shop/coming-soon-storefront";
 import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
@@ -95,19 +96,26 @@ export default async function ShopLayout({
     getLocale(),
   ]);
 
+  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
+  const logoUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
+  const whatsappHref = boutique.adminWhatsappNumber
+    ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
+    : null;
+
   if (getLicenseStatus(boutique.licenseExpiresAt) === "expired") {
-    return (
-      <ExpiredStorefront
-        siteName={resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName")}
-        logoUrl={boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null}
-      />
-    );
+    return <ExpiredStorefront siteName={siteName} logoUrl={logoUrl} />;
   }
 
   const [allProducts, categories] = await Promise.all([
     getActiveProducts(storeType),
     getAllShopCategories(storeType),
   ]);
+
+  if (allProducts.length === 0) {
+    return (
+      <ComingSoonStorefront siteName={siteName} logoUrl={logoUrl} whatsappHref={whatsappHref} />
+    );
+  }
 
   // Also used for search suggestions (thumbnail + price), not just favorites.
   const favoriteCandidates = allProducts.map((product) => ({
@@ -120,10 +128,6 @@ export default async function ShopLayout({
     price: getPriceRange(product.variants, product.basePrice).min,
   }));
 
-  const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
-  const logoUrl = boutique.logoStoragePath
-    ? getStoreLogoUrl(boutique.logoStoragePath)
-    : null;
   const announcementText = boutique.announcementText?.trim() || t("announcementBar");
 
   const socialLinks = boutique.socialLinks.map((link) => ({
@@ -131,10 +135,6 @@ export default async function ShopLayout({
     href: link.url,
     label: link.platform,
   }));
-
-  const whatsappHref = boutique.adminWhatsappNumber
-    ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
-    : null;
 
   const theme = resolveStoreTheme(boutique);
   const forcedColorMode = boutique.colorMode === "light" || boutique.colorMode === "dark"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarBlank, Pencil } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, Pencil, Trash } from "@phosphor-icons/react/dist/ssr";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
@@ -13,8 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
 import { getLicenseStatus, type LicenseStatus } from "@/lib/shop/license";
-import { updateStoreDomain, updateLicenseExpiresAt } from "@/lib/actions/settings";
+import {
+  updateStoreDomain,
+  updateLicenseExpiresAt,
+  updateStoreTypeLabel,
+  deleteStoreType,
+} from "@/lib/actions/settings";
 
 const CALENDAR_LOCALES: Record<string, typeof fr> = { fr, en: enUS, ar: arMA };
 
@@ -64,6 +81,12 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
 
   const [dateOpen, setDateOpen] = useState(false);
 
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [labelValue, setLabelValue] = useState(storeType.label);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const status = getLicenseStatus(storeType.licenseExpiresAt);
 
   function handleSaveDomain() {
@@ -74,6 +97,32 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDomainOpen(false);
+      router.refresh();
+    });
+  }
+
+  function handleSaveLabel() {
+    startTransition(async () => {
+      const result = await updateStoreTypeLabel(storeType.key, labelValue);
+      if (result.error) {
+        toast.error(tCommon("error"));
+        return;
+      }
+      setRenameOpen(false);
+      router.refresh();
+    });
+  }
+
+  function handleDelete(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    setDeleteError(null);
+    startTransition(async () => {
+      const result = await deleteStoreType(storeType.key);
+      if (result.error) {
+        setDeleteError(t(`boutiqueError.${result.error}`));
+        return;
+      }
+      setDeleteOpen(false);
       router.refresh();
     });
   }
@@ -105,6 +154,66 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
       <Badge variant={STATUS_BADGE_VARIANT[status]}>
         {t(`licenseStatus.${status}`)}
       </Badge>
+
+      <ResponsiveFormDialog
+        open={renameOpen}
+        onOpenChange={(open) => {
+          if (open) setLabelValue(storeType.label);
+          setRenameOpen(open);
+        }}
+        trigger={
+          <Button type="button" variant="outline" size="sm">
+            <Pencil className="size-3.5" />
+            {tCommon("edit")}
+          </Button>
+        }
+        title={t("boutiqueRenameTitle", { label: storeType.label })}
+        footer={
+          <Button type="button" loading={pending} onClick={handleSaveLabel}>
+            {tCommon("save")}
+          </Button>
+        }
+      >
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`label-${storeType.key}`}>{t("boutiqueNameLabel")}</Label>
+          <Input
+            id={`label-${storeType.key}`}
+            value={labelValue}
+            onChange={(e) => setLabelValue(e.target.value)}
+          />
+        </div>
+      </ResponsiveFormDialog>
+
+      <AlertDialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          if (open) setDeleteError(null);
+          setDeleteOpen(open);
+        }}
+      >
+        <AlertDialogTrigger asChild>
+          <Button type="button" variant="outline" size="sm">
+            <Trash className="size-3.5" />
+            {tCommon("delete")}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("boutiqueDeleteConfirmTitle", { label: storeType.label })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteError ?? t("boutiqueDeleteConfirmBody")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={pending}>
+              {pending ? <Spinner /> : tCommon("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ResponsiveFormDialog
         open={domainOpen}

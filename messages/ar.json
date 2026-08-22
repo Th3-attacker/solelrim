@@ -218,6 +218,9 @@
     "noProducts": "لا توجد منتجات متاحة حاليًا.",
     "storefrontExpiredTitle": "المتجر غير متاح",
     "storefrontExpiredMessage": "انتهت مدة صلاحية هذا المتجر. تواصلوا معنا لإعادة تفعيله.",
+    "comingSoonTitle": "الافتتاح قريبًا جدًا",
+    "comingSoonMessage": "نقوم حاليًا بوضع اللمسات الأخيرة على كتالوج منتجاتنا. تواصلوا معنا عبر واتساب لتكونوا أول من يعلم بموعد الافتتاح.",
+    "comingSoonContactWhatsapp": "تواصل معنا عبر واتساب",
     "backToCatalog": "العودة إلى الكتالوج",
     "variantsTitle": "المتغيرات المتاحة",
     "newBadge": "جديد",
@@ -586,6 +589,16 @@
 
     "boutiquesSection": "المتاجر",
     "noBoutiques": "لا توجد متاجر بعد.",
+    "boutiqueRenameTitle": "إعادة تسمية — {label}",
+    "boutiqueNameLabel": "اسم المتجر",
+    "boutiqueDeleteConfirmTitle": "حذف المتجر «{label}»؟",
+    "boutiqueDeleteConfirmBody": "إجراء نهائي، ممكن فقط إذا لم يعد لدى المتجر أي بيانات (منتجات، طلبات، مبيعات، عملاء، مسؤولون...) وإذا لم يكن المتجر الافتراضي.",
+    "boutiqueError": {
+      "hasData": "لا يزال هذا المتجر يحتوي على بيانات. احذف منتجاته وطلباته ومبيعاته وعملاءه وغيرها أولاً.",
+      "isDefaultStore": "لا يمكن حذف المتجر الافتراضي. غيّره أولاً من «المتجر الافتراضي».",
+      "notFound": "المتجر غير موجود.",
+      "invalid": "اسم غير صالح."
+    },
     "domain": "اسم النطاق",
     "domainNotSet": "لم يتم تعيين نطاق",
     "domainPlaceholder": "solal.com",

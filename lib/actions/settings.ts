@@ -13,6 +13,7 @@ import {
   heroVariantSchema,
   productTypeInputSchema,
   storeDomainSchema,
+  storeTypeLabelSchema,
   type BoutiqueSettingsInput,
 } from "@/lib/validation/settings";
 import { CUSTOM_THEME_ID, THEME_PRESETS } from "@/lib/theme/presets";
@@ -381,6 +382,92 @@ export async function createProductType(
 
   revalidatePath("/admin/settings/global");
   revalidatePath("/admin/products");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// Rename only — key stays immutable (see storeTypeLabelSchema).
+export async function updateStoreTypeLabel(
+  productType: string,
+  label: string,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const parsed = storeTypeLabelSchema.safeParse({ label });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { label: parsed.data.label },
+  });
+
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// Deletes a boutique outright — only possible once it holds none of its own
+// data and isn't the "/" default. Pre-checked explicitly (rather than
+// letting the FK RESTRICT constraints bubble as a raw P2003) so the admin
+// gets a typed, actionable reason instead of a generic 500, mirroring
+// deleteCategory/deleteProduct. Category rows are the one exception — they
+// SET NULL on delete (see prisma/schema.prisma) and become generic
+// categories, so they're never part of this check.
+export async function deleteStoreType(productType: string): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const [storeType, settings] = await Promise.all([
+    prisma.storeType.findUnique({ where: { key: productType } }),
+    prisma.storeSettings.findUnique({ where: { id: "singleton" } }),
+  ]);
+  if (!storeType) {
+    return { error: "notFound" };
+  }
+  if (settings?.productType === productType) {
+    return { error: "isDefaultStore" };
+  }
+
+  const [
+    productCount,
+    orderCount,
+    saleCount,
+    clientCount,
+    adminUserCount,
+    socialLinkCount,
+    testimonialCount,
+    walletAccountCount,
+    promoCodeCount,
+  ] = await Promise.all([
+    prisma.product.count({ where: { productType } }),
+    prisma.order.count({ where: { productType } }),
+    prisma.sale.count({ where: { productType } }),
+    prisma.client.count({ where: { productType } }),
+    prisma.adminUser.count({ where: { productType } }),
+    prisma.socialLink.count({ where: { productType } }),
+    prisma.testimonial.count({ where: { productType } }),
+    prisma.walletAccount.count({ where: { productType } }),
+    prisma.promoCode.count({ where: { productType } }),
+  ]);
+  const hasData =
+    productCount +
+      orderCount +
+      saleCount +
+      clientCount +
+      adminUserCount +
+      socialLinkCount +
+      testimonialCount +
+      walletAccountCount +
+      promoCodeCount >
+    0;
+  if (hasData) {
+    return { error: "hasData" };
+  }
+
+  await prisma.storeType.delete({ where: { key: productType } });
+
+  revalidatePath("/admin/settings/global");
   revalidatePath("/", "layout");
   return {};
 }

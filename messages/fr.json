@@ -218,6 +218,9 @@
     "noProducts": "Aucun produit disponible pour le moment.",
     "storefrontExpiredTitle": "Boutique indisponible",
     "storefrontExpiredMessage": "La durée de cette boutique a expiré. Contactez-nous pour la réactiver.",
+    "comingSoonTitle": "Ouverture très prochaine",
+    "comingSoonMessage": "Nous mettons la dernière main à notre catalogue de produits. Contactez-nous sur WhatsApp pour être averti dès l'ouverture.",
+    "comingSoonContactWhatsapp": "Nous contacter sur WhatsApp",
     "backToCatalog": "Retour au catalogue",
     "variantsTitle": "Variantes disponibles",
     "newBadge": "Nouveau",
@@ -586,6 +589,16 @@
 
     "boutiquesSection": "Boutiques",
     "noBoutiques": "Aucune boutique.",
+    "boutiqueRenameTitle": "Renommer — {label}",
+    "boutiqueNameLabel": "Nom de la boutique",
+    "boutiqueDeleteConfirmTitle": "Supprimer la boutique « {label} » ?",
+    "boutiqueDeleteConfirmBody": "Action définitive, possible uniquement si la boutique n'a plus aucune donnée (produits, commandes, ventes, clients, administrateurs...) et si elle n'est pas la boutique par défaut.",
+    "boutiqueError": {
+      "hasData": "Cette boutique contient encore des données. Supprimez d'abord ses produits, commandes, ventes, clients, etc.",
+      "isDefaultStore": "Impossible de supprimer la boutique par défaut. Changez-en d'abord dans « Boutique par défaut ».",
+      "notFound": "Boutique introuvable.",
+      "invalid": "Nom invalide."
+    },
     "domain": "Nom de domaine",
     "domainNotSet": "Aucun domaine configuré",
     "domainPlaceholder": "solal.com",

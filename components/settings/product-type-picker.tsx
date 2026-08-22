@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { setProductType, createProductType } from "@/lib/actions/settings";
-import { isProductType } from "@/lib/shop/product-type";
 
 type StoreTypeOption = { key: string; label: string };
 
@@ -80,23 +79,20 @@ export function ProductTypePicker({
       <span className="text-sm font-medium">{t("productTypeSection")}</span>
       <p className="text-sm text-muted-foreground">{t("productTypeHint")}</p>
       <div className="flex flex-wrap gap-2">
-        {storeTypes.map(({ key, label }) => {
-          const displayName = isProductType(key) ? t(`productTypes.${key}`) : label;
-          return (
-            <Button
-              key={key}
-              type="button"
-              variant={key === currentProductType ? "default" : "outline"}
-              disabled={pending}
-              onClick={() => {
-                if (key === currentProductType) return;
-                setPendingSwitch({ key, displayName });
-              }}
-            >
-              {displayName}
-            </Button>
-          );
-        })}
+        {storeTypes.map(({ key, label }) => (
+          <Button
+            key={key}
+            type="button"
+            variant={key === currentProductType ? "default" : "outline"}
+            disabled={pending}
+            onClick={() => {
+              if (key === currentProductType) return;
+              setPendingSwitch({ key, displayName: label });
+            }}
+          >
+            {label}
+          </Button>
+        ))}
 
         <ResponsiveFormDialog
           open={open}

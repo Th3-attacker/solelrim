@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { setAdminScope } from "@/lib/actions/admin-scope";
-import { isProductType } from "@/lib/shop/product-type";
 
 type StoreTypeOption = { key: string; label: string };
 
@@ -27,17 +26,12 @@ export function StoreScopeSwitcher({
   storeTypes: StoreTypeOption[];
   currentScope: string;
 }) {
-  const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const current = storeTypes.find((s) => s.key === currentScope);
-  const currentLabel = current
-    ? isProductType(current.key)
-      ? t(`productTypes.${current.key}`)
-      : current.label
-    : currentScope;
+  const currentLabel = current ? current.label : currentScope;
 
   function handleSelect(key: string) {
     if (key === currentScope || pending) return;
@@ -73,7 +67,7 @@ export function StoreScopeSwitcher({
             checked={key === currentScope}
             onSelect={() => handleSelect(key)}
           >
-            {isProductType(key) ? t(`productTypes.${key}`) : label}
+            {label}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
