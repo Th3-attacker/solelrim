@@ -379,6 +379,8 @@
     "paymentStepIntroHint": "Vous verrez ensuite les numéros de paiement. Revenez sur cette page une fois le virement effectué pour joindre votre preuve de paiement.",
     "paymentStepHint": "Effectuez le virement vers l'un des comptes ci-dessous depuis votre application mobile money, puis revenez ici pour joindre une capture d'écran du paiement.",
     "walletNumberHint": "Ce numéro sert uniquement à recevoir votre paiement via {provider}. Ajoutez-le dans l'application {provider} pour envoyer le montant.",
+    "copyWalletNumber": "Copier le numéro {provider}",
+    "walletNumberCopied": "Numéro {provider} copié !",
     "uploadScreenshot": "Capture d'écran du paiement",
     "uploadScreenshotHint": "Envoyez une capture montrant que le paiement a bien été effectué (5 Mo maximum).",
     "submitOrder": "Confirmer la commande",
