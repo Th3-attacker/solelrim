@@ -185,6 +185,7 @@
   "promoCodes": {
     "title": "Promo codes",
     "newCode": "New code",
+    "editCode": "Edit code",
     "code": "Code",
     "discountType": "Discount type",
     "percent": "Percentage",
@@ -379,6 +380,8 @@
     "paymentStepIntroHint": "You'll see the payment numbers next. Come back to this page once you've sent the payment to attach your proof of payment.",
     "paymentStepHint": "Send the payment to one of the accounts below from your mobile money app, then come back here to attach a screenshot of the payment.",
     "walletNumberHint": "This number is only for receiving your payment via {provider}. Add it in the {provider} app to send the amount.",
+    "copyWalletNumber": "Copy {provider} number",
+    "walletNumberCopied": "{provider} number copied!",
     "uploadScreenshot": "Payment screenshot",
     "uploadScreenshotHint": "Upload a screenshot showing the payment was completed (5 MB max).",
     "submitOrder": "Confirm order",

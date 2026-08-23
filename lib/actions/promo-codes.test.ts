@@ -23,6 +23,7 @@ import {
   createPromoCode,
   deactivatePromoCode,
   previewPromoCode,
+  updatePromoCode,
 } from "@/lib/actions/promo-codes";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -130,6 +131,64 @@ describe("createPromoCode", () => {
     prismaMock.promoCode.create.mockRejectedValue(collisionError());
 
     const result = await createPromoCode(validInput);
+
+    expect(result.error).toBe("duplicateCode");
+  });
+});
+
+describe("updatePromoCode", () => {
+  const validInput = {
+    code: "welcome10",
+    discountType: "PERCENT" as const,
+    discountValue: 10,
+    clientId: null,
+    expiresAt: null,
+    maxUses: null,
+  };
+
+  it("updates a code scoped to the admin's boutique, uppercased", async () => {
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 1 } as never);
+
+    const result = await updatePromoCode("promo-1", validInput);
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.promoCode.updateMany).toHaveBeenCalledWith({
+      where: { id: "promo-1", productType: "cosmetique" },
+      data: {
+        code: "WELCOME10",
+        discountType: "PERCENT",
+        discountValue: 10,
+        clientId: null,
+        expiresAt: null,
+        maxUses: null,
+      },
+    });
+  });
+
+  it("returns notFound for a code outside the admin's boutique", async () => {
+    prismaMock.promoCode.updateMany.mockResolvedValue({ count: 0 } as never);
+
+    const result = await updatePromoCode("promo-from-another-boutique", validInput);
+
+    expect(result.error).toBe("notFound");
+  });
+
+  it("rejects a client outside the admin's boutique", async () => {
+    prismaMock.client.findFirst.mockResolvedValue(null);
+
+    const result = await updatePromoCode("promo-1", {
+      ...validInput,
+      clientId: "client-from-another-boutique",
+    });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.promoCode.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("reports a duplicate code collision", async () => {
+    prismaMock.promoCode.updateMany.mockRejectedValue(collisionError());
+
+    const result = await updatePromoCode("promo-1", validInput);
 
     expect(result.error).toBe("duplicateCode");
   });
