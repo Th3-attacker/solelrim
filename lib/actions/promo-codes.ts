@@ -60,6 +60,53 @@ export async function createPromoCode(
   }
 }
 
+export async function updatePromoCode(
+  promoCodeId: string,
+  input: PromoCodeInput,
+): Promise<PromoCodeActionResult> {
+  const { productType } = await requireAdminScope();
+  const parsed = promoCodeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+  const { clientId, expiresAt, maxUses, code, discountType, discountValue } = parsed.data;
+
+  if (clientId) {
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, productType },
+      select: { id: true },
+    });
+    if (!client) {
+      return { error: "invalid" };
+    }
+  }
+
+  try {
+    const updated = await prisma.promoCode.updateMany({
+      where: { id: promoCodeId, productType },
+      data: {
+        code,
+        discountType,
+        discountValue,
+        clientId,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        maxUses,
+      },
+    });
+    if (updated.count === 0) {
+      return { error: "notFound" };
+    }
+    revalidatePath("/admin/promo-codes");
+    revalidatePath("/admin/clients");
+    return { promoCodeId };
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
+      return { error: "duplicateCode" };
+    }
+    throw err;
+  }
+}
+
 export async function deactivatePromoCode(
   promoCodeId: string,
 ): Promise<{ error?: string }> {

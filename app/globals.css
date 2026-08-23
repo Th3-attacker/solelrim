@@ -250,3 +250,17 @@
     cursor: not-allowed;
   }
 }
+
+/* Unlayered on purpose — Tailwind's own utilities (including the
+   toast-viewport's `bottom-4`) live in the `utilities` layer, and CSS layer
+   order beats selector specificity, so a same-or-earlier-layer override
+   here could never win against it. The Toaster portal renders once,
+   globally, at that same bottom-4 inset used by every Sheet's own footer —
+   a toast (e.g. "Ajouté au panier.") sits on top of an open Sheet by
+   z-index on purpose (see components/ui/toast.tsx), which otherwise means
+   it fully covers a bottom-anchored footer button (the cart drawer's
+   "Passer la commande") for as long as the toast is up. Push it clear of
+   any open sheet's footer instead of just outrunning it in z-index. */
+body:has([data-slot="sheet-content"][data-state="open"]) [data-slot="toast-viewport"] {
+  bottom: 8rem;
+}

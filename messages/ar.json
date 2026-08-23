@@ -185,6 +185,7 @@
   "promoCodes": {
     "title": "أكواد الخصم",
     "newCode": "كود جديد",
+    "editCode": "تعديل الكود",
     "code": "الكود",
     "discountType": "نوع الخصم",
     "percent": "نسبة مئوية",
@@ -379,6 +380,8 @@
     "paymentStepIntroHint": "ستظهر لك أرقام الدفع في الخطوة التالية. عد إلى هذه الصفحة بعد إتمام التحويل لإرفاق إثبات الدفع.",
     "paymentStepHint": "قم بالتحويل إلى أحد الحسابات أدناه من تطبيق الدفع عبر الهاتف، ثم عد إلى هنا لإرفاق لقطة شاشة الدفع.",
     "walletNumberHint": "هذا الرقم مخصص فقط لاستلام دفعتك عبر {provider}. أضفه في تطبيق {provider} لإرسال المبلغ.",
+    "copyWalletNumber": "نسخ رقم {provider}",
+    "walletNumberCopied": "تم نسخ رقم {provider}!",
     "uploadScreenshot": "لقطة شاشة الدفع",
     "uploadScreenshotHint": "أرسل لقطة شاشة تُثبت أن الدفع قد تم (5 ميجابايت كحد أقصى).",
     "submitOrder": "تأكيد الطلب",

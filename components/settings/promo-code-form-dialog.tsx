@@ -19,20 +19,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { promoCodeSchema, type PromoCodeInput } from "@/lib/validation/promo-code";
-import { createPromoCode } from "@/lib/actions/promo-codes";
+import { createPromoCode, updatePromoCode } from "@/lib/actions/promo-codes";
 
 const GENERAL_CODE_VALUE = "__general__";
 
 type Client = { id: string; fullName: string };
 type PromoCodeFormValues = z.input<typeof promoCodeSchema>;
+type ExistingPromoCode = {
+  id: string;
+  code: string;
+  discountType: "PERCENT" | "FIXED";
+  discountValue: number;
+  clientId: string | null;
+  expiresAt: string | null;
+  maxUses: number | null;
+};
 
 export function PromoCodeFormDialog({
   clients = [],
   fixedClient,
+  promoCode,
   trigger,
 }: {
   clients?: Client[];
   fixedClient?: Client;
+  promoCode?: ExistingPromoCode;
   trigger: React.ReactNode;
 }) {
   const t = useTranslations("promoCodes");
@@ -40,6 +51,24 @@ export function PromoCodeFormDialog({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const defaultValues: PromoCodeFormValues = promoCode
+    ? {
+        code: promoCode.code,
+        discountType: promoCode.discountType,
+        discountValue: promoCode.discountValue,
+        clientId: promoCode.clientId,
+        expiresAt: promoCode.expiresAt,
+        maxUses: promoCode.maxUses,
+      }
+    : {
+        code: "",
+        discountType: "PERCENT",
+        discountValue: 10,
+        clientId: fixedClient?.id ?? null,
+        expiresAt: null,
+        maxUses: null,
+      };
 
   const {
     register,
@@ -50,14 +79,7 @@ export function PromoCodeFormDialog({
     formState: { errors },
   } = useForm<PromoCodeFormValues, unknown, PromoCodeInput>({
     resolver: zodResolver(promoCodeSchema),
-    defaultValues: {
-      code: "",
-      discountType: "PERCENT",
-      discountValue: 10,
-      clientId: fixedClient?.id ?? null,
-      expiresAt: null,
-      maxUses: null,
-    },
+    defaultValues,
   });
 
   function fieldErrorMessage(message?: string) {
@@ -68,7 +90,9 @@ export function PromoCodeFormDialog({
 
   const onSubmit: SubmitHandler<PromoCodeInput> = async (data) => {
     setSubmitting(true);
-    const result = await createPromoCode(data);
+    const result = promoCode
+      ? await updatePromoCode(promoCode.id, data)
+      : await createPromoCode(data);
     setSubmitting(false);
 
     if (result.error) {
@@ -78,7 +102,7 @@ export function PromoCodeFormDialog({
       return;
     }
 
-    reset();
+    if (!promoCode) reset();
     setOpen(false);
     router.refresh();
     toast.success(tCommon("save"));
@@ -88,14 +112,14 @@ export function PromoCodeFormDialog({
     <ResponsiveFormDialog
       open={open}
       onOpenChange={(next) => {
-        if (next) reset();
+        if (next) reset(defaultValues);
         setOpen(next);
       }}
       trigger={trigger}
-      title={t("newCode")}
+      title={promoCode ? t("editCode") : t("newCode")}
       footer={
         <Button type="button" loading={submitting} onClick={handleSubmit(onSubmit)}>
-          {tCommon("create")}
+          {promoCode ? tCommon("save") : tCommon("create")}
         </Button>
       }
     >

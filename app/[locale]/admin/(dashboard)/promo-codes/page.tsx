@@ -1,5 +1,5 @@
 import { getTranslations, getFormatter } from "next-intl/server";
-import { Plus, Ticket } from "@phosphor-icons/react/dist/ssr";
+import { Pencil, Plus, Ticket } from "@phosphor-icons/react/dist/ssr";
 import { getAllPromoCodes } from "@/lib/queries/promo-codes";
 import { getAllClients } from "@/lib/queries/clients";
 import { getAdminScope } from "@/lib/shop/admin-scope";
@@ -85,6 +85,25 @@ export default async function PromoCodesPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-end">
+                  <PromoCodeFormDialog
+                    clients={clients}
+                    promoCode={{
+                      id: promoCode.id,
+                      code: promoCode.code,
+                      discountType: promoCode.discountType,
+                      discountValue: promoCode.discountValue.toNumber(),
+                      clientId: promoCode.clientId,
+                      expiresAt: promoCode.expiresAt
+                        ? promoCode.expiresAt.toISOString().slice(0, 10)
+                        : null,
+                      maxUses: promoCode.maxUses,
+                    }}
+                    trigger={
+                      <Button variant="ghost" size="icon" aria-label={t("editCode")}>
+                        <Pencil className="size-4" />
+                      </Button>
+                    }
+                  />
                   {promoCode.isActive && (
                     <DeactivatePromoCodeButton promoCodeId={promoCode.id} />
                   )}
