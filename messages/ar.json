@@ -185,6 +185,7 @@
   "promoCodes": {
     "title": "أكواد الخصم",
     "newCode": "كود جديد",
+    "editCode": "تعديل الكود",
     "code": "الكود",
     "discountType": "نوع الخصم",
     "percent": "نسبة مئوية",

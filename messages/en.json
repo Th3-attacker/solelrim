@@ -185,6 +185,7 @@
   "promoCodes": {
     "title": "Promo codes",
     "newCode": "New code",
+    "editCode": "Edit code",
     "code": "Code",
     "discountType": "Discount type",
     "percent": "Percentage",

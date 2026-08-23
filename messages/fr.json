@@ -185,6 +185,7 @@
   "promoCodes": {
     "title": "Codes promo",
     "newCode": "Nouveau code",
+    "editCode": "Modifier le code",
     "code": "Code",
     "discountType": "Type de réduction",
     "percent": "Pourcentage",
