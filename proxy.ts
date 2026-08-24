@@ -3,7 +3,6 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
-import { NOT_FOUND_STORE_TYPE_KEY } from "@/lib/shop/product-type";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -44,17 +43,13 @@ export async function proxy(request: NextRequest) {
   const { domainMap, keySet } = await getStoreTypeRouting();
   const boutiqueKey = domainMap.get(host);
 
-  if (boutiqueKey) {
-    if (isAdminPath(pathWithoutLocale)) {
-      // /admin is never reachable via a boutique's branded domain — only
-      // the main domain. Rewrite to a storeType key that can never be a
-      // real boutique (RESERVED_STORE_TYPE_KEYS) so this renders the
-      // app's actual styled 404 instead of a bare empty response.
-      const url = request.nextUrl.clone();
-      url.pathname = `/${locale}/${NOT_FOUND_STORE_TYPE_KEY}`;
-      return NextResponse.rewrite(url);
-    }
-
+  // /admin is left untouched here (no rewrite into the boutique's storefront
+  // segment below) so it falls straight through to the normal admin
+  // auth/2FA flow further down — same behavior whether reached via the
+  // main domain or a boutique's own branded domain. Login sets the
+  // Supabase session cookie scoped to whichever host was used, so it works
+  // as long as the admin stays on that same domain for the whole session.
+  if (boutiqueKey && !isAdminPath(pathWithoutLocale)) {
     const segs = pathWithoutLocale.split("/").filter(Boolean);
     const first = segs[0];
 

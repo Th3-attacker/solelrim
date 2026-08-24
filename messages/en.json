@@ -70,7 +70,8 @@
       "mfaCode": "Verification code",
       "mfaSubmit": "Verify",
       "mfaInvalidCode": "Incorrect or expired code.",
-      "mfaOtherAccount": "Use a different account"
+      "mfaOtherAccount": "Use a different account",
+      "backToShop": "Back to the shop"
     }
   },
   "theme": {

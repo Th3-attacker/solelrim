@@ -70,7 +70,8 @@
       "mfaCode": "Code de vérification",
       "mfaSubmit": "Vérifier",
       "mfaInvalidCode": "Code incorrect ou expiré.",
-      "mfaOtherAccount": "Utiliser un autre compte"
+      "mfaOtherAccount": "Utiliser un autre compte",
+      "backToShop": "Retour à la boutique"
     }
   },
   "theme": {

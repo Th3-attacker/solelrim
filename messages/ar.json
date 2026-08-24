@@ -70,7 +70,8 @@
       "mfaCode": "رمز التحقق",
       "mfaSubmit": "تحقق",
       "mfaInvalidCode": "رمز غير صحيح أو منتهي الصلاحية.",
-      "mfaOtherAccount": "استخدام حساب آخر"
+      "mfaOtherAccount": "استخدام حساب آخر",
+      "backToShop": "العودة إلى المتجر"
     }
   },
   "theme": {
