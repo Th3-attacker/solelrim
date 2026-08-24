@@ -28,6 +28,7 @@ import { Wallet, X, Pencil, Package, Copy, Check, ArrowLeft, ArrowRight, Shoppin
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
+  paymentSenderPhoneSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
 
@@ -60,6 +61,8 @@ export function CheckoutFlow({
   );
   const [file, setFile] = useState<File | null>(null);
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
+  const [senderPhone, setSenderPhone] = useState("");
+  const [senderPhoneError, setSenderPhoneError] = useState<string | null>(null);
   const [promoDroppedMessage, setPromoDroppedMessage] = useState<string | null>(null);
   const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -90,6 +93,7 @@ export function CheckoutFlow({
     items: typeof cart.items;
     total: number;
     customer: CheckoutCustomerInput;
+    senderPhone: string;
   } | null>(null);
 
   const storageKey = `solelrim-checkout-${storeType}`;
@@ -222,12 +226,17 @@ export function CheckoutFlow({
 
   async function handleFinalSubmit() {
     if (!customerInfo || !file) return;
+    if (!paymentSenderPhoneSchema.safeParse(senderPhone).success) {
+      setSenderPhoneError(tCommon("invalidPhone"));
+      return;
+    }
     setSubmitting(true);
 
     const formData = new FormData();
     formData.set("customerName", customerInfo.customerName);
     formData.set("customerPhone", customerInfo.customerPhone);
     formData.set("customerCity", customerInfo.customerCity);
+    formData.set("paymentSenderPhone", senderPhone);
     formData.set("locale", locale);
     formData.set("productType", storeType);
     formData.set(
@@ -287,6 +296,7 @@ export function CheckoutFlow({
       items: cart.items,
       total,
       customer: customerInfo,
+      senderPhone,
     };
     setReference(result.reference);
     cart.clear();
@@ -310,6 +320,7 @@ export function CheckoutFlow({
       customerName: orderSnapshotRef.current.customer.customerName,
       customerPhone: orderSnapshotRef.current.customer.customerPhone,
       customerCity: orderSnapshotRef.current.customer.customerCity,
+      paymentSenderPhone: orderSnapshotRef.current.senderPhone,
     });
     window.open(link, "_blank");
   }
@@ -622,6 +633,27 @@ export function CheckoutFlow({
                   )}
 
                   <div className="flex flex-col gap-2">
+                    <Label htmlFor="senderPhone">{t("paymentSenderPhone")}</Label>
+                    <Input
+                      id="senderPhone"
+                      inputMode="numeric"
+                      maxLength={8}
+                      value={senderPhone}
+                      onChange={(e) => {
+                        setSenderPhone(e.target.value);
+                        setSenderPhoneError(null);
+                      }}
+                      aria-invalid={!!senderPhoneError}
+                    />
+                    {senderPhoneError && (
+                      <p className="text-sm text-destructive">{senderPhoneError}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {t("paymentSenderPhoneHint")}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
                     {promoDroppedMessage && (
                       <p className="text-sm text-destructive">{promoDroppedMessage}</p>
@@ -664,7 +696,7 @@ export function CheckoutFlow({
                     <Button
                       onClick={handleFinalSubmit}
                       loading={submitting}
-                      disabled={!file}
+                      disabled={!file || !senderPhone.trim()}
                       className="flex-1 sm:flex-none"
                     >
                       {t("submitOrder")}

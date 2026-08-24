@@ -8,6 +8,7 @@ import {
   cancelReasonSchema,
   checkoutCustomerSchema,
   orderItemsSchema,
+  paymentSenderPhoneSchema,
   trackOrderSchema,
 } from "@/lib/validation/order";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
@@ -58,6 +59,14 @@ export async function submitOrder(
   if (!customerParsed.success) {
     return { error: "invalid" };
   }
+
+  const senderPhoneParsed = paymentSenderPhoneSchema.safeParse(
+    formData.get("paymentSenderPhone"),
+  );
+  if (!senderPhoneParsed.success) {
+    return { error: "invalid" };
+  }
+
   const locale = resolveOrderLocale(formData.get("locale"));
 
   // The checkout form sends the boutique it was submitted from (the URL's
@@ -240,6 +249,7 @@ export async function submitOrder(
             total: Math.max(subtotal - discount, 0),
             promoCodeId,
             paymentProofPath: storagePath,
+            paymentSenderPhone: senderPhoneParsed.data,
             locale,
             productType,
             items: {
