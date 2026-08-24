@@ -136,6 +136,7 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
   form.set("customerName", overrides.customerName ?? "Aicha Mint Salem");
   form.set("customerPhone", overrides.customerPhone ?? "22345678");
   form.set("customerCity", overrides.customerCity ?? "Nouakchott");
+  form.set("paymentSenderPhone", overrides.paymentSenderPhone ?? "23456789");
   form.set("locale", overrides.locale ?? "fr");
   form.set("productType", overrides.productType ?? "cosmetique");
   form.set(
@@ -177,6 +178,13 @@ const baseVariant = {
 describe("submitOrder", () => {
   it("rejects an invalid customer payload", async () => {
     const form = buildOrderForm({ customerPhone: "not-a-phone" });
+    const result = await submitOrder(form);
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid payment sender phone", async () => {
+    const form = buildOrderForm({ paymentSenderPhone: "not-a-phone" });
     const result = await submitOrder(form);
     expect(result).toEqual({ error: "invalid" });
     expect(prismaMock.order.create).not.toHaveBeenCalled();
