@@ -15,12 +15,20 @@ export async function listBoutiqueAdmins() {
   ]);
   if (error) throw error;
 
-  const emailById = new Map(data.users.map((u) => [u.id, u.email]));
-  return admins.map((admin) => ({
-    id: admin.id,
-    email: emailById.get(admin.supabaseUserId) ?? null,
-    boutiqueLabel: admin.storeType?.label ?? admin.productType,
-    canManageAppearance: admin.canManageAppearance,
-    createdAt: admin.createdAt,
-  }));
+  const userById = new Map(data.users.map((u) => [u.id, u]));
+  return admins.map((admin) => {
+    const user = userById.get(admin.supabaseUserId);
+    return {
+      id: admin.id,
+      email: user?.email ?? null,
+      boutiqueLabel: admin.storeType?.label ?? admin.productType,
+      canManageAppearance: admin.canManageAppearance,
+      // Superadmin-assigned "must set up 2FA" flag — stored in Supabase
+      // Auth's app_metadata (see setAdminMfaRequired) rather than Postgres,
+      // since only a service-role client can write it, which already keeps
+      // it tamper-proof from the admin it targets.
+      mfaRequired: user?.app_metadata?.mfa_required === true,
+      createdAt: admin.createdAt,
+    };
+  });
 }

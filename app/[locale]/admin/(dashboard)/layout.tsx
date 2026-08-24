@@ -13,6 +13,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { getStoreTypes } from "@/lib/queries/settings";
+import { getPendingOrderCount } from "@/lib/queries/orders";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { getLicenseStatus } from "@/lib/shop/license";
 import { createClient } from "@/lib/supabase/server";
@@ -35,9 +36,10 @@ export default async function DashboardLayout({
     getCurrentAdmin(),
     createClient(),
   ]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ data: { user } }, pendingOrderCount] = await Promise.all([
+    supabase.auth.getUser(),
+    getPendingOrderCount(currentScope),
+  ]);
 
   const currentLicenseExpiresAt =
     storeTypes.find((type) => type.key === currentScope)?.licenseExpiresAt ?? null;
@@ -51,6 +53,7 @@ export default async function DashboardLayout({
             currentScope={currentScope}
             role={admin.role}
             email={user?.email ?? ""}
+            pendingOrderCount={pendingOrderCount}
           />
         </div>
         <SidebarInset>

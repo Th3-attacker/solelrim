@@ -3,7 +3,6 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
-import { NOT_FOUND_STORE_TYPE_KEY } from "@/lib/shop/product-type";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -44,17 +43,13 @@ export async function proxy(request: NextRequest) {
   const { domainMap, keySet } = await getStoreTypeRouting();
   const boutiqueKey = domainMap.get(host);
 
-  if (boutiqueKey) {
-    if (isAdminPath(pathWithoutLocale)) {
-      // /admin is never reachable via a boutique's branded domain — only
-      // the main domain. Rewrite to a storeType key that can never be a
-      // real boutique (RESERVED_STORE_TYPE_KEYS) so this renders the
-      // app's actual styled 404 instead of a bare empty response.
-      const url = request.nextUrl.clone();
-      url.pathname = `/${locale}/${NOT_FOUND_STORE_TYPE_KEY}`;
-      return NextResponse.rewrite(url);
-    }
-
+  // /admin is left untouched here (no rewrite into the boutique's storefront
+  // segment below) so it falls straight through to the normal admin
+  // auth/2FA flow further down — same behavior whether reached via the
+  // main domain or a boutique's own branded domain. Login sets the
+  // Supabase session cookie scoped to whichever host was used, so it works
+  // as long as the admin stays on that same domain for the whole session.
+  if (boutiqueKey && !isAdminPath(pathWithoutLocale)) {
     const segs = pathWithoutLocale.split("/").filter(Boolean);
     const first = segs[0];
 
@@ -101,13 +96,48 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !isLoginRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locale}/admin/login`;
-    return NextResponse.redirect(url);
+  if (!user) {
+    if (!isLoginRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/admin/login`;
+      return NextResponse.redirect(url);
+    }
+    return response;
   }
 
-  if (user && isLoginRoute) {
+  // A verified TOTP factor makes nextLevel "aal2" forever for this user —
+  // signInWithPassword alone only ever reaches "aal1", so this is true
+  // exactly when the password step succeeded but the code step hasn't yet.
+  // Users with no factor enrolled have nextLevel === currentLevel and are
+  // unaffected — 2FA is opt-in per admin, not sitewide.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const mfaPending = aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2";
+
+  if (mfaPending) {
+    if (!isLoginRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/admin/login`;
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
+
+  // A SUPERADMIN can mandate 2FA for a specific admin (setAdminMfaRequired,
+  // written to app_metadata since only a service-role client can set it —
+  // the targeted admin can't clear it on themselves). Until that admin has
+  // a verified factor, every admin page but Settings (where they enroll
+  // one) bounces them there instead of loading normally.
+  if (user.app_metadata?.mfa_required === true) {
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const hasFactor = (factors?.totp.length ?? 0) > 0;
+    if (!hasFactor && pathWithoutLocale !== "/admin/settings") {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/admin/settings`;
+      return NextResponse.redirect(url);
+    }
+  }
+
+  if (isLoginRoute) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/admin`;
     return NextResponse.redirect(url);

@@ -28,7 +28,12 @@ export async function createBoutiqueAdmin(
     email_confirm: true,
   });
   if (error) {
-    return { error: "createFailed" };
+    // Most common case in practice: retrying with an email that's already
+    // a Supabase Auth user — including an orphaned one left behind by a
+    // Prisma-side failure below on an earlier attempt (see the cleanup
+    // comment further down). Surfaced distinctly since "Erreur" alone gives
+    // no way to tell that from every other possible failure.
+    return { error: error.code === "email_exists" ? "emailExists" : "createFailed" };
   }
 
   try {
@@ -92,6 +97,34 @@ export async function setAdminCanManageAppearance(
     where: { id: adminUserId },
     data: { canManageAppearance },
   });
+
+  revalidatePath("/admin/settings/global");
+  return {};
+}
+
+// Lets a SUPERADMIN mandate 2FA for one specific boutique admin — proxy.ts
+// blocks that admin from every page but /admin/settings until they enroll
+// a TOTP factor there. Written to Supabase Auth's app_metadata (only a
+// service-role client can set it) rather than a Postgres column, so the
+// targeted admin has no way to clear the requirement on themselves.
+export async function setAdminMfaRequired(
+  adminUserId: string,
+  mfaRequired: boolean,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const admin = await prisma.adminUser.findUnique({ where: { id: adminUserId } });
+  if (!admin || admin.role !== "BOUTIQUE_ADMIN") {
+    return { error: "invalid" };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.auth.admin.updateUserById(admin.supabaseUserId, {
+    app_metadata: { mfa_required: mfaRequired },
+  });
+  if (error) {
+    return { error: "updateFailed" };
+  }
 
   revalidatePath("/admin/settings/global");
   return {};
