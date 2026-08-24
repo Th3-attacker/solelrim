@@ -168,23 +168,23 @@ model WalletAccount {
 // the DB check below, and by lib/shop/admin-scope.ts ignoring the
 // free-choice cookie for this role).
 model AdminUser {
-  id             String     @id @default(cuid())
-  supabaseUserId String     @unique
-  role           AdminRole
-  productType    String?
+  id                  String     @id @default(cuid())
+  supabaseUserId      String     @unique
+  role                AdminRole
+  productType         String?
   // BOUTIQUE_ADMIN-only exception, granted per account by a superadmin —
   // lets this specific admin manage their boutique's theme/color, color
   // mode, and hero/card layout variants, which stay superadmin-only for
   // everyone else (lib/shop/admin-scope.ts: requireAppearanceScope). No
   // effect for SUPERADMIN, who already has access to everything.
-  canManageAppearance Boolean @default(false)
+  canManageAppearance Boolean    @default(false)
   // Explicit Restrict (not Prisma's implicit SetNull default for an
   // optional relation) — matches the original migration's raw SQL and the
   // DB-level CHECK below: a BOUTIQUE_ADMIN's productType must never become
   // null, so deleting a boutique an admin is scoped to must fail loudly,
   // not silently orphan the check constraint.
-  storeType      StoreType? @relation(fields: [productType], references: [key], onDelete: Restrict)
-  createdAt      DateTime   @default(now())
+  storeType           StoreType? @relation(fields: [productType], references: [key], onDelete: Restrict)
+  createdAt           DateTime   @default(now())
 
   @@index([productType])
 }
@@ -354,36 +354,43 @@ model SaleItem {
 }
 
 model Order {
-  id               String      @id @default(cuid())
-  reference        String      @unique
-  customerName     String
-  customerPhone    String
-  customerCity     String
-  items            OrderItem[]
-  subtotal         Decimal     @db.Decimal(10, 2)
-  discount         Decimal     @default(0) @db.Decimal(10, 2)
-  total            Decimal     @db.Decimal(10, 2)
-  status           OrderStatus @default(PENDING)
-  paymentProofPath String
-  locale           String?
+  id                 String        @id @default(cuid())
+  reference          String        @unique
+  customerName       String
+  customerPhone      String
+  customerCity       String
+  items              OrderItem[]
+  subtotal           Decimal       @db.Decimal(10, 2)
+  discount           Decimal       @default(0) @db.Decimal(10, 2)
+  total              Decimal       @db.Decimal(10, 2)
+  status             OrderStatus   @default(PENDING)
+  paymentProofPath   String
+  // The mobile money number the payment was actually sent from, collected
+  // right before the screenshot upload — often not the customer's own
+  // contact number (a family member's line, a different SIM, etc), so the
+  // admin needs it separately to match the screenshot against their wallet
+  // app. Nullable only because orders placed before this field existed
+  // don't have one; always required client- and server-side going forward.
+  paymentSenderPhone String?
+  locale             String?
   // Re-validated from scratch inside submitOrder's transaction — never
   // trusts a client-computed discount amount. Null when no code was used.
-  promoCodeId      String?
-  promoCode        PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  promoCodeId        String?
+  promoCode          PromoCode?    @relation(fields: [promoCodeId], references: [id])
   // The boutique the checkout form was submitted from (its [storeType] URL
   // segment) — validated server-side against every variant in the cart
   // before being trusted (see submitOrder).
-  productType      String
-  storeType        StoreType   @relation(fields: [productType], references: [key])
-  createdAt        DateTime    @default(now())
-  confirmedAt      DateTime?
-  rejectedAt       DateTime?
-  rejectReason     String?
-  shippedAt        DateTime?
-  deliveredAt      DateTime?
-  cancelledAt      DateTime?
-  cancelReason     String?
-  testimonials     Testimonial[]
+  productType        String
+  storeType          StoreType     @relation(fields: [productType], references: [key])
+  createdAt          DateTime      @default(now())
+  confirmedAt        DateTime?
+  rejectedAt         DateTime?
+  rejectReason       String?
+  shippedAt          DateTime?
+  deliveredAt        DateTime?
+  cancelledAt        DateTime?
+  cancelReason       String?
+  testimonials       Testimonial[]
 
   @@index([status])
   @@index([createdAt])

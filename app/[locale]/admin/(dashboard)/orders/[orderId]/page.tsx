@@ -219,6 +219,11 @@ export default async function OrderDetailPage({
 
       <div>
         <h2 className="mb-2 text-sm font-medium">{t("paymentProof")}</h2>
+        {order.paymentSenderPhone && (
+          <p className="mb-2 text-sm text-muted-foreground">
+            {t("paymentSenderPhone")}: <span className="font-medium text-foreground">{order.paymentSenderPhone}</span>
+          </p>
+        )}
         {signedUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

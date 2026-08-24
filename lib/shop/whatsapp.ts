@@ -17,6 +17,7 @@ export function buildOrderWhatsAppLink(params: {
   customerName: string;
   customerPhone: string;
   customerCity: string;
+  paymentSenderPhone: string;
 }): string {
   const lines = [
     `Nouvelle commande ${params.reference}`,
@@ -36,6 +37,7 @@ export function buildOrderWhatsAppLink(params: {
     `Téléphone: +222 ${params.customerPhone}`,
     `Ville: ${params.customerCity}`,
     "",
+    `Numéro d'envoi du paiement: +222 ${params.paymentSenderPhone}`,
     "Une capture d'écran du paiement a été envoyée via le site.",
   ];
   const text = encodeURIComponent(lines.join("\n"));
