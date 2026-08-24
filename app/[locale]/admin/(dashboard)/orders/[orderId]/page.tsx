@@ -98,13 +98,31 @@ export default async function OrderDetailPage({
                 {format.dateTime(order.shippedAt, { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
+            <ClientMessageButton
+              type="shipped"
+              locale={order.locale}
+              customerName={order.customerName}
+              customerPhone={order.customerPhone}
+              reference={order.reference}
+            />
             <OrderProgressActions orderId={order.id} status="SHIPPING" />
           </div>
         )}
-        {order.status === "DELIVERED" && order.deliveredAt && (
-          <p className="text-sm text-muted-foreground">
-            {format.dateTime(order.deliveredAt, { dateStyle: "medium", timeStyle: "short" })}
-          </p>
+        {order.status === "DELIVERED" && (
+          <div className="flex flex-wrap items-center gap-3">
+            {order.deliveredAt && (
+              <p className="text-sm text-muted-foreground">
+                {format.dateTime(order.deliveredAt, { dateStyle: "medium", timeStyle: "short" })}
+              </p>
+            )}
+            <ClientMessageButton
+              type="delivered"
+              locale={order.locale}
+              customerName={order.customerName}
+              customerPhone={order.customerPhone}
+              reference={order.reference}
+            />
+          </div>
         )}
         {order.status === "REJECTED" && (
           <div className="flex flex-wrap items-center gap-3">

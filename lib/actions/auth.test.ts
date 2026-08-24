@@ -20,7 +20,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { login, logout } from "@/lib/actions/auth";
+import { login, logout, verifyLoginMfa } from "@/lib/actions/auth";
 
 const createClientMock = createClient as unknown as Mock;
 const checkRateLimitMock = checkRateLimit as unknown as Mock;
@@ -35,9 +35,29 @@ function loginFormData(fields: Partial<Record<"email" | "password" | "locale", s
   return data;
 }
 
-function asSignInResult(error: { message: string } | null) {
+function mfaFormData(fields: Partial<Record<"code" | "locale", string>>) {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined) data.set(key, value);
+  }
+  return data;
+}
+
+// Default: no factor enrolled, so nextLevel already matches currentLevel —
+// the common case of an admin with no 2FA set up.
+const NO_MFA_AAL = { data: { currentLevel: "aal1", nextLevel: "aal1" }, error: null };
+
+function asSignInResult(
+  error: { message: string } | null,
+  aal: { data: { currentLevel: string; nextLevel: string }; error: null } = NO_MFA_AAL,
+) {
   createClientMock.mockResolvedValue({
-    auth: { signInWithPassword: vi.fn().mockResolvedValue({ error }) },
+    auth: {
+      signInWithPassword: vi.fn().mockResolvedValue({ error }),
+      mfa: {
+        getAuthenticatorAssuranceLevel: vi.fn().mockResolvedValue(aal),
+      },
+    },
   });
 }
 
@@ -121,6 +141,120 @@ describe("login", () => {
       href: "/admin",
       locale: routing.defaultLocale,
     });
+  });
+
+  it("stops at mfaRequired instead of redirecting when the admin has a verified TOTP factor", async () => {
+    asSignInResult(null, {
+      data: { currentLevel: "aal1", nextLevel: "aal2" },
+      error: null,
+    });
+
+    const result = await login(
+      {},
+      loginFormData({ email: "admin@example.com", password: "correct", locale: "fr" }),
+    );
+
+    expect(result).toEqual({ mfaRequired: true });
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("redirects straight through when the session is already aal2 (no factor was pending)", async () => {
+    asSignInResult(null, {
+      data: { currentLevel: "aal2", nextLevel: "aal2" },
+      error: null,
+    });
+
+    const result = await login(
+      {},
+      loginFormData({ email: "admin@example.com", password: "correct", locale: "fr" }),
+    );
+
+    expect(result).toEqual({});
+    expect(redirectMock).toHaveBeenCalledWith({ href: "/admin", locale: "fr" });
+  });
+});
+
+describe("verifyLoginMfa", () => {
+  it("rejects a malformed code before checking the rate limit or calling Supabase", async () => {
+    const result = await verifyLoginMfa({}, mfaFormData({ code: "12ab", locale: "fr" }));
+
+    expect(result.error).toBe("invalidCode");
+    expect(checkRateLimitMock).not.toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits per client IP, separately from the password step", async () => {
+    checkRateLimitMock.mockResolvedValue(false);
+
+    const result = await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "fr" }));
+
+    expect(result.error).toBe("rateLimited");
+    expect(checkRateLimitMock).toHaveBeenCalledWith("login-mfa:203.0.113.5", {
+      windowMs: 15 * 60 * 1000,
+      max: 10,
+    });
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("sends an expired/missing aal1 session back to the login page", async () => {
+    createClientMock.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+    });
+
+    await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "fr" }));
+
+    expect(redirectMock).toHaveBeenCalledWith({ href: "/admin/login", locale: "fr" });
+  });
+
+  it("rejects when the admin has no verified TOTP factor to challenge", async () => {
+    createClientMock.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+        mfa: { listFactors: vi.fn().mockResolvedValue({ data: { totp: [] } }) },
+      },
+    });
+
+    const result = await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "fr" }));
+
+    expect(result.error).toBe("invalidCode");
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("returns invalidCode when the submitted code doesn't match", async () => {
+    createClientMock.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+        mfa: {
+          listFactors: vi.fn().mockResolvedValue({ data: { totp: [{ id: "factor-1" }] } }),
+          challengeAndVerify: vi
+            .fn()
+            .mockResolvedValue({ error: { message: "Invalid TOTP code entered" } }),
+        },
+      },
+    });
+
+    const result = await verifyLoginMfa({}, mfaFormData({ code: "000000", locale: "fr" }));
+
+    expect(result.error).toBe("invalidCode");
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("redirects to /admin once the code checks out", async () => {
+    const challengeAndVerify = vi.fn().mockResolvedValue({ error: null });
+    createClientMock.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+        mfa: {
+          listFactors: vi.fn().mockResolvedValue({ data: { totp: [{ id: "factor-1" }] } }),
+          challengeAndVerify,
+        },
+      },
+    });
+
+    await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "en" }));
+
+    expect(challengeAndVerify).toHaveBeenCalledWith({ factorId: "factor-1", code: "123456" });
+    expect(redirectMock).toHaveBeenCalledWith({ href: "/admin", locale: "en" });
   });
 });
 

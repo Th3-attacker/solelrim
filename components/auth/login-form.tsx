@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { login, type LoginState } from "@/lib/actions/auth";
+import { login, logout, verifyLoginMfa, type LoginState, type MfaState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -10,18 +10,77 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 
-const initialState: LoginState = {};
+const initialLoginState: LoginState = {};
+const initialMfaState: MfaState = {};
 
-export function LoginForm() {
+export function LoginForm({
+  initialStep = "credentials",
+}: {
+  initialStep?: "credentials" | "mfa";
+}) {
   const t = useTranslations("auth.login");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const [state, formAction, pending] = useActionState(login, initialState);
+  const [loginState, loginAction, loginPending] = useActionState(login, initialLoginState);
+  const [mfaState, mfaAction, mfaPending] = useActionState(verifyLoginMfa, initialMfaState);
+  const [loggingOut, startLogout] = useTransition();
+
+  // Once login() reports mfaRequired, its state keeps that flag set on every
+  // re-render until the next submit — so this stays "mfa" without needing
+  // an effect to sync it into separate local state.
+  const step = initialStep === "mfa" || loginState.mfaRequired ? "mfa" : "credentials";
+
+  if (step === "mfa") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>{t("mfaTitle")}</CardTitle>
+          <CardDescription>{t("mfaSubtitle")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={mfaAction} className="flex flex-col gap-4">
+            <input type="hidden" name="locale" value={locale} />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="code">{t("mfaCode")}</Label>
+              <Input
+                id="code"
+                name="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                autoFocus
+                aria-invalid={!!mfaState.error}
+              />
+            </div>
+            {mfaState.error && (
+              <p className="text-sm text-destructive">
+                {mfaState.error === "rateLimited" ? t("rateLimitedError") : t("mfaInvalidCode")}
+              </p>
+            )}
+            <Button type="submit" loading={mfaPending} className="w-full">
+              {t("mfaSubmit")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={loggingOut}
+              loading={loggingOut}
+              onClick={() => startLogout(() => logout(locale))}
+            >
+              {t("mfaOtherAccount")}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-sm">
@@ -30,7 +89,7 @@ export function LoginForm() {
         <CardDescription>{t("subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={loginAction} className="flex flex-col gap-4">
           <input type="hidden" name="locale" value={locale} />
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">{t("email")}</Label>
@@ -40,7 +99,7 @@ export function LoginForm() {
               type="email"
               required
               autoFocus
-              aria-invalid={!!state.error}
+              aria-invalid={!!loginState.error}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -49,17 +108,17 @@ export function LoginForm() {
               id="password"
               name="password"
               required
-              aria-invalid={!!state.error}
+              aria-invalid={!!loginState.error}
               showLabel={tCommon("showPassword")}
               hideLabel={tCommon("hidePassword")}
             />
           </div>
-          {state.error && (
+          {loginState.error && (
             <p className="text-sm text-destructive">
-              {state.error === "rateLimited" ? t("rateLimitedError") : t("error")}
+              {loginState.error === "rateLimited" ? t("rateLimitedError") : t("error")}
             </p>
           )}
-          <Button type="submit" loading={pending} className="w-full">
+          <Button type="submit" loading={loginPending} className="w-full">
             {t("submit")}
           </Button>
         </form>
