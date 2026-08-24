@@ -92,6 +92,13 @@ export function getDeliveredOrders(productType: string) {
   });
 }
 
+// Powers the sidebar's "Orders" badge — the only signal an admin gets of a
+// new order besides the customer manually sending the pre-filled WhatsApp
+// message from buildOrderWhatsAppLink, which nothing guarantees they do.
+export function getPendingOrderCount(productType: string) {
+  return prisma.order.count({ where: { productType, status: "PENDING" } });
+}
+
 export function getOrderById(id: string, productType: string) {
   return prisma.order.findFirst({
     where: { id, productType },

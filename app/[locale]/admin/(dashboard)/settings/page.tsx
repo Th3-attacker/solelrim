@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { getBoutiqueSettings } from "@/lib/queries/settings";
 import { getDeliveredOrders } from "@/lib/queries/orders";
 import { getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import { getMfaStatus } from "@/lib/auth/mfa";
+import { TwoFactorSettings } from "@/components/settings/two-factor-settings";
 import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-form";
 import { LogoUpload } from "@/components/settings/logo-upload";
 import { HeroImageUpload } from "@/components/settings/hero-image-upload";
@@ -22,9 +24,10 @@ export default async function SettingsPage() {
     requireAdminScope(),
   ]);
 
-  const [boutique, deliveredOrders] = await Promise.all([
+  const [boutique, deliveredOrders, mfaStatus] = await Promise.all([
     getBoutiqueSettings(productType),
     getDeliveredOrders(productType),
+    getMfaStatus(),
   ]);
 
   return (
@@ -40,6 +43,10 @@ export default async function SettingsPage() {
           </Button>
         )}
       </div>
+
+      {/* Tied to the logged-in admin's own Supabase Auth account, not to
+          this boutique — shown regardless of which scope is selected. */}
+      <TwoFactorSettings factorId={mfaStatus.factorId} required={mfaStatus.required} />
 
       <LogoUpload
         logoUrl={

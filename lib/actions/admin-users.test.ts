@@ -22,6 +22,7 @@ import {
   createBoutiqueAdmin,
   deleteBoutiqueAdmin,
   setAdminCanManageAppearance,
+  setAdminMfaRequired,
 } from "@/lib/actions/admin-users";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -119,6 +120,24 @@ describe("createBoutiqueAdmin", () => {
     });
 
     expect(result.error).toBe("createFailed");
+    expect(prismaMock.adminUser.create).not.toHaveBeenCalled();
+  });
+
+  it("reports emailExists distinctly when the email is already a Supabase user", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue({ key: "cosmetique" } as never);
+    const createUser = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: { code: "email_exists", message: "..." } });
+    createAdminClientMock.mockReturnValue({ auth: { admin: { createUser } } });
+
+    const result = await createBoutiqueAdmin({
+      email: "taken@example.com",
+      password: "longenough",
+      productType: "cosmetique",
+    });
+
+    expect(result.error).toBe("emailExists");
     expect(prismaMock.adminUser.create).not.toHaveBeenCalled();
   });
 
@@ -306,5 +325,94 @@ describe("setAdminCanManageAppearance", () => {
       where: { id: "target-id" },
       data: { canManageAppearance: true },
     });
+  });
+});
+
+describe("setAdminMfaRequired", () => {
+  it("rejects a BOUTIQUE_ADMIN caller", async () => {
+    asBoutiqueAdmin();
+
+    await expect(setAdminMfaRequired("target-id", true)).rejects.toThrow("forbidden");
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses to target a SUPERADMIN row", async () => {
+    asSuperAdmin();
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "admin-user-2",
+      supabaseUserId: "super-1",
+      role: "SUPERADMIN",
+      productType: null,
+      createdAt: new Date(),
+    } as never);
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "other-super",
+      role: "SUPERADMIN",
+      productType: null,
+      createdAt: new Date(),
+    } as never);
+
+    const result = await setAdminMfaRequired("other-super", true);
+
+    expect(result.error).toBe("invalid");
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+  });
+
+  it("writes the requirement to Supabase Auth's app_metadata for a BOUTIQUE_ADMIN", async () => {
+    asSuperAdmin();
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "admin-user-2",
+      supabaseUserId: "super-1",
+      role: "SUPERADMIN",
+      productType: null,
+      createdAt: new Date(),
+    } as never);
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "target-id",
+      supabaseUserId: "target-supabase-id",
+      role: "BOUTIQUE_ADMIN",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    const updateUserById = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({ auth: { admin: { updateUserById } } });
+
+    const result = await setAdminMfaRequired("target-id", true);
+
+    expect(result.error).toBeUndefined();
+    expect(updateUserById).toHaveBeenCalledWith("target-supabase-id", {
+      app_metadata: { mfa_required: true },
+    });
+  });
+
+  it("surfaces a Supabase update failure", async () => {
+    asSuperAdmin();
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "admin-user-2",
+      supabaseUserId: "super-1",
+      role: "SUPERADMIN",
+      productType: null,
+      createdAt: new Date(),
+    } as never);
+    prismaMock.adminUser.findUnique.mockResolvedValueOnce({
+      id: "target-id",
+      supabaseUserId: "target-supabase-id",
+      role: "BOUTIQUE_ADMIN",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    createAdminClientMock.mockReturnValue({
+      auth: {
+        admin: {
+          updateUserById: vi.fn().mockResolvedValue({ error: { message: "nope" } }),
+        },
+      },
+    });
+
+    const result = await setAdminMfaRequired("target-id", true);
+
+    expect(result).toEqual({ error: "updateFailed" });
   });
 });

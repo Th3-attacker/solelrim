@@ -9,6 +9,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
@@ -31,18 +32,20 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 
 type StoreTypeOption = { key: string; label: string };
-type NavItem = { href: string; label: string; icon: typeof SquaresFour };
+type NavItem = { href: string; label: string; icon: typeof SquaresFour; badge?: number };
 
 export function AppSidebar({
   storeTypes,
   currentScope,
   role,
   email,
+  pendingOrderCount,
 }: {
   storeTypes: StoreTypeOption[];
   currentScope: string;
   role: "SUPERADMIN" | "BOUTIQUE_ADMIN";
   email: string;
+  pendingOrderCount: number;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -63,7 +66,12 @@ export function AppSidebar({
       label: t("activitySection"),
       items: [
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
-        { href: "/admin/orders", label: t("orders"), icon: ClipboardText },
+        {
+          href: "/admin/orders",
+          label: t("orders"),
+          icon: ClipboardText,
+          badge: pendingOrderCount > 0 ? pendingOrderCount : undefined,
+        },
         { href: "/admin/clients", label: t("clients"), icon: Users },
         { href: "/admin/promo-codes", label: t("promoCodes"), icon: Ticket },
       ],
@@ -126,6 +134,11 @@ export function AppSidebar({
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
+                      {item.badge !== undefined && (
+                        <SidebarMenuBadge className="bg-warning/10 text-warning dark:bg-warning/20">
+                          {item.badge}
+                        </SidebarMenuBadge>
+                      )}
                     </SidebarMenuItem>
                   );
                 })}
