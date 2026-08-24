@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash, Palette } from "@phosphor-icons/react/dist/ssr";
+import {
+  Plus,
+  Trash,
+  Palette,
+  ShieldCheck,
+  ArrowCounterClockwise,
+} from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -22,7 +28,9 @@ import {
   createBoutiqueAdmin,
   deleteBoutiqueAdmin,
   setAdminCanManageAppearance,
+  setAdminMfaRequired,
 } from "@/lib/actions/admin-users";
+import { resetAdminMfa } from "@/lib/actions/mfa";
 import { cn } from "@/lib/utils";
 
 type BoutiqueAdmin = {
@@ -30,6 +38,7 @@ type BoutiqueAdmin = {
   email: string | null;
   boutiqueLabel: string | null;
   canManageAppearance: boolean;
+  mfaRequired: boolean;
 };
 
 type StoreTypeOption = { key: string; label: string };
@@ -60,7 +69,7 @@ export function AdminUsersManager({
         canManageAppearance,
       });
       if (result.error) {
-        toast.error(tCommon("error"));
+        toast.error(result.error === "emailExists" ? t("adminUserEmailExists") : tCommon("error"));
         return;
       }
       setEmail("");
@@ -93,6 +102,28 @@ export function AdminUsersManager({
     });
   }
 
+  function handleToggleMfaRequired(id: string, next: boolean) {
+    startTransition(async () => {
+      const result = await setAdminMfaRequired(id, next);
+      if (result.error) {
+        toast.error(tCommon("error"));
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  function handleResetMfa(id: string) {
+    startTransition(async () => {
+      const result = await resetAdminMfa(id);
+      if (result.error) {
+        toast.error(tCommon("error"));
+        return;
+      }
+      toast.success(t("adminUserResetMfaSuccess"));
+    });
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {admins.length > 0 && (
@@ -119,6 +150,30 @@ export function AdminUsersManager({
                 className={cn(admin.canManageAppearance && "text-primary")}
               >
                 <Palette className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={pending}
+                onClick={() => handleToggleMfaRequired(admin.id, !admin.mfaRequired)}
+                aria-label={t("adminUserMfaToggle")}
+                aria-pressed={admin.mfaRequired}
+                title={admin.mfaRequired ? t("adminUserMfaOn") : t("adminUserMfaOff")}
+                className={cn(admin.mfaRequired && "text-primary")}
+              >
+                <ShieldCheck className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={pending}
+                onClick={() => handleResetMfa(admin.id)}
+                aria-label={t("adminUserResetMfa")}
+                title={t("adminUserResetMfa")}
+              >
+                <ArrowCounterClockwise className="size-4" />
               </Button>
               <Button
                 type="button"

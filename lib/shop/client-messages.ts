@@ -84,6 +84,30 @@ export function buildClientRejectionMessage(params: {
   });
 }
 
+export function buildClientShippedMessage(params: {
+  locale: string | null;
+  customerName: string;
+  reference: string;
+}): string {
+  const bundle = MESSAGE_BUNDLES[resolveLocale(params.locale)];
+  return fillTemplate(bundle.orders.clientShippedMessage, {
+    name: params.customerName,
+    reference: params.reference,
+  });
+}
+
+export function buildClientDeliveredMessage(params: {
+  locale: string | null;
+  customerName: string;
+  reference: string;
+}): string {
+  const bundle = MESSAGE_BUNDLES[resolveLocale(params.locale)];
+  return fillTemplate(bundle.orders.clientDeliveredMessage, {
+    name: params.customerName,
+    reference: params.reference,
+  });
+}
+
 export function buildClientWhatsAppLink(phone: string, message: string): string {
   // customerPhone is stored as a bare 8-digit local number (see
   // checkoutCustomerSchema / /^[234]\d{7}$/), with no country code — wa.me

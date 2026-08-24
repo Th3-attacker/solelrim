@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   buildClientConfirmationMessage,
   buildClientRejectionMessage,
+  buildClientShippedMessage,
+  buildClientDeliveredMessage,
   buildClientWhatsAppLink,
 } from "@/lib/shop/client-messages";
 
@@ -25,25 +27,58 @@ type Props =
       customerPhone: string;
       reference: string;
       reason: string;
+    }
+  | {
+      type: "shipped" | "delivered";
+      locale: string | null;
+      customerName: string;
+      customerPhone: string;
+      reference: string;
     };
+
+const LABEL_KEY = {
+  confirmation: "sendConfirmationToClient",
+  rejection: "sendRejectionToClient",
+  shipped: "sendShippedToClient",
+  delivered: "sendDeliveredToClient",
+} as const;
 
 export function ClientMessageButton(props: Props) {
   const t = useTranslations("orders");
 
-  const message =
-    props.type === "confirmation"
-      ? buildClientConfirmationMessage({
-          locale: props.locale,
-          customerName: props.customerName,
-          reference: props.reference,
-          total: props.total,
-        })
-      : buildClientRejectionMessage({
-          locale: props.locale,
-          customerName: props.customerName,
-          reference: props.reference,
-          reason: props.reason,
-        });
+  let message: string;
+  switch (props.type) {
+    case "confirmation":
+      message = buildClientConfirmationMessage({
+        locale: props.locale,
+        customerName: props.customerName,
+        reference: props.reference,
+        total: props.total,
+      });
+      break;
+    case "rejection":
+      message = buildClientRejectionMessage({
+        locale: props.locale,
+        customerName: props.customerName,
+        reference: props.reference,
+        reason: props.reason,
+      });
+      break;
+    case "shipped":
+      message = buildClientShippedMessage({
+        locale: props.locale,
+        customerName: props.customerName,
+        reference: props.reference,
+      });
+      break;
+    case "delivered":
+      message = buildClientDeliveredMessage({
+        locale: props.locale,
+        customerName: props.customerName,
+        reference: props.reference,
+      });
+      break;
+  }
 
   const href = buildClientWhatsAppLink(props.customerPhone, message);
 
@@ -51,9 +86,7 @@ export function ClientMessageButton(props: Props) {
     <Button asChild variant="outline" size="sm">
       <a href={href} target="_blank" rel="noopener noreferrer">
         <ChatCircle className="size-4" />
-        {props.type === "confirmation"
-          ? t("sendConfirmationToClient")
-          : t("sendRejectionToClient")}
+        {t(LABEL_KEY[props.type])}
       </a>
     </Button>
   );
