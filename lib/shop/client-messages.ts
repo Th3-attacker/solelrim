@@ -108,6 +108,22 @@ export function buildClientDeliveredMessage(params: {
   });
 }
 
+// Sent from the order detail page once a DELIVERED order's admin wants
+// feedback — the client replies straight into the same WhatsApp thread,
+// and the admin pastes that reply into Testimonials themselves (no public
+// review form exists, see the "témoignages" discussion this followed up).
+export function buildClientReviewRequestMessage(params: {
+  locale: string | null;
+  customerName: string;
+  reference: string;
+}): string {
+  const bundle = MESSAGE_BUNDLES[resolveLocale(params.locale)];
+  return fillTemplate(bundle.orders.clientReviewRequestMessage, {
+    name: params.customerName,
+    reference: params.reference,
+  });
+}
+
 export function buildClientWhatsAppLink(phone: string, message: string): string {
   // customerPhone is stored as a bare 8-digit local number (see
   // checkoutCustomerSchema / /^[234]\d{7}$/), with no country code — wa.me

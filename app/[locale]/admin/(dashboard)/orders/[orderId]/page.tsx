@@ -122,6 +122,13 @@ export default async function OrderDetailPage({
               customerPhone={order.customerPhone}
               reference={order.reference}
             />
+            <ClientMessageButton
+              type="reviewRequest"
+              locale={order.locale}
+              customerName={order.customerName}
+              customerPhone={order.customerPhone}
+              reference={order.reference}
+            />
           </div>
         )}
         {order.status === "REJECTED" && (

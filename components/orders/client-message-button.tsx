@@ -8,6 +8,7 @@ import {
   buildClientRejectionMessage,
   buildClientShippedMessage,
   buildClientDeliveredMessage,
+  buildClientReviewRequestMessage,
   buildClientWhatsAppLink,
 } from "@/lib/shop/client-messages";
 
@@ -29,7 +30,7 @@ type Props =
       reason: string;
     }
   | {
-      type: "shipped" | "delivered";
+      type: "shipped" | "delivered" | "reviewRequest";
       locale: string | null;
       customerName: string;
       customerPhone: string;
@@ -41,6 +42,7 @@ const LABEL_KEY = {
   rejection: "sendRejectionToClient",
   shipped: "sendShippedToClient",
   delivered: "sendDeliveredToClient",
+  reviewRequest: "sendReviewRequestToClient",
 } as const;
 
 export function ClientMessageButton(props: Props) {
@@ -73,6 +75,13 @@ export function ClientMessageButton(props: Props) {
       break;
     case "delivered":
       message = buildClientDeliveredMessage({
+        locale: props.locale,
+        customerName: props.customerName,
+        reference: props.reference,
+      });
+      break;
+    case "reviewRequest":
+      message = buildClientReviewRequestMessage({
         locale: props.locale,
         customerName: props.customerName,
         reference: props.reference,
