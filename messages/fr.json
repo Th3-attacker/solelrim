@@ -544,6 +544,7 @@
       "navy": "Marine"
     },
     "themeCustomColor": "Couleur personnalisée",
+    "themeCustomColorLowContrast": "Ce texte serait illisible sur cette couleur — choisissez une teinte plus claire ou plus foncée.",
 
     "colorModeSection": "Mode clair/sombre",
     "colorModeSectionHint": "Auto laisse les visiteurs choisir (bouton dans l'en-tête). Clair/Sombre verrouille la boutique sur un seul mode et masque ce bouton.",

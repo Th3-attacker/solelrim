@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { meetsMinimumContrast } from "@/lib/theme/custom-color";
 
 // Storefront layout variants — superadmin-only (lib/actions/settings.ts:
 // setHeroVariant/setCardVariant), kept out of boutiqueSettingsSchema below
@@ -64,7 +65,13 @@ export const testimonialSchema = z.object({
 export type TestimonialInput = z.infer<typeof testimonialSchema>;
 
 export const customThemeColorSchema = z.object({
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "invalid"),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "invalid")
+    // A hex that's a valid color can still be a "murky middle" tone where
+    // neither black nor white text ever reaches WCAG AA against it — reject
+    // those here rather than silently shipping unreadable button text.
+    .refine(meetsMinimumContrast, "lowContrast"),
 });
 
 export type CustomThemeColorInput = z.infer<typeof customThemeColorSchema>;

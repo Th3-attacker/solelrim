@@ -544,6 +544,7 @@
       "navy": "Navy"
     },
     "themeCustomColor": "Custom color",
+    "themeCustomColorLowContrast": "Text would be unreadable on this color — pick a lighter or darker shade.",
 
     "colorModeSection": "Light/dark mode",
     "colorModeSectionHint": "Auto lets visitors choose (button in the header). Light/Dark locks the storefront to a single mode and hides that button.",
