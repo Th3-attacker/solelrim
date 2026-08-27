@@ -218,7 +218,10 @@ export async function setCustomThemeColor(color: string): Promise<{ error?: stri
 
   const parsed = customThemeColorSchema.safeParse({ color });
   if (!parsed.success) {
-    return { error: "invalid" };
+    // "invalid" (malformed hex) or "lowContrast" (valid hex, but neither
+    // black nor white text clears WCAG AA against it) — the picker needs to
+    // tell those apart to show the right message.
+    return { error: parsed.error.issues[0]?.message ?? "invalid" };
   }
 
   await prisma.storeType.update({
