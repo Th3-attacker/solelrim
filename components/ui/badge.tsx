@@ -12,8 +12,13 @@ const badgeVariants = cva(
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        // text-destructive alone (vivid red) on this badge's pale bg-destructive/10
+        // tint only reaches ~3.7:1 — short of WCAG AA's 4.5:1 for text this
+        // size. Darkening it via color-mix (same technique already used in
+        // button.tsx) keeps it anchored to the theme's --destructive token
+        // instead of hardcoding an unrelated red.
         destructive:
-          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+          "bg-destructive/10 text-[color-mix(in_oklch,var(--destructive),black_35%)] focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:text-[color-mix(in_oklch,var(--destructive),white_15%)] dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         warning:
           "bg-warning/10 text-warning focus-visible:ring-warning/20 dark:bg-warning/20 dark:focus-visible:ring-warning/40 [a]:hover:bg-warning/20",
         success:

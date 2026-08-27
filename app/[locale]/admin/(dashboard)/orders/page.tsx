@@ -3,7 +3,7 @@ import Image from "next/image";
 import { differenceInHours } from "date-fns";
 import { ClipboardText, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
-import { getAllOrders } from "@/lib/queries/orders";
+import { getAllOrders, getAllOrdersForExport, ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { OrderStatus } from "@/lib/generated/prisma/enums";
@@ -13,6 +13,7 @@ import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderFilters } from "@/components/orders/order-filters";
 import { StateMessage } from "@/components/ui/state-message";
 import { ExportCsvButton } from "@/components/ui/export-csv-button";
+import { ListPagination } from "@/components/ui/list-pagination";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -36,18 +37,20 @@ export default async function AdminOrdersPage({
     ? (rawStatus as OrderStatus)
     : undefined;
   const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
-  const { dateFrom, dateTo } = parseOrderDateFilters({
-    from: typeof params.from === "string" ? params.from : undefined,
-    to: typeof params.to === "string" ? params.to : undefined,
-  });
+  const rawFrom = typeof params.from === "string" ? params.from : undefined;
+  const rawTo = typeof params.to === "string" ? params.to : undefined;
+  const { dateFrom, dateTo } = parseOrderDateFilters({ from: rawFrom, to: rawTo });
   const hasFilters = Boolean(status || search || dateFrom || dateTo);
+  const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
 
   const scope = await getAdminScope();
-  const [t, tCommon, format, orders] = await Promise.all([
+  const orderFilters = { productType: scope, status, search, dateFrom, dateTo };
+  const [t, tCommon, format, { orders, total }, exportRows] = await Promise.all([
     getTranslations("orders"),
     getTranslations("common"),
     getFormatter(),
-    getAllOrders({ productType: scope, status, search, dateFrom, dateTo }),
+    getAllOrders(orderFilters, page),
+    getAllOrdersForExport(orderFilters),
   ]);
 
   const csvColumns = [
@@ -60,7 +63,7 @@ export default async function AdminOrdersPage({
     { key: "status", label: t("status") },
     { key: "date", label: t("date") },
   ];
-  const csvRows = orders.map((order) => ({
+  const csvRows = exportRows.map((order) => ({
     reference: order.reference,
     customer: order.customerName,
     phone: order.customerPhone,
@@ -156,6 +159,14 @@ export default async function AdminOrdersPage({
           </TableBody>
         </Table>
       )}
+
+      <ListPagination
+        page={page}
+        pageSize={ORDERS_PAGE_SIZE}
+        total={total}
+        basePath="/admin/orders"
+        searchParams={{ status, q: search, from: rawFrom, to: rawTo }}
+      />
     </div>
   );
 }

@@ -9,38 +9,73 @@ export type OrderListFilters = {
   dateTo?: Date;
 };
 
-export function getAllOrders(filters: OrderListFilters) {
+function buildOrdersWhere(filters: OrderListFilters) {
   const { productType, status, search, dateFrom, dateTo } = filters;
+  return {
+    productType,
+    ...(status && { status }),
+    ...(search && {
+      OR: [
+        { reference: { contains: search, mode: "insensitive" as const } },
+        { customerPhone: { contains: search } },
+      ],
+    }),
+    ...((dateFrom || dateTo) && {
+      createdAt: {
+        ...(dateFrom && { gte: dateFrom }),
+        ...(dateTo && { lte: dateTo }),
+      },
+    }),
+  };
+}
 
-  return prisma.order.findMany({
-    where: {
-      productType,
-      ...(status && { status }),
-      ...(search && {
-        OR: [
-          { reference: { contains: search, mode: "insensitive" } },
-          { customerPhone: { contains: search } },
-        ],
-      }),
-      ...((dateFrom || dateTo) && {
-        createdAt: {
-          ...(dateFrom && { gte: dateFrom }),
-          ...(dateTo && { lte: dateTo }),
-        },
-      }),
-    },
-    include: {
-      items: {
-        include: {
-          variant: {
-            include: {
-              product: {
-                include: { images: { take: 1, orderBy: { position: "asc" } } },
+export const ORDERS_PAGE_SIZE = 20;
+
+export async function getAllOrders(filters: OrderListFilters, page = 1) {
+  const currentPage = Math.max(1, page);
+  const where = buildOrdersWhere(filters);
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  include: { images: { take: 1, orderBy: { position: "asc" } } },
+                },
               },
             },
           },
         },
       },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      skip: (currentPage - 1) * ORDERS_PAGE_SIZE,
+      take: ORDERS_PAGE_SIZE,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return { orders, total };
+}
+
+// CSV export needs every order matching the current filters, not just the
+// page on screen — a plain `select` (no items/variant/product/images join)
+// keeps that full-set fetch cheap since the export never needs a thumbnail.
+export function getAllOrdersForExport(filters: OrderListFilters) {
+  return prisma.order.findMany({
+    where: buildOrdersWhere(filters),
+    select: {
+      reference: true,
+      customerName: true,
+      customerPhone: true,
+      customerCity: true,
+      paymentSenderPhone: true,
+      total: true,
+      status: true,
+      createdAt: true,
     },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
   });

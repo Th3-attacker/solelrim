@@ -104,11 +104,11 @@ function ColumnsFooter({
               basePath={basePath}
               className="text-base"
             />
-            <p className="max-w-52 text-sm text-zinc-500">{t("heroSubtitle")}</p>
+            <p className="max-w-52 text-sm text-zinc-400">{t("heroSubtitle")}</p>
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+            <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               {t("footerShopTitle")}
             </h3>
             <nav className="flex flex-col gap-2 text-sm">
@@ -131,7 +131,7 @@ function ColumnsFooter({
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+            <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               {t("footerHelpTitle")}
             </h3>
             <nav className="flex flex-col gap-2 text-sm">
@@ -153,7 +153,7 @@ function ColumnsFooter({
 
           {socialLinks.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+              <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
                 {t("footerFollowTitle")}
               </h3>
               <nav className="flex flex-col gap-2 text-sm">
@@ -173,7 +173,7 @@ function ColumnsFooter({
           )}
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-zinc-500">
+        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-zinc-400">
           © {new Date().getFullYear()} {siteName}
         </div>
       </div>
@@ -213,7 +213,7 @@ function MinimalFooter({
           <WhatsappLink whatsappHref={whatsappHref} t={t} />
         </nav>
 
-        <div className="flex items-center gap-4 text-xs text-zinc-600">
+        <div className="flex items-center gap-4 text-xs text-zinc-400">
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-3 text-sm">
               {socialLinks.map((social) => (
@@ -251,7 +251,7 @@ function CenteredFooter({
     <footer className="border-t bg-zinc-950 text-zinc-400">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-16 text-center desktop:px-8">
         <BrandMark siteName={siteName} logoUrl={logoUrl} basePath={basePath} size={32} className="text-lg" />
-        <p className="max-w-sm text-sm text-zinc-500">{t("heroSubtitle")}</p>
+        <p className="max-w-sm text-sm text-zinc-400">{t("heroSubtitle")}</p>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
           <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
@@ -288,7 +288,7 @@ function CenteredFooter({
           </nav>
         )}
 
-        <div className="border-t border-white/10 pt-6 text-xs text-zinc-500">
+        <div className="border-t border-white/10 pt-6 text-xs text-zinc-400">
           © {new Date().getFullYear()} {siteName}
         </div>
       </div>

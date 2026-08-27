@@ -37,6 +37,10 @@ export function ThemePicker({
   function handleCustomColor(color: string) {
     startTransition(async () => {
       const result = await setCustomThemeColor(color);
+      if (result.error === "lowContrast") {
+        toast.error(t("themeCustomColorLowContrast"));
+        return;
+      }
       if (result.error) {
         toast.error(tCommon("error"));
         return;
