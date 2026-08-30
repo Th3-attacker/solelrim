@@ -37,6 +37,7 @@ export async function generateMetadata({
       domain: boutique.domain,
       storeKey: storeType,
       path: "/contact",
+      siteName,
     }),
   };
 }

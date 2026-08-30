@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { resolveStoreTheme } from "@/lib/theme/presets";
 
@@ -12,36 +11,44 @@ import { resolveStoreTheme } from "@/lib/theme/presets";
 // routes instead of the `icon` file convention. Linked per-boutique via
 // generateMetadata's `manifest` field on (shop)/layout.tsx, so an install
 // from one boutique's storefront never shows another boutique's name/icon.
+
+// Cache per (locale, storeType) — the content only changes when a boutique
+// edits its own name/theme, and both of those already broadcast a
+// revalidatePath("/", "layout"). Without this the route re-runs a DB query
+// (plus a Satori raster on each linked icon-*) for every install prompt /
+// crawler hit, and a `?x=` query string is enough to slip past a CDN.
+export const revalidate = 3600;
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ locale: string; storeType: string }> },
 ) {
   const { locale, storeType } = await params;
-  const [boutique, basePath, tShop] = await Promise.all([
+  const [boutique, tShop] = await Promise.all([
     getPublicBoutiqueSettings(storeType),
-    getStorefrontBasePath(storeType),
     getTranslations({ locale, namespace: "shop" }),
   ]);
 
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const theme = resolveStoreTheme(boutique);
-  // basePath alone omits the locale (it's meant to be used inside an
-  // already-locale-scoped <Link>) — these URLs go straight into manifest
-  // JSON instead, so the locale has to be added back by hand.
-  const localePrefix = `/${locale}`;
+  // Always the explicit /{locale}/{storeType} path (never the branded-domain
+  // "" base path): it resolves correctly on every domain type — proxy.ts
+  // passes it straight through on a boutique's own domain — and keeping it
+  // request-independent is what lets this route be statically cached above.
+  const scopedBase = `/${locale}/${storeType}`;
 
   return NextResponse.json(
     {
       name: siteName,
       short_name: siteName,
       description: `${siteName} — rapide et simple.`,
-      start_url: `${localePrefix}${basePath}`,
+      start_url: scopedBase,
       display: "standalone",
       background_color: theme.light.primaryForeground,
       theme_color: theme.light.primary,
       icons: [
-        { src: `${localePrefix}${basePath}/icon-192`, sizes: "192x192", type: "image/png" },
-        { src: `${localePrefix}${basePath}/icon-512`, sizes: "512x512", type: "image/png" },
+        { src: `${scopedBase}/icon-192`, sizes: "192x192", type: "image/png" },
+        { src: `${scopedBase}/icon-512`, sizes: "512x512", type: "image/png" },
       ],
     },
     { headers: { "Content-Type": "application/manifest+json" } },

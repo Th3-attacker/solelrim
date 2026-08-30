@@ -19,6 +19,11 @@ const headersMock = headers as unknown as Mock;
 beforeEach(() => {
   mockReset(prismaMock);
   headersMock.mockReset();
+  // checkRateLimit now runs its prune/count/create inside a $transaction
+  // (with a per-key advisory lock) — run the callback against the same mock.
+  prismaMock.$transaction.mockImplementation((cb) =>
+    (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
+  );
 });
 
 describe("checkRateLimit", () => {
@@ -34,6 +39,15 @@ describe("checkRateLimit", () => {
       where: { key: string; createdAt: { lt: Date } };
     };
     expect(call.where.createdAt.lt.getTime()).toBeLessThanOrEqual(Date.now() - 999);
+  });
+
+  it("takes a per-key advisory lock so the count/create pair can't race", async () => {
+    prismaMock.rateLimitHit.count.mockResolvedValue(0);
+
+    await checkRateLimit("order:1.2.3.4", { windowMs: 1000, max: 5 });
+
+    expect(prismaMock.$transaction).toHaveBeenCalled();
+    expect(prismaMock.$executeRaw).toHaveBeenCalled();
   });
 
   it("allows the call and records a hit when under the limit", async () => {

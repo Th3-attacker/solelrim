@@ -16,7 +16,7 @@ import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
+import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { getLicenseStatus } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
@@ -160,9 +160,10 @@ export async function submitOrder(
   }
 
   // File.type is whatever the browser guessed from the filename — trust the
-  // actual bytes instead, so a renamed non-image can't pass as a "photo".
+  // actual bytes instead, so a renamed non-image (or a small-on-disk pixel
+  // bomb) can't pass as a "photo".
   const fileBuffer = await file.arrayBuffer();
-  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  const detected = validateImageBytes(new Uint8Array(fileBuffer));
   if (!detected) {
     return { error: "invalidFile" };
   }
@@ -175,6 +176,18 @@ export async function submitOrder(
   if (uploadError) {
     return { error: "uploadFailed" };
   }
+
+  // The proof is uploaded before the transaction (it's part of the order
+  // payload), so every path that bails out after this point must delete it
+  // or it's an orphaned object in Storage forever. Best-effort — a failed
+  // cleanup must never mask the real error being returned.
+  const discardProof = async () => {
+    try {
+      await supabase.storage.from(PAYMENT_PROOFS_BUCKET).remove([storagePath]);
+    } catch {
+      // swallow — nothing actionable, and the original outcome still stands
+    }
+  };
 
   const PROMO_CODE_ERRORS = ["notFound", "expired", "usageLimitReached", "notYours", "alreadyUsed"];
 
@@ -276,20 +289,25 @@ export async function submitOrder(
           ? err.meta.target.join(",")
           : String(err.meta?.target ?? "");
         if (target.includes("promoCodeId_customerPhone")) {
+          await discardProof();
           return { error: "alreadyUsed" };
         }
         continue;
       }
       if (err instanceof Error && err.message === "insufficientStock") {
+        await discardProof();
         return { error: "insufficientStock" };
       }
       if (err instanceof Error && PROMO_CODE_ERRORS.includes(err.message)) {
+        await discardProof();
         return { error: err.message };
       }
+      await discardProof();
       throw err;
     }
   }
 
+  await discardProof();
   return { error: "referenceCollision" };
 }
 

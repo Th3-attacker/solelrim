@@ -8,6 +8,14 @@ import { getStoreLogoUrl } from "@/lib/supabase/storage";
 export const size = { width: 192, height: 192 };
 export const contentType = "image/png";
 
+// Cache the rendered PNG per (locale, storeType) instead of rasterising it
+// (Satori) — plus a DB read, plus a fetch of the boutique logo — on every
+// request. It only changes when the boutique edits its logo/name/theme, all
+// of which already call revalidatePath("/", "layout"). Unauthenticated and
+// otherwise uncached, so without this a `?x=<n>` loop is a cheap way to
+// burn serverless compute.
+export const revalidate = 3600;
+
 // Per-boutique sibling of app/icon-192/route.tsx (which stays as the
 // generic "SOLAL" fallback for admin/non-boutique pages) — installing one
 // boutique's storefront to a home screen should never show another
