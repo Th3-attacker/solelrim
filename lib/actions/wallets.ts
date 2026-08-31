@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
-import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
+import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -16,7 +16,7 @@ async function uploadWalletLogo(
     return { error: "invalidFile" };
   }
   const fileBuffer = await file.arrayBuffer();
-  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  const detected = validateImageBytes(new Uint8Array(fileBuffer));
   if (!detected) {
     return { error: "invalidFile" };
   }

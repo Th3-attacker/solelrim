@@ -23,7 +23,7 @@ import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { requireAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
-import { detectImageSignature, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
+import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -65,7 +65,7 @@ export async function uploadStoreLogo(
   // File.type/file.name are client-declared metadata — trust the actual
   // bytes instead, same as the payment-screenshot upload in orders.ts.
   const fileBuffer = await file.arrayBuffer();
-  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  const detected = validateImageBytes(new Uint8Array(fileBuffer));
   if (!detected) {
     return { error: "invalidFile" };
   }
@@ -138,7 +138,7 @@ export async function uploadStoreHeroImage(
   }
 
   const fileBuffer = await file.arrayBuffer();
-  const detected = detectImageSignature(new Uint8Array(fileBuffer));
+  const detected = validateImageBytes(new Uint8Array(fileBuffer));
   if (!detected) {
     return { error: "invalidFile" };
   }
