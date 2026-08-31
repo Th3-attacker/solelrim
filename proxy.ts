@@ -19,6 +19,16 @@ function isAdminLoginPath(pathWithoutLocale: string) {
   );
 }
 
+// app/[locale]/opengraph-image.tsx (and any future twitter-image) is a
+// metadata file-convention route that sits *above* the [storeType] segment,
+// so it must never be rewritten into a boutique's storefront path — on a
+// branded domain that would send /{locale}/opengraph-image to
+// /{locale}/{key}/opengraph-image, which doesn't exist (404). Root-level
+// icon routes are already handled by the matcher's exclusion list.
+function isLocaleMetadataRoute(pathWithoutLocale: string) {
+  return /^\/(opengraph-image|twitter-image)(\/|$)/.test(pathWithoutLocale);
+}
+
 export async function proxy(request: NextRequest) {
   const response = handleI18nRouting(request);
 
@@ -49,7 +59,11 @@ export async function proxy(request: NextRequest) {
   // main domain or a boutique's own branded domain. Login sets the
   // Supabase session cookie scoped to whichever host was used, so it works
   // as long as the admin stays on that same domain for the whole session.
-  if (boutiqueKey && !isAdminPath(pathWithoutLocale)) {
+  if (
+    boutiqueKey &&
+    !isAdminPath(pathWithoutLocale) &&
+    !isLocaleMetadataRoute(pathWithoutLocale)
+  ) {
     const segs = pathWithoutLocale.split("/").filter(Boolean);
     const first = segs[0];
 

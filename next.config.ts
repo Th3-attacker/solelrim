@@ -44,6 +44,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: import.meta.dirname,
   },
+  // Drop the framework-fingerprinting `X-Powered-By: Next.js` response header
+  // — no functional value, just tells an attacker what to look for.
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {

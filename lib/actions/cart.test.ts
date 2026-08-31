@@ -20,6 +20,10 @@ beforeEach(() => {
   mockReset(prismaMock);
   headersMock.mockResolvedValue({ get: () => null });
   prismaMock.rateLimitHit.count.mockResolvedValue(0);
+  // checkRateLimit wraps its work in a $transaction (per-key advisory lock).
+  prismaMock.$transaction.mockImplementation((cb) =>
+    (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
+  );
 });
 
 describe("getVariantStocks", () => {

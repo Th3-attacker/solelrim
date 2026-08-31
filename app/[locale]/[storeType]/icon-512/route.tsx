@@ -8,6 +8,12 @@ import { getStoreLogoUrl } from "@/lib/supabase/storage";
 export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
 
+// See icon-192/route.tsx: cache the rendered PNG per (locale, storeType)
+// rather than re-rasterising + re-querying the DB on every request. Busted
+// by the revalidatePath("/", "layout") that every logo/name/theme edit
+// already fires.
+export const revalidate = 3600;
+
 // Per-boutique sibling of app/icon-512/route.tsx — see icon-192/route.tsx
 // in this same directory for the full rationale.
 export async function GET(

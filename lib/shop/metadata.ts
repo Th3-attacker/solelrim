@@ -43,6 +43,7 @@ export function buildSocialMetadata({
   domain,
   storeKey,
   path,
+  siteName,
 }: {
   title: string;
   description: string;
@@ -51,17 +52,24 @@ export function buildSocialMetadata({
   domain?: string | null;
   storeKey: string;
   path: string;
+  siteName?: string | null;
 }): Pick<Metadata, "metadataBase" | "openGraph" | "twitter" | "alternates"> {
-  // Omitted entirely (not even as an explicit `undefined` key) when there's
-  // no boutique/product photo to use, so Next falls through to the nearest
-  // file-convention opengraph-image.tsx instead of rendering no image.
-  const images = imageUrl ? [{ url: imageUrl }] : undefined;
+  // Returning an explicit openGraph/twitter object from a nested
+  // generateMetadata replaces the parent's resolved value wholesale — Next
+  // does NOT then merge back the file-convention opengraph-image it would
+  // have injected on its own. So when there's no boutique logo / product
+  // photo, point at that same default card (app/[locale]/opengraph-image.tsx)
+  // explicitly. Absolute URL so it resolves identically whether the page is
+  // served from the shared platform host or a boutique's own bound domain
+  // (proxy.ts leaves /{locale}/opengraph-image un-rewritten on both).
+  const base = domain ? `https://${domain}` : getSiteUrl();
+  const images = [{ url: imageUrl ?? `${base}/${locale}/opengraph-image` }];
 
   const urlFor = (l: string) => buildStoreUrl({ domain, storeKey, path, locale: l });
   const languages = Object.fromEntries(routing.locales.map((l) => [l, urlFor(l)]));
 
   return {
-    metadataBase: new URL(getSiteUrl()),
+    metadataBase: new URL(base),
     alternates: {
       canonical: urlFor(locale),
       languages: { ...languages, "x-default": urlFor(routing.defaultLocale) },
@@ -69,15 +77,17 @@ export function buildSocialMetadata({
     openGraph: {
       title,
       description,
+      url: urlFor(locale),
       locale,
       type: "website",
-      ...(images ? { images } : {}),
+      images,
+      ...(siteName ? { siteName } : {}),
     },
     twitter: {
-      card: images ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title,
       description,
-      ...(images ? { images } : {}),
+      images,
     },
   };
 }

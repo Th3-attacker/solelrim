@@ -12,36 +12,58 @@ export const footerVariantSchema = z.enum(["columns", "minimal", "centered"]);
 // Everything a boutique's own admin can edit about their boutique — payment
 // contact info, and (since each boutique has its own public storefront
 // route) its storefront's own name, announcement bar, hero, and SEO too.
+// Every free-text field is capped: these are boutique-admin-writable and
+// rendered straight onto the public storefront / into <meta> tags, so an
+// uncapped one is a DB-bloat / oversized-payload vector (the sibling
+// schemas below already all carry a .max()). The ceilings are far above any
+// legitimate value — a real one never comes close.
+// Deliberately loose — the goal is to stop a megabyte-scale value, not to
+// enforce copy-length best practice, and to not retroactively invalidate a
+// slightly-long value an existing boutique already saved.
+const shortText = z.string().max(200).optional();
+const lineText = z.string().max(600).optional();
+const paragraphText = z.string().max(4000).optional();
+
 export const boutiqueSettingsSchema = z.object({
-  adminWhatsappNumber: z.string().min(1),
-  paymentInstructions: z.string().optional(),
-  siteName: z.string().optional(),
-  siteNameAr: z.string().optional(),
-  siteNameEn: z.string().optional(),
-  announcementText: z.string().optional(),
-  heroTitle: z.string().optional(),
-  heroTitleAr: z.string().optional(),
-  heroTitleEn: z.string().optional(),
-  heroSubtitle: z.string().optional(),
-  heroSubtitleAr: z.string().optional(),
-  heroSubtitleEn: z.string().optional(),
-  heroBadgeText: z.string().optional(),
-  heroCtaLabel: z.string().optional(),
+  adminWhatsappNumber: z.string().min(1).max(30),
+  paymentInstructions: paragraphText,
+  siteName: shortText,
+  siteNameAr: shortText,
+  siteNameEn: shortText,
+  announcementText: lineText,
+  heroTitle: lineText,
+  heroTitleAr: lineText,
+  heroTitleEn: lineText,
+  heroSubtitle: lineText,
+  heroSubtitleAr: lineText,
+  heroSubtitleEn: lineText,
+  heroBadgeText: shortText,
+  heroCtaLabel: shortText,
   heroImagePosition: z.enum(["left", "right"]).optional(),
   testimonialsEnabled: z.boolean().optional(),
-  seoTitle: z.string().optional(),
-  seoTitleAr: z.string().optional(),
-  seoTitleEn: z.string().optional(),
-  seoDescription: z.string().optional(),
-  seoDescriptionAr: z.string().optional(),
-  seoDescriptionEn: z.string().optional(),
+  seoTitle: lineText,
+  seoTitleAr: lineText,
+  seoTitleEn: lineText,
+  seoDescription: paragraphText,
+  seoDescriptionAr: paragraphText,
+  seoDescriptionEn: paragraphText,
 });
 
 export type BoutiqueSettingsInput = z.infer<typeof boutiqueSettingsSchema>;
 
 export const socialLinkSchema = z.object({
   platform: z.string().trim().min(1).max(40),
-  url: z.string().trim().min(1).max(500),
+  // Rendered as an <a href> on the public storefront footer + contact page
+  // (and the admin manager) — an unrestricted string here is a stored-XSS
+  // sink via a `javascript:`/`data:` URI, which the CSP's
+  // `script-src 'unsafe-inline'` does NOT block. A social link is only ever
+  // an external profile URL, so http(s) is the whole legitimate set.
+  url: z
+    .string()
+    .trim()
+    .min(1)
+    .max(500)
+    .refine((value) => /^https?:\/\//i.test(value), "invalidUrl"),
 });
 
 export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
