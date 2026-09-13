@@ -63,6 +63,38 @@ async function upsertProduct(data: {
   });
 }
 
+// Scoped to one boutique (productType, not null) — the generic
+// upsertCategory above only ever looks up/creates shared (productType:
+// null) categories, so a boutique-specific one needs its own lookup.
+async function upsertBoutiqueCategory(name: string, productType: string) {
+  const existing = await prisma.category.findFirst({ where: { name, productType } });
+  if (existing) return existing;
+  return prisma.category.create({ data: { name, productType } });
+}
+
+// The "demo" boutique: a self-contained showcase boutique (own key, own
+// branding) used to give prospects a live, clickable site to browse —
+// see the /{locale}/demo route this unlocks. update: {} so re-running the
+// seed never stomps on branding an admin has since customized by hand.
+async function upsertDemoStoreType() {
+  return prisma.storeType.upsert({
+    where: { key: "demo" },
+    update: {},
+    create: {
+      key: "demo",
+      label: "Démo",
+      themeId: "sage",
+      siteName: "Maison Lune",
+      announcementText:
+        "Boutique de démonstration — essayez la commande librement, aucun paiement réel n'est traité.",
+      heroTitle: "Nouvelle collection",
+      heroSubtitle: "L'automne, réinventé",
+      heroBadgeText: "Collection privée",
+      heroCtaLabel: "Découvrir",
+    },
+  });
+}
+
 async function main() {
   const running = await upsertCategory("Running");
   const football = await upsertCategory("Football");
@@ -384,6 +416,95 @@ async function main() {
     variants: [
       { size: "Unique", color: "BLACK", sku: "SSC-U-BLK", stock: 5, lowStockThreshold: 3 },
       { size: "Unique", color: "GREY", sku: "SSC-U-GRY", stock: 0, lowStockThreshold: 3 },
+    ],
+  });
+
+  // Boutique de démo — même univers que la brochure commerciale (Maison
+  // Lune), pour donner un lien /demo cliquable à montrer aux prospects.
+  const demoStore = await upsertDemoStoreType();
+  const demoRobes = await upsertBoutiqueCategory("Robes", demoStore.key);
+  const demoSacs = await upsertBoutiqueCategory("Sacs", demoStore.key);
+  // Reuses the generic "Accessoires" category created above instead of a
+  // demo-scoped duplicate — generic categories are meant to be shared
+  // across boutiques, and a second "Accessoires" would just show twice
+  // in the storefront's category nav.
+  const demoAccessoires = accessoires;
+
+  await upsertProduct({
+    id: "seed-demo-1",
+    name: "Robe Isla",
+    description: "Robe fluide en tissu léger, coupe évasée.",
+    basePrice: 1200,
+    compareAtPrice: 1500,
+    isFeatured: true,
+    categoryId: demoRobes.id,
+    productType: demoStore.key,
+    variants: [
+      { size: "S", color: "TERRACOTTA", sku: "RI-S-TER", stock: 6, lowStockThreshold: 3 },
+      { size: "M", color: "TERRACOTTA", sku: "RI-M-TER", stock: 6, lowStockThreshold: 3 },
+      { size: "L", color: "NOIR", sku: "RI-L-BLK", stock: 2, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-demo-2",
+    name: "Robe Aurore",
+    description: "Robe midi à motifs, manches longues.",
+    basePrice: 1450,
+    categoryId: demoRobes.id,
+    productType: demoStore.key,
+    variants: [
+      { size: "S", color: "OCRE", sku: "RA-S-OCR", stock: 5, lowStockThreshold: 3 },
+      { size: "M", color: "OCRE", sku: "RA-M-OCR", stock: 5, lowStockThreshold: 3 },
+      { size: "L", color: "OCRE", sku: "RA-L-OCR", stock: 0, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-demo-3",
+    name: "Sac Nao",
+    description: "Sac à main structuré, anse courte.",
+    basePrice: 950,
+    isFeatured: true,
+    categoryId: demoSacs.id,
+    productType: demoStore.key,
+    variants: [
+      { size: "Unique", color: "CAMEL", sku: "SN-U-CML", stock: 8, lowStockThreshold: 3 },
+      { size: "Unique", color: "NOIR", sku: "SN-U-BLK", stock: 3, lowStockThreshold: 3 },
+    ],
+  });
+
+  await upsertProduct({
+    id: "seed-demo-4",
+    name: "Sac Mini Luna",
+    description: "Mini sac bandoulière, format compact.",
+    basePrice: 700,
+    categoryId: demoSacs.id,
+    productType: demoStore.key,
+    variants: [{ size: "Unique", color: "BEIGE", sku: "SML-U-BEI", stock: 10, lowStockThreshold: 4 }],
+  });
+
+  await upsertProduct({
+    id: "seed-demo-5",
+    name: "Écharpe Ombre",
+    description: "Écharpe en maille douce, dégradé de couleurs.",
+    basePrice: 450,
+    isFeatured: true,
+    categoryId: demoAccessoires.id,
+    productType: demoStore.key,
+    variants: [{ size: "Unique", color: "MULTICOLOR", sku: "EO-U-MLT", stock: 14, lowStockThreshold: 5 }],
+  });
+
+  await upsertProduct({
+    id: "seed-demo-6",
+    name: "Ceinture Cuir",
+    description: "Ceinture en cuir véritable, boucle dorée.",
+    basePrice: 350,
+    categoryId: demoAccessoires.id,
+    productType: demoStore.key,
+    variants: [
+      { size: "S", color: "NOIR", sku: "CC-S-BLK", stock: 7, lowStockThreshold: 3 },
+      { size: "M", color: "NOIR", sku: "CC-M-BLK", stock: 1, lowStockThreshold: 3 },
     ],
   });
 
