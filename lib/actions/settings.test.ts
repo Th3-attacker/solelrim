@@ -34,6 +34,10 @@ import {
   createProductType,
   updateStoreDomain,
   updateLicenseExpiresAt,
+  updateBoutiqueLicense,
+  updateLicenseClientName,
+  setCouponsEnabled,
+  updateSolalContact,
 } from "@/lib/actions/settings";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -420,5 +424,219 @@ describe("updateLicenseExpiresAt (superadmin only)", () => {
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateBoutiqueLicense (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(
+      updateBoutiqueLicense("sport", { licenseType: "YEARLY", licenseStatus: "ACTIVE" }),
+    ).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid licenseType/licenseStatus", async () => {
+    asSuperAdmin();
+
+    const result = await updateBoutiqueLicense("sport", {
+      licenseType: "WEEKLY",
+      licenseStatus: "ACTIVE",
+    });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("stamps licenseStartedAt when the plan changes", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "ACTIVE",
+    } as never);
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const result = await updateBoutiqueLicense("sport", {
+      licenseType: "YEARLY",
+      licenseStatus: "ACTIVE",
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: expect.objectContaining({
+        licenseType: "YEARLY",
+        licenseStatus: "ACTIVE",
+        licenseStartedAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("stamps licenseStartedAt when reactivating from SUSPENDED", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "SUSPENDED",
+    } as never);
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueLicense("sport", { licenseType: "MONTHLY", licenseStatus: "ACTIVE" });
+
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: expect.objectContaining({ licenseStartedAt: expect.any(Date) }),
+    });
+  });
+
+  it("does not touch licenseStartedAt for an unrelated status change", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "ACTIVE",
+    } as never);
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueLicense("sport", { licenseType: "MONTHLY", licenseStatus: "SUSPENDED" });
+
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: { licenseType: "MONTHLY", licenseStatus: "SUSPENDED" },
+    });
+  });
+
+  it("reports a boutique that no longer exists", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue(null);
+
+    const result = await updateBoutiqueLicense("sport", {
+      licenseType: "MONTHLY",
+      licenseStatus: "ACTIVE",
+    });
+
+    expect(result.error).toBe("notFound");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateLicenseClientName (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(
+      updateLicenseClientName("sport", "Boutique Aïcha SARL"),
+    ).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("sets the client's legal name", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const result = await updateLicenseClientName("sport", "Boutique Aïcha SARL");
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: { licenseClientName: "Boutique Aïcha SARL" },
+    });
+  });
+
+  it("clears the name back to null on an empty string", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const result = await updateLicenseClientName("sport", "");
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: { licenseClientName: null },
+    });
+  });
+
+  it("rejects a name over the length limit", async () => {
+    asSuperAdmin();
+
+    const result = await updateLicenseClientName("sport", "a".repeat(201));
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("setCouponsEnabled (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(setCouponsEnabled("sport", false)).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("toggles the flag for a superadmin", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    const result = await setCouponsEnabled("sport", false);
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith({
+      where: { key: "sport" },
+      data: { couponsEnabled: false },
+    });
+  });
+});
+
+describe("updateSolalContact (superadmin only)", () => {
+  const validInput = {
+    address: "12 rue du Port, Nouakchott",
+    phone: "+222 22 22 22 22",
+    email: "contact@solal.example",
+    website: "https://solal.example",
+  };
+
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(updateSolalContact(validInput)).rejects.toThrow("forbidden");
+    expect(prismaMock.solalContact.upsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid email", async () => {
+    asSuperAdmin();
+
+    const result = await updateSolalContact({ ...validInput, email: "not-an-email" });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.solalContact.upsert).not.toHaveBeenCalled();
+  });
+
+  it("upserts the singleton row for a superadmin", async () => {
+    asSuperAdmin();
+    prismaMock.solalContact.upsert.mockResolvedValue({} as never);
+
+    const result = await updateSolalContact(validInput);
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.solalContact.upsert).toHaveBeenCalledWith({
+      where: { id: "singleton" },
+      update: validInput,
+      create: { id: "singleton", ...validInput },
+    });
+  });
+
+  it("accepts every field left blank", async () => {
+    asSuperAdmin();
+    prismaMock.solalContact.upsert.mockResolvedValue({} as never);
+
+    const blank = { address: "", phone: "", email: "", website: "" };
+    const result = await updateSolalContact(blank);
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.solalContact.upsert).toHaveBeenCalledWith({
+      where: { id: "singleton" },
+      update: blank,
+      create: { id: "singleton", ...blank },
+    });
   });
 });

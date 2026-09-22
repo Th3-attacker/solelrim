@@ -27,10 +27,26 @@ export async function findValidPromoCode(
   args: { code: string; productType: string; customerPhone: string },
 ): Promise<{ error: PromoCodeValidationError } | { promoCode: ValidatedPromoCode }> {
   const normalized = args.code.trim().toUpperCase();
-  const promoCode = await db.promoCode.findUnique({
-    where: { code: normalized },
-    include: { client: true },
-  });
+  const [promoCode, storeType] = await Promise.all([
+    db.promoCode.findUnique({
+      where: { code: normalized },
+      include: { client: true },
+    }),
+    db.storeType.findUnique({
+      where: { key: args.productType },
+      select: { couponsEnabled: true },
+    }),
+  ]);
+
+  // Server-side feature-flag check — the checkout UI already hides the
+  // promo-code field when this is off, but that alone is never the trust
+  // boundary (see lib/shop/feature-flags.ts). A disabled boutique reports
+  // the same "notFound" a customer sees for a made-up code, not a distinct
+  // "coupons are off" message that would leak the flag to a stranger
+  // probing random codes.
+  if (!storeType?.couponsEnabled) {
+    return { error: "notFound" };
+  }
 
   if (!promoCode || !promoCode.isActive || promoCode.productType !== args.productType) {
     return { error: "notFound" };

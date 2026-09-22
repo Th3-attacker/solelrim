@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { getCurrentAdmin } from "@/lib/auth/admin";
+import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Independent from StoreSettings.productType (the public "live" toggle) —
@@ -77,5 +79,53 @@ export async function requireAppearanceScope(): Promise<{
   if (admin.role !== "SUPERADMIN" && !admin.canManageAppearance) {
     throw new Error("forbidden");
   }
+  await assertLicenseWritable(admin, productType);
+  return { admin, productType };
+}
+
+// Thrown by assertLicenseWritable/requireWritableAdminScope so callers (the
+// dashboard's error.tsx) can tell "your boutique is suspended/expired" apart
+// from an unexpected bug, instead of showing the same generic error for
+// both.
+export class LicenseBlockedError extends Error {
+  constructor() {
+    super("licenseBlocked");
+    this.name = "LicenseBlockedError";
+  }
+}
+
+// A SUPERADMIN always bypasses — they're the ones who suspend/reactivate a
+// boutique in the first place (updateBoutiqueLicense), and must never be
+// locked out of the very screen that does that. Only a BOUTIQUE_ADMIN
+// acting on their own (or, via the free-choice cookie, a SUPERADMIN acting
+// *as* a boutique — but that path never reaches here since it's still a
+// SUPERADMIN role) boutique gets blocked.
+async function assertLicenseWritable(admin: AdminUser, productType: string): Promise<void> {
+  if (admin.role === "SUPERADMIN") return;
+
+  const storeType = await prisma.storeType.findUnique({
+    where: { key: productType },
+    select: { licenseType: true, licenseStatus: true, licenseExpiresAt: true },
+  });
+  if (!storeType) return;
+
+  if (isLicenseBlocking(getEffectiveLicenseState(storeType))) {
+    throw new LicenseBlockedError();
+  }
+}
+
+// The gate every mutating Server Action (lib/actions/*.ts) uses instead of
+// requireAdminScope: same identity + scope resolution, plus "is this
+// boutique actually allowed to be written to right now". Read-only call
+// sites (the categories/settings pages, which only need `admin`/productType
+// to render) deliberately keep using plain requireAdminScope — a suspended
+// boutique's own admin can still see their dashboard and the license
+// section explaining why, only writes are rejected here, not the whole UI.
+export async function requireWritableAdminScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireAdminScope();
+  await assertLicenseWritable(admin, productType);
   return { admin, productType };
 }

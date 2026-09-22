@@ -141,3 +141,36 @@ export const storeDomainSchema = z.object({
 });
 
 export type StoreDomainInput = z.infer<typeof storeDomainSchema>;
+
+// Superadmin-only (lib/actions/settings.ts: updateBoutiqueLicense). Only
+// ACTIVE/SUSPENDED/CANCELLED are ever submitted here — GRACE_PERIOD/EXPIRED
+// are derived, never written (see lib/shop/license.ts).
+export const licenseTypeSchema = z.enum(["MONTHLY", "YEARLY", "PERPETUAL"]);
+export const licenseStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "CANCELLED"]);
+
+export type LicenseTypeInput = z.infer<typeof licenseTypeSchema>;
+export type LicenseStatusInput = z.infer<typeof licenseStatusSchema>;
+
+// The Client's legal name/raison sociale for the license contract's section
+// 34 (components/settings/license-contract-document.tsx). Empty string
+// clears it back to null, same convention as storeDomainSchema.
+export const licenseClientNameSchema = z.object({
+  licenseClientName: z.string().trim().max(200),
+});
+
+export type LicenseClientNameInput = z.infer<typeof licenseClientNameSchema>;
+
+// SOLAL's own (the Concédant's) contact info for the same contract's
+// section 34 — superadmin-only (lib/actions/settings.ts:
+// updateSolalContact). Every field is optional/blank-able: an empty string
+// is stored as-is and rendered as "[à compléter]" by
+// license-contract-document.tsx, same placeholder convention as the source
+// document until a superadmin fills it in.
+export const solalContactSchema = z.object({
+  address: z.string().trim().max(300),
+  phone: z.string().trim().max(60),
+  email: z.string().trim().max(200).email().or(z.literal("")),
+  website: z.string().trim().max(200),
+});
+
+export type SolalContactInput = z.infer<typeof solalContactSchema>;

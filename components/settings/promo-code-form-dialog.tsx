@@ -96,9 +96,13 @@ export function PromoCodeFormDialog({
     setSubmitting(false);
 
     if (result.error) {
-      toast.error(
-        result.error === "duplicateCode" ? t("duplicateCodeError") : tCommon("error"),
-      );
+      if (result.error === "duplicateCode") {
+        toast.error(t("duplicateCodeError"));
+      } else if (result.error === "featureDisabled") {
+        toast.error(t("featureDisabledError"));
+      } else {
+        toast.error(tCommon("error"));
+      }
       return;
     }
 

@@ -18,7 +18,7 @@ import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
-import { getLicenseStatus } from "@/lib/shop/license";
+import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
@@ -103,7 +103,7 @@ export default async function ShopLayout({
     ? `https://wa.me/${boutique.adminWhatsappNumber.replace(/\D/g, "")}`
     : null;
 
-  if (getLicenseStatus(boutique.licenseExpiresAt) === "expired") {
+  if (isLicenseBlocking(getEffectiveLicenseState(boutique))) {
     return <ExpiredStorefront siteName={siteName} logoUrl={logoUrl} />;
   }
 

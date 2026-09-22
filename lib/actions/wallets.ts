@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
@@ -34,7 +34,7 @@ async function uploadWalletLogo(
 }
 
 export async function createWalletAccount(formData: FormData) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = walletAccountSchema.safeParse({
     provider: formData.get("provider"),
     number: formData.get("number"),
@@ -73,7 +73,7 @@ export async function createWalletAccount(formData: FormData) {
 }
 
 export async function updateWalletAccount(id: string, formData: FormData) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = walletAccountSchema.safeParse({
     provider: formData.get("provider"),
     number: formData.get("number"),
@@ -120,7 +120,7 @@ export async function updateWalletAccount(id: string, formData: FormData) {
 }
 
 export async function deleteWalletAccount(id: string) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const existing = await prisma.walletAccount.findFirst({ where: { id, productType } });
   if (!existing) {
@@ -141,7 +141,7 @@ export async function deleteWalletAccount(id: string) {
 }
 
 export async function moveWalletAccount(id: string, direction: "up" | "down") {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const wallets = await prisma.walletAccount.findMany({
     where: { productType },

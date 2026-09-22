@@ -33,13 +33,33 @@ enum PromoDiscountType {
   FIXED
 }
 
+enum LicenseType {
+  MONTHLY
+  YEARLY
+  PERPETUAL
+}
+
+// ACTIVE/SUSPENDED/CANCELLED are the only values ever written directly (by
+// a superadmin, via updateBoutiqueLicense) — GRACE_PERIOD/EXPIRED are never
+// stored, only derived at read time from licenseExpiresAt (see
+// lib/shop/license.ts: getEffectiveLicenseState). There's no background job
+// flipping rows as a date passes, so the stored column alone would go stale;
+// every caller re-derives the real state instead.
+enum LicenseStatus {
+  ACTIVE
+  GRACE_PERIOD
+  SUSPENDED
+  EXPIRED
+  CANCELLED
+}
+
 model StoreType {
-  id                  String    @id @default(cuid())
-  key                 String    @unique
+  id                  String        @id @default(cuid())
+  key                 String        @unique
   label               String
   themeId             String?
   customThemeColor    String?
-  colorMode           String    @default("auto")
+  colorMode           String        @default("auto")
   // Per-boutique contact/branding/storefront — each boutique has its own
   // public route (/{locale}/{key}), so everything a visitor sees (name,
   // announcement bar, hero, SEO, theme, payment numbers, logo) lives here
@@ -51,11 +71,11 @@ model StoreType {
   siteName            String?
   announcementText    String?
   heroImagePath       String?
-  heroImagePosition   String    @default("right")
-  heroVariant         String    @default("split")
-  cardVariant         String    @default("default")
-  footerVariant       String    @default("columns")
-  testimonialsEnabled Boolean   @default(false)
+  heroImagePosition   String        @default("right")
+  heroVariant         String        @default("split")
+  cardVariant         String        @default("default")
+  footerVariant       String        @default("columns")
+  testimonialsEnabled Boolean       @default(false)
   heroTitle           String?
   heroSubtitle        String?
   heroBadgeText       String?
@@ -80,12 +100,32 @@ model StoreType {
   // updateBoutiqueSettings/requireAdminScope like everything above. domain
   // lets proxy.ts route a custom hostname straight to this boutique with no
   // visible [storeType] segment (still needs the actual DNS/Vercel domain
-  // setup done separately). licenseExpiresAt drives a purely visual
-  // expiration warning (lib/shop/license.ts) — null means unrestricted,
-  // nothing is ever blocked based on it.
-  domain              String?   @unique
+  // setup done separately).
+  domain              String?       @unique
+  // License: see lib/shop/license.ts for how these four combine into one
+  // effective state. licenseStatus ACTIVE + licenseExpiresAt null means
+  // unrestricted (pre-existing boutiques, or one not yet put on a plan) —
+  // nothing is blocked in that case. Once a plan is set, this DOES gate
+  // both the storefront ((shop) layout) and every sensitive admin action
+  // (lib/shop/admin-scope.ts: requireWritableAdminScope) for a
+  // BOUTIQUE_ADMIN — never for SUPERADMIN, who must always retain access to
+  // reactivate a boutique.
+  licenseType         LicenseType   @default(MONTHLY)
+  licenseStatus       LicenseStatus @default(ACTIVE)
+  licenseStartedAt    DateTime?
   licenseExpiresAt    DateTime?
-  createdAt           DateTime  @default(now())
+  // The Client's legal name/raison sociale for the license contract's
+  // section 34 (see components/settings/license-contract-document.tsx) —
+  // distinct from `label` (the boutique's own commercial/display name).
+  // Null until a superadmin fills it in when drafting the contract.
+  licenseClientName   String?
+  // Per-boutique feature flag — server-enforced (lib/shop/feature-flags.ts),
+  // not just a hidden button: both the admin promo-code actions and
+  // checkout's promo-code redemption re-check this, not merely the UI that
+  // shows/hides the "Code promo" field.
+  couponsEnabled      Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   categories     Category[]
   products       Product[]
@@ -456,4 +496,19 @@ model StoreSettings {
   productType String    @default("sport")
   storeType   StoreType @relation(fields: [productType], references: [key])
   updatedAt   DateTime  @updatedAt
+}
+
+// SOLAL's own (the Concédant's) contact info for section 34 of the license
+// contract (components/settings/license-contract-document.tsx) — not tied
+// to any boutique, so it's its own singleton row rather than a StoreType
+// column. Editable by a superadmin from Réglages globaux
+// (components/settings/solal-contact-form.tsx) instead of a hardcoded
+// constant, so it never needs a code change/redeploy to fill in or update.
+model SolalContact {
+  id        String   @id @default("singleton")
+  address   String?
+  phone     String?
+  email     String?
+  website   String?
+  updatedAt DateTime @updatedAt
 }

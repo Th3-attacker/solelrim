@@ -13,6 +13,17 @@ export const getStoreSettings = cache(function getStoreSettings() {
   });
 });
 
+// SOLAL's own contact info for the license contract (section 34 — see
+// components/settings/license-contract-document.tsx), superadmin-editable
+// (lib/actions/settings.ts: updateSolalContact) instead of hardcoded.
+export const getSolalContact = cache(function getSolalContact() {
+  return prisma.solalContact.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: { id: "singleton" },
+  });
+});
+
 // Every boutique that has ever been created — the durable registry behind
 // the public [storeType] route segment, the admin scope switcher, and the
 // product-type picker.

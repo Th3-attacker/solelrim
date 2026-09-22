@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { clientSchema, type ClientInput } from "@/lib/validation/client";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 
 export type ClientActionResult = { error?: string; clientId?: string };
 
 export async function createClientRecord(
   input: ClientInput,
 ): Promise<ClientActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = clientSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -27,7 +27,7 @@ export async function updateClientRecord(
   clientId: string,
   input: ClientInput,
 ): Promise<ClientActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = clientSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -48,7 +48,7 @@ export async function updateClientRecord(
 export async function deleteClient(
   clientId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const client = await prisma.client.findFirst({
     where: { id: clientId, productType },
