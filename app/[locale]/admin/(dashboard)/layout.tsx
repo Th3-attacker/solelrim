@@ -15,7 +15,6 @@ import { getAdminScope } from "@/lib/shop/admin-scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getPendingOrderCount } from "@/lib/queries/orders";
 import { getCurrentAdmin } from "@/lib/auth/admin";
-import { getLicenseStatus } from "@/lib/shop/license";
 import { createClient } from "@/lib/supabase/server";
 
 // robots.ts already disallows /{locale}/admin for crawling, but that alone
@@ -41,8 +40,7 @@ export default async function DashboardLayout({
     getPendingOrderCount(currentScope),
   ]);
 
-  const currentLicenseExpiresAt =
-    storeTypes.find((type) => type.key === currentScope)?.licenseExpiresAt ?? null;
+  const currentStoreType = storeTypes.find((type) => type.key === currentScope);
 
   return (
     <TooltipProvider>
@@ -66,12 +64,17 @@ export default async function DashboardLayout({
               <LogoutButton />
             </div>
           </header>
-          <div className="print:hidden">
-            <LicenseWarningBanner
-              status={getLicenseStatus(currentLicenseExpiresAt)}
-              expiresAt={currentLicenseExpiresAt}
-            />
-          </div>
+          {currentStoreType && (
+            <div className="print:hidden">
+              <LicenseWarningBanner
+                license={{
+                  licenseType: currentStoreType.licenseType,
+                  licenseStatus: currentStoreType.licenseStatus,
+                  licenseExpiresAt: currentStoreType.licenseExpiresAt,
+                }}
+              />
+            </div>
+          )}
           <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
         </SidebarInset>
       </SidebarProvider>

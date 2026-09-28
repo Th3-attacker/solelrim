@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { logAdminAction } from "@/lib/audit";
 
@@ -30,7 +30,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
 export async function createProduct(
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -80,7 +80,7 @@ export async function updateProduct(
   productId: string,
   input: ProductInput,
 ): Promise<ProductActionResult> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -187,7 +187,7 @@ export async function updateProduct(
 export async function deleteProduct(
   productId: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
 
   const owned = await prisma.product.findFirst({
     where: { id: productId, productType },
@@ -241,7 +241,7 @@ export async function bulkSetProductsActive(
   productIds: string[],
   isActive: boolean,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   await prisma.product.updateMany({
     where: { id: { in: productIds }, productType },
     data: { isActive },
@@ -275,7 +275,7 @@ export async function uploadProductImage(
   productId: string,
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const owned = await prisma.product.findFirst({
     where: { id: productId, productType },
@@ -332,7 +332,7 @@ export async function uploadProductImage(
 export async function deleteProductImage(
   imageId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const image = await prisma.productImage.findUnique({
     where: { id: imageId },
@@ -357,7 +357,7 @@ export async function updateProductImageColor(
   imageId: string,
   color: string | null,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const image = await prisma.productImage.findUnique({
     where: { id: imageId },

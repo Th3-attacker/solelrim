@@ -3,10 +3,13 @@ import { Prohibit } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 
 // Replaces the entire storefront (rendered by the (shop) layout instead of
-// {children}) once StoreType.licenseExpiresAt has passed — every page under
-// this boutique's route shows this instead of shop content. The admin
-// dashboard is untouched: a boutique/superadmin can still sign in and see
-// the license section to renew it.
+// {children}) once the boutique's license is SUSPENDED, EXPIRED, or
+// CANCELLED (lib/shop/license.ts: isLicenseBlocking) — every page under
+// this boutique's route shows this instead of shop content, regardless of
+// which of the three caused it. The admin dashboard is untouched: a
+// boutique/superadmin can still sign in and see the license section to
+// reactivate it (only sensitive write actions are blocked there — see
+// lib/shop/admin-scope.ts: requireWritableAdminScope).
 export async function ExpiredStorefront({
   siteName,
   logoUrl,

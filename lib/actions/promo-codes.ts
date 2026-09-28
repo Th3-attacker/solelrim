@@ -8,7 +8,7 @@ import {
   type PromoCodeInput,
 } from "@/lib/validation/promo-code";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -17,7 +17,19 @@ export type PromoCodeActionResult = { error?: string; promoCodeId?: string };
 export async function createPromoCode(
   input: PromoCodeInput,
 ): Promise<PromoCodeActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
+
+  // Server-side feature-flag check (lib/shop/feature-flags.ts) — a
+  // BOUTIQUE_ADMIN whose boutique has coupons disabled can't create one
+  // regardless of whether the "Codes promo" nav item is hidden from them.
+  const storeType = await prisma.storeType.findUnique({
+    where: { key: productType },
+    select: { couponsEnabled: true },
+  });
+  if (!storeType?.couponsEnabled) {
+    return { error: "featureDisabled" };
+  }
+
   const parsed = promoCodeSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -64,7 +76,7 @@ export async function updatePromoCode(
   promoCodeId: string,
   input: PromoCodeInput,
 ): Promise<PromoCodeActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = promoCodeSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -110,7 +122,7 @@ export async function updatePromoCode(
 export async function deactivatePromoCode(
   promoCodeId: string,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const updated = await prisma.promoCode.updateMany({
     where: { id: promoCodeId, productType },

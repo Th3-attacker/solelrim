@@ -36,6 +36,10 @@ type Settings = {
   wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
+  // UX only — hides a field that would always fail server-side anyway
+  // (findValidPromoCode re-checks this per boutique, see
+  // lib/shop/promo-code.ts). Never the actual trust boundary.
+  couponsEnabled: boolean;
 };
 
 type Step = 1 | 2 | 3 | "success";
@@ -496,47 +500,49 @@ export function CheckoutFlow({
                 <p className="text-sm text-muted-foreground">{t("step2Hint")}</p>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="promoCode">{t("promoCode")}</Label>
-                {appliedPromo ? (
-                  <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-                    <span className="font-mono font-medium">{appliedPromo.code}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleRemovePromoCode}
-                      aria-label={t("removePromoCode")}
-                    >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      id="promoCode"
-                      value={promoInput}
-                      onChange={(e) => {
-                        setPromoInput(e.target.value);
-                        setPromoError(null);
-                      }}
-                      placeholder={t("promoCodePlaceholder")}
-                      aria-invalid={!!promoError}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      loading={applyingPromo}
-                      disabled={!promoInput.trim()}
-                      onClick={handleApplyPromoCode}
-                    >
-                      {t("applyPromoCode")}
-                    </Button>
-                  </div>
-                )}
-                {promoError && <p className="text-sm text-destructive">{promoError}</p>}
-              </div>
+              {settings.couponsEnabled && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="promoCode">{t("promoCode")}</Label>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                      <span className="font-mono font-medium">{appliedPromo.code}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleRemovePromoCode}
+                        aria-label={t("removePromoCode")}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        id="promoCode"
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value);
+                          setPromoError(null);
+                        }}
+                        placeholder={t("promoCodePlaceholder")}
+                        aria-invalid={!!promoError}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        loading={applyingPromo}
+                        disabled={!promoInput.trim()}
+                        onClick={handleApplyPromoCode}
+                      >
+                        {t("applyPromoCode")}
+                      </Button>
+                    </div>
+                  )}
+                  {promoError && <p className="text-sm text-destructive">{promoError}</p>}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)}>

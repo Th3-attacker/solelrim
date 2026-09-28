@@ -125,6 +125,9 @@ beforeEach(() => {
   // productType (below) for the happy path.
   getStoreTypesMock.mockReset();
   getStoreTypesMock.mockResolvedValue(STORE_TYPES);
+  // findValidPromoCode's feature-flag check (lib/shop/promo-code.ts) — on by
+  // default so existing promo-code tests don't need to know about it.
+  prismaMock.storeType.findUnique.mockResolvedValue({ couponsEnabled: true } as never);
 });
 
 // Only the first bytes matter for signature detection — this doesn't need
@@ -214,6 +217,23 @@ describe("submitOrder", () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const result = await submitOrder(buildOrderForm({ productType: "does-not-exist" }));
     expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects when the boutique's license is suspended, even with valid items in stock", async () => {
+    getStoreTypesMock.mockResolvedValue([
+      {
+        key: "cosmetique",
+        licenseType: "MONTHLY",
+        licenseStatus: "SUSPENDED",
+        licenseExpiresAt: null,
+      },
+    ]);
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "storefrontExpired" });
     expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 

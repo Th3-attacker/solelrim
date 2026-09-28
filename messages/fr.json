@@ -213,6 +213,7 @@
     "deactivateDescription": "Le code ne pourra plus être utilisé, mais reste visible dans l'historique.",
     "noPromoCodes": "Aucun code promo pour le moment.",
     "duplicateCodeError": "Ce code existe déjà.",
+    "featureDisabledError": "Les codes promo sont désactivés pour cette boutique.",
     "giveCode": "Offrir un code promo",
     "invalidCodeError": "Le code ne doit contenir que des lettres, chiffres, tirets et underscores (3 à 30 caractères).",
     "invalidPercentError": "Le pourcentage doit être compris entre 0 et 100."
@@ -654,15 +655,57 @@
       "reservedDomain": "Ce domaine est déjà celui du site principal."
     },
     "licenseStatus": {
-      "unrestricted": "Illimitée",
-      "ok": "À jour",
-      "expiringSoon": "Bientôt expirée",
-      "expired": "Expirée"
+      "ACTIVE": "Active",
+      "GRACE_PERIOD": "Période de grâce",
+      "SUSPENDED": "Suspendue",
+      "EXPIRED": "Expirée",
+      "CANCELLED": "Annulée"
     },
+    "licenseType": {
+      "MONTHLY": "Mensuelle",
+      "YEARLY": "Annuelle",
+      "PERPETUAL": "Perpétuelle"
+    },
+    "couponsFeatureOn": "Codes promo activés",
+    "couponsFeatureOff": "Codes promo désactivés",
+    "licenseClientName": "Nom / raison sociale du client",
+    "licenseClientNamePlaceholder": "Ex. Boutique Aïcha SARL",
+    "licenseClientNameEdit": "Client",
+    "licenseClientNameEditTitle": "Client — {label}",
+    "licenseContract": "Contrat",
+    "solalContactSection": "Coordonnées SOLAL",
+    "solalContactHint": "Utilisées dans le contrat de licence généré (section 34). Laissez vide pour afficher « à compléter ».",
+    "solalAddress": "Adresse",
+    "solalPhone": "Téléphone",
+    "solalEmail": "Email",
+    "solalWebsite": "Site web",
     "licenseExtend": "Prolonger",
     "licenseClear": "Retirer l'échéance",
     "licenseBannerExpiringSoon": "La licence de cette boutique expire le {date}.",
-    "licenseBannerExpired": "La licence de cette boutique a expiré le {date}."
+    "licenseBannerGracePeriod": "La licence de cette boutique a expiré le {date} — période de grâce, la boutique sera bloquée si elle n'est pas renouvelée.",
+    "licenseBannerExpired": "La licence de cette boutique a expiré le {date}. La boutique et les actions d'administration sont bloquées.",
+    "licenseBannerSuspended": "Cette boutique est suspendue. La boutique et les actions d'administration sont bloquées.",
+    "licenseBannerCancelled": "La licence de cette boutique a été annulée. La boutique et les actions d'administration sont bloquées."
+  },
+  "boutiquesOverview": {
+    "title": "Vue d'ensemble",
+    "subtitle": "Toutes vos boutiques, en un coup d'œil.",
+    "mrr": "Revenu récurrent mensuel",
+    "mrrHint": "Mensuelles + annuelles ramenées au mois",
+    "perpetualCollected": "Revenu des licences définitives",
+    "perpetualCollectedHint": "Total perçu (paiements uniques)",
+    "total": "Boutiques",
+    "statusActive": "Actives",
+    "statusGrace": "En grâce",
+    "statusBlocked": "Bloquées",
+    "statusPerpetual": "Licences définitives",
+    "pricingRecap": "Bilan des prix",
+    "monthlyRecap": "Mensuelles ({count})",
+    "yearlyRecap": "Annuelles ({count})",
+    "perpetualRecap": "Définitives ({count})",
+    "perMonth": "{amount} MRU / mois",
+    "perYear": "{amount} MRU / an",
+    "collected": "{amount} MRU perçus"
   },
   "orderProcedure": {
     "trigger": "Comment commander ?",
@@ -712,7 +755,9 @@
     "backToDashboard": "Retour au tableau de bord",
     "errorTitle": "Une erreur est survenue",
     "errorMessage": "Quelque chose s'est mal passé de notre côté. Réessayez, ou revenez un peu plus tard.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "licenseBlockedTitle": "Action bloquée",
+    "licenseBlockedMessage": "Cette boutique est suspendue, expirée ou annulée : les actions d'administration sont bloquées. Contactez le support pour la réactiver."
   },
   "auditLog": {
     "title": "Historique des actions",

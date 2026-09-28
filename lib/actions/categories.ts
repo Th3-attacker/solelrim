@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { categorySchema } from "@/lib/validation/product";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 
 export async function createCategory(name: string) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = categorySchema.safeParse({ name });
   if (!parsed.success) {
     return { error: "invalid" as const };
@@ -27,7 +27,7 @@ export async function createCategory(name: string) {
 // every boutique, since renaming/deleting those would affect other
 // boutiques too.
 export async function updateCategory(id: string, name: string) {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   const parsed = categorySchema.safeParse({ name });
   if (!parsed.success) {
     return { error: "invalid" as const };
@@ -58,7 +58,7 @@ export async function updateCategory(id: string, name: string) {
 }
 
 export async function moveCategory(id: string, direction: "up" | "down") {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
 
   const category = await prisma.category.findUnique({ where: { id } });
   if (!category) {
@@ -100,7 +100,7 @@ export async function moveCategory(id: string, direction: "up" | "down") {
 }
 
 export async function deleteCategory(id: string) {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
 
   const category = await prisma.category.findUnique({ where: { id } });
   if (!category) {

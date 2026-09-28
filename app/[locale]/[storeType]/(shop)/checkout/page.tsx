@@ -53,6 +53,7 @@ export default async function CheckoutPage({
         })),
         adminWhatsappNumber: boutique.adminWhatsappNumber,
         paymentInstructions: boutique.paymentInstructions,
+        couponsEnabled: boutique.couponsEnabled,
       }}
     />
   );

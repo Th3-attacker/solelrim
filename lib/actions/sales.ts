@@ -5,12 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { buildSaleReference } from "@/lib/shop/reference";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 
 export type SaleActionResult = { error?: string; saleId?: string };
 
 export async function createSale(input: SaleInput): Promise<SaleActionResult> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = saleSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -116,7 +116,7 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
 }
 
 export async function cancelSale(saleId: string): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   try {
     await prisma.$transaction(async (tx) => {

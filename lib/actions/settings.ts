@@ -11,7 +11,11 @@ import {
   customThemeColorSchema,
   footerVariantSchema,
   heroVariantSchema,
+  licenseClientNameSchema,
+  licenseStatusSchema,
+  licenseTypeSchema,
   productTypeInputSchema,
+  solalContactSchema,
   storeDomainSchema,
   storeTypeLabelSchema,
   type BoutiqueSettingsInput,
@@ -21,7 +25,7 @@ import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/produ
 import { slugify } from "@/lib/shop/slug";
 import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
@@ -33,7 +37,7 @@ const PRODUCT_IMAGES_BUCKET = "product-images";
 export async function updateBoutiqueSettings(
   input: BoutiqueSettingsInput,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = boutiqueSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
@@ -52,7 +56,7 @@ export async function updateBoutiqueSettings(
 export async function uploadStoreLogo(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -100,7 +104,7 @@ export async function uploadStoreLogo(
 }
 
 export async function removeStoreLogo(): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
@@ -127,7 +131,7 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
 export async function uploadStoreHeroImage(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -173,7 +177,7 @@ export async function uploadStoreHeroImage(
 }
 
 export async function removeStoreHeroImage(): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
@@ -476,7 +480,7 @@ export async function deleteStoreType(productType: string): Promise<{ error?: st
 }
 
 // --- Infrastructure: custom domain + license (superadmin only, never via
-// requireAdminScope) — both take productType explicitly, since the
+// requireWritableAdminScope) — both take productType explicitly, since the
 // superadmin is editing an arbitrary row out of the all-boutiques table on
 // Réglages globaux, not "whichever boutique is currently scoped". ---
 
@@ -534,5 +538,117 @@ export async function updateLicenseExpiresAt(
 
   revalidatePath("/admin/settings/global");
   revalidatePath("/admin", "layout");
+  return {};
+}
+
+// Sets the plan (MONTHLY/YEARLY/PERPETUAL) and the manual override
+// (ACTIVE/SUSPENDED/CANCELLED — see lib/shop/license.ts for how those
+// combine with licenseExpiresAt into the actual enforced state).
+export async function updateBoutiqueLicense(
+  productType: string,
+  input: { licenseType: string; licenseStatus: string },
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const typeParsed = licenseTypeSchema.safeParse(input.licenseType);
+  const statusParsed = licenseStatusSchema.safeParse(input.licenseStatus);
+  if (!typeParsed.success || !statusParsed.success) {
+    return { error: "invalid" };
+  }
+
+  const existing = await prisma.storeType.findUnique({
+    where: { key: productType },
+    select: { licenseType: true, licenseStatus: true },
+  });
+  if (!existing) {
+    return { error: "notFound" };
+  }
+
+  // The only place licenseStartedAt is ever written — there's no separate
+  // date picker for it. Stamped whenever the plan itself changes, or
+  // whenever it (re)activates from a non-ACTIVE state, so it always
+  // reflects when the *current* period began, not the boutique's original
+  // signup date.
+  const isNewPeriod =
+    typeParsed.data !== existing.licenseType ||
+    (statusParsed.data === "ACTIVE" && existing.licenseStatus !== "ACTIVE");
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: {
+      licenseType: typeParsed.data,
+      licenseStatus: statusParsed.data,
+      ...(isNewPeriod ? { licenseStartedAt: new Date() } : {}),
+    },
+  });
+
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// Per-boutique feature flag (lib/shop/feature-flags.ts) — superadmin-only,
+// same "infrastructure" tier as domain/license rather than something a
+// BOUTIQUE_ADMIN can flip on themselves.
+export async function setCouponsEnabled(
+  productType: string,
+  enabled: boolean,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { couponsEnabled: enabled },
+  });
+
+  revalidatePath("/admin/settings/global");
+  revalidatePath("/admin/promo-codes");
+  return {};
+}
+
+// The Client's legal name for the auto-generated license contract's section
+// 34 (components/settings/license-contract-document.tsx) — same
+// superadmin-only, "infrastructure" tier as the domain/license fields above.
+export async function updateLicenseClientName(
+  productType: string,
+  licenseClientName: string,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const parsed = licenseClientNameSchema.safeParse({ licenseClientName });
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { licenseClientName: parsed.data.licenseClientName || null },
+  });
+
+  revalidatePath("/admin/settings/global");
+  return {};
+}
+
+// SOLAL's own contact info for the same contract's section 34 — a single
+// row (SolalContact, "singleton"), so this never targets a boutique.
+// Superadmin-only, same as every other "infrastructure" field above.
+export async function updateSolalContact(
+  input: unknown,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  const parsed = solalContactSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "invalid" };
+  }
+
+  await prisma.solalContact.upsert({
+    where: { id: "singleton" },
+    update: parsed.data,
+    create: { id: "singleton", ...parsed.data },
+  });
+
+  revalidatePath("/admin/settings/global");
   return {};
 }

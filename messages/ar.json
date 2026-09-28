@@ -213,6 +213,7 @@
     "deactivateDescription": "لن يكون الكود قابلاً للاستخدام بعد الآن، لكنه يبقى ظاهرًا في السجل.",
     "noPromoCodes": "لا توجد أكواد خصم بعد.",
     "duplicateCodeError": "هذا الكود موجود بالفعل.",
+    "featureDisabledError": "أكواد الخصم معطّلة لهذا المتجر.",
     "giveCode": "منح كود خصم",
     "invalidCodeError": "يجب أن يحتوي الكود على حروف وأرقام وشرطات فقط (3 إلى 30 حرفًا).",
     "invalidPercentError": "يجب أن تكون النسبة المئوية بين 0 و100."
@@ -654,15 +655,57 @@
       "reservedDomain": "هذا النطاق هو نطاق الموقع الرئيسي نفسه."
     },
     "licenseStatus": {
-      "unrestricted": "غير محدودة",
-      "ok": "محدّثة",
-      "expiringSoon": "قريبة الانتهاء",
-      "expired": "منتهية"
+      "ACTIVE": "نشطة",
+      "GRACE_PERIOD": "فترة سماح",
+      "SUSPENDED": "معلّقة",
+      "EXPIRED": "منتهية",
+      "CANCELLED": "ملغاة"
     },
+    "licenseType": {
+      "MONTHLY": "شهرية",
+      "YEARLY": "سنوية",
+      "PERPETUAL": "دائمة"
+    },
+    "couponsFeatureOn": "أكواد الخصم مفعّلة",
+    "couponsFeatureOff": "أكواد الخصم معطّلة",
+    "licenseClientName": "اسم العميل / الاسم القانوني",
+    "licenseClientNamePlaceholder": "مثال: متجر عائشة ش.ذ.م.م",
+    "licenseClientNameEdit": "العميل",
+    "licenseClientNameEditTitle": "العميل — {label}",
+    "licenseContract": "العقد",
+    "solalContactSection": "معلومات التواصل الخاصة بـ SOLAL",
+    "solalContactHint": "تُستخدم في عقد الترخيص المُولَّد (البند 34). اتركها فارغة لعرض «إلى استكماله».",
+    "solalAddress": "العنوان",
+    "solalPhone": "الهاتف",
+    "solalEmail": "البريد الإلكتروني",
+    "solalWebsite": "الموقع الإلكتروني",
     "licenseExtend": "تمديد",
     "licenseClear": "إزالة تاريخ الاستحقاق",
     "licenseBannerExpiringSoon": "ترخيص هذا المتجر ينتهي في {date}.",
-    "licenseBannerExpired": "انتهى ترخيص هذا المتجر في {date}."
+    "licenseBannerGracePeriod": "انتهى ترخيص هذا المتجر في {date} — فترة سماح، سيُحظر المتجر إذا لم يُجدَّد.",
+    "licenseBannerExpired": "انتهى ترخيص هذا المتجر في {date}. المتجر وإجراءات الإدارة محظورة.",
+    "licenseBannerSuspended": "هذا المتجر معلّق. المتجر وإجراءات الإدارة محظورة.",
+    "licenseBannerCancelled": "أُلغي ترخيص هذا المتجر. المتجر وإجراءات الإدارة محظورة."
+  },
+  "boutiquesOverview": {
+    "title": "نظرة عامة",
+    "subtitle": "جميع متاجرك، دفعة واحدة.",
+    "mrr": "الإيراد الشهري المتكرر",
+    "mrrHint": "الاشتراكات الشهرية والسنوية محسوبة شهريًا",
+    "perpetualCollected": "إيراد التراخيص الدائمة",
+    "perpetualCollectedHint": "المجموع المحصّل (دفعات لمرة واحدة)",
+    "total": "المتاجر",
+    "statusActive": "نشطة",
+    "statusGrace": "فترة سماح",
+    "statusBlocked": "محظورة",
+    "statusPerpetual": "تراخيص دائمة",
+    "pricingRecap": "ملخص الأسعار",
+    "monthlyRecap": "شهرية ({count})",
+    "yearlyRecap": "سنوية ({count})",
+    "perpetualRecap": "دائمة ({count})",
+    "perMonth": "{amount} أوقية / شهر",
+    "perYear": "{amount} أوقية / سنة",
+    "collected": "{amount} أوقية محصّلة"
   },
   "orderProcedure": {
     "trigger": "كيف يتم الطلب؟",
@@ -712,7 +755,9 @@
     "backToDashboard": "العودة إلى لوحة التحكم",
     "errorTitle": "حدث خطأ ما",
     "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "licenseBlockedTitle": "الإجراء محظور",
+    "licenseBlockedMessage": "هذا المتجر معلّق أو منتهي الصلاحية أو ملغى: إجراءات الإدارة محظورة. تواصل مع الدعم لإعادة التفعيل."
   },
   "auditLog": {
     "title": "سجل الإجراءات",
