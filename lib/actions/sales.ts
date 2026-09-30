@@ -40,7 +40,8 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
     await prisma.$transaction(async (tx) => {
       // Atomic COMPLETED -> CANCELLED first: this is the concurrency gate,
       // so two concurrent cancels (a double-click, two tabs) can't both
-      // restock and both reverse points.
+      // restock and both reverse points. Its row lock also serializes it
+      // with requestRefund/approveRefund, which lock the same sale.
       const updated = await tx.sale.updateMany({
         where: { id: saleId, productType, status: "COMPLETED" },
         data: { status: "CANCELLED" },

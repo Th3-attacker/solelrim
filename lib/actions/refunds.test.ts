@@ -78,6 +78,8 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
+  // requestRefund's locked re-read of the sale.
+  prismaMock.$queryRaw.mockResolvedValue([{ status: "COMPLETED" }] as never);
 });
 
 describe("requestRefund", () => {
@@ -166,6 +168,21 @@ describe("requestRefund", () => {
         reason: "Défaut",
       }),
     ).toEqual({ error: "notRefundable" });
+  });
+
+  it("refuses a sale cancelled between the first read and the save", async () => {
+    signedInAs("SELLER");
+    prismaMock.sale.findFirst.mockResolvedValue(sale() as never);
+    prismaMock.$queryRaw.mockResolvedValue([{ status: "CANCELLED" }] as never);
+
+    expect(
+      await requestRefund({
+        saleId: "sale-1",
+        items: [{ saleItemId: "item-a", quantity: 1 }],
+        reason: "Défaut",
+      }),
+    ).toEqual({ error: "notRefundable" });
+    expect(prismaMock.refundRequest.create).not.toHaveBeenCalled();
   });
 
   it("allows one pending request per sale", async () => {

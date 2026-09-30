@@ -84,6 +84,15 @@ export async function requestRefund(
   const actor = await getAuditActor(admin);
   try {
     const request = await prisma.$transaction(async (tx) => {
+      // Re-checked under the sale's lock: cancelSale and approveRefund take
+      // the same lock, so a request can't slip onto a sale cancelled (or
+      // fully refunded) since the read above.
+      const [locked] = await tx.$queryRaw<{ status: string }[]>`
+        SELECT "status"::text FROM "Sale" WHERE "id" = ${saleId} FOR UPDATE
+      `;
+      if (!locked || !(REFUNDABLE_STATUSES as readonly string[]).includes(locked.status)) {
+        throw new RefundError("notRefundable");
+      }
       const created = await tx.refundRequest.create({
         data: {
           productType,
@@ -115,6 +124,7 @@ export async function requestRefund(
     revalidateRefunds(saleId);
     return { requestId: request.id };
   } catch (err) {
+    if (err instanceof RefundError) return { error: err.message };
     // RefundRequest_one_pending_per_sale
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: "alreadyPending" };
