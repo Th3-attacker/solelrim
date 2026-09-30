@@ -38,6 +38,7 @@ import {
   updateLicenseClientName,
   setCouponsEnabled,
   updateSolalContact,
+  deleteStoreType,
 } from "@/lib/actions/settings";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -638,5 +639,51 @@ describe("updateSolalContact (superadmin only)", () => {
       update: blank,
       create: { id: "singleton", ...blank },
     });
+  });
+});
+
+describe("deleteStoreType (superadmin only)", () => {
+  function emptyBoutique() {
+    asSuperAdmin();
+    prismaMock.storeType.findUnique.mockResolvedValue({ key: "bijoux" } as never);
+    prismaMock.storeSettings.findUnique.mockResolvedValue({ productType: "sport" } as never);
+    for (const model of [
+      prismaMock.product,
+      prismaMock.order,
+      prismaMock.sale,
+      prismaMock.client,
+      prismaMock.adminUser,
+      prismaMock.socialLink,
+      prismaMock.testimonial,
+      prismaMock.walletAccount,
+      prismaMock.promoCode,
+      prismaMock.cashSession,
+      prismaMock.storeDayClosure,
+    ]) {
+      (model.count as unknown as Mock).mockResolvedValue(0);
+    }
+  }
+
+  it("refuses a boutique that still has till sessions, instead of crashing on the foreign key", async () => {
+    emptyBoutique();
+    prismaMock.cashSession.count.mockResolvedValue(1);
+
+    expect(await deleteStoreType("bijoux")).toEqual({ error: "hasData" });
+    expect(prismaMock.storeType.delete).not.toHaveBeenCalled();
+  });
+
+  it("refuses a boutique that still has day closures", async () => {
+    emptyBoutique();
+    prismaMock.storeDayClosure.count.mockResolvedValue(1);
+
+    expect(await deleteStoreType("bijoux")).toEqual({ error: "hasData" });
+  });
+
+  it("deletes a boutique with no data at all", async () => {
+    emptyBoutique();
+    prismaMock.storeType.delete.mockResolvedValue({} as never);
+
+    expect(await deleteStoreType("bijoux")).toEqual({});
+    expect(prismaMock.storeType.delete).toHaveBeenCalledWith({ where: { key: "bijoux" } });
   });
 });

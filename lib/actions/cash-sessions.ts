@@ -239,9 +239,14 @@ export async function closeStoreDay(input: unknown): Promise<{ error?: string }>
         where: { productType, businessDate },
       });
       if (sessions.length === 0) throw new CashError("noSessions");
-      if (sessions.some((session) => session.status === "OPEN")) {
-        throw new CashError("openSessions");
-      }
+      // Includes tills opened on an earlier day and left open overnight:
+      // they would keep taking sales after this closure, so it wouldn't be
+      // final. Once none is open, none can open on this day anymore.
+      const openTill = await tx.cashSession.findFirst({
+        where: { productType, status: "OPEN", businessDate: { lte: businessDate } },
+        select: { id: true },
+      });
+      if (openTill) throw new CashError("openSessions");
 
       const day = combineSessionTotals(
         await Promise.all(sessions.map((session) => sessionTotalsOf(tx, session))),

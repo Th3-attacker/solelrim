@@ -117,10 +117,15 @@ export async function listSessions(productType: string, viewer: SessionViewer, p
 // closed, live if still open), the day consolidated, and its closure if the
 // admin already closed it.
 export async function getDayView(productType: string, businessDate: Date) {
-  const [sessions, closure] = await Promise.all([
+  const [sessions, earlierOpenCount, closure] = await Promise.all([
     prisma.cashSession.findMany({
       where: { productType, businessDate },
       orderBy: { openedAt: "asc" },
+    }),
+    // Tills from an earlier day still open also block this day's closure
+    // (see closeStoreDay).
+    prisma.cashSession.count({
+      where: { productType, status: "OPEN", businessDate: { lt: businessDate } },
     }),
     prisma.storeDayClosure.findUnique({
       where: { productType_businessDate: { productType, businessDate } },
@@ -146,7 +151,7 @@ export async function getDayView(productType: string, businessDate: Date) {
     sessions: rows,
     consolidated,
     countedCash,
-    openCount: rows.filter((row) => row.status === "OPEN").length,
+    openCount: rows.filter((row) => row.status === "OPEN").length + earlierOpenCount,
     closure: closure && {
       closedAt: closure.closedAt,
       closedByEmail: closure.closedByEmail,

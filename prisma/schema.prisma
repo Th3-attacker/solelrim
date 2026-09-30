@@ -587,8 +587,9 @@ model SolalContact {
 }
 
 // One seller's till, from opening float to counted close. At most one OPEN
-// session per seller: enforced by a partial unique index in the migration
-// SQL (CashSession_one_open_per_seller), which Prisma's DSL can't express.
+// session per seller per boutique: enforced by a partial unique index in the
+// migration SQL (CashSession_one_open_per_seller), which Prisma's DSL can't
+// express.
 model CashSession {
   id             String            @id @default(cuid())
   productType    String
