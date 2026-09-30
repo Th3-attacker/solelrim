@@ -26,6 +26,7 @@ beforeEach(() => {
     { provider: "Bankily" },
     { provider: "Masrvi" },
   ] as never);
+  prismaMock.sale.aggregate.mockResolvedValue({ _sum: { refundedAmount: null } } as never);
 });
 
 describe("getMySales", () => {
@@ -38,7 +39,9 @@ describe("getMySales", () => {
     );
     expect(prismaMock.sale.count).toHaveBeenCalledWith({ where: expect.objectContaining(scope) });
     expect(groupByMock).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ ...scope, status: "COMPLETED" }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ ...scope, status: { not: "CANCELLED" } }),
+      }),
     );
   });
 

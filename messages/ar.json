@@ -63,7 +63,8 @@
     "register": "صندوقي",
     "cashSessions": "جلسات الصندوق",
     "cashClosures": "الإقفالات",
-    "mySales": "مبيعاتي"
+    "mySales": "مبيعاتي",
+    "refunds": "الاسترجاعات"
   },
   "auth": {
     "login": {
@@ -852,7 +853,18 @@
     "noSales": "لا توجد مبيعات بعد.",
     "invoiceTitle": "الفاتورة",
     "printInvoice": "طباعة الفاتورة",
-    "noOpenSession": "افتح صندوقك (قائمة الصندوق) قبل تسجيل البيع."
+    "noOpenSession": "افتح صندوقك (قائمة الصندوق) قبل تسجيل البيع.",
+    "saleStatus": {
+      "COMPLETED": "مكتملة",
+      "CANCELLED": "ملغاة",
+      "PARTIALLY_REFUNDED": "مسترجعة جزئيًا",
+      "REFUNDED": "مسترجعة"
+    },
+    "refundedAmount": "المسترجع",
+    "cancelError": {
+      "refunded": "تم استرجاع هذا البيع (جزئيًا): لم يعد بالإمكان إلغاؤه.",
+      "pendingRefund": "يوجد طلب استرجاع قيد الانتظار: عالجه قبل إلغاء البيع."
+    }
   },
   "errors": {
     "notFoundTitle": "الصفحة غير موجودة",
@@ -915,7 +927,12 @@
       "countedCash": "النقد المعدود",
       "cashDifference": "الفرق",
       "sessionCount": "الصناديق",
-      "salesTotal": "مجموع المبيعات"
+      "salesTotal": "مجموع المبيعات",
+      "items": "المواد",
+      "estimatedAmount": "المبلغ التقديري",
+      "refundedAmount": "المبلغ المسترجع",
+      "loyaltyPointsTakenBack": "نقاط مسترجعة",
+      "loyaltyPointsReturned": "نقاط مُعادة"
     },
     "value": {
       "pos": "الصندوق",
@@ -927,13 +944,21 @@
       "COMPLETED": "مكتمل",
       "CANCELLED": "ملغى",
       "OPEN": "مفتوح",
-      "CLOSED": "مغلق"
+      "CLOSED": "مغلق",
+      "PARTIALLY_REFUNDED": "مسترجعة جزئيًا",
+      "REFUNDED": "مسترجعة",
+      "PENDING": "قيد الانتظار",
+      "APPROVED": "مقبول",
+      "REJECTED": "مرفوض"
     },
     "actionCashOpen": "فتح الصندوق",
     "actionCashIn": "إيداع نقدي",
     "actionCashOut": "سحب نقدي",
     "actionCashClose": "إغلاق الصندوق",
-    "actionCashDayClose": "إقفال اليوم"
+    "actionCashDayClose": "إقفال اليوم",
+    "actionRefundRequest": "طلب استرجاع",
+    "actionRefundApprove": "الموافقة على استرجاع",
+    "actionRefundReject": "رفض استرجاع"
   },
   "trackOrder": {
     "title": "تتبع طلبي",
@@ -1032,7 +1057,8 @@
     "movementOutConfirmTitle": "تسجيل هذا السحب؟",
     "movementConfirmBody": "{amount} — {reason}. لا يمكن حذفه.",
     "closeConfirmTitle": "إغلاق الصندوق؟",
-    "closeConfirmBody": "النقد المعدود: {counted}. {difference} بعد الإغلاق لا يمكن تعديل الصندوق."
+    "closeConfirmBody": "النقد المعدود: {counted}. {difference} بعد الإغلاق لا يمكن تعديل الصندوق.",
+    "cashRefunds": "استرجاعات نقدية"
   },
   "mySales": {
     "title": "مبيعاتي",
@@ -1054,6 +1080,58 @@
     "collectedWallet": "المحصّل عبر {wallet}",
     "collectedOther": "طرق دفع أخرى",
     "noSales": "ليس لديك أي مبيعات بعد.",
-    "cancelledCount": "إضافة إلى {count} ملغاة (غير محتسبة)"
+    "cancelledCount": "إضافة إلى {count} ملغاة (غير محتسبة)",
+    "refundedPart": "منها {amount} مسترجع",
+    "refundedTotal": "المسترجع"
+  },
+  "refunds": {
+    "title": "الاسترجاعات",
+    "requestAction": "طلب استرجاع",
+    "requestTitle": "طلب استرجاع",
+    "requestHint": "اختر المواد المُرجَعة. سيوافق مدير المتجر على الطلب.",
+    "requestSubmit": "إرسال الطلب",
+    "wholeSale": "البيع كاملًا",
+    "refundableOf": "{count} قابلة للاسترجاع",
+    "quantityFor": "الكمية المسترجعة لـ {name}",
+    "reason": "السبب",
+    "estimate": "المبلغ التقديري: {amount}",
+    "pickUnits": "حدد مادة واحدة على الأقل للاسترجاع.",
+    "requested": "تم إرسال الطلب إلى المدير.",
+    "pendingHint": "يوجد طلب بانتظار موافقة المدير.",
+    "status": {
+      "PENDING": "قيد الانتظار",
+      "APPROVED": "مسترجع",
+      "REJECTED": "مرفوض"
+    },
+    "requestedBy": "طلبه {email} في {date}",
+    "approvedBy": "وافق عليه {email} في {date}",
+    "rejectedBy": "رفضه {email} في {date}",
+    "approveAction": "الموافقة على الاسترجاع",
+    "approveConfirmTitle": "استرجاع {amount}؟",
+    "approveConfirmCash": "تعود المواد إلى المخزون ويُسحب المبلغ من صندوقك المفتوح. لا يمكن التراجع.",
+    "approveConfirmWallet": "تعود المواد إلى المخزون ويُسجَّل الاسترجاع على {wallet}. لا يمكن التراجع.",
+    "wallet": "المحفظة",
+    "rejectAction": "رفض",
+    "rejectTitle": "رفض الطلب",
+    "rejectReason": "سبب الرفض",
+    "approved": "تمت الموافقة على الاسترجاع.",
+    "rejected": "تم رفض الطلب.",
+    "all": "الكل",
+    "adminHint": "وافق على طلبات البائعين أو ارفضها.",
+    "sellerHint": "تابع حالة طلباتك.",
+    "filterLabel": "التصفية حسب الحالة",
+    "empty": "لا توجد طلبات.",
+    "error": {
+      "invalid": "طلب غير صالح: تحقق من السبب.",
+      "invalidQuantity": "كمية غير صالحة: ربما تم استرجاع بعض المواد بالفعل.",
+      "notFound": "البيع أو الطلب غير موجود.",
+      "notRefundable": "لم يعد بالإمكان استرجاع هذا البيع (ملغى أو مسترجع بالفعل).",
+      "alreadyPending": "يوجد طلب قيد الانتظار لهذا البيع بالفعل.",
+      "alreadyDecided": "تمت معالجة هذا الطلب بالفعل.",
+      "noOpenSession": "افتح صندوقك: الاسترجاع النقدي يُسحب منه.",
+      "insufficientCash": "لا يحتوي صندوقك على نقد كافٍ لهذا الاسترجاع.",
+      "unauthorized": "انتهت جلستك. سجّل الدخول من جديد للمتابعة.",
+      "licenseBlocked": "المتجر موقوف أو انتهت رخصته."
+    }
   }
 }

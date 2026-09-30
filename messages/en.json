@@ -63,7 +63,8 @@
     "register": "My till",
     "cashSessions": "Till sessions",
     "cashClosures": "Closures",
-    "mySales": "My sales"
+    "mySales": "My sales",
+    "refunds": "Refunds"
   },
   "auth": {
     "login": {
@@ -852,7 +853,18 @@
     "noSales": "No sales yet.",
     "invoiceTitle": "Invoice",
     "printInvoice": "Print invoice",
-    "noOpenSession": "Open your till (Checkout menu) before recording a sale."
+    "noOpenSession": "Open your till (Checkout menu) before recording a sale.",
+    "saleStatus": {
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "PARTIALLY_REFUNDED": "Partially refunded",
+      "REFUNDED": "Refunded"
+    },
+    "refundedAmount": "Refunded",
+    "cancelError": {
+      "refunded": "This sale was (partly) refunded: it can no longer be cancelled.",
+      "pendingRefund": "A refund request is pending: handle it before cancelling the sale."
+    }
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -915,7 +927,12 @@
       "countedCash": "Counted cash",
       "cashDifference": "Difference",
       "sessionCount": "Tills",
-      "salesTotal": "Sales total"
+      "salesTotal": "Sales total",
+      "items": "Items",
+      "estimatedAmount": "Estimated amount",
+      "refundedAmount": "Refunded amount",
+      "loyaltyPointsTakenBack": "Points taken back",
+      "loyaltyPointsReturned": "Points returned"
     },
     "value": {
       "pos": "Checkout",
@@ -927,13 +944,21 @@
       "COMPLETED": "Completed",
       "CANCELLED": "Cancelled",
       "OPEN": "Open",
-      "CLOSED": "Closed"
+      "CLOSED": "Closed",
+      "PARTIALLY_REFUNDED": "Partially refunded",
+      "REFUNDED": "Refunded",
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
     },
     "actionCashOpen": "Till opened",
     "actionCashIn": "Cash in",
     "actionCashOut": "Cash out",
     "actionCashClose": "Till closed",
-    "actionCashDayClose": "Day closed"
+    "actionCashDayClose": "Day closed",
+    "actionRefundRequest": "Refund requested",
+    "actionRefundApprove": "Refund approved",
+    "actionRefundReject": "Refund rejected"
   },
   "trackOrder": {
     "title": "Track my order",
@@ -1032,7 +1057,8 @@
     "movementOutConfirmTitle": "Record this cash out?",
     "movementConfirmBody": "{amount} — {reason}. It can't be deleted.",
     "closeConfirmTitle": "Close the till?",
-    "closeConfirmBody": "Counted cash: {counted}. {difference} Once closed, the till can't be changed."
+    "closeConfirmBody": "Counted cash: {counted}. {difference} Once closed, the till can't be changed.",
+    "cashRefunds": "Cash refunds"
   },
   "mySales": {
     "title": "My sales",
@@ -1054,6 +1080,58 @@
     "collectedWallet": "Collected via {wallet}",
     "collectedOther": "Other payments",
     "noSales": "You have no sales yet.",
-    "cancelledCount": "plus {count} cancelled (not counted)"
+    "cancelledCount": "plus {count} cancelled (not counted)",
+    "refundedPart": "{amount} refunded",
+    "refundedTotal": "Refunded"
+  },
+  "refunds": {
+    "title": "Refunds",
+    "requestAction": "Request a refund",
+    "requestTitle": "Refund request",
+    "requestHint": "Pick the returned items. The shop admin will approve the request.",
+    "requestSubmit": "Send request",
+    "wholeSale": "Whole sale",
+    "refundableOf": "{count} refundable",
+    "quantityFor": "Quantity to refund for {name}",
+    "reason": "Reason",
+    "estimate": "Estimated amount: {amount}",
+    "pickUnits": "Enter at least one item to refund.",
+    "requested": "Request sent to the admin.",
+    "pendingHint": "A request is waiting for the admin's approval.",
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Refunded",
+      "REJECTED": "Rejected"
+    },
+    "requestedBy": "Requested by {email} on {date}",
+    "approvedBy": "Approved by {email} on {date}",
+    "rejectedBy": "Rejected by {email} on {date}",
+    "approveAction": "Approve refund",
+    "approveConfirmTitle": "Refund {amount}?",
+    "approveConfirmCash": "The items go back to stock and the amount comes out of YOUR open till. This can't be undone.",
+    "approveConfirmWallet": "The items go back to stock and the refund is recorded on {wallet}. This can't be undone.",
+    "wallet": "the wallet",
+    "rejectAction": "Reject",
+    "rejectTitle": "Reject the request",
+    "rejectReason": "Reason for rejecting",
+    "approved": "Refund approved.",
+    "rejected": "Request rejected.",
+    "all": "All",
+    "adminHint": "Approve or reject the sellers' requests.",
+    "sellerHint": "Follow the status of your requests.",
+    "filterLabel": "Filter by status",
+    "empty": "No requests.",
+    "error": {
+      "invalid": "Invalid request: check the reason.",
+      "invalidQuantity": "Invalid quantity: some items may already have been refunded.",
+      "notFound": "Sale or request not found.",
+      "notRefundable": "This sale can no longer be refunded (cancelled or already refunded).",
+      "alreadyPending": "A request is already pending for this sale.",
+      "alreadyDecided": "This request was already handled.",
+      "noOpenSession": "Open your till: a cash refund comes out of it.",
+      "insufficientCash": "Your till doesn't hold enough cash for this refund.",
+      "unauthorized": "Your session expired. Sign in again to continue.",
+      "licenseBlocked": "The shop is suspended or its license has expired."
+    }
   }
 }

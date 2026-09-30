@@ -4,14 +4,23 @@ import { Prisma } from "@/lib/generated/prisma/client";
 // daysBack omitted (or undefined) fetches the entire sales history — the
 // dashboard page always fetches unfiltered now so the chart's client-side
 // range toggle (including "all time") never needs a second round trip.
+// A sale's revenue is what was kept: its total minus any refunds. Cancelled
+// sales never count; refunded ones count for what wasn't given back.
+function netRevenue(sum: {
+  total: { toNumber(): number } | null;
+  refundedAmount: { toNumber(): number } | null;
+}): number {
+  return (sum.total?.toNumber() ?? 0) - (sum.refundedAmount?.toNumber() ?? 0);
+}
+
 export async function getRevenueByDay(productType: string, daysBack?: number) {
   const cutoff = daysBack !== undefined ? new Date() : null;
   if (cutoff) cutoff.setDate(cutoff.getDate() - daysBack!);
 
   const rows = await prisma.$queryRaw<{ day: Date; total: number }[]>`
-    SELECT date_trunc('day', "createdAt") AS day, SUM("total")::float AS total
+    SELECT date_trunc('day', "createdAt") AS day, SUM("total" - "refundedAmount")::float AS total
     FROM "Sale"
-    WHERE "status" = 'COMPLETED'
+    WHERE "status" <> 'CANCELLED'
       AND "productType" = ${productType}
       ${cutoff ? Prisma.sql`AND "createdAt" >= ${cutoff}` : Prisma.empty}
     GROUP BY day
@@ -93,33 +102,33 @@ export async function getSummaryStats(productType: string) {
     stockAgg,
   ] = await Promise.all([
     prisma.sale.aggregate({
-      where: { status: "COMPLETED", createdAt: { gte: startOfMonth }, productType },
-      _sum: { total: true },
+      where: { status: { not: "CANCELLED" }, createdAt: { gte: startOfMonth }, productType },
+      _sum: { total: true, refundedAmount: true },
     }),
     prisma.sale.count({
-      where: { status: "COMPLETED", createdAt: { gte: startOfMonth }, productType },
+      where: { status: { not: "CANCELLED" }, createdAt: { gte: startOfMonth }, productType },
     }),
     prisma.sale.aggregate({
       where: {
-        status: "COMPLETED",
+        status: { not: "CANCELLED" },
         createdAt: { gte: startOfLastMonth, lt: startOfMonth },
         productType,
       },
-      _sum: { total: true },
+      _sum: { total: true, refundedAmount: true },
     }),
     prisma.sale.count({
       where: {
-        status: "COMPLETED",
+        status: { not: "CANCELLED" },
         createdAt: { gte: startOfLastMonth, lt: startOfMonth },
         productType,
       },
     }),
     prisma.sale.aggregate({
-      where: { status: "COMPLETED", productType },
-      _sum: { total: true },
+      where: { status: { not: "CANCELLED" }, productType },
+      _sum: { total: true, refundedAmount: true },
     }),
     prisma.sale.count({
-      where: { status: "COMPLETED", productType },
+      where: { status: { not: "CANCELLED" }, productType },
     }),
     prisma.client.count({ where: { productType } }),
     prisma.client.count({
@@ -132,11 +141,11 @@ export async function getSummaryStats(productType: string) {
   ]);
 
   return {
-    revenueThisMonth: revenueAgg._sum.total?.toNumber() ?? 0,
-    revenueLastMonth: lastMonthRevenueAgg._sum.total?.toNumber() ?? 0,
+    revenueThisMonth: netRevenue(revenueAgg._sum),
+    revenueLastMonth: netRevenue(lastMonthRevenueAgg._sum),
     salesThisMonth: salesCount,
     salesLastMonth: lastMonthSalesCount,
-    revenueAllTime: allTimeRevenueAgg._sum.total?.toNumber() ?? 0,
+    revenueAllTime: netRevenue(allTimeRevenueAgg._sum),
     salesAllTime: allTimeSalesCount,
     activeClients,
     newClientsThisMonth,

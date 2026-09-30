@@ -63,7 +63,8 @@
     "register": "Ma caisse",
     "cashSessions": "Sessions de caisse",
     "cashClosures": "Clôtures",
-    "mySales": "Mes ventes"
+    "mySales": "Mes ventes",
+    "refunds": "Remboursements"
   },
   "auth": {
     "login": {
@@ -852,7 +853,18 @@
     "noSales": "Aucune vente pour le moment.",
     "invoiceTitle": "Facture",
     "printInvoice": "Imprimer la facture",
-    "noOpenSession": "Ouvrez votre caisse (menu Caisse) avant d'enregistrer une vente."
+    "noOpenSession": "Ouvrez votre caisse (menu Caisse) avant d'enregistrer une vente.",
+    "saleStatus": {
+      "COMPLETED": "Terminée",
+      "CANCELLED": "Annulée",
+      "PARTIALLY_REFUNDED": "Partiellement remboursée",
+      "REFUNDED": "Remboursée"
+    },
+    "refundedAmount": "Remboursé",
+    "cancelError": {
+      "refunded": "Cette vente a été (partiellement) remboursée : elle ne peut plus être annulée.",
+      "pendingRefund": "Une demande de remboursement est en attente : traitez-la avant d'annuler la vente."
+    }
   },
   "errors": {
     "notFoundTitle": "Page introuvable",
@@ -915,7 +927,12 @@
       "countedCash": "Espèces comptées",
       "cashDifference": "Écart",
       "sessionCount": "Caisses",
-      "salesTotal": "Total des ventes"
+      "salesTotal": "Total des ventes",
+      "items": "Articles",
+      "estimatedAmount": "Montant estimé",
+      "refundedAmount": "Montant remboursé",
+      "loyaltyPointsTakenBack": "Points repris",
+      "loyaltyPointsReturned": "Points rendus"
     },
     "value": {
       "pos": "Caisse",
@@ -927,13 +944,21 @@
       "COMPLETED": "Validée",
       "CANCELLED": "Annulée",
       "OPEN": "Ouverte",
-      "CLOSED": "Fermée"
+      "CLOSED": "Fermée",
+      "PARTIALLY_REFUNDED": "Partiellement remboursée",
+      "REFUNDED": "Remboursée",
+      "PENDING": "En attente",
+      "APPROVED": "Validée",
+      "REJECTED": "Refusée"
     },
     "actionCashOpen": "Caisse ouverte",
     "actionCashIn": "Entrée d'argent",
     "actionCashOut": "Sortie d'argent",
     "actionCashClose": "Caisse fermée",
-    "actionCashDayClose": "Journée clôturée"
+    "actionCashDayClose": "Journée clôturée",
+    "actionRefundRequest": "Remboursement demandé",
+    "actionRefundApprove": "Remboursement validé",
+    "actionRefundReject": "Remboursement refusé"
   },
   "trackOrder": {
     "title": "Suivre ma commande",
@@ -1032,7 +1057,8 @@
     "movementOutConfirmTitle": "Enregistrer cette sortie ?",
     "movementConfirmBody": "{amount} — {reason}. Elle ne pourra pas être supprimée.",
     "closeConfirmTitle": "Fermer la caisse ?",
-    "closeConfirmBody": "Espèces comptées : {counted}. {difference} Une fois fermée, la caisse ne peut plus être modifiée."
+    "closeConfirmBody": "Espèces comptées : {counted}. {difference} Une fois fermée, la caisse ne peut plus être modifiée.",
+    "cashRefunds": "Remboursements espèces"
   },
   "mySales": {
     "title": "Mes ventes",
@@ -1054,6 +1080,58 @@
     "collectedWallet": "Encaissé par {wallet}",
     "collectedOther": "Autres paiements",
     "noSales": "Vous n'avez encore aucune vente.",
-    "cancelledCount": "+ {count, plural, one {# vente annulée, non comptée} other {# ventes annulées, non comptées}}"
+    "cancelledCount": "+ {count, plural, one {# vente annulée, non comptée} other {# ventes annulées, non comptées}}",
+    "refundedPart": "dont {amount} remboursé",
+    "refundedTotal": "Remboursé"
+  },
+  "refunds": {
+    "title": "Remboursements",
+    "requestAction": "Demander un remboursement",
+    "requestTitle": "Demande de remboursement",
+    "requestHint": "Choisissez les articles rapportés. L'admin de la boutique validera la demande.",
+    "requestSubmit": "Envoyer la demande",
+    "wholeSale": "Toute la vente",
+    "refundableOf": "{count} remboursable(s)",
+    "quantityFor": "Quantité à rembourser pour {name}",
+    "reason": "Motif",
+    "estimate": "Montant estimé : {amount}",
+    "pickUnits": "Indiquez au moins un article à rembourser.",
+    "requested": "Demande envoyée à l'admin.",
+    "pendingHint": "Une demande est en attente de validation par l'admin.",
+    "status": {
+      "PENDING": "En attente",
+      "APPROVED": "Remboursée",
+      "REJECTED": "Refusée"
+    },
+    "requestedBy": "Demandée par {email} le {date}",
+    "approvedBy": "Validée par {email} le {date}",
+    "rejectedBy": "Refusée par {email} le {date}",
+    "approveAction": "Valider le remboursement",
+    "approveConfirmTitle": "Rembourser {amount} ?",
+    "approveConfirmCash": "Les articles reviennent en stock et le montant sort de VOTRE caisse ouverte. Action définitive.",
+    "approveConfirmWallet": "Les articles reviennent en stock et le remboursement est enregistré sur {wallet}. Action définitive.",
+    "wallet": "le wallet",
+    "rejectAction": "Refuser",
+    "rejectTitle": "Refuser la demande",
+    "rejectReason": "Motif du refus",
+    "approved": "Remboursement validé.",
+    "rejected": "Demande refusée.",
+    "all": "Toutes",
+    "adminHint": "Validez ou refusez les demandes des vendeurs.",
+    "sellerHint": "Suivez l'état de vos demandes.",
+    "filterLabel": "Filtrer par statut",
+    "empty": "Aucune demande.",
+    "error": {
+      "invalid": "Demande invalide : vérifiez le motif.",
+      "invalidQuantity": "Quantité invalide : certains articles ont peut-être déjà été remboursés.",
+      "notFound": "Vente ou demande introuvable.",
+      "notRefundable": "Cette vente ne peut plus être remboursée (annulée ou déjà remboursée).",
+      "alreadyPending": "Une demande est déjà en attente pour cette vente.",
+      "alreadyDecided": "Cette demande a déjà été traitée.",
+      "noOpenSession": "Ouvrez votre caisse : un remboursement en espèces en sort.",
+      "insufficientCash": "Votre caisse ne contient pas assez d'espèces pour ce remboursement.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
+      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
+    }
   }
 }

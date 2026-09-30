@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { getSaleById } from "@/lib/queries/sales";
 import { getAdminScope } from "@/lib/shop/admin-scope";
-import { Badge } from "@/components/ui/badge";
+import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
+import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";
+import { getSaleRefunds } from "@/lib/queries/refunds";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -22,12 +24,13 @@ export default async function SaleDetailPage({
 }) {
   const { saleId } = await params;
   const scope = await getAdminScope();
-  const [t, tProducts, tCommon, format, sale] = await Promise.all([
+  const [t, tProducts, tCommon, format, sale, refunds] = await Promise.all([
     getTranslations("sales"),
     getTranslations("products"),
     getTranslations("common"),
     getFormatter(),
     getSaleById(saleId, scope),
+    getSaleRefunds(saleId, scope),
   ]);
 
   if (!sale) {
@@ -41,9 +44,7 @@ export default async function SaleDetailPage({
           <h1 className="text-2xl font-semibold tracking-tight">
             {sale.reference}
           </h1>
-          <Badge variant={sale.status === "COMPLETED" ? "secondary" : "destructive"}>
-            {sale.status === "COMPLETED" ? t("completed") : t("cancelled")}
-          </Badge>
+          <SaleStatusBadge status={sale.status} />
         </div>
         <div className="flex gap-2">
           <PrintInvoiceButton />
@@ -104,8 +105,27 @@ export default async function SaleDetailPage({
           <p className="text-base font-semibold">
             {t("total")}: {formatPrice(sale.total, tCommon("currency"))}
           </p>
+          {refunds && refunds.refundedAmount > 0 && (
+            <p className="text-muted-foreground">
+              {t("refundedAmount")}: -{formatPrice(refunds.refundedAmount, tCommon("currency"))}
+            </p>
+          )}
         </div>
       </div>
+
+      {refunds && (
+        <SaleRefundsSection
+          saleId={refunds.saleId}
+          refundable={refunds.refundable}
+          hasPending={refunds.hasPending}
+          subtotal={refunds.subtotal}
+          total={refunds.total}
+          refundedAmount={refunds.refundedAmount}
+          lines={refunds.lines}
+          requests={refunds.requests}
+          canDecide
+        />
+      )}
     </div>
   );
 }

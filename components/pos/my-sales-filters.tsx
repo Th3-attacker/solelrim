@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { SALE_STATUSES } from "@/lib/shop/my-sales-filters";
 import {
   Select,
   SelectContent,
@@ -37,6 +38,7 @@ function readFilters(params: URLSearchParams): Filters {
 export function MySalesFilters({ walletProviders }: { walletProviders: string[] }) {
   const t = useTranslations("mySales");
   const tCommon = useTranslations("common");
+  const tSales = useTranslations("sales");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -120,8 +122,11 @@ export function MySalesFilters({ walletProviders }: { walletProviders: string[] 
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>{t("allStatuses")}</SelectItem>
-            <SelectItem value="COMPLETED">{t("statusCompleted")}</SelectItem>
-            <SelectItem value="CANCELLED">{t("statusCancelled")}</SelectItem>
+            {SALE_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {tSales(`saleStatus.${status}`)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

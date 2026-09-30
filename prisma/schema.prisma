@@ -22,6 +22,17 @@ enum CashMovementType {
 enum SaleStatus {
   COMPLETED
   CANCELLED
+  // Some items refunded (RefundRequest approved); the rest stands.
+  PARTIALLY_REFUNDED
+  // Every item refunded. Unlike CANCELLED, the sale still counts as sold;
+  // its refundedAmount is what came back out.
+  REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum OrderStatus {
@@ -163,6 +174,7 @@ model StoreType {
   walletAccounts WalletAccount[]
   cashSessions   CashSession[]
   dayClosures    StoreDayClosure[]
+  refundRequests RefundRequest[]
   testimonials   Testimonial[]
 }
 
@@ -403,15 +415,15 @@ model Client {
 }
 
 model Sale {
-  id                    String       @id @default(cuid())
-  reference             String       @unique
+  id                    String          @id @default(cuid())
+  reference             String          @unique
   clientId              String?
-  client                Client?      @relation(fields: [clientId], references: [id])
+  client                Client?         @relation(fields: [clientId], references: [id])
   items                 SaleItem[]
-  subtotal              Decimal      @db.Decimal(10, 2)
-  discount              Decimal      @default(0) @db.Decimal(10, 2)
-  total                 Decimal      @db.Decimal(10, 2)
-  status                SaleStatus   @default(COMPLETED)
+  subtotal              Decimal         @db.Decimal(10, 2)
+  discount              Decimal         @default(0) @db.Decimal(10, 2)
+  total                 Decimal         @db.Decimal(10, 2)
+  status                SaleStatus      @default(COMPLETED)
   // Free text for historical manual sales ("cash", "card", "transfer");
   // the checkout only ever writes "cash" or "wallet".
   paymentMethod         String?
@@ -421,29 +433,32 @@ model Sale {
   walletProvider        String?
   // Cash handed over by the customer, for the change on the receipt. Null
   // for wallet sales and for cash sales where it wasn't entered.
-  amountReceived        Decimal?     @db.Decimal(10, 2)
+  amountReceived        Decimal?        @db.Decimal(10, 2)
   // Loyalty: points credited/spent by this sale, and the reward discount it
   // got (kept apart from the manual `discount`). Recorded per sale so a
   // cancellation reverses exactly what happened, and the client's points
   // history is just their sales — no separate ledger to drift.
-  loyaltyPointsEarned   Int          @default(0)
-  loyaltyPointsRedeemed Int          @default(0)
-  loyaltyDiscount       Decimal      @default(0) @db.Decimal(10, 2)
+  loyaltyPointsEarned   Int             @default(0)
+  loyaltyPointsRedeemed Int             @default(0)
+  loyaltyDiscount       Decimal         @default(0) @db.Decimal(10, 2)
+  // Sum of approved refunds; net revenue is total - refundedAmount.
+  refundedAmount        Decimal         @default(0) @db.Decimal(10, 2)
+  refundRequests        RefundRequest[]
   notes                 String?
   // Stamped at creation from the admin's current scope (manual sale) or
   // copied from the source Order (auto-created on deliverOrder).
   productType           String
-  storeType             StoreType    @relation(fields: [productType], references: [key])
+  storeType             StoreType       @relation(fields: [productType], references: [key])
   // Who recorded the sale (checkout or manual). Null for sales auto-created
   // from a delivered online order, and SetNull if that account is later
   // deleted so the sale itself survives.
   sellerId              String?
-  seller                AdminUser?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  seller                AdminUser?      @relation(fields: [sellerId], references: [id], onDelete: SetNull)
   // The till the sale was rung up on. Null only for sales from online
   // orders and for sales recorded before register sessions existed.
   cashSessionId         String?
-  cashSession           CashSession? @relation(fields: [cashSessionId], references: [id], onDelete: Restrict)
-  createdAt             DateTime     @default(now())
+  cashSession           CashSession?    @relation(fields: [cashSessionId], references: [id], onDelete: Restrict)
+  createdAt             DateTime        @default(now())
 
   @@index([clientId])
   @@index([cashSessionId])
@@ -453,14 +468,18 @@ model Sale {
 }
 
 model SaleItem {
-  id        String         @id @default(cuid())
-  saleId    String
-  sale      Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
-  quantity  Int
-  unitPrice Decimal        @db.Decimal(10, 2)
-  lineTotal Decimal        @db.Decimal(10, 2)
+  id               String         @id @default(cuid())
+  saleId           String
+  sale             Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  variantId        String
+  variant          ProductVariant @relation(fields: [variantId], references: [id])
+  quantity         Int
+  unitPrice        Decimal        @db.Decimal(10, 2)
+  lineTotal        Decimal        @db.Decimal(10, 2)
+  // Units already refunded — approval increments it with a guard, so an
+  // item can never be refunded beyond what was sold.
+  refundedQuantity Int            @default(0)
+  refundItems      RefundItem[]
 
   @@index([saleId])
   @@index([variantId])
@@ -617,6 +636,7 @@ model CashSession {
   closingSummary Json?
   sales          Sale[]
   movements      CashMovement[]
+  refunds        RefundRequest[]
 
   @@index([productType, businessDate])
   @@index([sellerId, openedAt])
@@ -657,4 +677,51 @@ model StoreDayClosure {
   breakdown      Json
 
   @@unique([productType, businessDate])
+}
+
+// A refund asked for by a seller (or admin) on a sale, decided by a
+// boutique admin. At most one PENDING request per sale (partial unique
+// index RefundRequest_one_pending_per_sale in the migration SQL).
+model RefundRequest {
+  id                     String       @id @default(cuid())
+  productType            String
+  storeType              StoreType    @relation(fields: [productType], references: [key])
+  saleId                 String
+  sale                   Sale         @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  status                 RefundStatus @default(PENDING)
+  reason                 String
+  requestedById          String?
+  requestedByEmail       String
+  createdAt              DateTime     @default(now())
+  decidedById            String?
+  decidedByEmail         String?
+  decidedAt              DateTime?
+  rejectionReason        String?
+  // Set at approval, computed server-side.
+  amount                 Decimal?     @db.Decimal(10, 2)
+  // How the money went back, copied from the sale at approval.
+  paymentMethod          String?
+  walletProvider         String?
+  // The approver's till a cash refund was paid out of.
+  cashSessionId          String?
+  cashSession            CashSession? @relation(fields: [cashSessionId], references: [id], onDelete: Restrict)
+  loyaltyPointsTakenBack Int          @default(0)
+  loyaltyPointsReturned  Int          @default(0)
+  items                  RefundItem[]
+
+  @@index([productType, status, createdAt])
+  @@index([saleId])
+  @@index([cashSessionId])
+}
+
+model RefundItem {
+  id         String        @id @default(cuid())
+  requestId  String
+  request    RefundRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  saleItemId String
+  saleItem   SaleItem      @relation(fields: [saleItemId], references: [id], onDelete: Restrict)
+  quantity   Int
+
+  @@index([requestId])
+  @@index([saleItemId])
 }

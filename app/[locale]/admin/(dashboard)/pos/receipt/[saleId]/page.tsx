@@ -8,6 +8,8 @@ import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { WhatsAppReceiptForm } from "@/components/pos/whatsapp-receipt-form";
 import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
 import { getReceipt } from "@/lib/queries/pos";
+import { getSaleRefunds } from "@/lib/queries/refunds";
+import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";
 import { formatPrice } from "@/lib/format/currency";
 import { resolveSiteName } from "@/lib/shop/localized-boutique-text";
 import {
@@ -29,9 +31,10 @@ export default async function ReceiptPage({
   params: Promise<{ saleId: string }>;
 }) {
   const { saleId } = await params;
-  const { productType } = await requireCheckoutViewScope();
-  const [receipt, t, tSales, tCommon, format, locale] = await Promise.all([
+  const { admin, productType } = await requireCheckoutViewScope();
+  const [receipt, refunds, t, tSales, tCommon, format, locale] = await Promise.all([
     getReceipt(saleId, productType),
+    getSaleRefunds(saleId, productType),
     getTranslations("pos"),
     getTranslations("sales"),
     getTranslations("common"),
@@ -174,6 +177,20 @@ export default async function ReceiptPage({
             defaultPhone={receipt.clientPhone ?? ""}
           />
         </div>
+      )}
+
+      {refunds && (
+        <SaleRefundsSection
+          saleId={refunds.saleId}
+          refundable={refunds.refundable}
+          hasPending={refunds.hasPending}
+          subtotal={refunds.subtotal}
+          total={refunds.total}
+          refundedAmount={refunds.refundedAmount}
+          lines={refunds.lines}
+          requests={refunds.requests}
+          canDecide={admin.role !== "SELLER"}
+        />
       )}
     </div>
   );

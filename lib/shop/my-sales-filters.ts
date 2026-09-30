@@ -1,10 +1,13 @@
 import { parseBusinessDate } from "@/lib/shop/cash";
 
+export const SALE_STATUSES = ["COMPLETED", "PARTIALLY_REFUNDED", "REFUNDED", "CANCELLED"] as const;
+type SaleStatusFilter = (typeof SALE_STATUSES)[number];
+
 export type MySalesFilters = {
   // Inclusive UTC calendar days (Mauritania is UTC, see businessDateOf).
   from: Date | null;
   to: Date | null;
-  status: "COMPLETED" | "CANCELLED" | null;
+  status: SaleStatusFilter | null;
   // "cash", or a wallet provider name (e.g. "Bankily").
   payment: { method: "cash" } | { method: "wallet"; provider: string } | null;
   reference: string | null;
@@ -27,7 +30,9 @@ export function parseMySalesFilters(params: Params): MySalesFilters {
   return {
     from: from ? parseBusinessDate(from) : null,
     to: to ? parseBusinessDate(to) : null,
-    status: status === "COMPLETED" || status === "CANCELLED" ? status : null,
+    status: (SALE_STATUSES as readonly string[]).includes(status ?? "")
+      ? (status as SaleStatusFilter)
+      : null,
     payment:
       payment === "cash"
         ? { method: "cash" }
