@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import {
   CheckCircle,
   MagnifyingGlass,
@@ -59,6 +59,7 @@ type CompletedSale = {
 
 const KNOWN_ERRORS = new Set([
   "invalid",
+  "noOpenSession",
   "insufficientStock",
   "insufficientAmount",
   "insufficientPoints",
@@ -71,10 +72,13 @@ export function CheckoutScreen({
   products,
   wallets,
   loyaltyRule,
+  sessionBar,
 }: {
   products: PosProduct[];
   wallets: PosWallet[];
   loyaltyRule: PosLoyaltyRule;
+  // The open till's status and link, shown beside the title.
+  sessionBar?: ReactNode;
 }) {
   const t = useTranslations("pos");
   const tCommon = useTranslations("common");
@@ -328,7 +332,10 @@ export function CheckoutScreen({
 
   return (
     <div className="flex flex-col gap-4 pb-24 lg:pb-0">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        {sessionBar}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="flex min-w-0 flex-col gap-4">

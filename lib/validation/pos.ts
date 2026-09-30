@@ -4,7 +4,7 @@ import { saleItemSchema } from "@/lib/validation/sale";
 // Largest value the Sale money columns hold (DECIMAL(10,2)) — anything
 // above would overflow inside the transaction instead of being refused
 // cleanly as invalid input.
-const MAX_AMOUNT = 99_999_999.99;
+export const MAX_AMOUNT = 99_999_999.99;
 const amount = z.number().min(0).max(MAX_AMOUNT);
 
 const checkoutBase = {

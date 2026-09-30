@@ -86,6 +86,15 @@ export async function deleteSeller(adminUserId: string): Promise<{ error?: strin
   if (!seller) {
     return { error: "notFound" };
   }
+  // Its till must be closed (by the seller, or by the admin from the
+  // session page) first — deleting would leave an open till nobody owns.
+  const openSession = await prisma.cashSession.findFirst({
+    where: { sellerId: seller.id, status: "OPEN" },
+    select: { id: true },
+  });
+  if (openSession) {
+    return { error: "hasOpenSession" };
+  }
 
   // Keep the AdminUser row if the login couldn't be removed, so the admin
   // sees the failure and can retry instead of leaving a live login behind

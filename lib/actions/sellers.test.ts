@@ -167,6 +167,22 @@ describe("deleteSeller", () => {
     expect(prismaMock.adminUser.delete).not.toHaveBeenCalled();
   });
 
+  it("refuses while the seller's till is still open", async () => {
+    signedInAs("BOUTIQUE_ADMIN");
+    const admin = supabaseAdmin();
+    prismaMock.adminUser.findFirst.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "auth-seller-1",
+    } as never);
+    prismaMock.cashSession.findFirst.mockResolvedValue({ id: "session-1" } as never);
+
+    const result = await deleteSeller("seller-1");
+
+    expect(result.error).toBe("hasOpenSession");
+    expect(admin.deleteUser).not.toHaveBeenCalled();
+    expect(prismaMock.adminUser.delete).not.toHaveBeenCalled();
+  });
+
   it("deletes the Supabase account and the AdminUser row", async () => {
     signedInAs("BOUTIQUE_ADMIN");
     const admin = supabaseAdmin();

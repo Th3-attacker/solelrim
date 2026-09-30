@@ -76,8 +76,8 @@ export function SaleForm({
 
     if (result.error) {
       toast.error(
-        result.error === "insufficientStock"
-          ? t("insufficientStock")
+        result.error === "insufficientStock" || result.error === "noOpenSession"
+          ? t(result.error)
           : tCommon("error"),
       );
       return;

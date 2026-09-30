@@ -20,6 +20,9 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
   CashRegister,
+  ListChecks,
+  Money,
+  Vault,
   ClipboardText,
   ClockCounterClockwise,
   SquaresFour,
@@ -57,7 +60,13 @@ export function AppSidebar({
   // A seller only ever reaches the checkout (proxy.ts redirects every
   // other admin path) — no point listing links they'd bounce off.
   const sellerSections: { label?: string; items: NavItem[] }[] = [
-    { items: [{ href: "/admin/pos", label: t("pos"), icon: CashRegister }] },
+    {
+      items: [
+        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
+        { href: "/admin/pos/register", label: t("register"), icon: Money },
+        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
+      ],
+    },
   ];
 
   const adminSections: { label?: string; items: NavItem[] }[] = [
@@ -73,6 +82,8 @@ export function AppSidebar({
       label: t("activitySection"),
       items: [
         { href: "/admin/pos", label: t("pos"), icon: CashRegister },
+        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
+        { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         {
           href: "/admin/orders",
@@ -96,6 +107,14 @@ export function AppSidebar({
   ];
 
   const sections = role === "SELLER" ? sellerSections : adminSections;
+  const allHrefs = sections.flatMap((section) => section.items.map((item) => item.href));
+  // The most specific link wins: on /admin/pos/sessions, "Caisse"
+  // (/admin/pos) must not light up too.
+  const matches = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
+  const activeHref = allHrefs
+    .filter(matches)
+    .sort((a, b) => b.length - a.length)[0];
 
   const roleLabel =
     role === "SUPERADMIN"
@@ -130,10 +149,7 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
-                  const isActive =
-                    item.href === "/admin"
-                      ? pathname === "/admin"
-                      : pathname.startsWith(item.href);
+                  const isActive = item.href === activeHref;
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton

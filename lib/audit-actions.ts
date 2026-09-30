@@ -12,6 +12,11 @@ export const AUDIT_ACTION_LABEL_KEY = {
   "product.delete": "actionProductDelete",
   "sale.create": "actionSaleCreate",
   "sale.cancel": "actionSaleCancel",
+  "cash.open": "actionCashOpen",
+  "cash.in": "actionCashIn",
+  "cash.out": "actionCashOut",
+  "cash.close": "actionCashClose",
+  "cash.dayClose": "actionCashDayClose",
 } as const;
 
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL_KEY;

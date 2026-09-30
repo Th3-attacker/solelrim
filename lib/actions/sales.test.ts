@@ -67,9 +67,24 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
+  prismaMock.$queryRaw.mockResolvedValue([{ id: "session-1" }] as never);
 });
 
 describe("createSale", () => {
+  it("refuses a back-office sale while the admin's own till is closed", async () => {
+    prismaMock.$queryRaw.mockResolvedValue([] as never);
+
+    const result = await createSale({
+      clientId: null,
+      discount: 0,
+      paymentMethod: "cash",
+      items: [{ variantId: "variant-1", quantity: 2 }],
+    });
+
+    expect(result.error).toBe("noOpenSession");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
   it("creates a sale, decrements stock, and returns the sale id", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant()] as never);
     prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
