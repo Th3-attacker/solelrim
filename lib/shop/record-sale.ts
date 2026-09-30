@@ -16,6 +16,9 @@ export type RecordSaleInput = {
   paymentMethod: string | null;
   walletProvider?: string | null;
   amountReceived?: number | null;
+  // When set, the total the caller showed and collected — the sale is
+  // refused if the server-computed total differs (see "totalChanged").
+  expectedTotal?: number | null;
   notes?: string;
   items: { variantId: string; quantity: number }[];
 };
@@ -24,6 +27,7 @@ export type RecordSaleError =
   | "invalid"
   | "insufficientStock"
   | "insufficientAmount"
+  | "totalChanged"
   | "referenceCollision";
 
 export type RecordSaleResult =
@@ -34,6 +38,7 @@ const KNOWN_ERRORS: ReadonlySet<string> = new Set<RecordSaleError>([
   "invalid",
   "insufficientStock",
   "insufficientAmount",
+  "totalChanged",
   "referenceCollision",
 ]);
 
@@ -93,8 +98,14 @@ export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResu
       const subtotal = lineItems.reduce((sum, i) => sum + i.lineTotal, 0);
       const total = Math.max(subtotal - input.discount, 0);
 
-      // Checked against the server-computed total, inside the transaction,
-      // so a short cash payment rolls the stock decrement back too.
+      // Both checked against the server-computed total, inside the
+      // transaction, so a refused sale rolls the stock decrement back too.
+      // A mismatch with the caller's total means a price changed since
+      // their screen loaded: refuse rather than record an amount different
+      // from what the customer was shown and paid.
+      if (input.expectedTotal != null && Math.abs(input.expectedTotal - total) > 0.005) {
+        throw new Error("totalChanged");
+      }
       if (input.amountReceived != null && input.amountReceived < total) {
         throw new Error("insufficientAmount");
       }

@@ -37,10 +37,10 @@ function signedInAs(role: "BOUTIQUE_ADMIN" | "SELLER") {
   } as never);
 }
 
-function activeLicense() {
+function license(status: "ACTIVE" | "SUSPENDED") {
   prismaMock.storeType.findUnique.mockResolvedValue({
     licenseType: "MONTHLY",
-    licenseStatus: "ACTIVE",
+    licenseStatus: status,
     licenseExpiresAt: null,
   } as never);
 }
@@ -61,6 +61,7 @@ function stockedVariant(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 const ITEMS = [{ variantId: "variant-1", quantity: 2 }];
+const CASH = { paymentMethod: "cash", items: ITEMS, discount: 0, expectedTotal: 1000 } as const;
 
 beforeEach(() => {
   mockReset(prismaMock);
@@ -68,7 +69,7 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
-  activeLicense();
+  license("ACTIVE");
 });
 
 describe("createPosSale", () => {
@@ -76,12 +77,7 @@ describe("createPosSale", () => {
     signedInAs("SELLER");
     stockedVariant();
 
-    const result = await createPosSale({
-      paymentMethod: "cash",
-      items: ITEMS,
-      discount: 0,
-      amountReceived: 1500,
-    });
+    const result = await createPosSale({ ...CASH, amountReceived: 1500 });
 
     expect(result.error).toBeUndefined();
     expect(result.total).toBe(1000);
@@ -103,9 +99,8 @@ describe("createPosSale", () => {
     stockedVariant();
 
     await createPosSale({
-      paymentMethod: "cash",
+      ...CASH,
       items: [{ variantId: "variant-1", quantity: 2, unitPrice: 1 }],
-      discount: 0,
       amountReceived: null,
     });
 
@@ -114,19 +109,34 @@ describe("createPosSale", () => {
     });
   });
 
+  it("refuses when a price changed since the screen loaded, instead of recording a different total", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+
+    // The seller's screen still showed 900; the database now says 1 000.
+    const result = await createPosSale({ ...CASH, expectedTotal: 900, amountReceived: null });
+
+    expect(result.error).toBe("totalChanged");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
   it("refuses a cash amount below the server-computed total and rolls back", async () => {
     signedInAs("SELLER");
     stockedVariant();
 
-    const result = await createPosSale({
-      paymentMethod: "cash",
-      items: ITEMS,
-      discount: 0,
-      amountReceived: 900,
-    });
+    const result = await createPosSale({ ...CASH, amountReceived: 900 });
 
     expect(result.error).toBe("insufficientAmount");
     expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses an amount too large for the money columns before touching the database", async () => {
+    signedInAs("SELLER");
+
+    const result = await createPosSale({ ...CASH, amountReceived: 1e11 });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
   it("records the wallet provider as a snapshot for a wallet sale", async () => {
@@ -138,6 +148,7 @@ describe("createPosSale", () => {
       paymentMethod: "wallet",
       items: ITEMS,
       discount: 0,
+      expectedTotal: 1000,
       walletAccountId: "wallet-1",
     });
 
@@ -161,6 +172,7 @@ describe("createPosSale", () => {
       paymentMethod: "wallet",
       items: ITEMS,
       discount: 0,
+      expectedTotal: 1000,
       walletAccountId: "other-boutique-wallet",
     });
 
@@ -176,12 +188,7 @@ describe("createPosSale", () => {
     signedInAs("SELLER");
     stockedVariant({ product: { productType: "sport", basePrice: decimal(500) } });
 
-    const result = await createPosSale({
-      paymentMethod: "cash",
-      items: ITEMS,
-      discount: 0,
-      amountReceived: null,
-    });
+    const result = await createPosSale({ ...CASH, amountReceived: null });
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.sale.create).not.toHaveBeenCalled();
@@ -190,33 +197,37 @@ describe("createPosSale", () => {
   it("rejects a wallet sale that names no wallet account", async () => {
     signedInAs("SELLER");
 
-    const result = await createPosSale({ paymentMethod: "wallet", items: ITEMS, discount: 0 });
+    const result = await createPosSale({
+      paymentMethod: "wallet",
+      items: ITEMS,
+      discount: 0,
+      expectedTotal: 1000,
+    });
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
-  it("is blocked when the boutique's license is suspended", async () => {
+  // Returned, not thrown: Next masks a thrown action's message in
+  // production, and the checkout must tell these two apart.
+  it("reports licenseBlocked when the boutique's license is suspended", async () => {
     signedInAs("SELLER");
-    prismaMock.storeType.findUnique.mockResolvedValue({
-      licenseType: "MONTHLY",
-      licenseStatus: "SUSPENDED",
-      licenseExpiresAt: null,
-    } as never);
+    license("SUSPENDED");
 
-    await expect(
-      createPosSale({ paymentMethod: "cash", items: ITEMS, discount: 0, amountReceived: null }),
-    ).rejects.toThrow("licenseBlocked");
+    const result = await createPosSale({ ...CASH, amountReceived: null });
+
+    expect(result.error).toBe("licenseBlocked");
     expect(prismaMock.sale.create).not.toHaveBeenCalled();
   });
 
-  it("rejects a caller who isn't signed in", async () => {
+  it("reports unauthorized for a caller who isn't signed in", async () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
     });
 
-    await expect(
-      createPosSale({ paymentMethod: "cash", items: ITEMS, discount: 0, amountReceived: null }),
-    ).rejects.toThrow("unauthorized");
+    const result = await createPosSale({ ...CASH, amountReceived: null });
+
+    expect(result.error).toBe("unauthorized");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
   });
 });

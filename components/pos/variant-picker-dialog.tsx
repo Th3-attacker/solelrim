@@ -14,22 +14,27 @@ import type { PosProduct } from "@/lib/queries/pos";
 
 type Variant = PosProduct["variants"][number];
 
+// `open` is separate from `product` so the content stays rendered through
+// the close animation — the parent keeps the last product until the next
+// one replaces it.
 export function VariantPickerDialog({
   product,
+  open,
   quantityInCart,
   onPick,
-  onClose,
+  onOpenChange,
 }: {
   product: PosProduct | null;
+  open: boolean;
   quantityInCart: (variantId: string) => number;
   onPick: (product: PosProduct, variant: Variant) => void;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations("pos");
   const tCommon = useTranslations("common");
 
   return (
-    <Dialog open={product !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{product?.name}</DialogTitle>

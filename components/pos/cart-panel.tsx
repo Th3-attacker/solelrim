@@ -11,6 +11,8 @@ import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import { cn } from "@/lib/utils";
 import type { PosWallet } from "@/lib/queries/pos";
 
+// Derived by CheckoutScreen from the *current* catalog on every render, so
+// price and stock are never a stale snapshot from when the item was added.
 export type CartLine = {
   variantId: string;
   productName: string;
@@ -19,6 +21,9 @@ export type CartLine = {
   unitPrice: number;
   quantity: number;
   stock: number;
+  // Sold out since it was added — excluded from the total and the sale
+  // until the seller removes it.
+  unavailable: boolean;
 };
 
 export type PaymentMethod = "cash" | "wallet";
@@ -70,8 +75,13 @@ export function CartPanel({
   const currency = tCommon("currency");
 
   const received = amountReceived.trim() ? Number(amountReceived) : null;
-  const shortBy = received !== null && received < total ? total - received : 0;
+  // Rounded up for display: prices can carry cents while MRU amounts are
+  // shown whole, and "0 MRU short" next to a disabled Charge button would
+  // leave the seller guessing.
+  const shortBy =
+    received !== null && received < total ? Math.max(Math.ceil(total - received), 1) : 0;
   const change = received !== null && received >= total ? received - total : null;
+  const hasSellableLine = cart.some((line) => !line.unavailable);
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,7 +94,10 @@ export function CartPanel({
       ) : (
         <ul className="flex flex-col divide-y rounded-md border">
           {cart.map((line) => (
-            <li key={line.variantId} className="flex flex-col gap-2 p-3">
+            <li
+              key={line.variantId}
+              className={cn("flex flex-col gap-2 p-3", line.unavailable && "bg-destructive/5")}
+            >
               <div className="flex items-start gap-2">
                 <span
                   aria-hidden="true"
@@ -107,36 +120,40 @@ export function CartPanel({
                   <Trash className="size-4" />
                 </Button>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-sm"
-                    disabled={line.quantity <= 1}
-                    onClick={() => onQuantityChange(line.variantId, line.quantity - 1)}
-                    aria-label={t("decrease")}
-                  >
-                    <Minus className="size-4" />
-                  </Button>
-                  <span className="w-8 text-center text-sm font-medium tabular-nums">
-                    {line.quantity}
+              {line.unavailable ? (
+                <p className="text-xs font-medium text-destructive">{t("lineSoldOut")}</p>
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      disabled={line.quantity <= 1}
+                      onClick={() => onQuantityChange(line.variantId, line.quantity - 1)}
+                      aria-label={t("decrease")}
+                    >
+                      <Minus className="size-4" />
+                    </Button>
+                    <span className="w-8 text-center text-sm font-medium tabular-nums">
+                      {line.quantity}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      disabled={line.quantity >= line.stock}
+                      onClick={() => onQuantityChange(line.variantId, line.quantity + 1)}
+                      aria-label={t("increase")}
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                  </div>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {formatPrice(line.unitPrice * line.quantity, currency)}
                   </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-sm"
-                    disabled={line.quantity >= line.stock}
-                    onClick={() => onQuantityChange(line.variantId, line.quantity + 1)}
-                    aria-label={t("increase")}
-                  >
-                    <Plus className="size-4" />
-                  </Button>
                 </div>
-                <span className="text-sm font-semibold tabular-nums">
-                  {formatPrice(line.unitPrice * line.quantity, currency)}
-                </span>
-              </div>
+              )}
             </li>
           ))}
         </ul>
@@ -211,7 +228,7 @@ export function CartPanel({
               type="button"
               variant="outline"
               onClick={() => onAmountReceivedChange(String(total))}
-              disabled={cart.length === 0}
+              disabled={!hasSellableLine}
             >
               {t("exactAmount")}
             </Button>
@@ -221,7 +238,7 @@ export function CartPanel({
               {t("amountTooLow", { amount: formatPrice(shortBy, currency) })}
             </p>
           )}
-          {change !== null && cart.length > 0 && (
+          {change !== null && hasSellableLine && (
             <p className="flex justify-between rounded-md bg-muted p-2 text-sm font-medium tabular-nums">
               <span>{t("change")}</span>
               <span>{formatPrice(change, currency)}</span>

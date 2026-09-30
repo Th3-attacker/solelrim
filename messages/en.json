@@ -762,10 +762,14 @@
     "saleRecorded": "Sale recorded",
     "reference": "Reference",
     "newSale": "New sale",
+    "lineSoldOut": "Out of stock now: remove this item to continue.",
     "error": {
       "invalid": "Sale refused: check the cart and payment.",
       "insufficientStock": "Not enough stock for an item. Stock has just been refreshed.",
-      "insufficientAmount": "The amount received is less than the total."
+      "insufficientAmount": "The amount received is less than the total.",
+      "totalChanged": "A price changed. Check the new total before charging.",
+      "unauthorized": "Your session has expired. Sign in again to continue.",
+      "licenseBlocked": "This boutique is suspended or its license has expired: sales are blocked."
     }
   },
   "sales": {

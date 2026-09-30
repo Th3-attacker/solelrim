@@ -762,10 +762,14 @@
     "saleRecorded": "Vente enregistrée",
     "reference": "Référence",
     "newSale": "Nouvelle vente",
+    "lineSoldOut": "Plus en stock : retirez cet article pour continuer.",
     "error": {
       "invalid": "Vente refusée : vérifiez le panier et le paiement.",
       "insufficientStock": "Stock insuffisant pour un article. Le stock vient d'être actualisé.",
-      "insufficientAmount": "Le montant reçu est inférieur au total."
+      "insufficientAmount": "Le montant reçu est inférieur au total.",
+      "totalChanged": "Un prix a changé. Vérifiez le nouveau total avant d'encaisser.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
+      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré : les ventes sont bloquées."
     }
   },
   "sales": {

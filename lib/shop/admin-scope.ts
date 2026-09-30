@@ -62,9 +62,14 @@ export async function requireAdminScope(): Promise<{
   if (admin.role === "SELLER") {
     throw new Error("forbidden");
   }
-  const productType =
-    admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
-  return { admin, productType };
+  return { admin, productType: await resolveProductType(admin) };
+}
+
+// The single boutique-resolution rule every gate shares: a superadmin acts
+// on whichever boutique they've selected, every other role on the one
+// they're locked to.
+async function resolveProductType(admin: AdminUser): Promise<string> {
+  return admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
 }
 
 // For settings reserved to SUPERADMIN (theme/color, color mode, hero/card
@@ -157,8 +162,7 @@ export async function requireCheckoutScope(): Promise<{
   productType: string;
 }> {
   const admin = await getCurrentAdmin();
-  const productType =
-    admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
+  const productType = await resolveProductType(admin);
   await assertLicenseWritable(admin, productType);
   return { admin, productType };
 }

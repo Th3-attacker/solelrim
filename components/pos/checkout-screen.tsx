@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { CheckCircle, MagnifyingGlass, Package, ShoppingCart } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
@@ -17,6 +17,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CartPanel, type CartLine, type PaymentMethod } from "@/components/pos/cart-panel";
 import { VariantPickerDialog } from "@/components/pos/variant-picker-dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { createPosSale } from "@/lib/actions/pos";
 import { formatPrice } from "@/lib/format/currency";
 import { matchesSearch } from "@/lib/shop/search-text";
@@ -27,23 +28,28 @@ import type { PosProduct, PosWallet } from "@/lib/queries/pos";
 // cart moves into a bottom sheet instead.
 const WIDE_QUERY = "(min-width: 1024px)";
 
-function subscribe(onChange: () => void) {
-  const mql = window.matchMedia(WIDE_QUERY);
-  mql.addEventListener("change", onChange);
-  return () => mql.removeEventListener("change", onChange);
-}
-
-function useIsWide() {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(WIDE_QUERY).matches,
-    () => false,
-  );
-}
+// What the cart remembers about a line. Name/size/color are kept only to
+// label a line whose variant has since vanished from the catalog — price
+// and stock are always read fresh from `products` (see `lines` below).
+type CartEntry = {
+  variantId: string;
+  quantity: number;
+  productName: string;
+  size: string;
+  color: string;
+  lastPrice: number;
+};
 
 type CompletedSale = { reference: string; total: number; change?: number };
 
-const KNOWN_ERRORS = new Set(["invalid", "insufficientStock", "insufficientAmount"]);
+const KNOWN_ERRORS = new Set([
+  "invalid",
+  "insufficientStock",
+  "insufficientAmount",
+  "totalChanged",
+  "unauthorized",
+  "licenseBlocked",
+]);
 
 export function CheckoutScreen({
   products,
@@ -56,18 +62,49 @@ export function CheckoutScreen({
   const tCommon = useTranslations("common");
   const currency = tCommon("currency");
   const router = useRouter();
-  const isWide = useIsWide();
+  const isWide = useMediaQuery(WIDE_QUERY);
   const [pending, startTransition] = useTransition();
 
   const [query, setQuery] = useState("");
-  const [cart, setCart] = useState<CartLine[]>([]);
-  const [picking, setPicking] = useState<PosProduct | null>(null);
+  const [entries, setEntries] = useState<CartEntry[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [discount, setDiscount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [amountReceived, setAmountReceived] = useState("");
   const [walletAccountId, setWalletAccountId] = useState<string | null>(null);
+  // Content and open state are kept apart so a dialog keeps showing its
+  // content through its close animation instead of collapsing empty.
+  const [picking, setPicking] = useState<PosProduct | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [completed, setCompleted] = useState<CompletedSale | null>(null);
+  const [completedOpen, setCompletedOpen] = useState(false);
+
+  const variantIndex = useMemo(() => {
+    const index = new Map<string, PosProduct["variants"][number]>();
+    for (const product of products) {
+      for (const variant of product.variants) index.set(variant.id, variant);
+    }
+    return index;
+  }, [products]);
+
+  // Re-derived from the latest catalog on every render — after any refresh
+  // (another sale, an online order, a price edit) the cart shows the real
+  // stock and price, so a retry doesn't fail on the same stale numbers.
+  const lines: CartLine[] = entries.map((entry) => {
+    const variant = variantIndex.get(entry.variantId);
+    const stock = variant?.stock ?? 0;
+    return {
+      variantId: entry.variantId,
+      productName: entry.productName,
+      size: entry.size,
+      color: entry.color,
+      unitPrice: variant?.price ?? entry.lastPrice,
+      quantity: Math.min(entry.quantity, Math.max(stock, 1)),
+      stock,
+      unavailable: stock === 0,
+    };
+  });
+  const sellableLines = lines.filter((line) => !line.unavailable);
 
   const visibleProducts = useMemo(() => {
     if (!query.trim()) return products;
@@ -79,43 +116,46 @@ export function CheckoutScreen({
     );
   }, [products, query]);
 
-  const subtotal = cart.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
-  // Display only — the server recomputes and clamps the same way.
+  const subtotal = sellableLines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+  // Display only — the server recomputes and clamps the same way, and
+  // refuses the sale if its total differs from this one (totalChanged).
   const discountValue = Math.min(Math.max(Number(discount) || 0, 0), subtotal);
   const total = subtotal - discountValue;
-  const itemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const itemCount = sellableLines.reduce((sum, line) => sum + line.quantity, 0);
 
   const received = amountReceived.trim() ? Number(amountReceived) : null;
   const canCharge =
-    cart.length > 0 &&
+    sellableLines.length > 0 &&
+    // A sold-out line must be removed first, so what's charged is exactly
+    // what the cart shows.
+    sellableLines.length === lines.length &&
     !pending &&
     (paymentMethod === "cash"
       ? received === null || received >= total
       : walletAccountId !== null);
 
   function quantityInCart(variantId: string) {
-    return cart.find((line) => line.variantId === variantId)?.quantity ?? 0;
+    return lines.find((line) => line.variantId === variantId)?.quantity ?? 0;
   }
 
   function addVariant(product: PosProduct, variant: PosProduct["variants"][number]) {
-    setCart((prev) => {
-      const existing = prev.find((line) => line.variantId === variant.id);
+    setEntries((prev) => {
+      const existing = prev.find((entry) => entry.variantId === variant.id);
       if (existing) {
         if (existing.quantity >= variant.stock) return prev;
-        return prev.map((line) =>
-          line.variantId === variant.id ? { ...line, quantity: line.quantity + 1 } : line,
+        return prev.map((entry) =>
+          entry.variantId === variant.id ? { ...entry, quantity: entry.quantity + 1 } : entry,
         );
       }
       return [
         ...prev,
         {
           variantId: variant.id,
+          quantity: 1,
           productName: product.name,
           size: variant.size,
           color: variant.color,
-          unitPrice: variant.price,
-          quantity: 1,
-          stock: variant.stock,
+          lastPrice: variant.price,
         },
       ];
     });
@@ -127,24 +167,26 @@ export function CheckoutScreen({
       return;
     }
     setPicking(product);
+    setPickerOpen(true);
   }
 
   function handleQuantityChange(variantId: string, quantity: number) {
-    setCart((prev) =>
-      prev.map((line) =>
-        line.variantId === variantId
-          ? { ...line, quantity: Math.min(Math.max(quantity, 1), line.stock) }
-          : line,
+    const stock = variantIndex.get(variantId)?.stock ?? 0;
+    setEntries((prev) =>
+      prev.map((entry) =>
+        entry.variantId === variantId
+          ? { ...entry, quantity: Math.min(Math.max(quantity, 1), Math.max(stock, 1)) }
+          : entry,
       ),
     );
   }
 
   function handleRemove(variantId: string) {
-    setCart((prev) => prev.filter((line) => line.variantId !== variantId));
+    setEntries((prev) => prev.filter((entry) => entry.variantId !== variantId));
   }
 
   function resetSale() {
-    setCart([]);
+    setEntries([]);
     setDiscount("");
     setAmountReceived("");
     setWalletAccountId(null);
@@ -152,35 +194,49 @@ export function CheckoutScreen({
   }
 
   function handleCharge() {
-    const items = cart.map((line) => ({ variantId: line.variantId, quantity: line.quantity }));
+    const items = sellableLines.map((line) => ({
+      variantId: line.variantId,
+      quantity: line.quantity,
+    }));
+    const base = { items, discount: discountValue, expectedTotal: total };
     startTransition(async () => {
-      const result = await createPosSale(
-        paymentMethod === "cash"
-          ? { paymentMethod: "cash", items, discount: discountValue, amountReceived: received }
-          : { paymentMethod: "wallet", items, discount: discountValue, walletAccountId },
-      );
-      if (result.error) {
-        toast.error(
-          KNOWN_ERRORS.has(result.error) ? t(`error.${result.error}`) : tCommon("error"),
+      // Every failure path keeps the cart intact: a thrown action would
+      // otherwise reach the error boundary and wipe the whole sale.
+      try {
+        const result = await createPosSale(
+          paymentMethod === "cash"
+            ? { ...base, paymentMethod: "cash", amountReceived: received }
+            : { ...base, paymentMethod: "wallet", walletAccountId },
         );
-        // Someone else may have just sold the last unit — pull fresh stock.
-        if (result.error === "insufficientStock") router.refresh();
-        return;
+        if (result.error) {
+          toast.error(
+            KNOWN_ERRORS.has(result.error) ? t(`error.${result.error}`) : tCommon("error"),
+          );
+          // Stock, prices or wallet accounts may have moved under us — pull
+          // the current catalog so the cart re-derives against it.
+          router.refresh();
+          return;
+        }
+        setCompleted({
+          reference: result.reference!,
+          total: result.total!,
+          change: result.change,
+        });
+        setCompletedOpen(true);
+        resetSale();
+        setCartOpen(false);
+        // No router.refresh() here: createPosSale's revalidatePath already
+        // re-renders this route with the updated stock.
+      } catch {
+        toast.error(tCommon("error"));
+        router.refresh();
       }
-      setCompleted({
-        reference: result.reference!,
-        total: result.total!,
-        change: result.change,
-      });
-      resetSale();
-      setCartOpen(false);
-      router.refresh();
     });
   }
 
   const cartPanel = (
     <CartPanel
-      cart={cart}
+      cart={lines}
       wallets={wallets}
       subtotal={subtotal}
       discountValue={discountValue}
@@ -281,14 +337,17 @@ export function CheckoutScreen({
           )}
         </section>
 
-        {isWide && (
+        {/* isWide is null until the browser has answered, so neither cart
+            variant renders on the server — the catalog column keeps its
+            width either way and nothing visibly swaps layouts. */}
+        {isWide === true && (
           <aside className="self-start rounded-lg border p-4 lg:sticky lg:top-4">
             {cartPanel}
           </aside>
         )}
       </div>
 
-      {!isWide && (
+      {isWide === false && (
         <>
           <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur">
             <Button
@@ -314,15 +373,16 @@ export function CheckoutScreen({
 
       <VariantPickerDialog
         product={picking}
+        open={pickerOpen}
         quantityInCart={quantityInCart}
         onPick={(product, variant) => {
           addVariant(product, variant);
-          setPicking(null);
+          setPickerOpen(false);
         }}
-        onClose={() => setPicking(null)}
+        onOpenChange={setPickerOpen}
       />
 
-      <Dialog open={completed !== null} onOpenChange={(open) => !open && setCompleted(null)}>
+      <Dialog open={completedOpen} onOpenChange={setCompletedOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader className="items-center text-center">
             <CheckCircle aria-hidden="true" className="size-10 text-primary" />
@@ -347,7 +407,7 @@ export function CheckoutScreen({
             </dl>
           )}
           <DialogFooter>
-            <Button type="button" className="w-full" onClick={() => setCompleted(null)}>
+            <Button type="button" className="w-full" onClick={() => setCompletedOpen(false)}>
               {t("newSale")}
             </Button>
           </DialogFooter>
