@@ -23,9 +23,13 @@ enum OrderStatus {
   CANCELLED
 }
 
+// SELLER works the in-store checkout only — locked to one boutique like
+// BOUTIQUE_ADMIN, and rejected by every other admin action server-side
+// (lib/shop/admin-scope.ts: requireAdminScope).
 enum AdminRole {
   SUPERADMIN
   BOUTIQUE_ADMIN
+  SELLER
 }
 
 enum PromoDiscountType {
@@ -124,6 +128,9 @@ model StoreType {
   // re-check this, not merely the UI that shows/hides the "Code promo"
   // field.
   couponsEnabled      Boolean       @default(true)
+  // Max SELLER accounts this boutique's admin can create themselves —
+  // only a superadmin can raise it (lib/actions/sellers.ts).
+  sellerQuota         Int           @default(2)
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 

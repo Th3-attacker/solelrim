@@ -13,10 +13,17 @@ import type { AdminUser } from "@/lib/generated/prisma/client";
 export const ADMIN_SCOPE_COOKIE = "admin_store_scope";
 
 export async function getAdminScope(): Promise<string> {
+  const admin = await getCurrentAdmin().catch(() => null);
+  // Every admin data page (orders, clients, sales, revenue, ...) resolves
+  // its boutique through here, so refusing a SELLER here is the
+  // server-side guard behind proxy.ts's redirect — a request that skips
+  // the proxy still can't read those pages.
+  if (admin?.role === "SELLER") {
+    throw new Error("forbidden");
+  }
   // A boutique admin is permanently locked to their assigned boutique —
   // the free-choice cookie is never consulted for this role, so nothing
   // (a stale cookie, a crafted request) can move them outside it.
-  const admin = await getCurrentAdmin().catch(() => null);
   if (admin?.role === "BOUTIQUE_ADMIN") {
     return admin.productType!;
   }
@@ -39,15 +46,24 @@ export async function getAdminScope(): Promise<string> {
 // The single replacement for every action's old
 // `requireAdmin(); ...; const productType = await getAdminScope();` pair —
 // resolves both "is this a recognized admin" and "which boutique are they
-// acting on" in one call, with the BOUTIQUE_ADMIN lock from getAdminScope()
-// above applying automatically.
+// acting on" in one call, with the boutique lock from getAdminScope() above
+// applying automatically.
+//
+// Rejects SELLER: every admin action (products, orders, settings, ...)
+// goes through here (directly or via requireWritableAdminScope /
+// requireAppearanceScope / requireSuperAdminScope), so this one check is
+// what keeps a seller confined to the checkout even if they call an admin
+// Server Action directly instead of going through the UI.
 export async function requireAdminScope(): Promise<{
   admin: AdminUser;
   productType: string;
 }> {
   const admin = await getCurrentAdmin();
+  if (admin.role === "SELLER") {
+    throw new Error("forbidden");
+  }
   const productType =
-    admin.role === "BOUTIQUE_ADMIN" ? admin.productType! : await getAdminScope();
+    admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
   return { admin, productType };
 }
 

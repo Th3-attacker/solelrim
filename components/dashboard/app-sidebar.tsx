@@ -19,6 +19,7 @@ import { NavUser } from "@/components/dashboard/nav-user";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
+  CashRegister,
   ClipboardText,
   ClockCounterClockwise,
   SquaresFour,
@@ -43,7 +44,7 @@ export function AppSidebar({
 }: {
   storeTypes: StoreTypeOption[];
   currentScope: string;
-  role: "SUPERADMIN" | "BOUTIQUE_ADMIN";
+  role: "SUPERADMIN" | "BOUTIQUE_ADMIN" | "SELLER";
   email: string;
   pendingOrderCount: number;
 }) {
@@ -53,7 +54,13 @@ export function AppSidebar({
   const side = getDirection(locale) === "rtl" ? "right" : "left";
   const { setOpenMobile } = useSidebar();
 
-  const sections: { label?: string; items: NavItem[] }[] = [
+  // A seller only ever reaches the checkout (proxy.ts redirects every
+  // other admin path) — no point listing links they'd bounce off.
+  const sellerSections: { label?: string; items: NavItem[] }[] = [
+    { items: [{ href: "/admin/pos", label: t("pos"), icon: CashRegister }] },
+  ];
+
+  const adminSections: { label?: string; items: NavItem[] }[] = [
     { items: [{ href: "/admin", label: t("dashboard"), icon: SquaresFour }] },
     {
       label: t("catalogSection"),
@@ -89,6 +96,15 @@ export function AppSidebar({
       ],
     },
   ];
+
+  const sections = role === "SELLER" ? sellerSections : adminSections;
+
+  const roleLabel =
+    role === "SUPERADMIN"
+      ? t("superadmin")
+      : role === "SELLER"
+        ? t("seller")
+        : t("boutiqueAdmin");
 
   return (
     <Sidebar side={side} collapsible="icon">
@@ -148,10 +164,7 @@ export function AppSidebar({
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          email={email}
-          roleLabel={role === "SUPERADMIN" ? t("superadmin") : t("boutiqueAdmin")}
-        />
+        <NavUser email={email} roleLabel={roleLabel} />
       </SidebarFooter>
     </Sidebar>
   );
