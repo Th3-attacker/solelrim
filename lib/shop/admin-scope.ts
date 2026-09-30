@@ -161,8 +161,19 @@ export async function requireCheckoutScope(): Promise<{
   admin: AdminUser;
   productType: string;
 }> {
-  const admin = await getCurrentAdmin();
-  const productType = await resolveProductType(admin);
+  const { admin, productType } = await requireCheckoutViewScope();
   await assertLicenseWritable(admin, productType);
   return { admin, productType };
+}
+
+// Read-only counterpart for checkout pages that only *show* past data
+// (reprinting a receipt): same identities and boutique lock, but no license
+// gate — viewing an existing sale isn't a write, so a suspended boutique can
+// still hand a customer a copy of yesterday's receipt.
+export async function requireCheckoutViewScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const admin = await getCurrentAdmin();
+  return { admin, productType: await resolveProductType(admin) };
 }

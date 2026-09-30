@@ -22,6 +22,7 @@ import {
   getAdminScope,
   requireAdminScope,
   requireCheckoutScope,
+  requireCheckoutViewScope,
   requireSuperAdminScope,
   requireWritableAdminScope,
 } from "@/lib/shop/admin-scope";
@@ -248,5 +249,21 @@ describe("requireCheckoutScope", () => {
     const result = await requireCheckoutScope();
 
     expect(result.productType).toBe("cosmetique");
+  });
+});
+
+describe("requireCheckoutViewScope", () => {
+  it("still lets a seller of a suspended boutique view past data — reading isn't a write", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+    storeTypeFindUniqueMock.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "SUSPENDED",
+      licenseExpiresAt: null,
+    });
+
+    const result = await requireCheckoutViewScope();
+
+    expect(result.productType).toBe("sport");
+    expect(storeTypeFindUniqueMock).not.toHaveBeenCalled();
   });
 });

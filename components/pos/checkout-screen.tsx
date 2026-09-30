@@ -1,10 +1,16 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { CheckCircle, MagnifyingGlass, Package, ShoppingCart } from "@phosphor-icons/react/dist/ssr";
+import {
+  CheckCircle,
+  MagnifyingGlass,
+  Package,
+  Receipt,
+  ShoppingCart,
+} from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,7 +46,7 @@ type CartEntry = {
   lastPrice: number;
 };
 
-type CompletedSale = { reference: string; total: number; change?: number };
+type CompletedSale = { saleId: string; reference: string; total: number; change?: number };
 
 const KNOWN_ERRORS = new Set([
   "invalid",
@@ -218,6 +224,7 @@ export function CheckoutScreen({
           return;
         }
         setCompleted({
+          saleId: result.saleId!,
           reference: result.reference!,
           total: result.total!,
           change: result.change,
@@ -406,7 +413,15 @@ export function CheckoutScreen({
               )}
             </dl>
           )}
-          <DialogFooter>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            {completed && (
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/admin/pos/receipt/${completed.saleId}`}>
+                  <Receipt className="size-4" />
+                  {t("receipt")}
+                </Link>
+              </Button>
+            )}
             <Button type="button" className="w-full" onClick={() => setCompletedOpen(false)}>
               {t("newSale")}
             </Button>
