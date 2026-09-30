@@ -50,6 +50,8 @@
     "adminSection": "الإدارة",
     "superadmin": "مدير عام",
     "boutiqueAdmin": "مدير متجر",
+    "seller": "بائع",
+    "pos": "الصندوق",
     "promoCodes": "أكواد الخصم",
     "auditLog": "السجل",
     "sidebarTitle": "قائمة التنقل",
@@ -621,6 +623,16 @@
 
     "adminUsersSection": "حسابات إدارة المتاجر",
     "newAdminUser": "مدير متجر جديد",
+    "sellersSection": "البائعون",
+    "sellersHint": "لا يصل البائعون إلا إلى صندوق هذا المتجر: لا منتجات ولا أسعار ولا إعدادات.",
+    "sellersCount": "{count} / {quota} بائعين",
+    "sellersQuotaReachedHint": "تم بلوغ الحد الأقصى للبائعين. تواصل مع SOLAL لإضافة المزيد.",
+    "newSeller": "بائع جديد",
+    "sellerQuota": "الحد الأقصى لعدد البائعين",
+    "sellerError": {
+      "emailExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
+      "quotaReached": "تم بلوغ الحد الأقصى للبائعين في هذا المتجر."
+    },
     "adminUserEmail": "البريد الإلكتروني",
     "adminUserPassword": "كلمة المرور",
     "adminUserPasswordHint": "8 أحرف على الأقل.",

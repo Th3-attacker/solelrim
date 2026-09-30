@@ -70,6 +70,12 @@ describe("requireAdminScope", () => {
 
     expect(result.productType).toBe("cosmetique");
   });
+
+  it("rejects a SELLER — sellers never reach any admin action", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+
+    await expect(requireAdminScope()).rejects.toThrow("forbidden");
+  });
 });
 
 describe("requireSuperAdminScope", () => {
@@ -90,6 +96,16 @@ describe("requireSuperAdminScope", () => {
 });
 
 describe("getAdminScope", () => {
+  it("locks a SELLER to their own boutique, never consulting the cookie", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+    cookieValue("cosmetique");
+
+    const result = await getAdminScope();
+
+    expect(result).toBe("sport");
+    expect(cookiesMock).not.toHaveBeenCalled();
+  });
+
   it("ignores a cookie value that doesn't match any known boutique", async () => {
     getCurrentAdminMock.mockResolvedValue({ role: "SUPERADMIN", productType: null });
     cookieValue("does-not-exist");
@@ -131,6 +147,13 @@ describe("getAdminScope", () => {
 });
 
 describe("requireWritableAdminScope", () => {
+  it("rejects a SELLER before any license lookup", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+
+    await expect(requireWritableAdminScope()).rejects.toThrow("forbidden");
+    expect(storeTypeFindUniqueMock).not.toHaveBeenCalled();
+  });
+
   it("allows a BOUTIQUE_ADMIN whose boutique has no license row at all (defensive default)", async () => {
     getCurrentAdminMock.mockResolvedValue({ role: "BOUTIQUE_ADMIN", productType: "sport" });
     storeTypeFindUniqueMock.mockResolvedValue(null);

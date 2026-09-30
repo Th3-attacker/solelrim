@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
+import { prisma } from "@/lib/prisma";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -10,6 +11,12 @@ function isAdminPath(pathWithoutLocale: string) {
   return (
     pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/")
   );
+}
+
+// The only admin area a SELLER may open — the checkout and everything
+// under it (receipts, cash closing).
+function isSellerPath(pathWithoutLocale: string) {
+  return pathWithoutLocale === "/admin/pos" || pathWithoutLocale.startsWith("/admin/pos/");
 }
 
 function isAdminLoginPath(pathWithoutLocale: string) {
@@ -149,6 +156,19 @@ export async function proxy(request: NextRequest) {
       url.pathname = `/${locale}/admin/settings`;
       return NextResponse.redirect(url);
     }
+  }
+
+  // Every admin Server Action already rejects a SELLER server-side
+  // (requireAdminScope); this additionally keeps them from even *reading*
+  // the other admin pages (orders, clients, revenue).
+  const adminUser = await prisma.adminUser.findUnique({
+    where: { supabaseUserId: user.id },
+    select: { role: true },
+  });
+  if (adminUser?.role === "SELLER" && !isSellerPath(pathWithoutLocale)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/admin/pos`;
+    return NextResponse.redirect(url);
   }
 
   if (isLoginRoute) {

@@ -50,6 +50,8 @@
     "adminSection": "Administration",
     "superadmin": "Super admin",
     "boutiqueAdmin": "Boutique admin",
+    "seller": "Seller",
+    "pos": "Checkout",
     "promoCodes": "Promo codes",
     "auditLog": "History",
     "sidebarTitle": "Navigation menu",
@@ -621,6 +623,16 @@
 
     "adminUsersSection": "Boutique admin accounts",
     "newAdminUser": "New boutique admin",
+    "sellersSection": "Sellers",
+    "sellersHint": "Sellers can only use this boutique's checkout: no products, prices, or settings.",
+    "sellersCount": "{count} / {quota} sellers",
+    "sellersQuotaReachedHint": "Seller limit reached. Contact SOLAL to add more.",
+    "newSeller": "New seller",
+    "sellerQuota": "Maximum number of sellers",
+    "sellerError": {
+      "emailExists": "An account already exists with this email.",
+      "quotaReached": "Seller limit reached for this boutique."
+    },
     "adminUserEmail": "Email",
     "adminUserPassword": "Password",
     "adminUserPasswordHint": "At least 8 characters.",

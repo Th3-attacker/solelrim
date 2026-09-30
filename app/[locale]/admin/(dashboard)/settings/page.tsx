@@ -13,6 +13,8 @@ import { LayoutVariantsPicker } from "@/components/settings/layout-variants-pick
 import { SocialLinksManager } from "@/components/settings/social-links-manager";
 import { WalletAccountsManager } from "@/components/settings/wallet-accounts-manager";
 import { TestimonialsManager } from "@/components/settings/testimonials-manager";
+import { SellersManager } from "@/components/settings/sellers-manager";
+import { listSellers } from "@/lib/queries/sellers";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
@@ -24,10 +26,11 @@ export default async function SettingsPage() {
     requireAdminScope(),
   ]);
 
-  const [boutique, deliveredOrders, mfaStatus] = await Promise.all([
+  const [boutique, deliveredOrders, mfaStatus, sellers] = await Promise.all([
     getBoutiqueSettings(productType),
     getDeliveredOrders(productType),
     getMfaStatus(),
+    listSellers(productType),
   ]);
 
   return (
@@ -47,6 +50,13 @@ export default async function SettingsPage() {
       {/* Tied to the logged-in admin's own Supabase Auth account, not to
           this boutique — shown regardless of which scope is selected. */}
       <TwoFactorSettings factorId={mfaStatus.factorId} required={mfaStatus.required} />
+
+      <SellersManager
+        productType={productType}
+        sellers={sellers.sellers}
+        quota={sellers.quota}
+        canEditQuota={admin.role === "SUPERADMIN"}
+      />
 
       <LogoUpload
         logoUrl={

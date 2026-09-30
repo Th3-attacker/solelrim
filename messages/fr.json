@@ -50,6 +50,8 @@
     "adminSection": "Administration",
     "superadmin": "Super administrateur",
     "boutiqueAdmin": "Administrateur boutique",
+    "seller": "Vendeur",
+    "pos": "Caisse",
     "promoCodes": "Codes promo",
     "auditLog": "Historique",
     "sidebarTitle": "Menu de navigation",
@@ -621,6 +623,16 @@
 
     "adminUsersSection": "Comptes admin boutique",
     "newAdminUser": "Nouvel admin boutique",
+    "sellersSection": "Vendeurs",
+    "sellersHint": "Les vendeurs n'ont accès qu'à la caisse de cette boutique : ni produits, ni prix, ni réglages.",
+    "sellersCount": "{count} / {quota} vendeurs",
+    "sellersQuotaReachedHint": "Limite de vendeurs atteinte. Contactez SOLAL pour en ajouter davantage.",
+    "newSeller": "Nouveau vendeur",
+    "sellerQuota": "Nombre maximum de vendeurs",
+    "sellerError": {
+      "emailExists": "Un compte existe déjà avec cet email.",
+      "quotaReached": "Limite de vendeurs atteinte pour cette boutique."
+    },
     "adminUserEmail": "Email",
     "adminUserPassword": "Mot de passe",
     "adminUserPasswordHint": "Au moins 8 caractères.",
