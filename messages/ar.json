@@ -62,7 +62,8 @@
     "toggleSidebar": "تبديل القائمة",
     "register": "صندوقي",
     "cashSessions": "جلسات الصندوق",
-    "cashClosures": "الإقفالات"
+    "cashClosures": "الإقفالات",
+    "mySales": "مبيعاتي"
   },
   "auth": {
     "login": {
@@ -1032,5 +1033,26 @@
     "movementConfirmBody": "{amount} — {reason}. لا يمكن حذفه.",
     "closeConfirmTitle": "إغلاق الصندوق؟",
     "closeConfirmBody": "النقد المعدود: {counted}. {difference} بعد الإغلاق لا يمكن تعديل الصندوق."
+  },
+  "mySales": {
+    "title": "مبيعاتي",
+    "backToCheckout": "العودة إلى الصندوق",
+    "reference": "المرجع",
+    "from": "من",
+    "to": "إلى",
+    "status": "الحالة",
+    "allStatuses": "كل الحالات",
+    "statusCompleted": "مكتملة",
+    "statusCancelled": "ملغاة",
+    "payment": "الدفع",
+    "allPayments": "كل طرق الدفع",
+    "cash": "نقدًا",
+    "wallet": "محفظة",
+    "salesCount": "المبيعات",
+    "soldTotal": "إجمالي المبيعات",
+    "collectedCash": "المحصّل نقدًا",
+    "collectedWallet": "المحصّل عبر {wallet}",
+    "collectedOther": "طرق دفع أخرى",
+    "noSales": "ليس لديك أي مبيعات بعد."
   }
 }

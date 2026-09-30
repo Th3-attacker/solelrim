@@ -62,7 +62,8 @@
     "toggleSidebar": "Afficher/masquer le menu",
     "register": "Ma caisse",
     "cashSessions": "Sessions de caisse",
-    "cashClosures": "Clôtures"
+    "cashClosures": "Clôtures",
+    "mySales": "Mes ventes"
   },
   "auth": {
     "login": {
@@ -1032,5 +1033,26 @@
     "movementConfirmBody": "{amount} — {reason}. Elle ne pourra pas être supprimée.",
     "closeConfirmTitle": "Fermer la caisse ?",
     "closeConfirmBody": "Espèces comptées : {counted}. {difference} Une fois fermée, la caisse ne peut plus être modifiée."
+  },
+  "mySales": {
+    "title": "Mes ventes",
+    "backToCheckout": "Retour à la caisse",
+    "reference": "Référence",
+    "from": "Du",
+    "to": "Au",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "statusCompleted": "Validée",
+    "statusCancelled": "Annulée",
+    "payment": "Paiement",
+    "allPayments": "Tous les paiements",
+    "cash": "Espèces",
+    "wallet": "Wallet",
+    "salesCount": "Ventes",
+    "soldTotal": "Total vendu",
+    "collectedCash": "Encaissé en espèces",
+    "collectedWallet": "Encaissé par {wallet}",
+    "collectedOther": "Autres paiements",
+    "noSales": "Vous n'avez encore aucune vente."
   }
 }

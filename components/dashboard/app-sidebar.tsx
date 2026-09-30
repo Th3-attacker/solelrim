@@ -21,6 +21,7 @@ import { getDirection } from "@/i18n/routing";
 import {
   CashRegister,
   ListChecks,
+  Receipt,
   Money,
   Vault,
   ClipboardText,
@@ -64,6 +65,7 @@ export function AppSidebar({
       items: [
         { href: "/admin/pos", label: t("pos"), icon: CashRegister },
         { href: "/admin/pos/register", label: t("register"), icon: Money },
+        { href: "/admin/pos/my-sales", label: t("mySales"), icon: Receipt },
         { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
       ],
     },

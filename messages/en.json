@@ -62,7 +62,8 @@
     "toggleSidebar": "Toggle menu",
     "register": "My till",
     "cashSessions": "Till sessions",
-    "cashClosures": "Closures"
+    "cashClosures": "Closures",
+    "mySales": "My sales"
   },
   "auth": {
     "login": {
@@ -1032,5 +1033,26 @@
     "movementConfirmBody": "{amount} — {reason}. It can't be deleted.",
     "closeConfirmTitle": "Close the till?",
     "closeConfirmBody": "Counted cash: {counted}. {difference} Once closed, the till can't be changed."
+  },
+  "mySales": {
+    "title": "My sales",
+    "backToCheckout": "Back to checkout",
+    "reference": "Reference",
+    "from": "From",
+    "to": "To",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "payment": "Payment",
+    "allPayments": "All payments",
+    "cash": "Cash",
+    "wallet": "Wallet",
+    "salesCount": "Sales",
+    "soldTotal": "Total sold",
+    "collectedCash": "Collected in cash",
+    "collectedWallet": "Collected via {wallet}",
+    "collectedOther": "Other payments",
+    "noSales": "You have no sales yet."
   }
 }
