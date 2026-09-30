@@ -59,3 +59,12 @@ export function resolveBoutiqueText<T extends LocalizedBoutiqueFields>(
     ),
   };
 }
+
+// Just the boutique name, for places (receipts) that only load the three
+// siteName columns rather than the full storefront copy.
+export function resolveSiteName(
+  boutique: Pick<LocalizedBoutiqueFields, "siteName" | "siteNameAr" | "siteNameEn">,
+  locale: string,
+): string | null {
+  return pick(boutique.siteName, boutique.siteNameAr, boutique.siteNameEn, locale);
+}
