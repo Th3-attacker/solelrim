@@ -21,6 +21,7 @@ import { prisma } from "@/lib/prisma";
 import {
   getAdminScope,
   requireAdminScope,
+  requireCheckoutScope,
   requireSuperAdminScope,
   requireWritableAdminScope,
 } from "@/lib/shop/admin-scope";
@@ -210,5 +211,42 @@ describe("requireWritableAdminScope", () => {
 
     expect(result.productType).toBe("cosmetique");
     expect(storeTypeFindUniqueMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireCheckoutScope", () => {
+  it("lets a SELLER in, locked to their own boutique regardless of the cookie", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+    cookieValue("cosmetique");
+    storeTypeFindUniqueMock.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "ACTIVE",
+      licenseExpiresAt: null,
+    });
+
+    const result = await requireCheckoutScope();
+
+    expect(result.productType).toBe("sport");
+    expect(cookiesMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks a SELLER whose boutique license is suspended", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+    storeTypeFindUniqueMock.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "SUSPENDED",
+      licenseExpiresAt: null,
+    });
+
+    await expect(requireCheckoutScope()).rejects.toThrow("licenseBlocked");
+  });
+
+  it("lets a SUPERADMIN act on the boutique the cookie selects", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SUPERADMIN", productType: null });
+    cookieValue("cosmetique");
+
+    const result = await requireCheckoutScope();
+
+    expect(result.productType).toBe("cosmetique");
   });
 });

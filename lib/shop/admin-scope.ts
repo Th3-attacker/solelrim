@@ -62,9 +62,14 @@ export async function requireAdminScope(): Promise<{
   if (admin.role === "SELLER") {
     throw new Error("forbidden");
   }
-  const productType =
-    admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
-  return { admin, productType };
+  return { admin, productType: await resolveProductType(admin) };
+}
+
+// The single boutique-resolution rule every gate shares: a superadmin acts
+// on whichever boutique they've selected, every other role on the one
+// they're locked to.
+async function resolveProductType(admin: AdminUser): Promise<string> {
+  return admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
 }
 
 // For settings reserved to SUPERADMIN (theme/color, color mode, hero/card
@@ -142,6 +147,22 @@ export async function requireWritableAdminScope(): Promise<{
   productType: string;
 }> {
   const { admin, productType } = await requireAdminScope();
+  await assertLicenseWritable(admin, productType);
+  return { admin, productType };
+}
+
+// The checkout's own gate — the one place a SELLER is let in, alongside a
+// boutique admin and a superadmin. Same boutique lock (a seller or boutique
+// admin always acts on their own boutique) and same license gate as
+// requireWritableAdminScope, just without refusing the SELLER role. Opt-in
+// by design: only checkout actions call this, so every other admin action
+// stays closed to sellers by default.
+export async function requireCheckoutScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const admin = await getCurrentAdmin();
+  const productType = await resolveProductType(admin);
   await assertLicenseWritable(admin, productType);
   return { admin, productType };
 }

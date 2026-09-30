@@ -90,9 +90,34 @@ describe("createSale", () => {
     });
     expect(prismaMock.sale.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ productType: "cosmetique", total: 40 }),
+        data: expect.objectContaining({
+          productType: "cosmetique",
+          total: 40,
+          // A manual sale is attributed to the admin who recorded it, same
+          // as a checkout sale is to its seller.
+          sellerId: "admin-user-1",
+        }),
       }),
     );
+  });
+
+  it("rejects a SELLER — the manual sale form is admin-only, sellers use the checkout", async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "admin-1",
+      role: "SELLER",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    await expect(
+      createSale({
+        clientId: null,
+        discount: 0,
+        paymentMethod: "cash",
+        items: [{ variantId: "variant-1", quantity: 1 }],
+      }),
+    ).rejects.toThrow("forbidden");
   });
 
   it("rejects a variant belonging to a different boutique (tenant isolation)", async () => {
