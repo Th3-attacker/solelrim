@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { CashRegister } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { formatPrice } from "@/lib/format/currency";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { openCashSession } from "@/lib/actions/cash-sessions";
@@ -15,26 +17,28 @@ export function OpenRegisterForm() {
   const t = useTranslations("cash");
   const router = useRouter();
   const showError = useCashError();
-  const [pending, startTransition] = useTransition();
+  const tCommon = useTranslations("common");
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [openingFloat, setOpeningFloat] = useState("");
 
   const value = openingFloat.trim() === "" ? null : Number(openingFloat);
   const valid = value !== null && Number.isFinite(value) && value >= 0;
 
-  function handleOpen(event: React.FormEvent) {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!valid) return;
-    startTransition(async () => {
-      const result = await openCashSession({ openingFloat: value });
-      // alreadyOpen: another tab opened it — refreshing shows the checkout.
-      if (result.error && result.error !== "alreadyOpen") return showError(result.error);
-      router.refresh();
-    });
+    if (valid) setConfirmOpen(true);
+  }
+
+  async function handleOpen() {
+    const result = await openCashSession({ openingFloat: value });
+    // alreadyOpen: another tab opened it — refreshing shows the checkout.
+    if (result.error && result.error !== "alreadyOpen") return showError(result.error);
+    router.refresh();
   }
 
   return (
     <form
-      onSubmit={handleOpen}
+      onSubmit={handleSubmit}
       className="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-md border p-6"
     >
       <div className="flex flex-col items-center gap-2 text-center">
@@ -55,9 +59,19 @@ export function OpenRegisterForm() {
           onChange={(e) => setOpeningFloat(e.target.value)}
         />
       </div>
-      <Button type="submit" loading={pending} disabled={!valid}>
+      <Button type="submit" disabled={!valid}>
         {t("openAction")}
       </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("openConfirmTitle")}
+        description={t("openConfirmBody", {
+          amount: formatPrice(value ?? 0, tCommon("currency")),
+        })}
+        confirmLabel={t("openAction")}
+        onConfirm={handleOpen}
+      />
     </form>
   );
 }

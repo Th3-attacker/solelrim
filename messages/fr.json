@@ -31,7 +31,10 @@
     "presetToday": "Aujourd'hui",
     "presetYesterday": "Hier",
     "presetLast7Days": "7 derniers jours",
-    "presetLast15Days": "15 derniers jours"
+    "presetLast15Days": "15 derniers jours",
+    "deleteConfirmTitle": "Supprimer cet élément ?",
+    "deleteConfirmBody": "Cette action est définitive.",
+    "removeImageConfirmTitle": "Retirer cette image ?"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -494,7 +497,11 @@
     "presetToday": "Aujourd'hui",
     "presetYesterday": "Hier",
     "presetLast7Days": "7 derniers jours",
-    "presetLast15Days": "15 derniers jours"
+    "presetLast15Days": "15 derniers jours",
+    "shipConfirmTitle": "Marquer la commande comme expédiée ?",
+    "shipConfirmBody": "La commande passera en « expédiée ». Cette étape ne peut pas être annulée.",
+    "deliverConfirmTitle": "Marquer la commande comme livrée ?",
+    "deliverConfirmBody": "La commande sera clôturée comme livrée. Cette étape ne peut pas être annulée."
   },
   "settings": {
     "title": "Paramètres",
@@ -704,7 +711,14 @@
     "loyalty_rewardPoints": "Points pour une récompense",
     "loyalty_rewardValue": "Valeur de la récompense",
     "loyaltyPreview": "1 point tous les {spend} dépensés ; {points} points = {value} de réduction.",
-    "sellerHasOpenSession": "Ce vendeur a une caisse ouverte : fermez-la avant de supprimer son compte."
+    "sellerHasOpenSession": "Ce vendeur a une caisse ouverte : fermez-la avant de supprimer son compte.",
+    "adminUserDeleteConfirmTitle": "Supprimer cet administrateur ?",
+    "adminUserDeleteConfirmBody": "Son compte sera supprimé et il ne pourra plus se connecter.",
+    "adminUserResetMfaConfirmTitle": "Réinitialiser sa 2FA ?",
+    "adminUserResetMfaConfirmBody": "Sa vérification en deux étapes actuelle sera supprimée : il devra en configurer une nouvelle à sa prochaine connexion.",
+    "licenseStatusConfirmTitle": "Passer « {label} » en « {status} » ?",
+    "licenseStatusConfirmLock": "La boutique et ses actions d'administration (ventes, caisse, commandes…) seront bloquées.",
+    "licenseStatusConfirmUnlock": "La boutique et toutes ses actions seront à nouveau disponibles."
   },
   "boutiquesOverview": {
     "title": "Vue d'ensemble",
@@ -1010,6 +1024,13 @@
       "openSessions": "Des caisses de ce jour sont encore ouvertes.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
-    }
+    },
+    "openConfirmTitle": "Ouvrir la caisse ?",
+    "openConfirmBody": "Fond de caisse : {amount}. Il ne pourra plus être modifié.",
+    "movementInConfirmTitle": "Enregistrer cette entrée ?",
+    "movementOutConfirmTitle": "Enregistrer cette sortie ?",
+    "movementConfirmBody": "{amount} — {reason}. Elle ne pourra pas être supprimée.",
+    "closeConfirmTitle": "Fermer la caisse ?",
+    "closeConfirmBody": "Espèces comptées : {counted}. {difference} Une fois fermée, la caisse ne peut plus être modifiée."
   }
 }

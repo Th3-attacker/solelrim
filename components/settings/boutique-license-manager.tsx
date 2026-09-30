@@ -7,6 +7,7 @@ import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +99,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [couponsPending, startCouponsTransition] = useTransition();
 
   const [domainOpen, setDomainOpen] = useState(false);
@@ -188,18 +190,18 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
     });
   }
 
-  function handleLicenseStatusChange(licenseStatus: string) {
-    startTransition(async () => {
-      const result = await updateBoutiqueLicense(storeType.key, {
-        licenseType: storeType.licenseType,
-        licenseStatus,
-      });
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      router.refresh();
+  // A status change can lock the whole boutique (suspended/cancelled) or
+  // unlock it, so it only applies once confirmed.
+  async function applyLicenseStatus(licenseStatus: string) {
+    const result = await updateBoutiqueLicense(storeType.key, {
+      licenseType: storeType.licenseType,
+      licenseStatus,
     });
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    router.refresh();
   }
 
   function handleSaveClientName() {
@@ -384,7 +386,9 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         <Select
           value={storeType.licenseStatus}
           disabled={pending}
-          onValueChange={handleLicenseStatusChange}
+          onValueChange={(status) => {
+            if (status !== storeType.licenseStatus) setPendingStatus(status);
+          }}
         >
           <SelectTrigger size="sm" className="w-auto">
             <SelectValue />
@@ -397,6 +401,22 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
             ))}
           </SelectContent>
         </Select>
+        <ConfirmDialog
+          open={pendingStatus !== null}
+          onOpenChange={(open) => {
+            if (!open) setPendingStatus(null);
+          }}
+          title={t("licenseStatusConfirmTitle", {
+            label: storeType.label,
+            status: pendingStatus ? t(`licenseStatus.${pendingStatus}`) : "",
+          })}
+          description={t(
+            pendingStatus === "ACTIVE" ? "licenseStatusConfirmUnlock" : "licenseStatusConfirmLock",
+          )}
+          confirmLabel={tCommon("confirm")}
+          destructive={pendingStatus !== "ACTIVE"}
+          onConfirm={() => applyLicenseStatus(pendingStatus!)}
+        />
 
         <Toggle
           variant="outline"

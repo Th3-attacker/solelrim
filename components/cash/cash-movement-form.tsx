@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { formatPrice } from "@/lib/format/currency";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -15,7 +17,8 @@ export function CashMovementForm() {
   const t = useTranslations("cash");
   const router = useRouter();
   const showError = useCashError();
-  const [pending, startTransition] = useTransition();
+  const tCommon = useTranslations("common");
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [type, setType] = useState<"IN" | "OUT">("IN");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
@@ -25,15 +28,16 @@ export function CashMovementForm() {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!valid) return;
-    startTransition(async () => {
-      const result = await addCashMovement({ type, amount: value, reason });
-      if (result.error) return showError(result.error);
-      toast.success(t(type === "IN" ? "movementInSaved" : "movementOutSaved"));
-      setAmount("");
-      setReason("");
-      router.refresh();
-    });
+    if (valid) setConfirmOpen(true);
+  }
+
+  async function handleRecord() {
+    const result = await addCashMovement({ type, amount: value, reason });
+    if (result.error) return showError(result.error);
+    toast.success(t(type === "IN" ? "movementInSaved" : "movementOutSaved"));
+    setAmount("");
+    setReason("");
+    router.refresh();
   }
 
   return (
@@ -72,9 +76,20 @@ export function CashMovementForm() {
           />
         </div>
       </div>
-      <Button type="submit" variant="outline" className="self-start" loading={pending} disabled={!valid}>
+      <Button type="submit" variant="outline" className="self-start" disabled={!valid}>
         {t("addMovement")}
       </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t(type === "IN" ? "movementInConfirmTitle" : "movementOutConfirmTitle")}
+        description={t("movementConfirmBody", {
+          amount: formatPrice(value || 0, tCommon("currency")),
+          reason: reason.trim(),
+        })}
+        confirmLabel={t("addMovement")}
+        onConfirm={handleRecord}
+      />
     </form>
   );
 }
