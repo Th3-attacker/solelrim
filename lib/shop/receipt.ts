@@ -19,6 +19,9 @@ export type ReceiptData = {
   lines: ReceiptLine[];
   subtotal: number;
   discount: number;
+  // The loyalty reward's discount, kept apart from the manual one.
+  loyaltyDiscount: number;
+  loyaltyPointsEarned: number;
   total: number;
   paymentLabel: string;
   amountReceived: number | null;
@@ -27,10 +30,12 @@ export type ReceiptData = {
 export type ReceiptSummaryKey =
   | "subtotal"
   | "discount"
+  | "loyaltyDiscount"
   | "total"
   | "payment"
   | "amountReceived"
-  | "change";
+  | "change"
+  | "loyaltyPoints";
 
 export type ReceiptLabels = Record<ReceiptSummaryKey, string> & {
   reference: string;
@@ -45,9 +50,14 @@ export function buildReceiptSummary(
   money: (amount: number) => string,
 ): ReceiptSummaryRow[] {
   const rows: ReceiptSummaryRow[] = [];
-  if (receipt.discount > 0) {
+  if (receipt.discount > 0 || receipt.loyaltyDiscount > 0) {
     rows.push({ key: "subtotal", value: money(receipt.subtotal) });
+  }
+  if (receipt.discount > 0) {
     rows.push({ key: "discount", value: `-${money(receipt.discount)}` });
+  }
+  if (receipt.loyaltyDiscount > 0) {
+    rows.push({ key: "loyaltyDiscount", value: `-${money(receipt.loyaltyDiscount)}` });
   }
   rows.push({ key: "total", value: money(receipt.total), emphasis: true });
   rows.push({ key: "payment", value: receipt.paymentLabel });
@@ -57,6 +67,9 @@ export function buildReceiptSummary(
       key: "change",
       value: money(Math.max(receipt.amountReceived - receipt.total, 0)),
     });
+  }
+  if (receipt.loyaltyPointsEarned > 0) {
+    rows.push({ key: "loyaltyPoints", value: `+${receipt.loyaltyPointsEarned}` });
   }
   return rows;
 }

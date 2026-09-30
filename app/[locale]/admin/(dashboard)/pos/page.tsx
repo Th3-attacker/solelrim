@@ -1,5 +1,5 @@
 import { requireCheckoutScope } from "@/lib/shop/admin-scope";
-import { getPosCatalog, getPosWallets } from "@/lib/queries/pos";
+import { getPosCatalog, getPosLoyaltyRule, getPosWallets } from "@/lib/queries/pos";
 import { CheckoutScreen } from "@/components/pos/checkout-screen";
 
 // The one admin page a SELLER can open (proxy.ts). requireCheckoutScope
@@ -7,10 +7,11 @@ import { CheckoutScreen } from "@/components/pos/checkout-screen";
 // same as the sale action it feeds.
 export default async function PosPage() {
   const { productType } = await requireCheckoutScope();
-  const [products, wallets] = await Promise.all([
+  const [products, wallets, loyaltyRule] = await Promise.all([
     getPosCatalog(productType),
     getPosWallets(productType),
+    getPosLoyaltyRule(productType),
   ]);
 
-  return <CheckoutScreen products={products} wallets={wallets} />;
+  return <CheckoutScreen products={products} wallets={wallets} loyaltyRule={loyaltyRule} />;
 }

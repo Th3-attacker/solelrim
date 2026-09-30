@@ -49,7 +49,11 @@ export function ClientForm({
     setSubmitting(false);
 
     if (result.error) {
-      toast.error(tCommon("error"));
+      toast.error(
+        result.error === "loyaltyPhoneRequired" || result.error === "loyaltyPhoneTaken"
+          ? t(result.error)
+          : tCommon("error"),
+      );
       return;
     }
 

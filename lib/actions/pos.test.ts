@@ -231,3 +231,179 @@ describe("createPosSale", () => {
     expect(prismaMock.sale.create).not.toHaveBeenCalled();
   });
 });
+
+describe("createPosSale with a loyalty card", () => {
+  // 1 point per 100 MRU; 100 points = 300 MRU off.
+  function loyaltyBoutique(overrides: Record<string, unknown> = {}) {
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      licenseType: "MONTHLY",
+      licenseStatus: "ACTIVE",
+      licenseExpiresAt: null,
+      loyaltyEnabled: true,
+      loyaltySpendPerPoint: 100,
+      loyaltyRewardPoints: 100,
+      loyaltyRewardValue: 300,
+      ...overrides,
+    } as never);
+  }
+
+  function enrolledCard(balanceAfter: number) {
+    prismaMock.client.findFirst.mockResolvedValue({ id: "client-1" } as never);
+    prismaMock.client.update.mockResolvedValue({ loyaltyPoints: balanceAfter } as never);
+  }
+
+  it("attaches the sale to the card and earns points on the total", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    enrolledCard(15);
+
+    const result = await createPosSale({
+      ...CASH,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: false },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.loyaltyPointsEarned).toBe(10);
+    expect(result.loyaltyPointsBalance).toBe(15);
+    expect(prismaMock.client.update).toHaveBeenCalledWith({
+      where: { id: "client-1" },
+      data: { loyaltyPoints: { increment: 10 } },
+      select: { loyaltyPoints: true },
+    });
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        clientId: "client-1",
+        loyaltyPointsEarned: 10,
+        loyaltyPointsRedeemed: 0,
+        loyaltyDiscount: 0,
+        total: 1000,
+      }),
+    });
+  });
+
+  it("spends one reward atomically and earns only on what was actually paid", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    enrolledCard(7);
+    prismaMock.client.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await createPosSale({
+      ...CASH,
+      expectedTotal: 700,
+      amountReceived: 700,
+      loyalty: { clientId: "client-1", redeem: true },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.client.updateMany).toHaveBeenCalledWith({
+      where: { id: "client-1", loyaltyPoints: { gte: 100 } },
+      data: { loyaltyPoints: { decrement: 100 } },
+    });
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        loyaltyDiscount: 300,
+        loyaltyPointsRedeemed: 100,
+        loyaltyPointsEarned: 7,
+        total: 700,
+      }),
+    });
+  });
+
+  it("never discounts below zero, however large the reward", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique({ loyaltyRewardValue: 5000 });
+    stockedVariant();
+    enrolledCard(0);
+    prismaMock.client.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await createPosSale({
+      ...CASH,
+      expectedTotal: 0,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: true },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ loyaltyDiscount: 1000, total: 0, loyaltyPointsEarned: 0 }),
+    });
+  });
+
+  it("spends no points when a manual discount already brought the total to zero", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    enrolledCard(150);
+
+    const result = await createPosSale({
+      ...CASH,
+      discount: 1000,
+      expectedTotal: 0,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: true },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.client.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ loyaltyDiscount: 0, loyaltyPointsRedeemed: 0, total: 0 }),
+    });
+  });
+
+  it("refuses the sale when the points were spent elsewhere in the meantime", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    enrolledCard(0);
+    prismaMock.client.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await createPosSale({
+      ...CASH,
+      expectedTotal: 700,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: true },
+    });
+
+    expect(result.error).toBe("insufficientPoints");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a card that isn't enrolled in this boutique", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    prismaMock.client.findFirst.mockResolvedValue(null);
+
+    const result = await createPosSale({
+      ...CASH,
+      amountReceived: null,
+      loyalty: { clientId: "client-elsewhere", redeem: false },
+    });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.client.findFirst).toHaveBeenCalledWith({
+      where: { id: "client-elsewhere", productType: "cosmetique", loyaltyEnrolledAt: { not: null } },
+      select: { id: true },
+    });
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a card once the boutique switched loyalty off", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique({ loyaltyEnabled: false });
+    stockedVariant();
+    enrolledCard(0);
+
+    const result = await createPosSale({
+      ...CASH,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: false },
+    });
+
+    expect(result.error).toBe("invalid");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+});

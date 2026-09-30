@@ -14,6 +14,7 @@ import { SocialLinksManager } from "@/components/settings/social-links-manager";
 import { WalletAccountsManager } from "@/components/settings/wallet-accounts-manager";
 import { TestimonialsManager } from "@/components/settings/testimonials-manager";
 import { SellersManager } from "@/components/settings/sellers-manager";
+import { LoyaltySettingsForm } from "@/components/settings/loyalty-settings-form";
 import { listSellers } from "@/lib/queries/sellers";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,16 @@ export default async function SettingsPage() {
         sellers={sellers.sellers}
         quota={sellers.quota}
         canEditQuota={admin.role === "SUPERADMIN"}
+      />
+
+      <LoyaltySettingsForm
+        key={`loyalty-${productType}`}
+        rule={{
+          enabled: boutique.loyaltyEnabled,
+          spendPerPoint: boutique.loyaltySpendPerPoint,
+          rewardPoints: boutique.loyaltyRewardPoints,
+          rewardValue: boutique.loyaltyRewardValue,
+        }}
       />
 
       <LogoUpload

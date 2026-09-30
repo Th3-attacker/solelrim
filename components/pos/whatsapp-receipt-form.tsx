@@ -7,22 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildClientWhatsAppLink } from "@/lib/shop/client-messages";
-import { checkoutCustomerSchema } from "@/lib/validation/order";
+import { normalizeLocalPhone } from "@/lib/shop/phone";
 
 // Opens WhatsApp on the seller's own device with the receipt pre-filled —
 // they still press "send" themselves (fully automatic sending would need
-// the paid WhatsApp Business API). Same local-number rule as the storefront
-// checkout, so the +222 prefix buildClientWhatsAppLink adds is always right.
-export function WhatsAppReceiptForm({ message }: { message: string }) {
+// the paid WhatsApp Business API). Pre-filled with the loyalty card's
+// number when the sale had one.
+export function WhatsAppReceiptForm({
+  message,
+  defaultPhone = "",
+}: {
+  message: string;
+  defaultPhone?: string;
+}) {
   const t = useTranslations("pos");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(defaultPhone);
 
-  // Accept a number pasted in international form (+222 22 12 34 56) by
-  // dropping the country code — buildClientWhatsAppLink adds it back.
-  const allDigits = phone.replace(/\D/g, "");
-  const digits =
-    allDigits.length === 11 && allDigits.startsWith("222") ? allDigits.slice(3) : allDigits;
-  const isValid = checkoutCustomerSchema.shape.customerPhone.safeParse(digits).success;
+  // Accepts +222 / spaces; buildClientWhatsAppLink adds the prefix back.
+  const localPhone = normalizeLocalPhone(phone);
 
   return (
     <div className="flex flex-col gap-2">
@@ -37,12 +39,16 @@ export function WhatsAppReceiptForm({ message }: { message: string }) {
           placeholder="22 12 34 56"
           className="w-44"
           value={phone}
-          aria-invalid={phone.length > 0 && !isValid}
+          aria-invalid={phone.length > 0 && localPhone === null}
           onChange={(e) => setPhone(e.target.value)}
         />
-        {isValid ? (
+        {localPhone ? (
           <Button asChild variant="outline">
-            <a href={buildClientWhatsAppLink(digits, message)} target="_blank" rel="noopener noreferrer">
+            <a
+              href={buildClientWhatsAppLink(localPhone, message)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <WhatsappLogo className="size-4" />
               {t("sendWhatsApp")}
             </a>

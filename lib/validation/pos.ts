@@ -14,6 +14,12 @@ const checkoutBase = {
   // its own recomputed total differs (a price changed since the screen
   // loaded), rather than silently recording a different amount.
   expectedTotal: amount,
+  // Optional loyalty card: which enrolled client, and whether to spend one
+  // reward. Points and the reward value are always computed server-side.
+  loyalty: z
+    .object({ clientId: z.string().min(1), redeem: z.boolean() })
+    .nullable()
+    .default(null),
 };
 
 // Cash and wallet sales carry different fields, so the payment method picks

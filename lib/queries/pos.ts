@@ -34,6 +34,26 @@ export async function getPosCatalog(productType: string) {
   }));
 }
 
+// The boutique's loyalty rule, for the checkout's live points/reward
+// preview only — recordSale re-reads it inside the sale transaction.
+export async function getPosLoyaltyRule(productType: string) {
+  const storeType = await prisma.storeType.findUniqueOrThrow({
+    where: { key: productType },
+    select: {
+      loyaltyEnabled: true,
+      loyaltySpendPerPoint: true,
+      loyaltyRewardPoints: true,
+      loyaltyRewardValue: true,
+    },
+  });
+  return {
+    enabled: storeType.loyaltyEnabled,
+    spendPerPoint: storeType.loyaltySpendPerPoint,
+    rewardPoints: storeType.loyaltyRewardPoints,
+    rewardValue: storeType.loyaltyRewardValue,
+  };
+}
+
 export function getPosWallets(productType: string) {
   return prisma.walletAccount.findMany({
     where: { productType },
@@ -54,6 +74,7 @@ export async function getReceipt(saleId: string, productType: string) {
         },
       },
       seller: { select: { supabaseUserId: true, role: true } },
+      client: { select: { phone: true } },
       storeType: {
         select: {
           label: true,
@@ -93,6 +114,10 @@ export async function getReceipt(saleId: string, productType: string) {
     paymentMethod: sale.paymentMethod,
     walletProvider: sale.walletProvider,
     amountReceived: sale.amountReceived?.toNumber() ?? null,
+    loyaltyDiscount: sale.loyaltyDiscount.toNumber(),
+    loyaltyPointsEarned: sale.loyaltyPointsEarned,
+    // Pre-fills the WhatsApp receipt form when the sale used a card.
+    clientPhone: sale.client?.phone ?? null,
     sellerLabel,
     boutique: {
       ...sale.storeType,
@@ -113,3 +138,4 @@ export async function getReceipt(saleId: string, productType: string) {
 
 export type PosProduct = Awaited<ReturnType<typeof getPosCatalog>>[number];
 export type PosWallet = Awaited<ReturnType<typeof getPosWallets>>[number];
+export type PosLoyaltyRule = Awaited<ReturnType<typeof getPosLoyaltyRule>>;

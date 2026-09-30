@@ -27,11 +27,14 @@ function sale(overrides: Record<string, unknown> = {}) {
     status: "COMPLETED",
     subtotal: decimal(1000),
     discount: decimal(0),
+    loyaltyDiscount: decimal(0),
+    loyaltyPointsEarned: 0,
     total: decimal(1000),
     paymentMethod: "cash",
     walletProvider: null,
     amountReceived: decimal(1500),
     seller: { supabaseUserId: "seller-auth-1", role: "SELLER" },
+    client: null,
     storeType: {
       label: "Sport",
       siteName: null,
@@ -121,5 +124,21 @@ describe("getReceipt", () => {
       unitPrice: 500,
       lineTotal: 1000,
     });
+  });
+
+  it("carries the loyalty reward and the card's number for the WhatsApp form", async () => {
+    prismaMock.sale.findFirst.mockResolvedValue(
+      sale({
+        loyaltyDiscount: decimal(200),
+        loyaltyPointsEarned: 8,
+        client: { phone: "22123456" },
+      }) as never,
+    );
+
+    const receipt = await getReceipt("sale-1", "sport");
+
+    expect(receipt?.loyaltyDiscount).toBe(200);
+    expect(receipt?.loyaltyPointsEarned).toBe(8);
+    expect(receipt?.clientPhone).toBe("22123456");
   });
 });

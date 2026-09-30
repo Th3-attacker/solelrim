@@ -71,3 +71,17 @@ export async function getClientSalesPage(
 
   return { sales, total, page: currentPage };
 }
+
+// Cancelled sales are voided, so they count toward neither the purchase
+// count nor the amount spent.
+export async function getClientSalesStats(clientId: string, productType: string) {
+  const stats = await prisma.sale.aggregate({
+    where: { clientId, productType, status: "COMPLETED" },
+    _count: { _all: true },
+    _sum: { total: true },
+  });
+  return {
+    purchaseCount: stats._count._all,
+    totalSpent: Number(stats._sum.total ?? 0),
+  };
+}
