@@ -33,6 +33,7 @@ export type RecordSaleInput = {
 
 export type RecordSaleError =
   | "invalid"
+  | "noOpenSession"
   | "insufficientStock"
   | "insufficientAmount"
   | "insufficientPoints"
@@ -52,6 +53,7 @@ export type RecordSaleResult =
 
 const KNOWN_ERRORS: ReadonlySet<string> = new Set<RecordSaleError>([
   "invalid",
+  "noOpenSession",
   "insufficientStock",
   "insufficientAmount",
   "insufficientPoints",
@@ -67,6 +69,17 @@ export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResu
 
   try {
     return await prisma.$transaction(async (tx) => {
+      // No sale without the seller's own till open in this boutique. The
+      // share lock holds the till open until this sale commits: closing it
+      // (an UPDATE) waits for us, so its totals always include this sale,
+      // and once closed, a sale arriving after sees no open till.
+      const [session] = await tx.$queryRaw<{ id: string }[]>`
+        SELECT "id" FROM "CashSession"
+        WHERE "sellerId" = ${input.actor.id} AND "productType" = ${productType} AND "status" = 'OPEN'
+        FOR SHARE
+      `;
+      if (!session) throw new Error("noOpenSession");
+
       const variants = await tx.productVariant.findMany({
         where: { id: { in: items.map((i) => i.variantId) } },
         include: { product: true },
@@ -202,6 +215,7 @@ export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResu
               notes: input.notes,
               productType,
               sellerId: input.actor.id,
+              cashSessionId: session.id,
               items: { create: lineItems },
             },
           });

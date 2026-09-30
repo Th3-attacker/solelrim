@@ -79,7 +79,9 @@ export function SellersManager({
     startTransition(async () => {
       const result = await deleteSeller(id);
       if (result.error) {
-        toast.error(tCommon("error"));
+        toast.error(
+          result.error === "hasOpenSession" ? t("sellerHasOpenSession") : tCommon("error"),
+        );
         return;
       }
       router.refresh();

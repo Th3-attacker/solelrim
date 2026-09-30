@@ -74,6 +74,8 @@ beforeEach(() => {
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
   license("ACTIVE");
+  // The seller's open till (recordSale's FOR SHARE lookup).
+  prismaMock.$queryRaw.mockResolvedValue([{ id: "session-1" }] as never);
 });
 
 describe("createPosSale", () => {
@@ -132,6 +134,31 @@ describe("createPosSale", () => {
     await createPosSale({ ...CASH, amountReceived: 900 });
 
     expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
+  });
+
+  it("rings the sale up on the seller's own open till in this boutique", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+
+    await createPosSale({ ...CASH, amountReceived: null });
+
+    const [, ...lookupValues] = prismaMock.$queryRaw.mock.calls[0];
+    expect(lookupValues).toEqual(["seller-1", "cosmetique"]);
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ cashSessionId: "session-1" }),
+    });
+  });
+
+  it("refuses the sale when the seller has no open till, before touching stock", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+    prismaMock.$queryRaw.mockResolvedValue([] as never);
+
+    const result = await createPosSale({ ...CASH, amountReceived: null });
+
+    expect(result.error).toBe("noOpenSession");
+    expect(prismaMock.productVariant.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
   });
 
   it("prices from the database, ignoring any price the client sends", async () => {

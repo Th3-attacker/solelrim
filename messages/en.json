@@ -56,7 +56,10 @@
     "auditLog": "History",
     "sidebarTitle": "Navigation menu",
     "sidebarDescription": "Displays the mobile navigation menu.",
-    "toggleSidebar": "Toggle menu"
+    "toggleSidebar": "Toggle menu",
+    "register": "My till",
+    "cashSessions": "Till sessions",
+    "cashClosures": "Closures"
   },
   "auth": {
     "login": {
@@ -700,7 +703,8 @@
     "loyalty_spendPerPoint": "Amount spent per point",
     "loyalty_rewardPoints": "Points for a reward",
     "loyalty_rewardValue": "Reward value",
-    "loyaltyPreview": "1 point per {spend} spent; {points} points = {value} off."
+    "loyaltyPreview": "1 point per {spend} spent; {points} points = {value} off.",
+    "sellerHasOpenSession": "This seller has an open till: close it before deleting the account."
   },
   "boutiquesOverview": {
     "title": "Overview",
@@ -783,7 +787,8 @@
       "totalChanged": "A price changed. Check the new total before charging.",
       "unauthorized": "Your session has expired. Sign in again to continue.",
       "licenseBlocked": "This boutique is suspended or its license has expired: sales are blocked.",
-      "insufficientPoints": "The customer no longer has enough points. The balance was refreshed."
+      "insufficientPoints": "The customer no longer has enough points. The balance was refreshed.",
+      "noOpenSession": "No open till. Open your till first."
     },
     "loyaltyCard": "Loyalty card (optional)",
     "loyaltyLookup": "Look up",
@@ -831,7 +836,8 @@
     "notes": "Notes",
     "noSales": "No sales yet.",
     "invoiceTitle": "Invoice",
-    "printInvoice": "Print invoice"
+    "printInvoice": "Print invoice",
+    "noOpenSession": "Open your till (Checkout menu) before recording a sale."
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -887,7 +893,14 @@
       "loyaltyPointsRedeemed": "Points spent",
       "status": "Status",
       "restockedItems": "Items restocked",
-      "loyaltyPointsChange": "Points returned / taken back"
+      "loyaltyPointsChange": "Points returned / taken back",
+      "openingFloat": "Opening float",
+      "amount": "Amount",
+      "expectedCash": "Expected cash",
+      "countedCash": "Counted cash",
+      "cashDifference": "Difference",
+      "sessionCount": "Tills",
+      "salesTotal": "Sales total"
     },
     "value": {
       "pos": "Checkout",
@@ -897,8 +910,15 @@
       "card": "Card",
       "transfer": "Transfer",
       "COMPLETED": "Completed",
-      "CANCELLED": "Cancelled"
-    }
+      "CANCELLED": "Cancelled",
+      "OPEN": "Open",
+      "CLOSED": "Closed"
+    },
+    "actionCashOpen": "Till opened",
+    "actionCashIn": "Cash in",
+    "actionCashOut": "Cash out",
+    "actionCashClose": "Till closed",
+    "actionCashDayClose": "Day closed"
   },
   "trackOrder": {
     "title": "Track my order",
@@ -915,5 +935,81 @@
     "resultStatus": "Status",
     "stuckNotice": "No update after 24h? Message us on WhatsApp and we'll check on your order right away.",
     "stuckCta": "Message us on WhatsApp"
+  },
+  "cash": {
+    "openTitle": "Open the till",
+    "openHint": "Count the opening float before you start selling.",
+    "openingFloat": "Opening float",
+    "openAction": "Open the till",
+    "openSince": "Till open since {time}",
+    "registerTitle": "My till",
+    "openedAt": "Opened {date}",
+    "closedAt": "closed {date}",
+    "backToCheckout": "Back to checkout",
+    "sessionsTitle": "Till sessions",
+    "summary": "Summary",
+    "movementsTitle": "Cash in and out",
+    "closeTitle": "Close the till",
+    "methodCash": "Cash",
+    "methodWallet": "Wallet",
+    "methodOther": "Other",
+    "salesTotal": "Sales total",
+    "cashIn": "Cash in",
+    "cashOut": "Cash out",
+    "expectedCash": "Expected cash",
+    "amount": "Amount",
+    "reason": "Reason",
+    "reasonInPlaceholder": "E.g. change top-up",
+    "reasonOutPlaceholder": "E.g. bank deposit, bags",
+    "addMovement": "Record",
+    "movementInSaved": "Cash in recorded.",
+    "movementOutSaved": "Cash out recorded.",
+    "countedCash": "Counted cash",
+    "differenceNone": "No difference.",
+    "differenceShort": "Short by {amount}",
+    "differenceOver": "Over by {amount}",
+    "closingNote": "Comment",
+    "noteRequiredHint": "Explain the difference to close the till.",
+    "closeAction": "Close the till",
+    "closed": "Till closed.",
+    "closeDayAction": "Close the day",
+    "closeDayConfirm": "The figures of every till of that day will be frozen. This can't be undone.",
+    "dayClosedToast": "Day closed.",
+    "day": "Day",
+    "noMovements": "No cash in or out.",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "noSessions": "No till sessions yet.",
+    "openedAtColumn": "Opened",
+    "seller": "Seller",
+    "status": "Status",
+    "difference": "Difference",
+    "salesTitle": "Sales in this session",
+    "noSales": "No sales on this till.",
+    "time": "Time",
+    "closuresTitle": "Till closures",
+    "closuresHint": "Every till of a day, per seller, then the shop's closure.",
+    "noSessionsThatDay": "No till was opened that day.",
+    "dayClosedTitle": "Day closed",
+    "dayPreviewTitle": "Day total",
+    "dayClosedBy": "Closed by {email} on {date}.",
+    "openSessionsHint": "{count, plural, one {One till is still open} other {# tills are still open}}: close them before closing the day.",
+    "recentClosures": "Recent closures",
+    "sessionCount": "Tills",
+    "closedBy": "Closed by",
+    "error": {
+      "invalid": "Invalid amount or reason.",
+      "alreadyOpen": "Your till is already open.",
+      "dayClosed": "Today is already closed: no till can be opened.",
+      "noOpenSession": "No open till. Open your till first.",
+      "insufficientCash": "The till doesn't hold enough cash for this.",
+      "alreadyClosed": "This till is already closed.",
+      "notFound": "Till not found.",
+      "noteRequired": "A comment is required when the count doesn't match.",
+      "noSessions": "No till that day: nothing to close.",
+      "openSessions": "Some tills of that day are still open.",
+      "unauthorized": "Your session expired. Sign in again to continue.",
+      "licenseBlocked": "The shop is suspended or its license has expired."
+    }
   }
 }

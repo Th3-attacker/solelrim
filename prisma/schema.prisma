@@ -9,6 +9,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum CashMovementType {
+  IN
+  OUT
+}
+
 enum SaleStatus {
   COMPLETED
   CANCELLED
@@ -151,6 +161,8 @@ model StoreType {
   socialLinks    SocialLink[]
   promoCodes     PromoCode[]
   walletAccounts WalletAccount[]
+  cashSessions   CashSession[]
+  dayClosures    StoreDayClosure[]
   testimonials   Testimonial[]
 }
 
@@ -222,8 +234,8 @@ model WalletAccount {
 // the DB check below, and by lib/shop/admin-scope.ts ignoring the
 // free-choice cookie for this role).
 model AdminUser {
-  id                  String     @id @default(cuid())
-  supabaseUserId      String     @unique
+  id                  String        @id @default(cuid())
+  supabaseUserId      String        @unique
   role                AdminRole
   productType         String?
   // BOUTIQUE_ADMIN-only exception, granted per account by a superadmin —
@@ -231,15 +243,16 @@ model AdminUser {
   // mode, and hero/card layout variants, which stay superadmin-only for
   // everyone else (lib/shop/admin-scope.ts: requireAppearanceScope). No
   // effect for SUPERADMIN, who already has access to everything.
-  canManageAppearance Boolean    @default(false)
+  canManageAppearance Boolean       @default(false)
   // Explicit Restrict (not Prisma's implicit SetNull default for an
   // optional relation) — matches the original migration's raw SQL and the
   // DB-level CHECK below: a BOUTIQUE_ADMIN's productType must never become
   // null, so deleting a boutique an admin is scoped to must fail loudly,
   // not silently orphan the check constraint.
-  storeType           StoreType? @relation(fields: [productType], references: [key], onDelete: Restrict)
+  storeType           StoreType?    @relation(fields: [productType], references: [key], onDelete: Restrict)
   sales               Sale[]
-  createdAt           DateTime   @default(now())
+  cashSessions        CashSession[]
+  createdAt           DateTime      @default(now())
 
   @@index([productType])
 }
@@ -390,15 +403,15 @@ model Client {
 }
 
 model Sale {
-  id                    String     @id @default(cuid())
-  reference             String     @unique
+  id                    String       @id @default(cuid())
+  reference             String       @unique
   clientId              String?
-  client                Client?    @relation(fields: [clientId], references: [id])
+  client                Client?      @relation(fields: [clientId], references: [id])
   items                 SaleItem[]
-  subtotal              Decimal    @db.Decimal(10, 2)
-  discount              Decimal    @default(0) @db.Decimal(10, 2)
-  total                 Decimal    @db.Decimal(10, 2)
-  status                SaleStatus @default(COMPLETED)
+  subtotal              Decimal      @db.Decimal(10, 2)
+  discount              Decimal      @default(0) @db.Decimal(10, 2)
+  total                 Decimal      @db.Decimal(10, 2)
+  status                SaleStatus   @default(COMPLETED)
   // Free text for historical manual sales ("cash", "card", "transfer");
   // the checkout only ever writes "cash" or "wallet".
   paymentMethod         String?
@@ -408,27 +421,32 @@ model Sale {
   walletProvider        String?
   // Cash handed over by the customer, for the change on the receipt. Null
   // for wallet sales and for cash sales where it wasn't entered.
-  amountReceived        Decimal?   @db.Decimal(10, 2)
+  amountReceived        Decimal?     @db.Decimal(10, 2)
   // Loyalty: points credited/spent by this sale, and the reward discount it
   // got (kept apart from the manual `discount`). Recorded per sale so a
   // cancellation reverses exactly what happened, and the client's points
   // history is just their sales — no separate ledger to drift.
-  loyaltyPointsEarned   Int        @default(0)
-  loyaltyPointsRedeemed Int        @default(0)
-  loyaltyDiscount       Decimal    @default(0) @db.Decimal(10, 2)
+  loyaltyPointsEarned   Int          @default(0)
+  loyaltyPointsRedeemed Int          @default(0)
+  loyaltyDiscount       Decimal      @default(0) @db.Decimal(10, 2)
   notes                 String?
   // Stamped at creation from the admin's current scope (manual sale) or
   // copied from the source Order (auto-created on deliverOrder).
   productType           String
-  storeType             StoreType  @relation(fields: [productType], references: [key])
+  storeType             StoreType    @relation(fields: [productType], references: [key])
   // Who recorded the sale (checkout or manual). Null for sales auto-created
   // from a delivered online order, and SetNull if that account is later
   // deleted so the sale itself survives.
   sellerId              String?
-  seller                AdminUser? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
-  createdAt             DateTime   @default(now())
+  seller                AdminUser?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  // The till the sale was rung up on. Null only for sales from online
+  // orders and for sales recorded before register sessions existed.
+  cashSessionId         String?
+  cashSession           CashSession? @relation(fields: [cashSessionId], references: [id], onDelete: Restrict)
+  createdAt             DateTime     @default(now())
 
   @@index([clientId])
+  @@index([cashSessionId])
   @@index([createdAt])
   @@index([productType])
   @@index([sellerId])
@@ -566,4 +584,76 @@ model SolalContact {
   email     String?
   website   String?
   updatedAt DateTime @updatedAt
+}
+
+// One seller's till, from opening float to counted close. At most one OPEN
+// session per seller: enforced by a partial unique index in the migration
+// SQL (CashSession_one_open_per_seller), which Prisma's DSL can't express.
+model CashSession {
+  id             String            @id @default(cuid())
+  productType    String
+  storeType      StoreType         @relation(fields: [productType], references: [key])
+  // SetNull so a seller account can be deleted once its sessions are
+  // closed; sellerEmail/sellerRole keep who it was.
+  sellerId       String?
+  seller         AdminUser?        @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  sellerEmail    String
+  sellerRole     AdminRole
+  status         CashSessionStatus @default(OPEN)
+  openingFloat   Decimal           @db.Decimal(10, 2)
+  openedAt       DateTime          @default(now())
+  // The day the session counts toward for the boutique's daily closure.
+  businessDate   DateTime          @db.Date
+  closedAt       DateTime?
+  closedById     String?
+  // Snapshots taken at close, computed server-side.
+  expectedCash   Decimal?          @db.Decimal(10, 2)
+  countedCash    Decimal?          @db.Decimal(10, 2)
+  cashDifference Decimal?          @db.Decimal(10, 2)
+  closingNote    String?
+  // The full totals (breakdown by payment method, movements) frozen at
+  // close, so later changes to its sales never rewrite a closed till.
+  closingSummary Json?
+  sales          Sale[]
+  movements      CashMovement[]
+
+  @@index([productType, businessDate])
+  @@index([sellerId, openedAt])
+}
+
+// Cash put into or taken out of a till outside of sales (change top-up,
+// bank deposit, expense...). Always with a reason.
+model CashMovement {
+  id          String           @id @default(cuid())
+  sessionId   String
+  session     CashSession      @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  type        CashMovementType
+  amount      Decimal          @db.Decimal(10, 2)
+  reason      String
+  createdById String?
+  createdAt   DateTime         @default(now())
+
+  @@index([sessionId])
+}
+
+// The boutique admin's end-of-day closure: every session of that business
+// day, consolidated and frozen. One per boutique per day.
+model StoreDayClosure {
+  id             String    @id @default(cuid())
+  productType    String
+  storeType      StoreType @relation(fields: [productType], references: [key])
+  businessDate   DateTime  @db.Date
+  closedById     String?
+  closedByEmail  String
+  closedAt       DateTime  @default(now())
+  sessionCount   Int
+  salesCount     Int
+  salesTotal     Decimal   @db.Decimal(12, 2)
+  expectedCash   Decimal   @db.Decimal(12, 2)
+  countedCash    Decimal   @db.Decimal(12, 2)
+  cashDifference Decimal   @db.Decimal(12, 2)
+  // [{ method, provider, total, count }] — the payment breakdown at close.
+  breakdown      Json
+
+  @@unique([productType, businessDate])
 }

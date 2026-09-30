@@ -56,7 +56,10 @@
     "auditLog": "Historique",
     "sidebarTitle": "Menu de navigation",
     "sidebarDescription": "Affiche le menu de navigation mobile.",
-    "toggleSidebar": "Afficher/masquer le menu"
+    "toggleSidebar": "Afficher/masquer le menu",
+    "register": "Ma caisse",
+    "cashSessions": "Sessions de caisse",
+    "cashClosures": "Clôtures"
   },
   "auth": {
     "login": {
@@ -700,7 +703,8 @@
     "loyalty_spendPerPoint": "Montant dépensé pour 1 point",
     "loyalty_rewardPoints": "Points pour une récompense",
     "loyalty_rewardValue": "Valeur de la récompense",
-    "loyaltyPreview": "1 point tous les {spend} dépensés ; {points} points = {value} de réduction."
+    "loyaltyPreview": "1 point tous les {spend} dépensés ; {points} points = {value} de réduction.",
+    "sellerHasOpenSession": "Ce vendeur a une caisse ouverte : fermez-la avant de supprimer son compte."
   },
   "boutiquesOverview": {
     "title": "Vue d'ensemble",
@@ -783,7 +787,8 @@
       "totalChanged": "Un prix a changé. Vérifiez le nouveau total avant d'encaisser.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "licenseBlocked": "La boutique est suspendue ou sa licence a expiré : les ventes sont bloquées.",
-      "insufficientPoints": "Le client n'a plus assez de points. Le solde vient d'être actualisé."
+      "insufficientPoints": "Le client n'a plus assez de points. Le solde vient d'être actualisé.",
+      "noOpenSession": "Aucune caisse ouverte. Ouvrez votre caisse d'abord."
     },
     "loyaltyCard": "Carte de fidélité (facultatif)",
     "loyaltyLookup": "Chercher",
@@ -831,7 +836,8 @@
     "notes": "Notes",
     "noSales": "Aucune vente pour le moment.",
     "invoiceTitle": "Facture",
-    "printInvoice": "Imprimer la facture"
+    "printInvoice": "Imprimer la facture",
+    "noOpenSession": "Ouvrez votre caisse (menu Caisse) avant d'enregistrer une vente."
   },
   "errors": {
     "notFoundTitle": "Page introuvable",
@@ -887,7 +893,14 @@
       "loyaltyPointsRedeemed": "Points utilisés",
       "status": "Statut",
       "restockedItems": "Articles remis en stock",
-      "loyaltyPointsChange": "Points rendus / repris"
+      "loyaltyPointsChange": "Points rendus / repris",
+      "openingFloat": "Fond de caisse",
+      "amount": "Montant",
+      "expectedCash": "Espèces attendues",
+      "countedCash": "Espèces comptées",
+      "cashDifference": "Écart",
+      "sessionCount": "Caisses",
+      "salesTotal": "Total des ventes"
     },
     "value": {
       "pos": "Caisse",
@@ -897,8 +910,15 @@
       "card": "Carte",
       "transfer": "Virement",
       "COMPLETED": "Validée",
-      "CANCELLED": "Annulée"
-    }
+      "CANCELLED": "Annulée",
+      "OPEN": "Ouverte",
+      "CLOSED": "Fermée"
+    },
+    "actionCashOpen": "Caisse ouverte",
+    "actionCashIn": "Entrée d'argent",
+    "actionCashOut": "Sortie d'argent",
+    "actionCashClose": "Caisse fermée",
+    "actionCashDayClose": "Journée clôturée"
   },
   "trackOrder": {
     "title": "Suivre ma commande",
@@ -915,5 +935,81 @@
     "resultStatus": "Statut",
     "stuckNotice": "Toujours pas de nouvelles après 24h ? Écrivez-nous sur WhatsApp, on regarde votre commande tout de suite.",
     "stuckCta": "Écrire sur WhatsApp"
+  },
+  "cash": {
+    "openTitle": "Ouvrir la caisse",
+    "openHint": "Comptez le fond de caisse avant de commencer à vendre.",
+    "openingFloat": "Fond de caisse",
+    "openAction": "Ouvrir la caisse",
+    "openSince": "Caisse ouverte depuis {time}",
+    "registerTitle": "Ma caisse",
+    "openedAt": "Ouverte le {date}",
+    "closedAt": "fermée le {date}",
+    "backToCheckout": "Retour à la caisse",
+    "sessionsTitle": "Sessions de caisse",
+    "summary": "Résumé",
+    "movementsTitle": "Entrées et sorties",
+    "closeTitle": "Fermer la caisse",
+    "methodCash": "Espèces",
+    "methodWallet": "Wallet",
+    "methodOther": "Autres",
+    "salesTotal": "Total des ventes",
+    "cashIn": "Entrée",
+    "cashOut": "Sortie",
+    "expectedCash": "Espèces attendues",
+    "amount": "Montant",
+    "reason": "Motif",
+    "reasonInPlaceholder": "Ex. : appoint de monnaie",
+    "reasonOutPlaceholder": "Ex. : dépôt en banque, achat de sacs",
+    "addMovement": "Enregistrer",
+    "movementInSaved": "Entrée enregistrée.",
+    "movementOutSaved": "Sortie enregistrée.",
+    "countedCash": "Espèces comptées",
+    "differenceNone": "Aucun écart.",
+    "differenceShort": "Manque de {amount}",
+    "differenceOver": "Excédent de {amount}",
+    "closingNote": "Commentaire",
+    "noteRequiredHint": "Expliquez l'écart pour pouvoir fermer la caisse.",
+    "closeAction": "Fermer la caisse",
+    "closed": "Caisse fermée.",
+    "closeDayAction": "Clôturer la journée",
+    "closeDayConfirm": "Les chiffres de toutes les caisses de ce jour seront figés. Cette action est définitive.",
+    "dayClosedToast": "Journée clôturée.",
+    "day": "Jour",
+    "noMovements": "Aucune entrée ni sortie.",
+    "statusOpen": "Ouverte",
+    "statusClosed": "Fermée",
+    "noSessions": "Aucune session de caisse pour le moment.",
+    "openedAtColumn": "Ouverture",
+    "seller": "Vendeur",
+    "status": "Statut",
+    "difference": "Écart",
+    "salesTitle": "Ventes de la session",
+    "noSales": "Aucune vente sur cette caisse.",
+    "time": "Heure",
+    "closuresTitle": "Clôtures de caisse",
+    "closuresHint": "Toutes les caisses d'une journée, par vendeur, puis la clôture de la boutique.",
+    "noSessionsThatDay": "Aucune caisse ouverte ce jour-là.",
+    "dayClosedTitle": "Journée clôturée",
+    "dayPreviewTitle": "Total de la journée",
+    "dayClosedBy": "Clôturée par {email} le {date}.",
+    "openSessionsHint": "{count, plural, one {Une caisse est encore ouverte} other {# caisses sont encore ouvertes}} : fermez-les avant de clôturer la journée.",
+    "recentClosures": "Dernières clôtures",
+    "sessionCount": "Caisses",
+    "closedBy": "Clôturée par",
+    "error": {
+      "invalid": "Montant ou motif invalide.",
+      "alreadyOpen": "Votre caisse est déjà ouverte.",
+      "dayClosed": "La journée est déjà clôturée : impossible d'ouvrir une caisse aujourd'hui.",
+      "noOpenSession": "Aucune caisse ouverte. Ouvrez votre caisse d'abord.",
+      "insufficientCash": "La caisse ne contient pas assez d'espèces pour cette sortie.",
+      "alreadyClosed": "Cette caisse est déjà fermée.",
+      "notFound": "Caisse introuvable.",
+      "noteRequired": "Un commentaire est obligatoire quand le comptage ne correspond pas.",
+      "noSessions": "Aucune caisse ce jour-là : rien à clôturer.",
+      "openSessions": "Des caisses de ce jour sont encore ouvertes.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
+      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
+    }
   }
 }
