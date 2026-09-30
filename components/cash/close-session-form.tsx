@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +29,7 @@ export function CloseSessionForm({
   const tCommon = useTranslations("common");
   const router = useRouter();
   const showError = useCashError();
-  const [pending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [counted, setCounted] = useState("");
   const [note, setNote] = useState("");
 
@@ -42,15 +43,18 @@ export function CloseSessionForm({
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!valid) return;
-    startTransition(async () => {
-      const result = await closeCashSession({ sessionId, countedCash: countedValue, note });
-      if (result.error) return showError(result.error);
-      toast.success(t("closed"));
-      if (redirectTo) router.push(redirectTo);
-      router.refresh();
-    });
+    if (valid) setConfirmOpen(true);
   }
+
+  async function handleClose() {
+    const result = await closeCashSession({ sessionId, countedCash: countedValue, note });
+    if (result.error) return showError(result.error);
+    toast.success(t("closed"));
+    if (redirectTo) router.push(redirectTo);
+    router.refresh();
+  }
+
+  const money = (amount: number) => formatPrice(amount, tCommon("currency"));
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -77,7 +81,7 @@ export function CloseSessionForm({
           {difference === 0
             ? t("differenceNone")
             : t(difference < 0 ? "differenceShort" : "differenceOver", {
-                amount: formatPrice(Math.abs(difference), tCommon("currency")),
+                amount: money(Math.abs(difference)),
               })}
         </p>
       )}
@@ -95,9 +99,26 @@ export function CloseSessionForm({
         />
         {noteMissing && <p className="text-xs text-destructive">{t("noteRequiredHint")}</p>}
       </div>
-      <Button type="submit" variant="destructive" className="self-start" loading={pending} disabled={!valid}>
+      <Button type="submit" variant="destructive" className="self-start" disabled={!valid}>
         {t("closeAction")}
       </Button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("closeConfirmTitle")}
+        description={t("closeConfirmBody", {
+          counted: money(countedValue ?? 0),
+          difference:
+            difference === null || difference === 0
+              ? t("differenceNone")
+              : t(difference < 0 ? "differenceShort" : "differenceOver", {
+                  amount: money(Math.abs(difference)),
+                }),
+        })}
+        confirmLabel={t("closeAction")}
+        destructive
+        onConfirm={handleClose}
+      />
     </form>
   );
 }

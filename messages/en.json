@@ -31,7 +31,10 @@
     "presetToday": "Today",
     "presetYesterday": "Yesterday",
     "presetLast7Days": "Last 7 days",
-    "presetLast15Days": "Last 15 days"
+    "presetLast15Days": "Last 15 days",
+    "deleteConfirmTitle": "Delete this item?",
+    "deleteConfirmBody": "This can't be undone.",
+    "removeImageConfirmTitle": "Remove this image?"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -494,7 +497,11 @@
     "presetToday": "Today",
     "presetYesterday": "Yesterday",
     "presetLast7Days": "Last 7 days",
-    "presetLast15Days": "Last 15 days"
+    "presetLast15Days": "Last 15 days",
+    "shipConfirmTitle": "Mark the order as shipped?",
+    "shipConfirmBody": "The order will move to “shipped”. This step can't be undone.",
+    "deliverConfirmTitle": "Mark the order as delivered?",
+    "deliverConfirmBody": "The order will be closed as delivered. This step can't be undone."
   },
   "settings": {
     "title": "Settings",
@@ -704,7 +711,14 @@
     "loyalty_rewardPoints": "Points for a reward",
     "loyalty_rewardValue": "Reward value",
     "loyaltyPreview": "1 point per {spend} spent; {points} points = {value} off.",
-    "sellerHasOpenSession": "This seller has an open till: close it before deleting the account."
+    "sellerHasOpenSession": "This seller has an open till: close it before deleting the account.",
+    "adminUserDeleteConfirmTitle": "Delete this admin?",
+    "adminUserDeleteConfirmBody": "Their account will be deleted and they won't be able to sign in.",
+    "adminUserResetMfaConfirmTitle": "Reset their 2FA?",
+    "adminUserResetMfaConfirmBody": "Their current two-step verification will be removed: they'll set up a new one at their next sign-in.",
+    "licenseStatusConfirmTitle": "Set “{label}” to “{status}”?",
+    "licenseStatusConfirmLock": "The shop and its admin actions (sales, till, orders…) will be blocked.",
+    "licenseStatusConfirmUnlock": "The shop and all its actions will be available again."
   },
   "boutiquesOverview": {
     "title": "Overview",
@@ -1010,6 +1024,13 @@
       "openSessions": "Some tills of that day are still open.",
       "unauthorized": "Your session expired. Sign in again to continue.",
       "licenseBlocked": "The shop is suspended or its license has expired."
-    }
+    },
+    "openConfirmTitle": "Open the till?",
+    "openConfirmBody": "Opening float: {amount}. It can't be changed afterwards.",
+    "movementInConfirmTitle": "Record this cash in?",
+    "movementOutConfirmTitle": "Record this cash out?",
+    "movementConfirmBody": "{amount} — {reason}. It can't be deleted.",
+    "closeConfirmTitle": "Close the till?",
+    "closeConfirmBody": "Counted cash: {counted}. {difference} Once closed, the till can't be changed."
   }
 }
