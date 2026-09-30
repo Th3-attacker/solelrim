@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 import type { OrderStatus } from "@/lib/generated/prisma/client";
 
 export type OrderListFilters = {
@@ -32,7 +33,7 @@ function buildOrdersWhere(filters: OrderListFilters) {
 export const ORDERS_PAGE_SIZE = 20;
 
 export async function getAllOrders(filters: OrderListFilters, page = 1) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = buildOrdersWhere(filters);
 
   const [orders, total] = await Promise.all([
@@ -92,7 +93,7 @@ export async function getOrdersByPhonePage(
   productType: string,
   page = 1,
 ) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = { customerPhone: phone, productType };
 
   const [orders, total] = await Promise.all([

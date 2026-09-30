@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 
 export function getAllClients(productType: string) {
   return prisma.client.findMany({
@@ -15,7 +16,7 @@ export async function getClientsPage(
   productType: string,
   filters: { search?: string; page?: number } = {},
 ) {
-  const page = Math.max(1, filters.page ?? 1);
+  const page = toPageNumber(filters.page);
   const where = {
     productType,
     ...(filters.search && {
@@ -55,7 +56,7 @@ export async function getClientSalesPage(
   productType: string,
   page = 1,
 ) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = { clientId, productType };
 
   const [sales, total] = await Promise.all([

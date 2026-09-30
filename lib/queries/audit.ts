@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 
 export const AUDIT_LOG_PAGE_SIZE = 50;
 
@@ -20,7 +21,7 @@ export type AuditLogFilters = {
 // need for the max-range cap lib/orders/filters.ts imposes on order exports.
 export async function getAuditLog(productType: string | null, filters: AuditLogFilters = {}) {
   const { search, action, adminUserId, dateFrom, dateTo } = filters;
-  const page = Math.max(1, filters.page ?? 1);
+  const page = toPageNumber(filters.page);
   const where = {
     ...(productType && { productType }),
     ...(action && { action }),

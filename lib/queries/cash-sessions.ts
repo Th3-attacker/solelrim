@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 import { combineSessionTotals, roundMoney, type BreakdownRow } from "@/lib/shop/cash";
 import { sessionTotalsOf } from "@/lib/shop/cash-session";
 
@@ -78,7 +79,7 @@ export async function getSessionView(
 export const SESSIONS_PAGE_SIZE = 30;
 
 export async function listSessions(productType: string, viewer: SessionViewer, page = 1) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = { productType, ...viewerFilter(viewer) };
   const [sessions, total] = await Promise.all([
     prisma.cashSession.findMany({
