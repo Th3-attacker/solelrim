@@ -31,7 +31,7 @@ function sale(overrides: Record<string, unknown> = {}) {
     paymentMethod: "cash",
     walletProvider: null,
     amountReceived: decimal(1500),
-    seller: { supabaseUserId: "seller-auth-1" },
+    seller: { supabaseUserId: "seller-auth-1", role: "SELLER" },
     storeType: {
       label: "Sport",
       siteName: null,
@@ -84,6 +84,17 @@ describe("getReceipt", () => {
     const receipt = await getReceipt("sale-1", "sport");
 
     expect(receipt?.sellerLabel).toBe("amina");
+  });
+
+  it("never names a boutique admin or superadmin on a customer receipt", async () => {
+    prismaMock.sale.findFirst.mockResolvedValue(
+      sale({ seller: { supabaseUserId: "admin-auth-1", role: "SUPERADMIN" } }) as never,
+    );
+
+    const receipt = await getReceipt("sale-1", "sport");
+
+    expect(receipt?.sellerLabel).toBeNull();
+    expect(createAdminClientMock).not.toHaveBeenCalled();
   });
 
   it("has no seller for a sale created from an online order", async () => {

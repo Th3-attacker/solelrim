@@ -1,6 +1,7 @@
-// Pure text rendering of a checkout receipt for WhatsApp — no i18n or
-// formatting library inside, so the caller passes already-translated labels
-// and its own money/date formatters, and this stays trivially testable.
+// One receipt model for both the printed ticket and the WhatsApp text, so
+// the two can never disagree on what's shown (discount rows, change, the
+// cancelled marker). No i18n or formatting library inside: the caller
+// passes translated labels and its own money formatter.
 
 export type ReceiptLine = {
   productName: string;
@@ -14,6 +15,7 @@ export type ReceiptData = {
   boutiqueName: string;
   reference: string;
   date: string;
+  cancelled: boolean;
   lines: ReceiptLine[];
   subtotal: number;
   discount: number;
@@ -22,46 +24,62 @@ export type ReceiptData = {
   amountReceived: number | null;
 };
 
-export type ReceiptLabels = {
+export type ReceiptSummaryKey =
+  | "subtotal"
+  | "discount"
+  | "total"
+  | "payment"
+  | "amountReceived"
+  | "change";
+
+export type ReceiptLabels = Record<ReceiptSummaryKey, string> & {
   reference: string;
-  subtotal: string;
-  discount: string;
-  total: string;
-  payment: string;
-  amountReceived: string;
-  change: string;
+  cancelled: string;
   thanks: string;
 };
+
+export type ReceiptSummaryRow = { key: ReceiptSummaryKey; value: string; emphasis?: boolean };
+
+export function buildReceiptSummary(
+  receipt: ReceiptData,
+  money: (amount: number) => string,
+): ReceiptSummaryRow[] {
+  const rows: ReceiptSummaryRow[] = [];
+  if (receipt.discount > 0) {
+    rows.push({ key: "subtotal", value: money(receipt.subtotal) });
+    rows.push({ key: "discount", value: `-${money(receipt.discount)}` });
+  }
+  rows.push({ key: "total", value: money(receipt.total), emphasis: true });
+  rows.push({ key: "payment", value: receipt.paymentLabel });
+  if (receipt.amountReceived !== null) {
+    rows.push({ key: "amountReceived", value: money(receipt.amountReceived) });
+    rows.push({
+      key: "change",
+      value: money(Math.max(receipt.amountReceived - receipt.total, 0)),
+    });
+  }
+  return rows;
+}
 
 export function buildReceiptText(
   receipt: ReceiptData,
   labels: ReceiptLabels,
   money: (amount: number) => string,
 ): string {
-  const lines = [
-    receipt.boutiqueName,
-    `${labels.reference}: ${receipt.reference}`,
-    receipt.date,
-    "",
-    ...receipt.lines.map(
-      (line) =>
-        `- ${line.productName} (${line.size}, ${line.color}) x${line.quantity} — ${money(line.lineTotal)}`,
-    ),
-    "",
-  ];
-
-  if (receipt.discount > 0) {
-    lines.push(`${labels.subtotal}: ${money(receipt.subtotal)}`);
-    lines.push(`${labels.discount}: -${money(receipt.discount)}`);
+  const lines = [receipt.boutiqueName];
+  if (receipt.cancelled) {
+    lines.push(`*** ${labels.cancelled} ***`);
   }
-  lines.push(`${labels.total}: ${money(receipt.total)}`);
-  lines.push(`${labels.payment}: ${receipt.paymentLabel}`);
-
-  if (receipt.amountReceived !== null) {
-    lines.push(`${labels.amountReceived}: ${money(receipt.amountReceived)}`);
-    lines.push(`${labels.change}: ${money(receipt.amountReceived - receipt.total)}`);
+  lines.push(`${labels.reference}: ${receipt.reference}`, receipt.date, "");
+  for (const line of receipt.lines) {
+    lines.push(
+      `- ${line.productName} (${line.size}, ${line.color}) x${line.quantity} — ${money(line.lineTotal)}`,
+    );
   }
-
+  lines.push("");
+  for (const row of buildReceiptSummary(receipt, money)) {
+    lines.push(`${labels[row.key]}: ${row.value}`);
+  }
   lines.push("", labels.thanks);
   return lines.join("\n");
 }

@@ -4,24 +4,32 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
+import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { WhatsAppReceiptForm } from "@/components/pos/whatsapp-receipt-form";
-import { requireCheckoutScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
 import { getReceipt } from "@/lib/queries/pos";
 import { formatPrice } from "@/lib/format/currency";
 import { resolveSiteName } from "@/lib/shop/localized-boutique-text";
-import { buildReceiptText } from "@/lib/shop/receipt";
+import {
+  buildReceiptSummary,
+  buildReceiptText,
+  type ReceiptData,
+  type ReceiptLabels,
+} from "@/lib/shop/receipt";
 
 const LEGACY_PAYMENT_METHODS = new Set(["card", "transfer"]);
 
-// Under /admin/pos, so a seller can reach it (proxy.ts). Scoped through
-// requireCheckoutScope + getReceipt, so another boutique's sale id is a 404.
+// Under /admin/pos, so a seller can reach it (proxy.ts). Read-only, so it
+// uses the view scope (no license gate: reprinting an old receipt isn't a
+// write), and getReceipt is scoped to the caller's boutique — another
+// boutique's sale id is a 404.
 export default async function ReceiptPage({
   params,
 }: {
   params: Promise<{ saleId: string }>;
 }) {
   const { saleId } = await params;
-  const { productType } = await requireCheckoutScope();
+  const { productType } = await requireCheckoutViewScope();
   const [receipt, t, tSales, tCommon, format, locale] = await Promise.all([
     getReceipt(saleId, productType),
     getTranslations("pos"),
@@ -36,34 +44,47 @@ export default async function ReceiptPage({
 
   const currency = tCommon("currency");
   const money = (amount: number) => formatPrice(amount, currency);
-  const boutiqueName = resolveSiteName(receipt.boutique, locale)?.trim() || receipt.boutique.label;
-  const date = format.dateTime(receipt.createdAt, { dateStyle: "short", timeStyle: "short" });
+
   const paymentLabel =
     receipt.paymentMethod === "wallet"
-      ? `${t("wallet")} · ${receipt.walletProvider ?? ""}`.trim()
+      ? [t("wallet"), receipt.walletProvider].filter(Boolean).join(" · ")
       : receipt.paymentMethod === "cash"
         ? t("cash")
         : receipt.paymentMethod && LEGACY_PAYMENT_METHODS.has(receipt.paymentMethod)
           ? tSales(receipt.paymentMethod as "card" | "transfer")
           : "—";
 
-  const whatsappMessage = buildReceiptText(
-    { ...receipt, boutiqueName, date, paymentLabel },
-    {
-      reference: t("reference"),
-      subtotal: t("subtotal"),
-      discount: t("discount"),
-      total: t("total"),
-      payment: t("paymentMethod"),
-      amountReceived: t("amountReceived"),
-      change: t("change"),
-      thanks: t("receiptThanks"),
-    },
-    money,
-  );
+  const data: ReceiptData = {
+    boutiqueName: resolveSiteName(receipt.boutique, locale)?.trim() || receipt.boutique.label,
+    reference: receipt.reference,
+    date: format.dateTime(receipt.createdAt, { dateStyle: "short", timeStyle: "short" }),
+    cancelled: receipt.status === "CANCELLED",
+    lines: receipt.lines,
+    subtotal: receipt.subtotal,
+    discount: receipt.discount,
+    total: receipt.total,
+    paymentLabel,
+    amountReceived: receipt.amountReceived,
+  };
+
+  const labels: ReceiptLabels = {
+    reference: t("reference"),
+    subtotal: t("subtotal"),
+    discount: t("discount"),
+    total: t("total"),
+    payment: t("paymentMethod"),
+    amountReceived: t("amountReceived"),
+    change: t("change"),
+    cancelled: t("receiptCancelled"),
+    thanks: t("receiptThanks"),
+  };
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 print:max-w-full">
+      {/* Keeps the browser's default page margins from eating into an
+          80mm thermal roll; A4 simply gets a narrow margin. */}
+      <PrintPageStyle rule="@page { margin: 4mm; }" />
+
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <Button asChild variant="ghost">
           <Link href="/admin/pos">
@@ -82,26 +103,26 @@ export default async function ReceiptPage({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={receipt.boutique.logoUrl} alt="" className="size-12 object-contain" />
           )}
-          <p className="font-sans text-sm font-bold">{boutiqueName}</p>
+          <p className="font-sans text-sm font-bold">{data.boutiqueName}</p>
           {receipt.boutique.adminWhatsappNumber && (
             <p dir="ltr">{receipt.boutique.adminWhatsappNumber}</p>
           )}
         </header>
 
-        {receipt.status === "CANCELLED" && (
+        {data.cancelled && (
           <p className="border border-current py-1 text-center font-bold uppercase">
-            {t("receiptCancelled")}
+            {labels.cancelled}
           </p>
         )}
 
         <dl className="flex flex-col gap-0.5 border-y border-dashed py-2">
           <div className="flex justify-between gap-2">
-            <dt>{t("reference")}</dt>
-            <dd>{receipt.reference}</dd>
+            <dt>{labels.reference}</dt>
+            <dd>{data.reference}</dd>
           </div>
           <div className="flex justify-between gap-2">
             <dt>{t("receiptDate")}</dt>
-            <dd>{date}</dd>
+            <dd>{data.date}</dd>
           </div>
           {receipt.sellerLabel && (
             <div className="flex justify-between gap-2">
@@ -126,46 +147,27 @@ export default async function ReceiptPage({
         </ul>
 
         <dl className="flex flex-col gap-0.5 border-t border-dashed pt-2 tabular-nums">
-          {receipt.discount > 0 && (
-            <>
-              <div className="flex justify-between">
-                <dt>{t("subtotal")}</dt>
-                <dd>{money(receipt.subtotal)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>{t("discount")}</dt>
-                <dd>−{money(receipt.discount)}</dd>
-              </div>
-            </>
-          )}
-          <div className="flex justify-between text-sm font-bold">
-            <dt>{t("total")}</dt>
-            <dd>{money(receipt.total)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>{t("paymentMethod")}</dt>
-            <dd>{paymentLabel}</dd>
-          </div>
-          {receipt.amountReceived !== null && (
-            <>
-              <div className="flex justify-between">
-                <dt>{t("amountReceived")}</dt>
-                <dd>{money(receipt.amountReceived)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>{t("change")}</dt>
-                <dd>{money(receipt.amountReceived - receipt.total)}</dd>
-              </div>
-            </>
-          )}
+          {buildReceiptSummary(data, money).map((row) => (
+            <div
+              key={row.key}
+              className={row.emphasis ? "flex justify-between text-sm font-bold" : "flex justify-between"}
+            >
+              <dt>{labels[row.key]}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
         </dl>
 
-        <p className="border-t border-dashed pt-2 text-center font-sans">{t("receiptThanks")}</p>
+        <p className="border-t border-dashed pt-2 text-center font-sans">{labels.thanks}</p>
       </article>
 
-      <div className="rounded-md border p-4 print:hidden">
-        <WhatsAppReceiptForm message={whatsappMessage} />
-      </div>
+      {/* Nothing to send for a voided sale — the printed copy still says
+          so for the records. */}
+      {!data.cancelled && (
+        <div className="rounded-md border p-4 print:hidden">
+          <WhatsAppReceiptForm message={buildReceiptText(data, labels, money)} />
+        </div>
+      )}
     </div>
   );
 }

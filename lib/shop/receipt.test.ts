@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReceiptText, type ReceiptData } from "@/lib/shop/receipt";
+import { buildReceiptSummary, buildReceiptText, type ReceiptData } from "@/lib/shop/receipt";
 
 const LABELS = {
   reference: "Réf",
@@ -9,6 +9,7 @@ const LABELS = {
   payment: "Paiement",
   amountReceived: "Reçu",
   change: "Rendu",
+  cancelled: "VENTE ANNULÉE",
   thanks: "Merci !",
 };
 
@@ -18,6 +19,7 @@ const BASE: ReceiptData = {
   boutiqueName: "Maison Lune",
   reference: "VNT-20260930-0001",
   date: "30/09/2026 10:00",
+  cancelled: false,
   lines: [{ productName: "Robe Isla", size: "M", color: "Noir", quantity: 2, lineTotal: 2400 }],
   subtotal: 2400,
   discount: 0,
@@ -26,32 +28,47 @@ const BASE: ReceiptData = {
   amountReceived: null,
 };
 
+describe("buildReceiptSummary", () => {
+  it("shows subtotal and discount only when a discount was applied", () => {
+    expect(buildReceiptSummary(BASE, money).map((row) => row.key)).toEqual(["total", "payment"]);
+
+    const rows = buildReceiptSummary({ ...BASE, discount: 400, total: 2000 }, money);
+
+    expect(rows.map((row) => row.key)).toEqual(["subtotal", "discount", "total", "payment"]);
+    expect(rows[1].value).toBe("-400 MRU");
+  });
+
+  it("shows cash received and change when the amount handed over was entered", () => {
+    const rows = buildReceiptSummary({ ...BASE, amountReceived: 3000 }, money);
+
+    expect(rows.slice(-2)).toEqual([
+      { key: "amountReceived", value: "3000 MRU" },
+      { key: "change", value: "600 MRU" },
+    ]);
+  });
+
+  it("never shows negative change", () => {
+    const rows = buildReceiptSummary({ ...BASE, amountReceived: 2000 }, money);
+
+    expect(rows.at(-1)).toEqual({ key: "change", value: "0 MRU" });
+  });
+});
+
 describe("buildReceiptText", () => {
-  it("lists every line with its quantity and line total", () => {
+  it("lists every line, the totals, and the thanks", () => {
     const text = buildReceiptText(BASE, LABELS, money);
 
-    expect(text).toContain("Maison Lune");
     expect(text).toContain("Réf: VNT-20260930-0001");
     expect(text).toContain("- Robe Isla (M, Noir) x2 — 2400 MRU");
     expect(text).toContain("Total: 2400 MRU");
     expect(text).toContain("Paiement: Espèces");
     expect(text.endsWith("Merci !")).toBe(true);
+    expect(text).not.toContain("ANNULÉE");
   });
 
-  it("shows subtotal and discount only when a discount was applied", () => {
-    expect(buildReceiptText(BASE, LABELS, money)).not.toContain("Remise");
+  it("marks a cancelled sale right under the boutique name", () => {
+    const text = buildReceiptText({ ...BASE, cancelled: true }, LABELS, money);
 
-    const text = buildReceiptText({ ...BASE, discount: 400, total: 2000 }, LABELS, money);
-
-    expect(text).toContain("Sous-total: 2400 MRU");
-    expect(text).toContain("Remise: -400 MRU");
-    expect(text).toContain("Total: 2000 MRU");
-  });
-
-  it("shows cash received and change when the amount handed over was entered", () => {
-    const text = buildReceiptText({ ...BASE, amountReceived: 3000 }, LABELS, money);
-
-    expect(text).toContain("Reçu: 3000 MRU");
-    expect(text).toContain("Rendu: 600 MRU");
+    expect(text.split("\n")[1]).toBe("*** VENTE ANNULÉE ***");
   });
 });

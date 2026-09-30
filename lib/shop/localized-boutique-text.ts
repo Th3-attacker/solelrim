@@ -42,7 +42,7 @@ export function resolveBoutiqueText<T extends LocalizedBoutiqueFields>(
   locale: string,
 ) {
   return {
-    siteName: pick(boutique.siteName, boutique.siteNameAr, boutique.siteNameEn, locale),
+    siteName: resolveSiteName(boutique, locale),
     heroTitle: pick(boutique.heroTitle, boutique.heroTitleAr, boutique.heroTitleEn, locale),
     heroSubtitle: pick(
       boutique.heroSubtitle,

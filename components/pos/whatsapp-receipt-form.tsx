@@ -17,7 +17,11 @@ export function WhatsAppReceiptForm({ message }: { message: string }) {
   const t = useTranslations("pos");
   const [phone, setPhone] = useState("");
 
-  const digits = phone.replace(/\D/g, "");
+  // Accept a number pasted in international form (+222 22 12 34 56) by
+  // dropping the country code — buildClientWhatsAppLink adds it back.
+  const allDigits = phone.replace(/\D/g, "");
+  const digits =
+    allDigits.length === 11 && allDigits.startsWith("222") ? allDigits.slice(3) : allDigits;
   const isValid = checkoutCustomerSchema.shape.customerPhone.safeParse(digits).success;
 
   return (

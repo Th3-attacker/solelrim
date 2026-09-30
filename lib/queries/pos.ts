@@ -53,7 +53,7 @@ export async function getReceipt(saleId: string, productType: string) {
           variant: { select: { size: true, color: true, product: { select: { name: true } } } },
         },
       },
-      seller: { select: { supabaseUserId: true } },
+      seller: { select: { supabaseUserId: true, role: true } },
       storeType: {
         select: {
           label: true,
@@ -68,14 +68,18 @@ export async function getReceipt(saleId: string, productType: string) {
   });
   if (!sale) return null;
 
-  // Sellers have no display name of their own — the part of their login
-  // email before "@" is the most recognizable handle available, and it
-  // keeps the full address off a customer-facing receipt.
+  // Only a SELLER is named, never a boutique admin or superadmin who rang a
+  // sale up — their login handle has no business on a customer receipt.
+  // Sellers have no display name of their own, so the part of their email
+  // before "@" is the handle shown, never the full address.
   let sellerLabel: string | null = null;
-  if (sale.seller) {
-    const { data } = await createAdminClient().auth.admin.getUserById(
+  if (sale.seller?.role === "SELLER") {
+    const { data, error } = await createAdminClient().auth.admin.getUserById(
       sale.seller.supabaseUserId,
     );
+    if (error) {
+      console.error("[getReceipt] seller lookup failed", error);
+    }
     sellerLabel = data.user?.email?.split("@")[0] ?? null;
   }
 
