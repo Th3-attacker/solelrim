@@ -25,7 +25,6 @@ export const productSchema = z.object({
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
-export type VariantInput = z.infer<typeof variantSchema>;
 
 export const categorySchema = z.object({
   name: z.string().min(1),

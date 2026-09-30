@@ -119,10 +119,10 @@ model StoreType {
   // distinct from `label` (the boutique's own commercial/display name).
   // Null until a superadmin fills it in when drafting the contract.
   licenseClientName   String?
-  // Per-boutique feature flag — server-enforced (lib/shop/feature-flags.ts),
-  // not just a hidden button: both the admin promo-code actions and
-  // checkout's promo-code redemption re-check this, not merely the UI that
-  // shows/hides the "Code promo" field.
+  // Per-boutique feature flag — server-enforced, not just a hidden button:
+  // both the admin promo-code actions and checkout's promo-code redemption
+  // re-check this, not merely the UI that shows/hides the "Code promo"
+  // field.
   couponsEnabled      Boolean       @default(true)
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
