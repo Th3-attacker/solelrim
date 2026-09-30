@@ -1142,7 +1142,6 @@
   "saleEdit": {
     "title": "Modifier la vente",
     "hint": "Seuls le paiement, le client et la note se corrigent. Une erreur d'articles ou de montant passe par un remboursement.",
-    "pickPayment": "Choisir un moyen de paiement",
     "paymentLockedHint": "Un remboursement a été fait (ou demandé) avec le paiement actuel : il ne peut plus changer.",
     "clientLockedHint": "Des points fidélité sont liés à ce client : il ne peut plus changer.",
     "reason": "Motif de la modification",
@@ -1156,6 +1155,7 @@
       "noChanges": "Rien n'a changé.",
       "paymentLocked": "Un remboursement existe avec le paiement actuel : il ne peut plus changer.",
       "clientLocked": "Des points fidélité sont liés au client actuel : il ne peut plus changer."
-    }
+    },
+    "currentPayment": "Actuel : {label}"
   }
 }

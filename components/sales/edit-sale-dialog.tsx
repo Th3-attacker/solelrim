@@ -20,6 +20,9 @@ import {
 import { updateSale } from "@/lib/actions/sales";
 
 const CASH = "cash";
+// The recorded payment isn't one this form offers (legacy card/transfer, a
+// wallet since deleted or renamed): kept as is unless another is picked.
+const KEEP = "__keep__";
 const WALKIN = "__walkin__";
 const KNOWN_ERRORS = new Set([
   "invalid",
@@ -59,11 +62,17 @@ export function EditSaleDialog({
   const router = useRouter();
 
   const initialPayment =
+    paymentMethod === "cash"
+      ? CASH
+      : paymentMethod === "wallet"
+        ? (wallets.find((wallet) => wallet.provider === walletProvider)?.id ?? KEEP)
+        : KEEP;
+  const currentLabel =
     paymentMethod === "wallet"
-      ? (wallets.find((wallet) => wallet.provider === walletProvider)?.id ?? "")
-      : paymentMethod === "cash"
-        ? CASH
-        : "";
+      ? (walletProvider ?? tSales("wallet"))
+      : paymentMethod === "card" || paymentMethod === "transfer"
+        ? tSales(paymentMethod)
+        : "—";
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [payment, setPayment] = useState(initialPayment);
@@ -73,13 +82,14 @@ export function EditSaleDialog({
 
   const changed =
     payment !== initialPayment || client !== (clientId ?? WALKIN) || note.trim() !== (notes ?? "");
-  const valid = changed && payment !== "" && reason.trim().length >= 3;
+  const valid = changed && reason.trim().length >= 3;
 
   async function handleSave() {
     const result = await updateSale({
       saleId,
-      paymentMethod: payment === CASH ? "cash" : "wallet",
-      walletAccountId: payment === CASH ? null : payment,
+      // Untouched payment: keep what's recorded, never re-save it.
+      paymentMethod: payment === initialPayment ? null : payment === CASH ? "cash" : "wallet",
+      walletAccountId: payment === initialPayment || payment === CASH ? null : payment,
       clientId: client === WALKIN ? null : client,
       notes: note,
       reason,
@@ -123,9 +133,12 @@ export function EditSaleDialog({
             <Label>{tSales("paymentMethod")}</Label>
             <Select value={payment} onValueChange={setPayment} disabled={paymentLocked}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("pickPayment")} />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                {initialPayment === KEEP && (
+                  <SelectItem value={KEEP}>{t("currentPayment", { label: currentLabel })}</SelectItem>
+                )}
                 <SelectItem value={CASH}>{tSales("cash")}</SelectItem>
                 {wallets.map((wallet) => (
                   <SelectItem key={wallet.id} value={wallet.id}>

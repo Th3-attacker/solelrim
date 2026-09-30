@@ -498,6 +498,21 @@ describe("updateSale", () => {
     ).toEqual({ error: "clientLocked" });
   });
 
+  it("keeps a payment the form can't offer when only the note changes", async () => {
+    recordedSale({ paymentMethod: "card" });
+
+    expect(
+      await updateSale({ saleId: "sale-1", clientId: null, notes: "Payé par carte", reason: "Note" }),
+    ).toEqual({});
+    expect(prismaMock.sale.update).toHaveBeenCalledWith({
+      where: { id: "sale-1" },
+      data: { paymentMethod: "card", walletProvider: null, clientId: null, notes: "Payé par carte" },
+    });
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ oldValue: { notes: null }, newValue: { notes: "Payé par carte" } }),
+    });
+  });
+
   it("refuses a cancelled sale, and an edit that changes nothing", async () => {
     recordedSale({ status: "CANCELLED" });
     expect(await updateSale({ ...TO_WALLET })).toEqual({ error: "notEditable" });

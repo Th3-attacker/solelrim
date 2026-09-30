@@ -1142,7 +1142,6 @@
   "saleEdit": {
     "title": "Edit the sale",
     "hint": "Only the payment, client and note can be corrected. An item or amount error goes through a refund.",
-    "pickPayment": "Pick a payment method",
     "paymentLockedHint": "A refund was made (or requested) with the current payment: it can no longer change.",
     "clientLockedHint": "Loyalty points are tied to this client: it can no longer change.",
     "reason": "Reason for the change",
@@ -1156,6 +1155,7 @@
       "noChanges": "Nothing changed.",
       "paymentLocked": "A refund exists with the current payment: it can no longer change.",
       "clientLocked": "Loyalty points are tied to the current client: it can no longer change."
-    }
+    },
+    "currentPayment": "Current: {label}"
   }
 }

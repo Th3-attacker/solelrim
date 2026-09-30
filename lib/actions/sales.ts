@@ -172,8 +172,8 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
       if (data.clientId && !client) throw new SaleEditError("invalid");
 
       const next = {
-        paymentMethod: data.paymentMethod,
-        walletProvider: wallet?.provider ?? null,
+        paymentMethod: data.paymentMethod ?? sale.paymentMethod,
+        walletProvider: data.paymentMethod ? (wallet?.provider ?? null) : sale.walletProvider,
         clientId: data.clientId,
         notes: data.notes || null,
       };
