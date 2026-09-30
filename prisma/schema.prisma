@@ -250,15 +250,25 @@ model AdminUser {
 // relation to AdminUser: adminEmail is denormalized on purpose, so the
 // trail survives that admin account being deleted later.
 model AdminAuditLog {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   adminUserId String
   adminEmail  String
+  // Null only on entries written before roles were recorded.
+  adminRole   AdminRole?
   action      String
   targetLabel String
+  // The affected record (sale, cash session...) when it has an id.
+  targetId    String?
+  // Only the fields the action changed, as { field: value }.
+  oldValue    Json?
+  newValue    Json?
+  reason      String?
   productType String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
 
   @@index([productType, createdAt])
+  @@index([productType, adminUserId, createdAt])
+  @@index([targetId])
 }
 
 model Category {

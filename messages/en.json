@@ -846,9 +846,9 @@
   },
   "auditLog": {
     "title": "Action history",
-    "subtitle": "Who did what on orders and products.",
+    "subtitle": "Who did what, when, and what changed: sales, orders and products.",
     "date": "Date",
-    "admin": "Admin",
+    "admin": "User",
     "action": "Action",
     "target": "Concerning",
     "noEntries": "No recorded actions yet.",
@@ -859,8 +859,46 @@
     "actionOrderCancel": "Order cancelled",
     "actionProductUpdate": "Product updated",
     "actionProductDelete": "Product deleted",
-    "searchPlaceholder": "Search admin or item...",
-    "allActions": "All actions"
+    "searchPlaceholder": "Search a user, a reference, a reason...",
+    "allActions": "All actions",
+    "details": "Details",
+    "reason": "Reason",
+    "allUsers": "All users",
+    "boutique": "Shop",
+    "allBoutiques": "All shops",
+    "valueYes": "Yes",
+    "valueNo": "No",
+    "actionSaleCreate": "Sale recorded",
+    "actionSaleCancel": "Sale cancelled",
+    "role": {
+      "SUPERADMIN": "Superadmin",
+      "BOUTIQUE_ADMIN": "Shop admin",
+      "SELLER": "Seller"
+    },
+    "field": {
+      "channel": "Channel",
+      "total": "Total",
+      "discount": "Discount",
+      "loyaltyDiscount": "Loyalty reward",
+      "paymentMethod": "Payment",
+      "walletProvider": "Wallet",
+      "itemCount": "Items",
+      "loyaltyPointsEarned": "Points earned",
+      "loyaltyPointsRedeemed": "Points spent",
+      "status": "Status",
+      "restockedItems": "Items restocked",
+      "loyaltyPointsChange": "Points returned / taken back"
+    },
+    "value": {
+      "pos": "Checkout",
+      "backOffice": "Back office",
+      "cash": "Cash",
+      "wallet": "Wallet",
+      "card": "Card",
+      "transfer": "Transfer",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    }
   },
   "trackOrder": {
     "title": "Track my order",

@@ -846,9 +846,9 @@
   },
   "auditLog": {
     "title": "سجل الإجراءات",
-    "subtitle": "من فعل ماذا في الطلبات والمنتجات.",
+    "subtitle": "من فعل ماذا، ومتى، وما الذي تغيّر: المبيعات والطلبات والمنتجات.",
     "date": "التاريخ",
-    "admin": "المسؤول",
+    "admin": "المستخدم",
     "action": "الإجراء",
     "target": "بخصوص",
     "noEntries": "لا توجد إجراءات مسجلة بعد.",
@@ -859,8 +859,46 @@
     "actionOrderCancel": "تم إلغاء الطلب",
     "actionProductUpdate": "تم تعديل المنتج",
     "actionProductDelete": "تم حذف المنتج",
-    "searchPlaceholder": "ابحث عن مسؤول أو عنصر...",
-    "allActions": "كل الإجراءات"
+    "searchPlaceholder": "ابحث عن مستخدم أو مرجع أو سبب...",
+    "allActions": "كل الإجراءات",
+    "details": "التفاصيل",
+    "reason": "السبب",
+    "allUsers": "كل المستخدمين",
+    "boutique": "المتجر",
+    "allBoutiques": "كل المتاجر",
+    "valueYes": "نعم",
+    "valueNo": "لا",
+    "actionSaleCreate": "تم تسجيل بيع",
+    "actionSaleCancel": "تم إلغاء بيع",
+    "role": {
+      "SUPERADMIN": "المشرف العام",
+      "BOUTIQUE_ADMIN": "مدير المتجر",
+      "SELLER": "بائع"
+    },
+    "field": {
+      "channel": "القناة",
+      "total": "المجموع",
+      "discount": "الخصم",
+      "loyaltyDiscount": "مكافأة الولاء",
+      "paymentMethod": "الدفع",
+      "walletProvider": "المحفظة",
+      "itemCount": "المواد",
+      "loyaltyPointsEarned": "النقاط المكتسبة",
+      "loyaltyPointsRedeemed": "النقاط المستخدمة",
+      "status": "الحالة",
+      "restockedItems": "مواد أُعيدت إلى المخزون",
+      "loyaltyPointsChange": "نقاط مُعادة / مسترجعة"
+    },
+    "value": {
+      "pos": "الصندوق",
+      "backOffice": "لوحة الإدارة",
+      "cash": "نقدًا",
+      "wallet": "محفظة",
+      "card": "بطاقة",
+      "transfer": "تحويل",
+      "COMPLETED": "مكتمل",
+      "CANCELLED": "ملغى"
+    }
   },
   "trackOrder": {
     "title": "تتبع طلبي",

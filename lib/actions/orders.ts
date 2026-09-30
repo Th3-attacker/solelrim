@@ -432,10 +432,11 @@ export async function confirmOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.confirm",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -511,10 +512,12 @@ export async function rejectOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.reject",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");
@@ -541,10 +544,11 @@ export async function shipOrder(
     select: { reference: true },
   });
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.ship",
     targetLabel: order?.reference ?? orderId,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -653,10 +657,11 @@ export async function deliverOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.deliver",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -733,10 +738,12 @@ export async function cancelOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.cancel",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");

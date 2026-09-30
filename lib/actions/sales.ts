@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { recordSale } from "@/lib/shop/record-sale";
+import { getAuditActor, writeAuditLog } from "@/lib/audit";
 
 export type SaleActionResult = { error?: string; saleId?: string };
 
@@ -15,7 +16,12 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
     return { error: "invalid" };
   }
 
-  const result = await recordSale({ ...parsed.data, productType, sellerId: admin.id });
+  const result = await recordSale({
+    ...parsed.data,
+    productType,
+    actor: await getAuditActor(admin),
+    channel: "backOffice",
+  });
   if ("error" in result) {
     return { error: result.error };
   }
@@ -27,7 +33,8 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
 }
 
 export async function cancelSale(saleId: string): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
+  const actor = await getAuditActor(admin);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -75,6 +82,19 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
           });
         }
       }
+
+      await writeAuditLog(tx, actor, {
+        productType,
+        action: "sale.cancel",
+        targetId: sale.id,
+        targetLabel: sale.reference,
+        oldValue: { status: "COMPLETED" },
+        newValue: {
+          status: "CANCELLED",
+          restockedItems: sale.items.reduce((sum, i) => sum + i.quantity, 0),
+          loyaltyPointsChange: pointsChange,
+        },
+      });
     });
   } catch (err) {
     if (err instanceof Error && ["notFound", "alreadyCancelled"].includes(err.message)) {

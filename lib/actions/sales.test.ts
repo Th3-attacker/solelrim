@@ -225,6 +225,7 @@ describe("cancelSale", () => {
   function completedSale(overrides: Record<string, unknown> = {}) {
     return {
       id: "sale-1",
+      reference: "VNT-1",
       clientId: null,
       loyaltyPointsEarned: 0,
       loyaltyPointsRedeemed: 0,
@@ -254,6 +255,15 @@ describe("cancelSale", () => {
     });
     expect(prismaMock.productVariant.update).toHaveBeenCalledTimes(2);
     expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "sale.cancel",
+        targetId: "sale-1",
+        targetLabel: "VNT-1",
+        oldValue: { status: "COMPLETED" },
+        newValue: { status: "CANCELLED", restockedItems: 3, loyaltyPointsChange: 0 },
+      }),
+    });
   });
 
   it("returns notFound for a sale outside the admin's boutique", async () => {
@@ -274,6 +284,7 @@ describe("cancelSale", () => {
 
     expect(result.error).toBe("alreadyCancelled");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+    expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
   });
 
   it("takes back earned points and gives back redeemed ones", async () => {

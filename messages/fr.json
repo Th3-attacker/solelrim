@@ -846,9 +846,9 @@
   },
   "auditLog": {
     "title": "Historique des actions",
-    "subtitle": "Qui a fait quoi sur les commandes et les produits.",
+    "subtitle": "Qui a fait quoi, quand, et ce qui a changé : ventes, commandes et produits.",
     "date": "Date",
-    "admin": "Administrateur",
+    "admin": "Utilisateur",
     "action": "Action",
     "target": "Concerné",
     "noEntries": "Aucune action enregistrée pour le moment.",
@@ -859,8 +859,46 @@
     "actionOrderCancel": "Commande annulée",
     "actionProductUpdate": "Produit modifié",
     "actionProductDelete": "Produit supprimé",
-    "searchPlaceholder": "Rechercher un admin ou un élément...",
-    "allActions": "Toutes les actions"
+    "searchPlaceholder": "Rechercher un utilisateur, une référence, un motif...",
+    "allActions": "Toutes les actions",
+    "details": "Détails",
+    "reason": "Motif",
+    "allUsers": "Tous les utilisateurs",
+    "boutique": "Boutique",
+    "allBoutiques": "Toutes les boutiques",
+    "valueYes": "Oui",
+    "valueNo": "Non",
+    "actionSaleCreate": "Vente enregistrée",
+    "actionSaleCancel": "Vente annulée",
+    "role": {
+      "SUPERADMIN": "Superadmin",
+      "BOUTIQUE_ADMIN": "Admin boutique",
+      "SELLER": "Vendeur"
+    },
+    "field": {
+      "channel": "Canal",
+      "total": "Total",
+      "discount": "Remise",
+      "loyaltyDiscount": "Récompense fidélité",
+      "paymentMethod": "Paiement",
+      "walletProvider": "Wallet",
+      "itemCount": "Articles",
+      "loyaltyPointsEarned": "Points gagnés",
+      "loyaltyPointsRedeemed": "Points utilisés",
+      "status": "Statut",
+      "restockedItems": "Articles remis en stock",
+      "loyaltyPointsChange": "Points rendus / repris"
+    },
+    "value": {
+      "pos": "Caisse",
+      "backOffice": "Back-office",
+      "cash": "Espèces",
+      "wallet": "Wallet",
+      "card": "Carte",
+      "transfer": "Virement",
+      "COMPLETED": "Validée",
+      "CANCELLED": "Annulée"
+    }
   },
   "trackOrder": {
     "title": "Suivre ma commande",

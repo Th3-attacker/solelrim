@@ -162,10 +162,11 @@ export async function updateProduct(
     });
 
     await logAdminAction({
-      adminUserId: admin.id,
+      admin,
       productType,
       action: "product.update",
       targetLabel: product.name,
+      targetId: productId,
     });
 
     revalidatePath("/admin/products");
@@ -223,10 +224,11 @@ export async function deleteProduct(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "product.delete",
     targetLabel: owned.name,
+    targetId: productId,
   });
 
   revalidatePath("/admin/products");
