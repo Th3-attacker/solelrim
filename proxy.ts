@@ -3,7 +3,6 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
-import { prisma } from "@/lib/prisma";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -143,12 +142,20 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Stamped into app_metadata at creation (lib/actions/sellers.ts) — only a
+  // service-role client can write it, so it's as tamper-proof as
+  // mfa_required, and reading it here costs no database round trip. This is
+  // routing only: the real guard is server-side (requireAdminScope and
+  // getAdminScope both refuse a SELLER).
+  const isSeller = user.app_metadata?.role === "SELLER";
+
   // A SUPERADMIN can mandate 2FA for a specific admin (setAdminMfaRequired,
   // written to app_metadata since only a service-role client can set it —
   // the targeted admin can't clear it on themselves). Until that admin has
   // a verified factor, every admin page but Settings (where they enroll
-  // one) bounces them there instead of loading normally.
-  if (user.app_metadata?.mfa_required === true) {
+  // one) bounces them there instead of loading normally. Never applied to a
+  // seller: they can't open Settings to enroll, so it would only loop.
+  if (user.app_metadata?.mfa_required === true && !isSeller) {
     const { data: factors } = await supabase.auth.mfa.listFactors();
     const hasFactor = (factors?.totp.length ?? 0) > 0;
     if (!hasFactor && pathWithoutLocale !== "/admin/settings") {
@@ -158,14 +165,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Every admin Server Action already rejects a SELLER server-side
-  // (requireAdminScope); this additionally keeps them from even *reading*
-  // the other admin pages (orders, clients, revenue).
-  const adminUser = await prisma.adminUser.findUnique({
-    where: { supabaseUserId: user.id },
-    select: { role: true },
-  });
-  if (adminUser?.role === "SELLER" && !isSellerPath(pathWithoutLocale)) {
+  if (isSeller && !isSellerPath(pathWithoutLocale)) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/admin/pos`;
     return NextResponse.redirect(url);

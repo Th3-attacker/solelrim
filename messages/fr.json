@@ -629,10 +629,9 @@
     "sellersQuotaReachedHint": "Limite de vendeurs atteinte. Contactez SOLAL pour en ajouter davantage.",
     "newSeller": "Nouveau vendeur",
     "sellerQuota": "Nombre maximum de vendeurs",
-    "sellerError": {
-      "emailExists": "Un compte existe déjà avec cet email.",
-      "quotaReached": "Limite de vendeurs atteinte pour cette boutique."
-    },
+    "sellerQuotaReachedError": "Limite de vendeurs atteinte pour cette boutique.",
+    "sellerDeleteConfirmTitle": "Supprimer ce vendeur ?",
+    "sellerDeleteConfirmBody": "Son compte sera supprimé et il ne pourra plus se connecter.",
     "adminUserEmail": "Email",
     "adminUserPassword": "Mot de passe",
     "adminUserPasswordHint": "Au moins 8 caractères.",

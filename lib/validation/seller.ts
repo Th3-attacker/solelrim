@@ -8,4 +8,6 @@ export const sellerInputSchema = z.object({
   password: z.string().min(8),
 });
 
-export const sellerQuotaSchema = z.coerce.number().int().min(0).max(50);
+// No coercion: the action receives a real number, so an empty or garbled
+// field can never quietly turn into a quota of 0.
+export const sellerQuotaSchema = z.number().int().min(0).max(50);

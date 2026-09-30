@@ -96,13 +96,11 @@ describe("requireSuperAdminScope", () => {
 });
 
 describe("getAdminScope", () => {
-  it("locks a SELLER to their own boutique, never consulting the cookie", async () => {
+  it("rejects a SELLER, so no admin data page can resolve a boutique for them", async () => {
     getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
     cookieValue("cosmetique");
 
-    const result = await getAdminScope();
-
-    expect(result).toBe("sport");
+    await expect(getAdminScope()).rejects.toThrow("forbidden");
     expect(cookiesMock).not.toHaveBeenCalled();
   });
 

@@ -52,6 +52,7 @@ export default async function SettingsPage() {
       <TwoFactorSettings factorId={mfaStatus.factorId} required={mfaStatus.required} />
 
       <SellersManager
+        key={productType}
         productType={productType}
         sellers={sellers.sellers}
         quota={sellers.quota}

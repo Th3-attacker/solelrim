@@ -29,12 +29,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [storeTypes, currentScope, admin, supabase] = await Promise.all([
+  const [storeTypes, admin, supabase] = await Promise.all([
     getStoreTypes(),
-    getAdminScope(),
     getCurrentAdmin(),
     createClient(),
   ]);
+  // getAdminScope() refuses a SELLER (it guards every admin data page), but
+  // this layout also wraps the checkout a seller does use — a seller's
+  // scope is simply their own locked boutique.
+  const currentScope =
+    admin.role === "SELLER" ? admin.productType! : await getAdminScope();
   const [{ data: { user } }, pendingOrderCount] = await Promise.all([
     supabase.auth.getUser(),
     getPendingOrderCount(currentScope),

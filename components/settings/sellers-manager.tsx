@@ -10,12 +10,24 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { createSeller, deleteSeller, setSellerQuota } from "@/lib/actions/sellers";
 
 type Seller = { id: string; email: string | null };
 
-const CREATE_ERRORS = new Set(["emailExists", "quotaReached"]);
-
+// Mounted with key={productType} by the settings page, so a superadmin
+// switching boutiques gets fresh state instead of the previous boutique's
+// quota lingering in the field.
 export function SellersManager({
   productType,
   sellers,
@@ -37,14 +49,23 @@ export function SellersManager({
   const [quotaValue, setQuotaValue] = useState(String(quota));
 
   const quotaReached = sellers.length >= quota;
+  // Whole numbers only — an empty field must never be sent, since
+  // Number("") is 0 and would silently lock the boutique out of sellers.
+  const quotaIsValid = /^\d+$/.test(quotaValue.trim());
 
   function handleCreate() {
     startTransition(async () => {
       const result = await createSeller({ email, password });
+      if (result.error === "emailExists") {
+        toast.error(t("adminUserEmailExists"));
+        return;
+      }
+      if (result.error === "quotaReached") {
+        toast.error(t("sellerQuotaReachedError"));
+        return;
+      }
       if (result.error) {
-        toast.error(
-          CREATE_ERRORS.has(result.error) ? t(`sellerError.${result.error}`) : tCommon("error"),
-        );
+        toast.error(tCommon("error"));
         return;
       }
       setEmail("");
@@ -67,7 +88,7 @@ export function SellersManager({
 
   function handleSaveQuota() {
     startTransition(async () => {
-      const result = await setSellerQuota(productType, Number(quotaValue));
+      const result = await setSellerQuota(productType, Number(quotaValue.trim()));
       if (result.error) {
         toast.error(tCommon("error"));
         return;
@@ -91,16 +112,31 @@ export function SellersManager({
           {sellers.map((seller) => (
             <div key={seller.id} className="flex items-center gap-2 rounded-md border p-2">
               <span className="min-w-0 flex-1 truncate text-sm font-medium">{seller.email}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={pending}
-                onClick={() => handleDelete(seller.id)}
-                aria-label={tCommon("delete")}
-              >
-                <Trash className="size-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={pending}
+                    aria-label={tCommon("delete")}
+                  >
+                    <Trash className="size-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("sellerDeleteConfirmTitle")}</AlertDialogTitle>
+                    <AlertDialogDescription>{t("sellerDeleteConfirmBody")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(seller.id)}>
+                      {tCommon("delete")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ))}
         </div>
@@ -167,6 +203,7 @@ export function SellersManager({
               max={50}
               className="w-24"
               value={quotaValue}
+              aria-invalid={!quotaIsValid}
               onChange={(e) => setQuotaValue(e.target.value)}
             />
           </div>
@@ -174,7 +211,7 @@ export function SellersManager({
             type="button"
             variant="outline"
             loading={pending}
-            disabled={quotaValue === String(quota)}
+            disabled={!quotaIsValid || Number(quotaValue.trim()) === quota}
             onClick={handleSaveQuota}
           >
             {tCommon("save")}

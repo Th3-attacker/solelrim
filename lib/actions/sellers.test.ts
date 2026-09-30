@@ -101,7 +101,7 @@ describe("createSeller", () => {
 
   it("creates a SELLER in the caller's own boutique, ignoring any boutique in the input", async () => {
     signedInAs("BOUTIQUE_ADMIN");
-    supabaseAdmin();
+    const admin = supabaseAdmin();
     prismaMock.adminUser.count.mockResolvedValue(1);
     prismaMock.adminUser.create.mockResolvedValue({} as never);
 
@@ -111,6 +111,10 @@ describe("createSeller", () => {
     expect(prismaMock.adminUser.create).toHaveBeenCalledWith({
       data: { supabaseUserId: "new-seller", role: "SELLER", productType: "cosmetique" },
     });
+    // proxy.ts routes on this without a DB lookup.
+    expect(admin.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ app_metadata: { role: "SELLER" } }),
+    );
   });
 
   it("loses a concurrent race cleanly: re-checks under lock and deletes the new account", async () => {
@@ -178,6 +182,37 @@ describe("deleteSeller", () => {
     expect(admin.deleteUser).toHaveBeenCalledWith("seller-auth-1");
     expect(prismaMock.adminUser.delete).toHaveBeenCalledWith({ where: { id: "seller-1" } });
   });
+
+  it("keeps the AdminUser row when the login couldn't be deleted, so it can be retried", async () => {
+    signedInAs("BOUTIQUE_ADMIN");
+    const admin = supabaseAdmin();
+    admin.deleteUser.mockResolvedValue({ error: { code: "unexpected_failure" } });
+    prismaMock.adminUser.findFirst.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "seller-auth-1",
+    } as never);
+
+    const result = await deleteSeller("seller-1");
+
+    expect(result.error).toBe("deleteFailed");
+    expect(prismaMock.adminUser.delete).not.toHaveBeenCalled();
+  });
+
+  it("still removes the row when the login was already gone", async () => {
+    signedInAs("BOUTIQUE_ADMIN");
+    const admin = supabaseAdmin();
+    admin.deleteUser.mockResolvedValue({ error: { code: "user_not_found" } });
+    prismaMock.adminUser.findFirst.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "seller-auth-1",
+    } as never);
+    prismaMock.adminUser.delete.mockResolvedValue({} as never);
+
+    const result = await deleteSeller("seller-1");
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.adminUser.delete).toHaveBeenCalledWith({ where: { id: "seller-1" } });
+  });
 });
 
 describe("setSellerQuota", () => {
@@ -188,7 +223,7 @@ describe("setSellerQuota", () => {
     expect(prismaMock.storeType.updateMany).not.toHaveBeenCalled();
   });
 
-  it.each([-1, 51, 1.5])("rejects an out-of-range quota (%s)", async (quota) => {
+  it.each([-1, 51, 1.5, Number.NaN])("rejects an invalid quota (%s)", async (quota) => {
     signedInAs("SUPERADMIN");
 
     const result = await setSellerQuota("cosmetique", quota);

@@ -629,10 +629,9 @@
     "sellersQuotaReachedHint": "تم بلوغ الحد الأقصى للبائعين. تواصل مع SOLAL لإضافة المزيد.",
     "newSeller": "بائع جديد",
     "sellerQuota": "الحد الأقصى لعدد البائعين",
-    "sellerError": {
-      "emailExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
-      "quotaReached": "تم بلوغ الحد الأقصى للبائعين في هذا المتجر."
-    },
+    "sellerQuotaReachedError": "تم بلوغ الحد الأقصى للبائعين في هذا المتجر.",
+    "sellerDeleteConfirmTitle": "حذف هذا البائع؟",
+    "sellerDeleteConfirmBody": "سيتم حذف حسابه ولن يتمكن من تسجيل الدخول بعد الآن.",
     "adminUserEmail": "البريد الإلكتروني",
     "adminUserPassword": "كلمة المرور",
     "adminUserPasswordHint": "8 أحرف على الأقل.",

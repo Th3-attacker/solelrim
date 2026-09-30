@@ -629,10 +629,9 @@
     "sellersQuotaReachedHint": "Seller limit reached. Contact SOLAL to add more.",
     "newSeller": "New seller",
     "sellerQuota": "Maximum number of sellers",
-    "sellerError": {
-      "emailExists": "An account already exists with this email.",
-      "quotaReached": "Seller limit reached for this boutique."
-    },
+    "sellerQuotaReachedError": "Seller limit reached for this boutique.",
+    "sellerDeleteConfirmTitle": "Delete this seller?",
+    "sellerDeleteConfirmBody": "Their account will be deleted and they will no longer be able to sign in.",
     "adminUserEmail": "Email",
     "adminUserPassword": "Password",
     "adminUserPasswordHint": "At least 8 characters.",

@@ -34,6 +34,9 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
     email: parsed.data.email,
     password: parsed.data.password,
     email_confirm: true,
+    // Read by proxy.ts to route a seller to the checkout without a DB
+    // lookup on every request. Only a service-role client can write it.
+    app_metadata: { role: "SELLER" },
   });
   if (error) {
     return { error: error.code === "email_exists" ? "emailExists" : "createFailed" };
@@ -57,7 +60,11 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
   } catch (err) {
     // No cross-system transaction between Supabase Auth and Postgres — undo
     // the account so a rejected create never leaves an orphaned login.
-    await supabase.auth.admin.deleteUser(data.user.id).catch(() => {});
+    // supabase-js reports failure through `error`, it doesn't throw.
+    const { error: rollbackError } = await supabase.auth.admin.deleteUser(data.user.id);
+    if (rollbackError) {
+      console.error("[createSeller] orphaned auth user", data.user.id, rollbackError);
+    }
     if (err instanceof Error && err.message === "quotaReached") {
       return { error: "quotaReached" };
     }
@@ -80,7 +87,14 @@ export async function deleteSeller(adminUserId: string): Promise<{ error?: strin
     return { error: "notFound" };
   }
 
-  await createAdminClient().auth.admin.deleteUser(seller.supabaseUserId).catch(() => {});
+  // Keep the AdminUser row if the login couldn't be removed, so the admin
+  // sees the failure and can retry instead of leaving a live login behind
+  // a seller that no longer shows up anywhere. An already-missing auth user
+  // is fine to proceed past.
+  const { error } = await createAdminClient().auth.admin.deleteUser(seller.supabaseUserId);
+  if (error && error.code !== "user_not_found") {
+    return { error: "deleteFailed" };
+  }
   await prisma.adminUser.delete({ where: { id: seller.id } });
 
   revalidatePath("/admin/settings");
