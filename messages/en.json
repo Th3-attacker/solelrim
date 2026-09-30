@@ -864,7 +864,8 @@
     "cancelError": {
       "refunded": "This sale was (partly) refunded: it can no longer be cancelled.",
       "pendingRefund": "A refund request is pending: handle it before cancelling the sale."
-    }
+    },
+    "wallet": "Wallet"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -932,7 +933,10 @@
       "estimatedAmount": "Estimated amount",
       "refundedAmount": "Refunded amount",
       "loyaltyPointsTakenBack": "Points taken back",
-      "loyaltyPointsReturned": "Points returned"
+      "loyaltyPointsReturned": "Points returned",
+      "client": "Client",
+      "notes": "Note",
+      "closedTill": "Till already closed"
     },
     "value": {
       "pos": "Checkout",
@@ -958,7 +962,8 @@
     "actionCashDayClose": "Day closed",
     "actionRefundRequest": "Refund requested",
     "actionRefundApprove": "Refund approved",
-    "actionRefundReject": "Refund rejected"
+    "actionRefundReject": "Refund rejected",
+    "actionSaleUpdate": "Sale edited"
   },
   "trackOrder": {
     "title": "Track my order",
@@ -1133,5 +1138,24 @@
       "unauthorized": "Your session expired. Sign in again to continue.",
       "licenseBlocked": "The shop is suspended or its license has expired."
     }
+  },
+  "saleEdit": {
+    "title": "Edit the sale",
+    "hint": "Only the payment, client and note can be corrected. An item or amount error goes through a refund.",
+    "paymentLockedHint": "A refund was made (or requested) with the current payment: it can no longer change.",
+    "clientLockedHint": "Loyalty points are tied to this client: it can no longer change.",
+    "reason": "Reason for the change",
+    "confirmTitle": "Save the change?",
+    "confirmBody": "The old and new values will be kept in the history with your reason.",
+    "saved": "Sale updated.",
+    "error": {
+      "invalid": "Invalid change: check the payment, client and reason.",
+      "notFound": "Sale not found.",
+      "notEditable": "A cancelled sale can't be edited.",
+      "noChanges": "Nothing changed.",
+      "paymentLocked": "A refund exists with the current payment: it can no longer change.",
+      "clientLocked": "Loyalty points are tied to the current client: it can no longer change."
+    },
+    "currentPayment": "Current: {label}"
   }
 }

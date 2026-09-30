@@ -12,6 +12,7 @@ export const AUDIT_ACTION_LABEL_KEY = {
   "product.delete": "actionProductDelete",
   "sale.create": "actionSaleCreate",
   "sale.cancel": "actionSaleCancel",
+  "sale.update": "actionSaleUpdate",
   "cash.open": "actionCashOpen",
   "cash.in": "actionCashIn",
   "cash.out": "actionCashOut",

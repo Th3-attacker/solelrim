@@ -864,7 +864,8 @@
     "cancelError": {
       "refunded": "Cette vente a été (partiellement) remboursée : elle ne peut plus être annulée.",
       "pendingRefund": "Une demande de remboursement est en attente : traitez-la avant d'annuler la vente."
-    }
+    },
+    "wallet": "Wallet"
   },
   "errors": {
     "notFoundTitle": "Page introuvable",
@@ -932,7 +933,10 @@
       "estimatedAmount": "Montant estimé",
       "refundedAmount": "Montant remboursé",
       "loyaltyPointsTakenBack": "Points repris",
-      "loyaltyPointsReturned": "Points rendus"
+      "loyaltyPointsReturned": "Points rendus",
+      "client": "Client",
+      "notes": "Note",
+      "closedTill": "Caisse déjà fermée"
     },
     "value": {
       "pos": "Caisse",
@@ -958,7 +962,8 @@
     "actionCashDayClose": "Journée clôturée",
     "actionRefundRequest": "Remboursement demandé",
     "actionRefundApprove": "Remboursement validé",
-    "actionRefundReject": "Remboursement refusé"
+    "actionRefundReject": "Remboursement refusé",
+    "actionSaleUpdate": "Vente modifiée"
   },
   "trackOrder": {
     "title": "Suivre ma commande",
@@ -1133,5 +1138,24 @@
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
     }
+  },
+  "saleEdit": {
+    "title": "Modifier la vente",
+    "hint": "Seuls le paiement, le client et la note se corrigent. Une erreur d'articles ou de montant passe par un remboursement.",
+    "paymentLockedHint": "Un remboursement a été fait (ou demandé) avec le paiement actuel : il ne peut plus changer.",
+    "clientLockedHint": "Des points fidélité sont liés à ce client : il ne peut plus changer.",
+    "reason": "Motif de la modification",
+    "confirmTitle": "Enregistrer la modification ?",
+    "confirmBody": "L'ancienne et la nouvelle valeur seront gardées dans l'historique avec votre motif.",
+    "saved": "Vente modifiée.",
+    "error": {
+      "invalid": "Modification invalide : vérifiez le paiement, le client et le motif.",
+      "notFound": "Vente introuvable.",
+      "notEditable": "Une vente annulée ne se modifie pas.",
+      "noChanges": "Rien n'a changé.",
+      "paymentLocked": "Un remboursement existe avec le paiement actuel : il ne peut plus changer.",
+      "clientLocked": "Des points fidélité sont liés au client actuel : il ne peut plus changer."
+    },
+    "currentPayment": "Actuel : {label}"
   }
 }

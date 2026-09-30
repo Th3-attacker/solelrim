@@ -6,6 +6,9 @@ import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
 import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";
+import { EditSaleDialog } from "@/components/sales/edit-sale-dialog";
+import { getPosWallets } from "@/lib/queries/pos";
+import { getAllClients } from "@/lib/queries/clients";
 import { getSaleRefunds } from "@/lib/queries/refunds";
 import { formatPrice } from "@/lib/format/currency";
 import {
@@ -24,13 +27,15 @@ export default async function SaleDetailPage({
 }) {
   const { saleId } = await params;
   const scope = await getAdminScope();
-  const [t, tProducts, tCommon, format, sale, refunds] = await Promise.all([
+  const [t, tProducts, tCommon, format, sale, refunds, wallets, clients] = await Promise.all([
     getTranslations("sales"),
     getTranslations("products"),
     getTranslations("common"),
     getFormatter(),
     getSaleById(saleId, scope),
     getSaleRefunds(saleId, scope),
+    getPosWallets(scope),
+    getAllClients(scope),
   ]);
 
   if (!sale) {
@@ -39,15 +44,28 @@ export default async function SaleDetailPage({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 print:max-w-full">
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">
             {sale.reference}
           </h1>
           <SaleStatusBadge status={sale.status} />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <PrintInvoiceButton />
+          {sale.status !== "CANCELLED" && (
+            <EditSaleDialog
+              saleId={sale.id}
+              paymentMethod={sale.paymentMethod}
+              walletProvider={sale.walletProvider}
+              clientId={sale.clientId}
+              notes={sale.notes}
+              wallets={wallets.map((w) => ({ id: w.id, provider: w.provider }))}
+              clients={clients.map((c) => ({ id: c.id, fullName: c.fullName }))}
+              paymentLocked={(refunds?.requests ?? []).some((r) => r.status !== "REJECTED")}
+              clientLocked={sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0}
+            />
+          )}
           {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} />}
         </div>
       </div>
@@ -66,9 +84,26 @@ export default async function SaleDetailPage({
           </div>
         </div>
 
-        <p className="mb-4 text-sm">
-          {t("client")}: {sale.client?.fullName ?? t("walkInClient")}
-        </p>
+        <div className="mb-4 flex flex-col gap-1 text-sm">
+          <p>
+            {t("client")}: {sale.client?.fullName ?? t("walkInClient")}
+          </p>
+          <p>
+            {t("paymentMethod")}:{" "}
+            {sale.paymentMethod === "wallet"
+              ? (sale.walletProvider ?? t("wallet"))
+              : sale.paymentMethod === "cash"
+                ? t("cash")
+                : sale.paymentMethod === "card" || sale.paymentMethod === "transfer"
+                  ? t(sale.paymentMethod)
+                  : "—"}
+          </p>
+          {sale.notes && (
+            <p className="text-muted-foreground">
+              {t("notes")}: {sale.notes}
+            </p>
+          )}
+        </div>
 
         <Table>
           <TableHeader>

@@ -16,7 +16,7 @@ vi.mock("next/cache", () => ({
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { createSale, cancelSale } from "@/lib/actions/sales";
+import { createSale, cancelSale, updateSale } from "@/lib/actions/sales";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -350,5 +350,176 @@ describe("cancelSale", () => {
       where: { id: "client-1" },
       data: { loyaltyPoints: 0 },
     });
+  });
+});
+
+describe("updateSale", () => {
+  function recordedSale(overrides: Record<string, unknown> = {}) {
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue({
+      id: "sale-1",
+      reference: "VNT-1",
+      status: "COMPLETED",
+      paymentMethod: "cash",
+      walletProvider: null,
+      clientId: null,
+      client: null,
+      notes: null,
+      loyaltyPointsEarned: 0,
+      loyaltyPointsRedeemed: 0,
+      cashSession: { status: "OPEN" },
+      refundRequests: [],
+      ...overrides,
+    } as never);
+  }
+
+  const TO_WALLET = {
+    saleId: "sale-1",
+    paymentMethod: "wallet",
+    walletAccountId: "wallet-1",
+    clientId: null,
+    notes: "",
+    reason: "Mauvais moyen choisi",
+  };
+
+  it("never lets a seller edit a sale", async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "admin-1",
+      role: "SELLER",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    await expect(updateSale(TO_WALLET)).rejects.toThrow("forbidden");
+    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+  });
+
+  it("corrects the payment and keeps the old and new value with the reason", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({});
+    expect(prismaMock.walletAccount.findFirst).toHaveBeenCalledWith({
+      where: { id: "wallet-1", productType: "cosmetique" },
+      select: { provider: true },
+    });
+    expect(prismaMock.sale.update).toHaveBeenCalledWith({
+      where: { id: "sale-1" },
+      data: {
+        paymentMethod: "wallet",
+        walletProvider: "Bankily",
+        clientId: null,
+        notes: null,
+        amountReceived: null,
+      },
+    });
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "sale.update",
+        targetLabel: "VNT-1",
+        oldValue: { paymentMethod: "cash", walletProvider: null },
+        newValue: { paymentMethod: "wallet", walletProvider: "Bankily" },
+        reason: "Mauvais moyen choisi",
+      }),
+    });
+  });
+
+  it("ignores any other field sent along — items and amounts never change", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    await updateSale({ ...TO_WALLET, total: 1, discount: 999, items: [], status: "CANCELLED" });
+
+    const { data } = prismaMock.sale.update.mock.calls[0][0];
+    expect(Object.keys(data).sort()).toEqual(
+      ["amountReceived", "clientId", "notes", "paymentMethod", "walletProvider"].sort(),
+    );
+  });
+
+  it("refuses a wallet or a client of another boutique", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue(null);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "invalid" });
+
+    prismaMock.client.findFirst.mockResolvedValue(null);
+    expect(
+      await updateSale({
+        saleId: "sale-1",
+        paymentMethod: "cash",
+        clientId: "other-boutique-client",
+        reason: "Client oublié",
+      }),
+    ).toEqual({ error: "invalid" });
+    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a sale of another boutique", async () => {
+    prismaMock.$queryRaw.mockResolvedValue([] as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "notFound" });
+  });
+
+  it("requires a reason", async () => {
+    expect(await updateSale({ ...TO_WALLET, reason: " " })).toEqual({ error: "invalid" });
+  });
+
+  it("flags a change on a sale whose till is already closed", async () => {
+    recordedSale({ cashSession: { status: "CLOSED" } });
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    await updateSale(TO_WALLET);
+
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        newValue: expect.objectContaining({ closedTill: true }),
+      }),
+    });
+  });
+
+  it("keeps the payment once a refund went back by it", async () => {
+    recordedSale({ refundRequests: [{ id: "request-1" }] });
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "paymentLocked" });
+  });
+
+  it("keeps the client once loyalty points are tied to them", async () => {
+    recordedSale({ clientId: "client-1", loyaltyPointsEarned: 12 });
+    prismaMock.client.findFirst.mockResolvedValue({ fullName: "Autre" } as never);
+
+    expect(
+      await updateSale({
+        saleId: "sale-1",
+        paymentMethod: "cash",
+        clientId: "client-2",
+        reason: "Mauvais client",
+      }),
+    ).toEqual({ error: "clientLocked" });
+  });
+
+  it("keeps a payment the form can't offer when only the note changes", async () => {
+    recordedSale({ paymentMethod: "card" });
+
+    expect(
+      await updateSale({ saleId: "sale-1", clientId: null, notes: "Payé par carte", reason: "Note" }),
+    ).toEqual({});
+    expect(prismaMock.sale.update).toHaveBeenCalledWith({
+      where: { id: "sale-1" },
+      data: { paymentMethod: "card", walletProvider: null, clientId: null, notes: "Payé par carte" },
+    });
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ oldValue: { notes: null }, newValue: { notes: "Payé par carte" } }),
+    });
+  });
+
+  it("refuses a cancelled sale, and an edit that changes nothing", async () => {
+    recordedSale({ status: "CANCELLED" });
+    expect(await updateSale({ ...TO_WALLET })).toEqual({ error: "notEditable" });
+
+    recordedSale();
+    expect(
+      await updateSale({ saleId: "sale-1", paymentMethod: "cash", clientId: null, reason: "Rien" }),
+    ).toEqual({ error: "noChanges" });
   });
 });
