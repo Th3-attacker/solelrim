@@ -95,7 +95,9 @@ export async function loadSessionTotals(
 
 // Serializes the operations that decide which business day is still open —
 // opening a till and closing the day — per boutique, so a till can't open
-// on a day whose closure is committing at the same moment.
+// on a day whose closure is committing at the same moment. NO KEY UPDATE:
+// the two still exclude each other, but inserts that merely reference the
+// boutique row (sales, orders, audit entries) aren't blocked by it.
 export async function lockBoutiqueDay(tx: TransactionClient, productType: string): Promise<void> {
-  await tx.$queryRaw`SELECT 1 FROM "StoreType" WHERE "key" = ${productType} FOR UPDATE`;
+  await tx.$queryRaw`SELECT 1 FROM "StoreType" WHERE "key" = ${productType} FOR NO KEY UPDATE`;
 }

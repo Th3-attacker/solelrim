@@ -371,12 +371,30 @@ describe("closeStoreDay", () => {
     });
   });
 
+  it("refuses while a till opened on an earlier day is still open", async () => {
+    signedInAs("BOUTIQUE_ADMIN");
+    prismaMock.cashSession.findMany.mockResolvedValue([closedTill()] as never);
+    prismaMock.cashSession.findFirst.mockResolvedValue({ id: "yesterdays-till" } as never);
+
+    expect(await closeStoreDay({ date: "2026-09-30" })).toEqual({ error: "openSessions" });
+    expect(prismaMock.cashSession.findFirst).toHaveBeenCalledWith({
+      where: {
+        productType: "sport",
+        status: "OPEN",
+        businessDate: { lte: new Date("2026-09-30T00:00:00Z") },
+      },
+      select: { id: true },
+    });
+    expect(prismaMock.storeDayClosure.create).not.toHaveBeenCalled();
+  });
+
   it("refuses while a till of that day is still open", async () => {
     signedInAs("BOUTIQUE_ADMIN");
     prismaMock.cashSession.findMany.mockResolvedValue([
       closedTill(),
       closedTill({ id: "session-2", status: "OPEN" }),
     ] as never);
+    prismaMock.cashSession.findFirst.mockResolvedValue({ id: "session-2" } as never);
 
     expect(await closeStoreDay({ date: "2026-09-30" })).toEqual({ error: "openSessions" });
     expect(prismaMock.storeDayClosure.create).not.toHaveBeenCalled();

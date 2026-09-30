@@ -1008,7 +1008,7 @@
     "dayClosedTitle": "Journée clôturée",
     "dayPreviewTitle": "Total de la journée",
     "dayClosedBy": "Clôturée par {email} le {date}.",
-    "openSessionsHint": "{count, plural, one {Une caisse est encore ouverte} other {# caisses sont encore ouvertes}} : fermez-les avant de clôturer la journée.",
+    "openSessionsHint": "{count, plural, one {Une caisse est encore ouverte} other {# caisses sont encore ouvertes}} (ce jour ou avant) : fermez-les avant de clôturer la journée.",
     "recentClosures": "Dernières clôtures",
     "sessionCount": "Caisses",
     "closedBy": "Clôturée par",
@@ -1022,7 +1022,7 @@
       "notFound": "Caisse introuvable.",
       "noteRequired": "Un commentaire est obligatoire quand le comptage ne correspond pas.",
       "noSessions": "Aucune caisse ce jour-là : rien à clôturer.",
-      "openSessions": "Des caisses de ce jour sont encore ouvertes.",
+      "openSessions": "Des caisses de ce jour ou d'un jour précédent sont encore ouvertes.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
     },

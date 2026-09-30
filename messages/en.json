@@ -1008,7 +1008,7 @@
     "dayClosedTitle": "Day closed",
     "dayPreviewTitle": "Day total",
     "dayClosedBy": "Closed by {email} on {date}.",
-    "openSessionsHint": "{count, plural, one {One till is still open} other {# tills are still open}}: close them before closing the day.",
+    "openSessionsHint": "{count, plural, one {One till is still open} other {# tills are still open}} (this day or earlier): close them before closing the day.",
     "recentClosures": "Recent closures",
     "sessionCount": "Tills",
     "closedBy": "Closed by",
@@ -1022,7 +1022,7 @@
       "notFound": "Till not found.",
       "noteRequired": "A comment is required when the count doesn't match.",
       "noSessions": "No till that day: nothing to close.",
-      "openSessions": "Some tills of that day are still open.",
+      "openSessions": "Some tills of this day or an earlier one are still open.",
       "unauthorized": "Your session expired. Sign in again to continue.",
       "licenseBlocked": "The shop is suspended or its license has expired."
     },
