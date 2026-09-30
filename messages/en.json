@@ -195,7 +195,9 @@
     "loyaltyNotEnrolled": "No loyalty card",
     "purchaseCount": "In-store purchases",
     "totalSpent": "Total spent",
-    "pointsColumn": "Points"
+    "pointsColumn": "Points",
+    "loyaltyPhoneRequired": "This client has a loyalty card: their number can't be empty.",
+    "loyaltyPhoneTaken": "This number is already used by another loyalty card."
   },
   "promoCodes": {
     "title": "Promo codes",

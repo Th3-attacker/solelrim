@@ -136,8 +136,9 @@ export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResu
       }
 
       const subtotal = lineItems.reduce((sum, i) => sum + i.lineTotal, 0);
-      // A reward never discounts below zero; it still costs its full points.
-      const redeem = Boolean(loyalty?.redeem && rule);
+      // A reward never discounts below zero; it still costs its full points,
+      // so it isn't spent at all when there's nothing left to discount.
+      const redeem = Boolean(loyalty?.redeem && rule) && subtotal - input.discount > 0;
       const loyaltyDiscount = redeem
         ? Math.min(rule!.loyaltyRewardValue, Math.max(subtotal - input.discount, 0))
         : 0;

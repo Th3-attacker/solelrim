@@ -332,6 +332,27 @@ describe("createPosSale with a loyalty card", () => {
     });
   });
 
+  it("spends no points when a manual discount already brought the total to zero", async () => {
+    signedInAs("SELLER");
+    loyaltyBoutique();
+    stockedVariant();
+    enrolledCard(150);
+
+    const result = await createPosSale({
+      ...CASH,
+      discount: 1000,
+      expectedTotal: 0,
+      amountReceived: null,
+      loyalty: { clientId: "client-1", redeem: true },
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(prismaMock.client.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.sale.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ loyaltyDiscount: 0, loyaltyPointsRedeemed: 0, total: 0 }),
+    });
+  });
+
   it("refuses the sale when the points were spent elsewhere in the meantime", async () => {
     signedInAs("SELLER");
     loyaltyBoutique();

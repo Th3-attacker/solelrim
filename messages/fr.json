@@ -195,7 +195,9 @@
     "loyaltyNotEnrolled": "Pas de carte de fidélité",
     "purchaseCount": "Achats en boutique",
     "totalSpent": "Total dépensé",
-    "pointsColumn": "Points"
+    "pointsColumn": "Points",
+    "loyaltyPhoneRequired": "Ce client a une carte de fidélité : son numéro ne peut pas être vide.",
+    "loyaltyPhoneTaken": "Ce numéro est déjà utilisé par une autre carte de fidélité."
   },
   "promoCodes": {
     "title": "Codes promo",

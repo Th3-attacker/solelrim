@@ -142,8 +142,13 @@ export function CheckoutScreen({
   const discountValue = Math.min(Math.max(Number(discount) || 0, 0), subtotal);
   // Same rule recordSale applies server-side: a reward never discounts
   // below zero, and only a card holding enough points can use one.
+  // Mirrors recordSale: no reward is spent when there's nothing to discount.
+  const rewardApplicable = subtotal - discountValue > 0;
   const redeeming =
-    redeem && loyaltyCard !== null && loyaltyCard.points >= loyaltyRule.rewardPoints;
+    redeem &&
+    rewardApplicable &&
+    loyaltyCard !== null &&
+    loyaltyCard.points >= loyaltyRule.rewardPoints;
   const loyaltyDiscountValue = redeeming
     ? Math.min(loyaltyRule.rewardValue, subtotal - discountValue)
     : 0;
@@ -298,6 +303,7 @@ export function CheckoutScreen({
             rule={loyaltyRule}
             card={loyaltyCard}
             redeem={redeem}
+            rewardApplicable={rewardApplicable}
             onCardChange={setLoyaltyCard}
             onRedeemChange={setRedeem}
           />

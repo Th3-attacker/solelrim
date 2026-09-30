@@ -21,12 +21,16 @@ export function LoyaltyCardPicker({
   rule,
   card,
   redeem,
+  rewardApplicable,
   onCardChange,
   onRedeemChange,
 }: {
   rule: PosLoyaltyRule;
   card: LoyaltyCard | null;
   redeem: boolean;
+  // False when the cart's total is already zero: the reward would cost its
+  // points for nothing, so the server won't apply it either.
+  rewardApplicable: boolean;
   onCardChange: (card: LoyaltyCard | null) => void;
   onRedeemChange: (redeem: boolean) => void;
 }) {
@@ -47,8 +51,7 @@ export function LoyaltyCardPicker({
       const result = await lookupLoyaltyCard(phone);
       if (result.error) return showError(result.error);
       if (result.card) {
-        onCardChange(result.card);
-        setNotFoundPhone(null);
+        attach(result.card);
       } else {
         setNotFoundPhone(phone);
       }
@@ -60,12 +63,20 @@ export function LoyaltyCardPicker({
       const result = await enrollLoyaltyCard({ phone: notFoundPhone ?? phone, name });
       if (result.error) return showError(result.error);
       if (result.card) {
-        onCardChange(result.card);
-        setNotFoundPhone(null);
-        setName("");
+        attach(result.card);
         toast.success(t("loyaltyEnrolled"));
       }
     });
+  }
+
+  // The typed number is cleared as soon as a card is attached: the parent
+  // detaches the card after each sale, and a number left in the field could
+  // put the previous customer's card on the next sale with one click.
+  function attach(found: LoyaltyCard) {
+    onCardChange(found);
+    setPhone("");
+    setName("");
+    setNotFoundPhone(null);
   }
 
   function handleDetach() {
@@ -104,7 +115,8 @@ export function LoyaltyCardPicker({
           <div className="flex items-start gap-2">
             <Checkbox
               id="pos-loyalty-redeem"
-              checked={redeem}
+              disabled={!rewardApplicable}
+              checked={redeem && rewardApplicable}
               onCheckedChange={(checked) => onRedeemChange(checked === true)}
             />
             <Label htmlFor="pos-loyalty-redeem" className="font-normal">

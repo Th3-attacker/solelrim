@@ -195,7 +195,9 @@
     "loyaltyNotEnrolled": "لا توجد بطاقة ولاء",
     "purchaseCount": "المشتريات في المتجر",
     "totalSpent": "إجمالي الإنفاق",
-    "pointsColumn": "النقاط"
+    "pointsColumn": "النقاط",
+    "loyaltyPhoneRequired": "لهذا الزبون بطاقة ولاء: لا يمكن ترك رقمه فارغًا.",
+    "loyaltyPhoneTaken": "هذا الرقم مستخدم بالفعل في بطاقة ولاء أخرى."
   },
   "promoCodes": {
     "title": "أكواد الخصم",
