@@ -63,6 +63,24 @@ describe("computeSessionTotals", () => {
   });
 });
 
+describe("cash refunds", () => {
+  it("come out of the expected cash, and are summed across a day", () => {
+    const till = computeSessionTotals({
+      openingFloat: 1000,
+      groups: [{ paymentMethod: "cash", walletProvider: null, total: 700, count: 1 }],
+      walletProviders: [],
+      cashIn: 0,
+      cashOut: 0,
+      cashRefunds: 250,
+    });
+    expect(till.expectedCash).toBe(1450);
+
+    // A till frozen before refunds existed has no cashRefunds at all.
+    const { cashRefunds: _legacyMissing, ...legacy } = till;
+    expect(combineSessionTotals([till, { ...legacy, cashRefunds: undefined }]).cashRefunds).toBe(250);
+  });
+});
+
 describe("combineSessionTotals", () => {
   it("adds up every seller's till into one day, merging the same wallet", () => {
     const day = combineSessionTotals([

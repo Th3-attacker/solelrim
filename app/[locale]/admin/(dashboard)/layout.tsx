@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { countPendingRefunds } from "@/lib/queries/refunds";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -39,9 +40,11 @@ export default async function DashboardLayout({
   // scope is simply their own locked boutique.
   const currentScope =
     admin.role === "SELLER" ? admin.productType! : await getAdminScope();
-  const [{ data: { user } }, pendingOrderCount] = await Promise.all([
+  const [{ data: { user } }, pendingOrderCount, pendingRefundCount] = await Promise.all([
     supabase.auth.getUser(),
     getPendingOrderCount(currentScope),
+    // Only an admin decides refunds, so only they get the badge.
+    admin.role === "SELLER" ? Promise.resolve(0) : countPendingRefunds(currentScope),
   ]);
 
   const currentStoreType = storeTypes.find((type) => type.key === currentScope);
@@ -56,6 +59,7 @@ export default async function DashboardLayout({
             role={admin.role}
             email={user?.email ?? ""}
             pendingOrderCount={pendingOrderCount}
+            pendingRefundCount={pendingRefundCount}
           />
         </div>
         <SidebarInset>

@@ -79,7 +79,10 @@ export type SessionTotals = {
   salesCount: number;
   cashIn: number;
   cashOut: number;
-  // Opening float + cash sales + money in − money out.
+  // Cash refunds paid out of this till. Optional: tills closed before
+  // refunds existed froze their totals without it.
+  cashRefunds?: number;
+  // Opening float + cash sales + money in − money out − cash refunds.
   expectedCash: number;
 };
 
@@ -89,6 +92,7 @@ export function computeSessionTotals(input: {
   walletProviders: string[];
   cashIn: number;
   cashOut: number;
+  cashRefunds?: number;
 }): SessionTotals {
   const breakdown = buildPaymentBreakdown(input.groups, input.walletProviders);
   const cashSales = breakdown[0].total;
@@ -99,7 +103,10 @@ export function computeSessionTotals(input: {
     salesCount: breakdown.reduce((sum, row) => sum + row.count, 0),
     cashIn: input.cashIn,
     cashOut: input.cashOut,
-    expectedCash: roundMoney(input.openingFloat + cashSales + input.cashIn - input.cashOut),
+    cashRefunds: input.cashRefunds ?? 0,
+    expectedCash: roundMoney(
+      input.openingFloat + cashSales + input.cashIn - input.cashOut - (input.cashRefunds ?? 0),
+    ),
   };
 }
 
@@ -125,6 +132,7 @@ export function combineSessionTotals(list: SessionTotals[]): SessionTotals {
     salesCount: list.reduce((count, totals) => count + totals.salesCount, 0),
     cashIn: sum((t) => t.cashIn),
     cashOut: sum((t) => t.cashOut),
+    cashRefunds: sum((t) => t.cashRefunds ?? 0),
     expectedCash: sum((t) => t.expectedCash),
   };
 }

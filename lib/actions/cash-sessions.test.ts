@@ -67,6 +67,7 @@ function tillFigures() {
     { type: "OUT", _sum: { amount: decimal(100) } },
   ]);
   prismaMock.walletAccount.findMany.mockResolvedValue([{ provider: "Bankily" }] as never);
+  prismaMock.refundRequest.aggregate.mockResolvedValue({ _sum: { amount: null } } as never);
 }
 
 beforeEach(() => {

@@ -31,7 +31,11 @@ export function CancelSaleButton({ saleId }: { saleId: string }) {
     startTransition(async () => {
       const result = await cancelSale(saleId);
       if (result.error) {
-        toast.error(tCommon("error"));
+        toast.error(
+          result.error === "refunded" || result.error === "pendingRefund"
+            ? t(`cancelError.${result.error}`)
+            : tCommon("error"),
+        );
         return;
       }
       setOpen(false);

@@ -17,9 +17,11 @@ export async function getMySales(
 ) {
   const currentPage = toPageNumber(page);
   const where = mySalesWhere(productType, sellerId, filters);
-  const completedWhere = { ...where, status: "COMPLETED" as const };
+  // Everything but cancelled sales was sold; refunds are counted apart.
+  const soldWhere =
+    where.status === undefined ? { ...where, status: { not: "CANCELLED" as const } } : where;
 
-  const [sales, count, groups, wallets] = await Promise.all([
+  const [sales, count, groups, wallets, refunded] = await Promise.all([
     prisma.sale.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -31,6 +33,7 @@ export async function getMySales(
         createdAt: true,
         status: true,
         total: true,
+        refundedAmount: true,
         paymentMethod: true,
         walletProvider: true,
         client: { select: { fullName: true } },
@@ -48,7 +51,7 @@ export async function getMySales(
       ? Promise.resolve([])
       : prisma.sale.groupBy({
           by: ["paymentMethod", "walletProvider"],
-          where: completedWhere,
+          where: soldWhere,
           _sum: { total: true },
           _count: { _all: true },
         }),
@@ -57,6 +60,9 @@ export async function getMySales(
       orderBy: { position: "asc" },
       select: { provider: true },
     }),
+    where.status === "CANCELLED"
+      ? Promise.resolve(null)
+      : prisma.sale.aggregate({ where: soldWhere, _sum: { refundedAmount: true } }),
   ]);
 
   const breakdown = buildPaymentBreakdown(
@@ -76,6 +82,7 @@ export async function getMySales(
       createdAt: sale.createdAt,
       status: sale.status,
       total: sale.total.toNumber(),
+      refundedAmount: sale.refundedAmount.toNumber(),
       paymentMethod: sale.paymentMethod,
       walletProvider: sale.walletProvider,
       clientName: sale.client?.fullName ?? null,
@@ -89,11 +96,12 @@ export async function getMySales(
     total: count,
     page: currentPage,
     summary: {
-      // Same completed sales as the amounts next to it; the cancelled ones
-      // in the filtered list are counted apart.
+      // Same sold (non-cancelled) sales as the amounts next to it; the
+      // cancelled ones in the filtered list are counted apart.
       salesCount: breakdown.reduce((sum, row) => sum + row.count, 0),
       cancelledCount: count - breakdown.reduce((sum, row) => sum + row.count, 0),
       soldTotal: roundMoney(breakdown.reduce((sum, row) => sum + row.total, 0)),
+      refundedTotal: Number(refunded?._sum.refundedAmount ?? 0),
       breakdown,
     },
     walletProviders: wallets.map((wallet) => wallet.provider),

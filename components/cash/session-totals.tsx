@@ -34,6 +34,9 @@ export function SessionTotalsView({ totals }: { totals: SessionTotals }) {
       <div className="my-1 border-t border-dashed" />
       <Row label={t("cashIn")} value={`+${money(totals.cashIn)}`} />
       <Row label={t("cashOut")} value={`-${money(totals.cashOut)}`} />
+      {(totals.cashRefunds ?? 0) > 0 && (
+        <Row label={t("cashRefunds")} value={`-${money(totals.cashRefunds ?? 0)}`} />
+      )}
       <Row label={t("expectedCash")} value={money(totals.expectedCash)} strong />
     </dl>
   );

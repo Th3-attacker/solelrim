@@ -293,13 +293,29 @@ describe("cancelSale", () => {
 
   it("returns alreadyCancelled without touching stock twice", async () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
-    prismaMock.sale.findFirst.mockResolvedValue({ id: "sale-1" } as never);
+    prismaMock.sale.findFirst.mockResolvedValue({ status: "CANCELLED" } as never);
 
     const result = await cancelSale("sale-1");
 
     expect(result.error).toBe("alreadyCancelled");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
     expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses to cancel a sale that was (partly) refunded", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.sale.findFirst.mockResolvedValue({ status: "PARTIALLY_REFUNDED" } as never);
+
+    expect((await cancelSale("sale-1")).error).toBe("refunded");
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses to cancel while a refund request is pending", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.refundRequest.findFirst.mockResolvedValue({ id: "request-1" } as never);
+
+    expect((await cancelSale("sale-1")).error).toBe("pendingRefund");
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
   it("takes back earned points and gives back redeemed ones", async () => {

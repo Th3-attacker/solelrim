@@ -27,7 +27,9 @@ async function paymentGroups(
 ): Promise<PaymentGroup[]> {
   const groups = await db.sale.groupBy({
     by: ["paymentMethod", "walletProvider"],
-    where: { ...where, status: "COMPLETED" },
+    // A refunded sale was still sold: its refund leaves the till on its
+    // own (cashRefunds). Only a cancelled sale never happened.
+    where: { ...where, status: { not: "CANCELLED" } },
     _sum: { total: true },
     _count: { _all: true },
   });
@@ -80,16 +82,21 @@ export async function loadSessionTotals(
   db: Db,
   session: { id: string; productType: string; openingFloat: number },
 ): Promise<SessionTotals> {
-  const [groups, providers, movements] = await Promise.all([
+  const [groups, providers, movements, refunds] = await Promise.all([
     paymentGroups(db, { cashSessionId: session.id }),
     walletProviders(db, session.productType),
     movementSums(db, { sessionId: session.id }),
+    db.refundRequest.aggregate({
+      where: { cashSessionId: session.id, status: "APPROVED", paymentMethod: "cash" },
+      _sum: { amount: true },
+    }),
   ]);
   return computeSessionTotals({
     openingFloat: session.openingFloat,
     groups,
     walletProviders: providers,
     ...movements,
+    cashRefunds: Number(refunds._sum.amount ?? 0),
   });
 }
 

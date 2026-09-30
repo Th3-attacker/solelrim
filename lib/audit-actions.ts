@@ -17,6 +17,9 @@ export const AUDIT_ACTION_LABEL_KEY = {
   "cash.out": "actionCashOut",
   "cash.close": "actionCashClose",
   "cash.dayClose": "actionCashDayClose",
+  "refund.request": "actionRefundRequest",
+  "refund.approve": "actionRefundApprove",
+  "refund.reject": "actionRefundReject",
 } as const;
 
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL_KEY;

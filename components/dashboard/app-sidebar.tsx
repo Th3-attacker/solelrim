@@ -19,6 +19,7 @@ import { NavUser } from "@/components/dashboard/nav-user";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
+  ArrowCounterClockwise,
   CashRegister,
   ListChecks,
   Receipt,
@@ -45,12 +46,14 @@ export function AppSidebar({
   role,
   email,
   pendingOrderCount,
+  pendingRefundCount,
 }: {
   storeTypes: StoreTypeOption[];
   currentScope: string;
   role: "SUPERADMIN" | "BOUTIQUE_ADMIN" | "SELLER";
   email: string;
   pendingOrderCount: number;
+  pendingRefundCount: number;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -66,6 +69,7 @@ export function AppSidebar({
         { href: "/admin/pos", label: t("pos"), icon: CashRegister },
         { href: "/admin/pos/register", label: t("register"), icon: Money },
         { href: "/admin/pos/my-sales", label: t("mySales"), icon: Receipt },
+        { href: "/admin/pos/refunds", label: t("refunds"), icon: ArrowCounterClockwise },
         { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
       ],
     },
@@ -86,6 +90,12 @@ export function AppSidebar({
         { href: "/admin/pos", label: t("pos"), icon: CashRegister },
         { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
         { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
+        {
+          href: "/admin/pos/refunds",
+          label: t("refunds"),
+          icon: ArrowCounterClockwise,
+          badge: pendingRefundCount > 0 ? pendingRefundCount : undefined,
+        },
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         {
           href: "/admin/orders",

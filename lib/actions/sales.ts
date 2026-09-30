@@ -46,12 +46,21 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
         data: { status: "CANCELLED" },
       });
       if (updated.count === 0) {
-        const exists = await tx.sale.findFirst({
+        const existing = await tx.sale.findFirst({
           where: { id: saleId, productType },
-          select: { id: true },
+          select: { status: true },
         });
-        throw new Error(exists ? "alreadyCancelled" : "notFound");
+        throw new Error(
+          !existing ? "notFound" : existing.status === "CANCELLED" ? "alreadyCancelled" : "refunded",
+        );
       }
+      // A pending refund would be approved against a voided sale: it has to
+      // be decided (or rejected) first.
+      const pendingRefund = await tx.refundRequest.findFirst({
+        where: { saleId, status: "PENDING" },
+        select: { id: true },
+      });
+      if (pendingRefund) throw new Error("pendingRefund");
 
       const sale = await tx.sale.findUniqueOrThrow({
         where: { id: saleId },
@@ -97,7 +106,10 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
       });
     });
   } catch (err) {
-    if (err instanceof Error && ["notFound", "alreadyCancelled"].includes(err.message)) {
+    if (
+      err instanceof Error &&
+      ["notFound", "alreadyCancelled", "refunded", "pendingRefund"].includes(err.message)
+    ) {
       return { error: err.message };
     }
     throw err;

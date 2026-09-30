@@ -6,7 +6,7 @@ import { getMySales, MY_SALES_PAGE_SIZE } from "@/lib/queries/my-sales";
 import { parseMySalesFilters } from "@/lib/shop/my-sales-filters";
 import { formatPrice } from "@/lib/format/currency";
 import { toPageNumber } from "@/lib/shop/pagination";
-import { Badge } from "@/components/ui/badge";
+import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { Button } from "@/components/ui/button";
 import { ListPagination } from "@/components/ui/list-pagination";
 import { StateMessage } from "@/components/ui/state-message";
@@ -66,6 +66,9 @@ export default async function MySalesPage({
           }
         />
         <Tile label={t("soldTotal")} value={money(summary.soldTotal)} strong />
+        {summary.refundedTotal > 0 && (
+          <Tile label={t("refundedTotal")} value={`-${money(summary.refundedTotal)}`} />
+        )}
         {summary.breakdown.map((row) => (
           <Tile
             key={`${row.method}:${row.provider ?? ""}`}
@@ -98,9 +101,7 @@ export default async function MySalesPage({
                   >
                     {sale.reference}
                   </Link>
-                  <Badge variant={sale.status === "COMPLETED" ? "secondary" : "destructive"}>
-                    {t(sale.status === "COMPLETED" ? "statusCompleted" : "statusCancelled")}
-                  </Badge>
+                  <SaleStatusBadge status={sale.status} />
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {format.dateTime(sale.createdAt, { dateStyle: "medium", timeStyle: "short" })}
@@ -132,6 +133,11 @@ export default async function MySalesPage({
                   }
                 >
                   {money(sale.total)}
+                  {sale.refundedAmount > 0 && sale.status !== "CANCELLED" && (
+                    <span className="ms-2 text-xs font-normal text-muted-foreground">
+                      {t("refundedPart", { amount: money(sale.refundedAmount) })}
+                    </span>
+                  )}
                 </span>
               </div>
             </li>
