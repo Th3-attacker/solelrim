@@ -231,6 +231,7 @@ model AdminUser {
   // null, so deleting a boutique an admin is scoped to must fail loudly,
   // not silently orphan the check constraint.
   storeType           StoreType? @relation(fields: [productType], references: [key], onDelete: Restrict)
+  sales               Sale[]
   createdAt           DateTime   @default(now())
 
   @@index([productType])
@@ -364,26 +365,41 @@ model Client {
 }
 
 model Sale {
-  id            String     @id @default(cuid())
-  reference     String     @unique
-  clientId      String?
-  client        Client?    @relation(fields: [clientId], references: [id])
-  items         SaleItem[]
-  subtotal      Decimal    @db.Decimal(10, 2)
-  discount      Decimal    @default(0) @db.Decimal(10, 2)
-  total         Decimal    @db.Decimal(10, 2)
-  status        SaleStatus @default(COMPLETED)
-  paymentMethod String?
-  notes         String?
+  id             String     @id @default(cuid())
+  reference      String     @unique
+  clientId       String?
+  client         Client?    @relation(fields: [clientId], references: [id])
+  items          SaleItem[]
+  subtotal       Decimal    @db.Decimal(10, 2)
+  discount       Decimal    @default(0) @db.Decimal(10, 2)
+  total          Decimal    @db.Decimal(10, 2)
+  status         SaleStatus @default(COMPLETED)
+  // Free text for historical manual sales ("cash", "card", "transfer");
+  // the checkout only ever writes "cash" or "wallet".
+  paymentMethod  String?
+  // Snapshot of the WalletAccount provider name at sale time, not a
+  // foreign key — a wallet account can later be renamed or deleted, but a
+  // past sale and its cash closing must keep saying where the money went.
+  walletProvider String?
+  // Cash handed over by the customer, for the change on the receipt. Null
+  // for wallet sales and for cash sales where it wasn't entered.
+  amountReceived Decimal?   @db.Decimal(10, 2)
+  notes          String?
   // Stamped at creation from the admin's current scope (manual sale) or
   // copied from the source Order (auto-created on deliverOrder).
-  productType   String
-  storeType     StoreType  @relation(fields: [productType], references: [key])
-  createdAt     DateTime   @default(now())
+  productType    String
+  storeType      StoreType  @relation(fields: [productType], references: [key])
+  // Who recorded the sale (checkout or manual). Null for sales auto-created
+  // from a delivered online order, and SetNull if that account is later
+  // deleted so the sale itself survives.
+  sellerId       String?
+  seller         AdminUser? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime   @default(now())
 
   @@index([clientId])
   @@index([createdAt])
   @@index([productType])
+  @@index([sellerId])
 }
 
 model SaleItem {

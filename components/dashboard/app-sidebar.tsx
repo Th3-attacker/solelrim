@@ -72,6 +72,7 @@ export function AppSidebar({
     {
       label: t("activitySection"),
       items: [
+        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         {
           href: "/admin/orders",
