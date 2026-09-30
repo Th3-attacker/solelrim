@@ -65,6 +65,20 @@ export async function requireAdminScope(): Promise<{
   return { admin, productType: await resolveProductType(admin) };
 }
 
+// The audit log: a boutique admin reads only their own boutique's entries,
+// a superadmin every boutique's (null = no boutique restriction), a seller
+// none at all.
+export async function requireAuditLogScope(): Promise<{
+  admin: AdminUser;
+  productType: string | null;
+}> {
+  const admin = await getCurrentAdmin();
+  if (admin.role === "SELLER") {
+    throw new Error("forbidden");
+  }
+  return { admin, productType: admin.role === "SUPERADMIN" ? null : admin.productType! };
+}
+
 // The single boutique-resolution rule every gate shares: a superadmin acts
 // on whichever boutique they've selected, every other role on the one
 // they're locked to.

@@ -88,12 +88,9 @@ export function AppSidebar({
       label: t("adminSection"),
       items: [
         { href: "/admin/settings", label: t("settings"), icon: Gear },
-        // Superadmin-only (app/[locale]/admin/(dashboard)/audit-log/page.tsx
-        // enforces this server-side too — hidden here just to not show a
-        // link a boutique admin would hit a 404 on).
-        ...(role === "SUPERADMIN"
-          ? [{ href: "/admin/audit-log", label: t("auditLog"), icon: ClockCounterClockwise }]
-          : []),
+        // Sellers never get here (they have their own sections); the page
+        // itself scopes a boutique admin to their own boutique.
+        { href: "/admin/audit-log", label: t("auditLog"), icon: ClockCounterClockwise },
       ],
     },
   ];

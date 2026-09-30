@@ -21,6 +21,7 @@ import { prisma } from "@/lib/prisma";
 import {
   getAdminScope,
   requireAdminScope,
+  requireAuditLogScope,
   requireCheckoutScope,
   requireCheckoutViewScope,
   requireSuperAdminScope,
@@ -265,5 +266,26 @@ describe("requireCheckoutViewScope", () => {
 
     expect(result.productType).toBe("sport");
     expect(storeTypeFindUniqueMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireAuditLogScope", () => {
+  it("never lets a seller read the audit log", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SELLER", productType: "sport" });
+
+    await expect(requireAuditLogScope()).rejects.toThrow("forbidden");
+  });
+
+  it("locks a boutique admin to their own boutique, whatever cookie is set", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "BOUTIQUE_ADMIN", productType: "sport" });
+    cookieValue("cosmetique");
+
+    expect((await requireAuditLogScope()).productType).toBe("sport");
+  });
+
+  it("gives a superadmin every boutique", async () => {
+    getCurrentAdminMock.mockResolvedValue({ role: "SUPERADMIN", productType: null });
+
+    expect((await requireAuditLogScope()).productType).toBeNull();
   });
 });

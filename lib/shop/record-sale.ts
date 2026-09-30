@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { buildSaleReference } from "@/lib/shop/reference";
+import { writeAuditLog, type AuditActor } from "@/lib/audit";
 
 // Deliberately NOT a "use server" module: every export of one becomes a
 // Server Action callable from the browser, and this takes productType as a
@@ -10,7 +11,11 @@ import { buildSaleReference } from "@/lib/shop/reference";
 
 export type RecordSaleInput = {
   productType: string;
-  sellerId: string | null;
+  // Who rang the sale up: stamped on it as its seller, and on its audit
+  // entry.
+  actor: AuditActor;
+  // Where it was recorded, kept in the audit entry.
+  channel: "pos" | "backOffice";
   clientId: string | null;
   discount: number;
   paymentMethod: string | null;
@@ -196,8 +201,25 @@ export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResu
               loyaltyDiscount,
               notes: input.notes,
               productType,
-              sellerId: input.sellerId,
+              sellerId: input.actor.id,
               items: { create: lineItems },
+            },
+          });
+          await writeAuditLog(tx, input.actor, {
+            productType,
+            action: "sale.create",
+            targetId: created.id,
+            targetLabel: reference,
+            newValue: {
+              channel: input.channel,
+              total,
+              discount: input.discount,
+              loyaltyDiscount,
+              paymentMethod: input.paymentMethod,
+              walletProvider: input.walletProvider ?? null,
+              itemCount: items.reduce((sum, i) => sum + i.quantity, 0),
+              loyaltyPointsEarned: pointsEarned,
+              loyaltyPointsRedeemed: pointsRedeemed,
             },
           });
           return {

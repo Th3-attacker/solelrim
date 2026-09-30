@@ -4,7 +4,14 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { CalendarBlank, FunnelSimple, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import {
+  CalendarBlank,
+  FunnelSimple,
+  MagnifyingGlass,
+  Storefront,
+  User,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { startOfDay, subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -15,9 +22,9 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { AUDIT_ACTION_LABEL_KEY } from "@/lib/audit-actions";
+import { AUDIT_ACTION_LABEL_KEY, type AuditAction } from "@/lib/audit-actions";
 
-const ACTIONS = Object.keys(AUDIT_ACTION_LABEL_KEY);
+const ACTIONS = Object.keys(AUDIT_ACTION_LABEL_KEY) as AuditAction[];
 const CALENDAR_LOCALES: Record<string, typeof fr> = { fr, en: enUS, ar: arMA };
 const SYNC_DEBOUNCE_MS = 400;
 
@@ -46,6 +53,8 @@ const DATE_PRESETS: { labelKey: string; range: () => DateRange }[] = [
 
 type Filters = {
   action: string;
+  user: string;
+  boutique: string;
   search: string;
   fromDate: string;
   toDate: string;
@@ -54,6 +63,8 @@ type Filters = {
 function readFilters(searchParams: URLSearchParams): Filters {
   return {
     action: searchParams.get("action") ?? "",
+    user: searchParams.get("user") ?? "",
+    boutique: searchParams.get("boutique") ?? "",
     search: searchParams.get("q") ?? "",
     fromDate: searchParams.get("from") ?? "",
     toDate: searchParams.get("to") ?? "",
@@ -64,7 +75,14 @@ function readFilters(searchParams: URLSearchParams): Filters {
 // (components/orders/order-filters.tsx), swapping the status popover for an
 // action-type one and dropping the max-range clamp — see the comment on
 // getAuditLog in lib/queries/audit.ts for why no clamp is needed here.
-export function AuditLogFilters() {
+export function AuditLogFilters({
+  actors,
+  boutiques,
+}: {
+  actors: { id: string; email: string }[];
+  // Superadmin only: every boutique, to narrow the log to one.
+  boutiques?: { key: string; label: string }[];
+}) {
   const t = useTranslations("auditLog");
   const tCommon = useTranslations("common");
   const locale = useLocale();
@@ -77,8 +95,6 @@ export function AuditLogFilters() {
   const [isSyncing, startSyncTransition] = useTransition();
   const isFirstRender = useRef(true);
 
-  const [actionOpen, setActionOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState(filters.action);
 
   const [dateOpen, setDateOpen] = useState(false);
   const [pendingRange, setPendingRange] = useState<DateRange | undefined>(
@@ -95,6 +111,8 @@ export function AuditLogFilters() {
     const handle = setTimeout(() => {
       const params = new URLSearchParams();
       if (filters.action) params.set("action", filters.action);
+      if (filters.user) params.set("user", filters.user);
+      if (filters.boutique) params.set("boutique", filters.boutique);
       if (filters.search) params.set("q", filters.search);
       if (filters.fromDate) params.set("from", filters.fromDate);
       if (filters.toDate) params.set("to", filters.toDate);
@@ -105,16 +123,6 @@ export function AuditLogFilters() {
     }, SYNC_DEBOUNCE_MS);
     return () => clearTimeout(handle);
   }, [filters, pathname, router]);
-
-  function handleActionOpenChange(open: boolean) {
-    if (open) setPendingAction(filters.action);
-    setActionOpen(open);
-  }
-
-  function handleApplyAction() {
-    setFilters((f) => ({ ...f, action: pendingAction }));
-    setActionOpen(false);
-  }
 
   function handleDateOpenChange(open: boolean) {
     if (open) {
@@ -137,7 +145,7 @@ export function AuditLogFilters() {
   }
 
   function handleReset() {
-    setFilters({ action: "", search: "", fromDate: "", toDate: "" });
+    setFilters({ action: "", user: "", boutique: "", search: "", fromDate: "", toDate: "" });
   }
 
   const dateLabel =
@@ -148,7 +156,12 @@ export function AuditLogFilters() {
         : t("date");
 
   const hasActiveFilters = Boolean(
-    filters.action || filters.search || filters.fromDate || filters.toDate,
+    filters.action ||
+      filters.user ||
+      filters.boutique ||
+      filters.search ||
+      filters.fromDate ||
+      filters.toDate,
   );
 
   const today = startOfDay(new Date());
@@ -170,35 +183,39 @@ export function AuditLogFilters() {
         />
       </div>
 
-      <Popover open={actionOpen} onOpenChange={handleActionOpenChange}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="rounded-md">
-            <FunnelSimple className="size-3.5 text-muted-foreground" />
-            {filters.action ? t(AUDIT_ACTION_LABEL_KEY[filters.action]) : t("action")}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-2">
-          <div className="flex flex-col gap-0.5">
-            <ActionRow
-              label={t("allActions")}
-              checked={pendingAction === ""}
-              onSelect={() => setPendingAction("")}
-            />
-            <Separator className="my-1" />
-            {ACTIONS.map((value) => (
-              <ActionRow
-                key={value}
-                label={t(AUDIT_ACTION_LABEL_KEY[value])}
-                checked={pendingAction === value}
-                onSelect={() => setPendingAction(value)}
-              />
-            ))}
-          </div>
-          <Button size="sm" className="mt-2 w-full" onClick={handleApplyAction}>
-            {tCommon("applyFilter")}
-          </Button>
-        </PopoverContent>
-      </Popover>
+      <OptionFilter
+        icon={FunnelSimple}
+        label={t("action")}
+        allLabel={t("allActions")}
+        applyLabel={tCommon("applyFilter")}
+        value={filters.action}
+        options={ACTIONS.map((value) => ({ value, label: t(AUDIT_ACTION_LABEL_KEY[value]) }))}
+        onApply={(action) => setFilters((f) => ({ ...f, action }))}
+      />
+
+      {actors.length > 1 && (
+        <OptionFilter
+          icon={User}
+          label={t("admin")}
+          allLabel={t("allUsers")}
+          applyLabel={tCommon("applyFilter")}
+          value={filters.user}
+          options={actors.map((actor) => ({ value: actor.id, label: actor.email }))}
+          onApply={(user) => setFilters((f) => ({ ...f, user }))}
+        />
+      )}
+
+      {boutiques && boutiques.length > 1 && (
+        <OptionFilter
+          icon={Storefront}
+          label={t("boutique")}
+          allLabel={t("allBoutiques")}
+          applyLabel={tCommon("applyFilter")}
+          value={filters.boutique}
+          options={boutiques.map((b) => ({ value: b.key, label: b.label }))}
+          onApply={(boutique) => setFilters((f) => ({ ...f, boutique }))}
+        />
+      )}
 
       <Popover open={dateOpen} onOpenChange={handleDateOpenChange}>
         <PopoverTrigger asChild>
@@ -246,6 +263,71 @@ export function AuditLogFilters() {
   );
 }
 
+// One single-choice filter: picks are staged in the popover and only
+// applied (and synced to the URL) on the apply button, like the date range.
+function OptionFilter({
+  icon: IconComponent,
+  label,
+  allLabel,
+  applyLabel,
+  value,
+  options,
+  onApply,
+}: {
+  icon: Icon;
+  label: string;
+  allLabel: string;
+  applyLabel: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onApply: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(value);
+  const selected = options.find((option) => option.value === value);
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setPending(value);
+        setOpen(next);
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="max-w-64 rounded-md">
+          <IconComponent className="size-3.5 text-muted-foreground" />
+          <span className="truncate">{selected?.label ?? label}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2">
+        <div className="flex max-h-72 flex-col gap-0.5 overflow-y-auto">
+          <ActionRow label={allLabel} checked={pending === ""} onSelect={() => setPending("")} />
+          <Separator className="my-1" />
+          {options.map((option) => (
+            <ActionRow
+              key={option.value}
+              label={option.label}
+              checked={pending === option.value}
+              onSelect={() => setPending(option.value)}
+            />
+          ))}
+        </div>
+        <Button
+          size="sm"
+          className="mt-2 w-full"
+          onClick={() => {
+            onApply(pending);
+            setOpen(false);
+          }}
+        >
+          {applyLabel}
+        </Button>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ActionRow({
   label,
   checked,
@@ -269,7 +351,7 @@ function ActionRow({
       >
         {checked && <span className="size-2 rounded-full bg-primary" />}
       </span>
-      {label}
+      <span className="truncate">{label}</span>
     </button>
   );
 }

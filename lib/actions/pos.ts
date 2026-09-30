@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { tryCheckoutScope } from "@/lib/shop/admin-scope";
+import { getAuditActor } from "@/lib/audit";
 import { recordSale } from "@/lib/shop/record-sale";
 import { posSaleSchema } from "@/lib/validation/pos";
 
@@ -51,7 +52,8 @@ export async function createPosSale(input: unknown): Promise<PosSaleResult> {
 
   const result = await recordSale({
     productType,
-    sellerId: admin.id,
+    actor: await getAuditActor(admin),
+    channel: "pos",
     clientId: null,
     discount: data.discount,
     paymentMethod: data.paymentMethod,

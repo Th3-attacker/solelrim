@@ -25,7 +25,11 @@ function decimal(value: number) {
 
 function signedInAs(role: "BOUTIQUE_ADMIN" | "SELLER") {
   createClientMock.mockResolvedValue({
-    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
+    auth: {
+      getUser: vi
+        .fn()
+        .mockResolvedValue({ data: { user: { id: "auth-1", email: "amina@shop.mr" } } }),
+    },
   });
   prismaMock.adminUser.findUnique.mockResolvedValue({
     id: "seller-1",
@@ -92,6 +96,42 @@ describe("createPosSale", () => {
         total: 1000,
       }),
     });
+  });
+
+  it("writes the sale's audit entry in the same transaction, naming the seller and their role", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+
+    await createPosSale({ ...CASH, amountReceived: 1500 });
+
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        adminUserId: "seller-1",
+        adminEmail: "amina@shop.mr",
+        adminRole: "SELLER",
+        productType: "cosmetique",
+        action: "sale.create",
+        targetId: "sale-1",
+        newValue: expect.objectContaining({ channel: "pos", total: 1000, paymentMethod: "cash" }),
+      }),
+    });
+  });
+
+  it("fails the sale when its audit entry can't be written, so no untraced sale commits", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+    prismaMock.adminAuditLog.create.mockRejectedValue(new Error("db down"));
+
+    await expect(createPosSale({ ...CASH, amountReceived: null })).rejects.toThrow("db down");
+  });
+
+  it("leaves no audit entry for a refused sale", async () => {
+    signedInAs("SELLER");
+    stockedVariant();
+
+    await createPosSale({ ...CASH, amountReceived: 900 });
+
+    expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
   });
 
   it("prices from the database, ignoring any price the client sends", async () => {
