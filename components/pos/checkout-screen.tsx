@@ -23,11 +23,13 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CartPanel, type CartLine, type PaymentMethod } from "@/components/pos/cart-panel";
 import { VariantPickerDialog } from "@/components/pos/variant-picker-dialog";
+import { LoyaltyCardPicker } from "@/components/pos/loyalty-card-picker";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { createPosSale } from "@/lib/actions/pos";
+import { lookupLoyaltyCard, type LoyaltyCard } from "@/lib/actions/loyalty";
 import { formatPrice } from "@/lib/format/currency";
 import { matchesSearch } from "@/lib/shop/search-text";
-import type { PosProduct, PosWallet } from "@/lib/queries/pos";
+import type { PosLoyaltyRule, PosProduct, PosWallet } from "@/lib/queries/pos";
 
 // Two columns (catalog + cart side by side) only from 1024px: below that,
 // with the admin sidebar open, a portrait tablet can't fit both, so the
@@ -46,12 +48,20 @@ type CartEntry = {
   lastPrice: number;
 };
 
-type CompletedSale = { saleId: string; reference: string; total: number; change?: number };
+type CompletedSale = {
+  saleId: string;
+  reference: string;
+  total: number;
+  change?: number;
+  pointsEarned?: number;
+  pointsBalance?: number | null;
+};
 
 const KNOWN_ERRORS = new Set([
   "invalid",
   "insufficientStock",
   "insufficientAmount",
+  "insufficientPoints",
   "totalChanged",
   "unauthorized",
   "licenseBlocked",
@@ -60,9 +70,11 @@ const KNOWN_ERRORS = new Set([
 export function CheckoutScreen({
   products,
   wallets,
+  loyaltyRule,
 }: {
   products: PosProduct[];
   wallets: PosWallet[];
+  loyaltyRule: PosLoyaltyRule;
 }) {
   const t = useTranslations("pos");
   const tCommon = useTranslations("common");
@@ -78,6 +90,8 @@ export function CheckoutScreen({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [amountReceived, setAmountReceived] = useState("");
   const [walletAccountId, setWalletAccountId] = useState<string | null>(null);
+  const [loyaltyCard, setLoyaltyCard] = useState<LoyaltyCard | null>(null);
+  const [redeem, setRedeem] = useState(false);
   // Content and open state are kept apart so a dialog keeps showing its
   // content through its close animation instead of collapsing empty.
   const [picking, setPicking] = useState<PosProduct | null>(null);
@@ -126,7 +140,15 @@ export function CheckoutScreen({
   // Display only — the server recomputes and clamps the same way, and
   // refuses the sale if its total differs from this one (totalChanged).
   const discountValue = Math.min(Math.max(Number(discount) || 0, 0), subtotal);
-  const total = subtotal - discountValue;
+  // Same rule recordSale applies server-side: a reward never discounts
+  // below zero, and only a card holding enough points can use one.
+  const redeeming =
+    redeem && loyaltyCard !== null && loyaltyCard.points >= loyaltyRule.rewardPoints;
+  const loyaltyDiscountValue = redeeming
+    ? Math.min(loyaltyRule.rewardValue, subtotal - discountValue)
+    : 0;
+  const total = subtotal - discountValue - loyaltyDiscountValue;
+  const pointsPreview = loyaltyCard ? Math.floor(total / loyaltyRule.spendPerPoint) : null;
   const itemCount = sellableLines.reduce((sum, line) => sum + line.quantity, 0);
 
   const received = amountReceived.trim() ? Number(amountReceived) : null;
@@ -197,6 +219,16 @@ export function CheckoutScreen({
     setAmountReceived("");
     setWalletAccountId(null);
     setPaymentMethod("cash");
+    setLoyaltyCard(null);
+    setRedeem(false);
+  }
+
+  // The reward was refused because the card's balance moved (spent at
+  // another counter): reload the card so the screen shows its real points.
+  async function refreshLoyaltyCard(card: LoyaltyCard) {
+    const result = await lookupLoyaltyCard(card.phone);
+    setRedeem(false);
+    setLoyaltyCard(result.card ?? null);
   }
 
   function handleCharge() {
@@ -204,7 +236,13 @@ export function CheckoutScreen({
       variantId: line.variantId,
       quantity: line.quantity,
     }));
-    const base = { items, discount: discountValue, expectedTotal: total };
+    const base = {
+      items,
+      discount: discountValue,
+      expectedTotal: total,
+      loyalty: loyaltyCard ? { clientId: loyaltyCard.clientId, redeem: redeeming } : null,
+    };
+    const cardAtCharge = loyaltyCard;
     startTransition(async () => {
       // Every failure path keeps the cart intact: a thrown action would
       // otherwise reach the error boundary and wipe the whole sale.
@@ -221,6 +259,9 @@ export function CheckoutScreen({
           // Stock, prices or wallet accounts may have moved under us — pull
           // the current catalog so the cart re-derives against it.
           router.refresh();
+          if (result.error === "insufficientPoints" && cardAtCharge) {
+            await refreshLoyaltyCard(cardAtCharge);
+          }
           return;
         }
         setCompleted({
@@ -228,6 +269,8 @@ export function CheckoutScreen({
           reference: result.reference!,
           total: result.total!,
           change: result.change,
+          pointsEarned: cardAtCharge ? result.loyaltyPointsEarned : undefined,
+          pointsBalance: result.loyaltyPointsBalance,
         });
         setCompletedOpen(true);
         resetSale();
@@ -247,6 +290,19 @@ export function CheckoutScreen({
       wallets={wallets}
       subtotal={subtotal}
       discountValue={discountValue}
+      loyaltyDiscountValue={loyaltyDiscountValue}
+      pointsPreview={pointsPreview}
+      loyaltySlot={
+        loyaltyRule.enabled ? (
+          <LoyaltyCardPicker
+            rule={loyaltyRule}
+            card={loyaltyCard}
+            redeem={redeem}
+            onCardChange={setLoyaltyCard}
+            onRedeemChange={setRedeem}
+          />
+        ) : undefined
+      }
       total={total}
       discount={discount}
       onDiscountChange={setDiscount}
@@ -409,6 +465,15 @@ export function CheckoutScreen({
                 <div className="flex justify-between rounded-md bg-muted p-2 font-medium">
                   <dt>{t("change")}</dt>
                   <dd>{formatPrice(completed.change, currency)}</dd>
+                </div>
+              )}
+              {completed.pointsEarned !== undefined && (
+                <div className="flex justify-between text-primary">
+                  <dt>{t("loyaltyPointsEarned")}</dt>
+                  <dd>
+                    +{completed.pointsEarned} ·{" "}
+                    {t("loyaltyBalance", { points: completed.pointsBalance ?? 0 })}
+                  </dd>
                 </div>
               )}
             </dl>

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Minus, Plus, Trash } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,9 @@ export function CartPanel({
   wallets,
   subtotal,
   discountValue,
+  loyaltyDiscountValue,
+  pointsPreview,
+  loyaltySlot,
   total,
   discount,
   onDiscountChange,
@@ -55,6 +59,11 @@ export function CartPanel({
   wallets: PosWallet[];
   subtotal: number;
   discountValue: number;
+  loyaltyDiscountValue: number;
+  // Points this sale would earn on the attached card; null without a card.
+  pointsPreview: number | null;
+  // The loyalty card picker, or nothing when the boutique has loyalty off.
+  loyaltySlot?: ReactNode;
   total: number;
   discount: string;
   onDiscountChange: (value: string) => void;
@@ -159,6 +168,8 @@ export function CartPanel({
         </ul>
       )}
 
+      {loyaltySlot}
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="pos-discount">{t("discount")}</Label>
         <Input
@@ -183,10 +194,21 @@ export function CartPanel({
             <dd>−{formatPrice(discountValue, currency)}</dd>
           </div>
         )}
+        {loyaltyDiscountValue > 0 && (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{t("loyaltyReward")}</dt>
+            <dd>−{formatPrice(loyaltyDiscountValue, currency)}</dd>
+          </div>
+        )}
         <div className="flex justify-between border-t pt-2 text-lg font-semibold">
           <dt>{t("total")}</dt>
           <dd>{formatPrice(total, currency)}</dd>
         </div>
+        {pointsPreview !== null && pointsPreview > 0 && (
+          <p className="text-end text-xs text-primary">
+            {t("loyaltyWillEarn", { points: pointsPreview })}
+          </p>
+        )}
       </dl>
 
       <div className="flex flex-col gap-2">

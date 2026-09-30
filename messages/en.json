@@ -189,7 +189,13 @@
     "onlineOrders": "Online orders",
     "onlineOrdersNoPhone": "No phone number on file for this client — their online orders can't be matched.",
     "noClients": "No clients yet.",
-    "searchPlaceholder": "Name or phone..."
+    "searchPlaceholder": "Name or phone...",
+    "loyaltyPoints": "{points, plural, =0 {No points} one {# point} other {# points}}",
+    "loyaltySince": "Loyalty card since {date}",
+    "loyaltyNotEnrolled": "No loyalty card",
+    "purchaseCount": "In-store purchases",
+    "totalSpent": "Total spent",
+    "pointsColumn": "Points"
   },
   "promoCodes": {
     "title": "Promo codes",
@@ -523,7 +529,6 @@
     "brandingSection": "Store",
     "siteName": "Site name",
     "announcementText": "Announcement bar text",
-
     "productTypeSection": "Default store",
     "productTypeHint": "Sets which store shows when a visitor arrives without a store in the address. Every store stays reachable at its own address either way.",
     "productTypeSwitchConfirmTitle": "Change the default store?",
@@ -548,7 +553,6 @@
     },
     "themeCustomColor": "Custom color",
     "themeCustomColorLowContrast": "Text would be unreadable on this color — pick a lighter or darker shade.",
-
     "colorModeSection": "Light/dark mode",
     "colorModeSectionHint": "Auto lets visitors choose (button in the header). Light/Dark locks the storefront to a single mode and hides that button.",
     "colorModeOptions": {
@@ -556,7 +560,6 @@
       "light": "Light",
       "dark": "Dark"
     },
-
     "heroSection": "Hero",
     "heroImage": "Hero photo",
     "heroVariant": "Layout",
@@ -572,24 +575,20 @@
     "heroSubtitle": "Subtitle",
     "heroCtaLabel": "Button text",
     "heroCtaLabelPlaceholder": "E.g. Shop the collection",
-
     "cardsSection": "Product cards",
     "cardVariant": "Layout",
     "cardVariantDefault": "Current (grey background)",
     "cardVariantBordered": "With \"View product\" button",
     "cardVariantCart": "With cart button",
-
     "footerVariant": "Layout",
     "footerVariantColumns": "Columns (detailed links)",
     "footerVariantMinimal": "Minimal (single row)",
     "footerVariantCentered": "Centered",
     "layoutVariantsSection": "Layout (hero, product cards, and footer)",
     "layoutVariantsSectionHint": "Superadmin only — the boutique controls content, layout stays centrally managed.",
-
     "seoSection": "SEO",
     "seoTitle": "Page title",
     "seoDescription": "Description",
-
     "walletsSection": "Payment wallets",
     "addWallet": "Add a wallet",
     "editWallet": "Edit wallet",
@@ -598,13 +597,11 @@
     "walletNumber": "Number",
     "walletLogo": "Logo",
     "walletLogoHint": "Optional — a generic icon is shown when there's no logo.",
-
     "socialSection": "Social media",
     "addSocialLink": "Add a social link",
     "socialPlatform": "Platform",
     "socialPlatformPlaceholder": "E.g. Instagram, Snapchat...",
     "socialUrl": "Link",
-
     "testimonialsSection": "Customer testimonials",
     "testimonialsSectionHint": "Optional section shown on the storefront homepage. Off by default.",
     "testimonialsEnabledOn": "Shown on the storefront",
@@ -620,7 +617,6 @@
     "testimonialLinkOrderHint": "If a testimonial matches a real delivered order, link it to show a \"verified purchase\" badge on the storefront.",
     "testimonialInvalidOrder": "This order is no longer available to link.",
     "testimonialVerified": "Verified purchase",
-
     "adminUsersSection": "Boutique admin accounts",
     "newAdminUser": "New boutique admin",
     "sellersSection": "Sellers",
@@ -642,7 +638,6 @@
     "adminUserAppearanceToggle": "Appearance management",
     "adminUserAppearanceOn": "Appearance management allowed — click to revoke",
     "adminUserAppearanceOff": "Appearance management not allowed — click to grant",
-
     "boutiquesSection": "Boutiques",
     "noBoutiques": "No boutiques yet.",
     "boutiqueRenameTitle": "Rename — {label}",
@@ -696,7 +691,14 @@
     "licenseBannerGracePeriod": "This boutique's license expired on {date} — grace period, it will be blocked if not renewed.",
     "licenseBannerExpired": "This boutique's license expired on {date}. The storefront and admin actions are blocked.",
     "licenseBannerSuspended": "This boutique is suspended. The storefront and admin actions are blocked.",
-    "licenseBannerCancelled": "This boutique's license was cancelled. The storefront and admin actions are blocked."
+    "licenseBannerCancelled": "This boutique's license was cancelled. The storefront and admin actions are blocked.",
+    "loyaltySection": "Loyalty card",
+    "loyaltyHint": "Customers earn points on every in-store purchase and trade them for a discount.",
+    "loyaltyEnabled": "Turn on the loyalty card",
+    "loyalty_spendPerPoint": "Amount spent per point",
+    "loyalty_rewardPoints": "Points for a reward",
+    "loyalty_rewardValue": "Reward value",
+    "loyaltyPreview": "1 point per {spend} spent; {points} points = {value} off."
   },
   "boutiquesOverview": {
     "title": "Overview",
@@ -778,7 +780,27 @@
       "insufficientAmount": "The amount received is less than the total.",
       "totalChanged": "A price changed. Check the new total before charging.",
       "unauthorized": "Your session has expired. Sign in again to continue.",
-      "licenseBlocked": "This boutique is suspended or its license has expired: sales are blocked."
+      "licenseBlocked": "This boutique is suspended or its license has expired: sales are blocked.",
+      "insufficientPoints": "The customer no longer has enough points. The balance was refreshed."
+    },
+    "loyaltyCard": "Loyalty card (optional)",
+    "loyaltyLookup": "Look up",
+    "loyaltyNotFound": "No card for this number. Enroll the customer?",
+    "loyaltyName": "Customer name (optional)",
+    "loyaltyEnroll": "Create card",
+    "loyaltyEnrolled": "Loyalty card created.",
+    "loyaltyBalance": "{points, plural, =0 {No points} one {# point} other {# points}}",
+    "loyaltyDetach": "Remove card",
+    "loyaltyRedeem": "Use reward: −{value} ({points} points)",
+    "loyaltyNotEnough": "{points, plural, one {# more point} other {# more points}} until the reward.",
+    "loyaltyReward": "Loyalty reward",
+    "loyaltyWillEarn": "This sale earns {points, plural, =0 {no points} one {# point} other {# points}}.",
+    "loyaltyPointsEarned": "Points earned",
+    "loyaltyError": {
+      "invalidPhone": "Invalid phone number.",
+      "disabled": "The loyalty card is turned off for this shop.",
+      "unauthorized": "Your session expired. Sign in again to continue.",
+      "licenseBlocked": "The shop is suspended or its license has expired."
     }
   },
   "sales": {

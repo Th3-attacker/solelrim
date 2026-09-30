@@ -189,7 +189,13 @@
     "onlineOrders": "Commandes en ligne",
     "onlineOrdersNoPhone": "Aucun numéro de téléphone enregistré pour ce client — impossible de retrouver ses commandes en ligne.",
     "noClients": "Aucun client pour le moment.",
-    "searchPlaceholder": "Nom ou téléphone..."
+    "searchPlaceholder": "Nom ou téléphone...",
+    "loyaltyPoints": "{points, plural, =0 {Aucun point} one {# point} other {# points}}",
+    "loyaltySince": "Carte de fidélité depuis le {date}",
+    "loyaltyNotEnrolled": "Pas de carte de fidélité",
+    "purchaseCount": "Achats en boutique",
+    "totalSpent": "Total dépensé",
+    "pointsColumn": "Points"
   },
   "promoCodes": {
     "title": "Codes promo",
@@ -523,7 +529,6 @@
     "brandingSection": "Boutique",
     "siteName": "Nom du site",
     "announcementText": "Texte du bandeau d'annonce",
-
     "productTypeSection": "Boutique par défaut",
     "productTypeHint": "Détermine la boutique affichée quand un visiteur arrive sans préciser de boutique dans l'adresse. Chaque boutique reste accessible à sa propre adresse quel que soit ce choix.",
     "productTypeSwitchConfirmTitle": "Changer la boutique par défaut ?",
@@ -548,7 +553,6 @@
     },
     "themeCustomColor": "Couleur personnalisée",
     "themeCustomColorLowContrast": "Ce texte serait illisible sur cette couleur — choisissez une teinte plus claire ou plus foncée.",
-
     "colorModeSection": "Mode clair/sombre",
     "colorModeSectionHint": "Auto laisse les visiteurs choisir (bouton dans l'en-tête). Clair/Sombre verrouille la boutique sur un seul mode et masque ce bouton.",
     "colorModeOptions": {
@@ -556,7 +560,6 @@
       "light": "Clair",
       "dark": "Sombre"
     },
-
     "heroSection": "Image principale",
     "heroImage": "Photo du hero",
     "heroVariant": "Mise en page",
@@ -572,24 +575,20 @@
     "heroSubtitle": "Sous-titre",
     "heroCtaLabel": "Texte du bouton",
     "heroCtaLabelPlaceholder": "Ex. Voir la collection",
-
     "cardsSection": "Fiches produits",
     "cardVariant": "Mise en page",
     "cardVariantDefault": "Actuelle (fond gris)",
     "cardVariantBordered": "Avec bouton \"Voir le produit\"",
     "cardVariantCart": "Avec bouton panier",
-
     "footerVariant": "Mise en page",
     "footerVariantColumns": "Colonnes (liens détaillés)",
     "footerVariantMinimal": "Minimaliste (une ligne)",
     "footerVariantCentered": "Centré",
     "layoutVariantsSection": "Mise en page (hero, fiches produits et pied de page)",
     "layoutVariantsSectionHint": "Réservé au super-admin — la boutique choisit le contenu, la mise en page reste centralisée.",
-
     "seoSection": "Référencement (SEO)",
     "seoTitle": "Titre de la page",
     "seoDescription": "Description",
-
     "walletsSection": "Wallets de paiement",
     "addWallet": "Ajouter une wallet",
     "editWallet": "Modifier la wallet",
@@ -598,13 +597,11 @@
     "walletNumber": "Numéro",
     "walletLogo": "Logo",
     "walletLogoHint": "Facultatif — sans logo, une icône générique s'affiche.",
-
     "socialSection": "Réseaux sociaux",
     "addSocialLink": "Ajouter un réseau",
     "socialPlatform": "Plateforme",
     "socialPlatformPlaceholder": "Ex. Instagram, Snapchat...",
     "socialUrl": "Lien",
-
     "testimonialsSection": "Avis clients",
     "testimonialsSectionHint": "Section optionnelle affichée sur la page d'accueil de la boutique. Désactivée par défaut.",
     "testimonialsEnabledOn": "Affichée sur la boutique",
@@ -620,7 +617,6 @@
     "testimonialLinkOrderHint": "Si un avis correspond à une vraie commande livrée, liez-le pour afficher un badge « achat vérifié » sur la boutique.",
     "testimonialInvalidOrder": "Cette commande n'est plus disponible pour un lien.",
     "testimonialVerified": "Achat vérifié",
-
     "adminUsersSection": "Comptes admin boutique",
     "newAdminUser": "Nouvel admin boutique",
     "sellersSection": "Vendeurs",
@@ -642,7 +638,6 @@
     "adminUserAppearanceToggle": "Gestion de l'apparence",
     "adminUserAppearanceOn": "Gestion de l'apparence autorisée — cliquer pour retirer",
     "adminUserAppearanceOff": "Gestion de l'apparence non autorisée — cliquer pour accorder",
-
     "boutiquesSection": "Boutiques",
     "noBoutiques": "Aucune boutique.",
     "boutiqueRenameTitle": "Renommer — {label}",
@@ -696,7 +691,14 @@
     "licenseBannerGracePeriod": "La licence de cette boutique a expiré le {date} — période de grâce, la boutique sera bloquée si elle n'est pas renouvelée.",
     "licenseBannerExpired": "La licence de cette boutique a expiré le {date}. La boutique et les actions d'administration sont bloquées.",
     "licenseBannerSuspended": "Cette boutique est suspendue. La boutique et les actions d'administration sont bloquées.",
-    "licenseBannerCancelled": "La licence de cette boutique a été annulée. La boutique et les actions d'administration sont bloquées."
+    "licenseBannerCancelled": "La licence de cette boutique a été annulée. La boutique et les actions d'administration sont bloquées.",
+    "loyaltySection": "Carte de fidélité",
+    "loyaltyHint": "Le client gagne des points à chaque achat en boutique et les échange contre une réduction.",
+    "loyaltyEnabled": "Activer la carte de fidélité",
+    "loyalty_spendPerPoint": "Montant dépensé pour 1 point",
+    "loyalty_rewardPoints": "Points pour une récompense",
+    "loyalty_rewardValue": "Valeur de la récompense",
+    "loyaltyPreview": "1 point tous les {spend} dépensés ; {points} points = {value} de réduction."
   },
   "boutiquesOverview": {
     "title": "Vue d'ensemble",
@@ -778,7 +780,27 @@
       "insufficientAmount": "Le montant reçu est inférieur au total.",
       "totalChanged": "Un prix a changé. Vérifiez le nouveau total avant d'encaisser.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
-      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré : les ventes sont bloquées."
+      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré : les ventes sont bloquées.",
+      "insufficientPoints": "Le client n'a plus assez de points. Le solde vient d'être actualisé."
+    },
+    "loyaltyCard": "Carte de fidélité (facultatif)",
+    "loyaltyLookup": "Chercher",
+    "loyaltyNotFound": "Aucune carte pour ce numéro. Inscrire le client ?",
+    "loyaltyName": "Nom du client (facultatif)",
+    "loyaltyEnroll": "Créer la carte",
+    "loyaltyEnrolled": "Carte de fidélité créée.",
+    "loyaltyBalance": "{points, plural, =0 {Aucun point} one {# point} other {# points}}",
+    "loyaltyDetach": "Retirer la carte",
+    "loyaltyRedeem": "Utiliser la récompense : −{value} ({points} points)",
+    "loyaltyNotEnough": "Encore {points, plural, one {# point} other {# points}} avant la récompense.",
+    "loyaltyReward": "Récompense fidélité",
+    "loyaltyWillEarn": "Cette vente rapporte {points, plural, =0 {aucun point} one {# point} other {# points}}.",
+    "loyaltyPointsEarned": "Points gagnés",
+    "loyaltyError": {
+      "invalidPhone": "Numéro de téléphone invalide.",
+      "disabled": "La carte de fidélité est désactivée pour cette boutique.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
+      "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
     }
   },
   "sales": {

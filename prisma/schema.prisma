@@ -58,54 +58,54 @@ enum LicenseStatus {
 }
 
 model StoreType {
-  id                  String        @id @default(cuid())
-  key                 String        @unique
-  label               String
-  themeId             String?
-  customThemeColor    String?
-  colorMode           String        @default("auto")
+  id                   String        @id @default(cuid())
+  key                  String        @unique
+  label                String
+  themeId              String?
+  customThemeColor     String?
+  colorMode            String        @default("auto")
   // Per-boutique contact/branding/storefront — each boutique has its own
   // public route (/{locale}/{key}), so everything a visitor sees (name,
   // announcement bar, hero, SEO, theme, payment numbers, logo) lives here
   // instead of on the StoreSettings singleton, which now only points at
   // the default boutique for "/" to redirect to.
-  adminWhatsappNumber String?
-  paymentInstructions String?
-  logoStoragePath     String?
-  siteName            String?
-  announcementText    String?
-  heroImagePath       String?
-  heroImagePosition   String        @default("right")
-  heroVariant         String        @default("split")
-  cardVariant         String        @default("default")
-  footerVariant       String        @default("columns")
-  testimonialsEnabled Boolean       @default(false)
-  heroTitle           String?
-  heroSubtitle        String?
-  heroBadgeText       String?
-  heroCtaLabel        String?
-  seoTitle            String?
-  seoDescription      String?
+  adminWhatsappNumber  String?
+  paymentInstructions  String?
+  logoStoragePath      String?
+  siteName             String?
+  announcementText     String?
+  heroImagePath        String?
+  heroImagePosition    String        @default("right")
+  heroVariant          String        @default("split")
+  cardVariant          String        @default("default")
+  footerVariant        String        @default("columns")
+  testimonialsEnabled  Boolean       @default(false)
+  heroTitle            String?
+  heroSubtitle         String?
+  heroBadgeText        String?
+  heroCtaLabel         String?
+  seoTitle             String?
+  seoDescription       String?
   // Arabic and English overrides for the handful of fields worth
   // translating (name, hero copy, SEO) — optional, fall back to the base
   // (French) column above when null/blank. Everything else on this model
   // (announcement bar, hero badge/CTA, payment info) stays single-language.
-  siteNameAr          String?
-  heroTitleAr         String?
-  heroSubtitleAr      String?
-  seoTitleAr          String?
-  seoDescriptionAr    String?
-  siteNameEn          String?
-  heroTitleEn         String?
-  heroSubtitleEn      String?
-  seoTitleEn          String?
-  seoDescriptionEn    String?
+  siteNameAr           String?
+  heroTitleAr          String?
+  heroSubtitleAr       String?
+  seoTitleAr           String?
+  seoDescriptionAr     String?
+  siteNameEn           String?
+  heroTitleEn          String?
+  heroSubtitleEn       String?
+  seoTitleEn           String?
+  seoDescriptionEn     String?
   // Infrastructure-level, superadmin-only — never editable via
   // updateBoutiqueSettings/requireAdminScope like everything above. domain
   // lets proxy.ts route a custom hostname straight to this boutique with no
   // visible [storeType] segment (still needs the actual DNS/Vercel domain
   // setup done separately).
-  domain              String?       @unique
+  domain               String?       @unique
   // License: see lib/shop/license.ts for how these four combine into one
   // effective state. licenseStatus ACTIVE + licenseExpiresAt null means
   // unrestricted (pre-existing boutiques, or one not yet put on a plan) —
@@ -114,25 +114,32 @@ model StoreType {
   // (lib/shop/admin-scope.ts: requireWritableAdminScope) for a
   // BOUTIQUE_ADMIN — never for SUPERADMIN, who must always retain access to
   // reactivate a boutique.
-  licenseType         LicenseType   @default(MONTHLY)
-  licenseStatus       LicenseStatus @default(ACTIVE)
-  licenseStartedAt    DateTime?
-  licenseExpiresAt    DateTime?
+  licenseType          LicenseType   @default(MONTHLY)
+  licenseStatus        LicenseStatus @default(ACTIVE)
+  licenseStartedAt     DateTime?
+  licenseExpiresAt     DateTime?
   // The Client's legal name/raison sociale for the license contract's
   // section 34 (see components/settings/license-contract-document.tsx) —
   // distinct from `label` (the boutique's own commercial/display name).
   // Null until a superadmin fills it in when drafting the contract.
-  licenseClientName   String?
+  licenseClientName    String?
   // Per-boutique feature flag — server-enforced, not just a hidden button:
   // both the admin promo-code actions and checkout's promo-code redemption
   // re-check this, not merely the UI that shows/hides the "Code promo"
   // field.
-  couponsEnabled      Boolean       @default(true)
+  couponsEnabled       Boolean       @default(true)
   // Max SELLER accounts this boutique's admin can create themselves —
   // only a superadmin can raise it (lib/actions/sellers.ts).
-  sellerQuota         Int           @default(2)
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  sellerQuota          Int           @default(2)
+  // Loyalty rule, per boutique, set by its admin (updateLoyaltySettings):
+  // 1 point per `loyaltySpendPerPoint` MRU spent; `loyaltyRewardPoints`
+  // points buy a `loyaltyRewardValue` MRU discount at the checkout.
+  loyaltyEnabled       Boolean       @default(true)
+  loyaltySpendPerPoint Int           @default(100)
+  loyaltyRewardPoints  Int           @default(100)
+  loyaltyRewardValue   Int           @default(1000)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   categories     Category[]
   products       Product[]
@@ -345,56 +352,71 @@ model ProductVariant {
 }
 
 model Client {
-  id          String      @id @default(cuid())
-  fullName    String
-  phone       String?
-  email       String?
-  address     String?
-  notes       String?
+  id                String      @id @default(cuid())
+  fullName          String
+  phone             String?
+  email             String?
+  address           String?
+  notes             String?
   // Which boutique this client belongs to — set at creation from the
   // admin's current scope. Sales only ever pick clients from the same
   // boutique (lib/actions/sales.ts).
-  productType String
-  storeType   StoreType   @relation(fields: [productType], references: [key])
-  sales       Sale[]
-  promoCodes  PromoCode[]
-  createdAt   DateTime    @default(now())
+  productType       String
+  storeType         StoreType   @relation(fields: [productType], references: [key])
+  sales             Sale[]
+  promoCodes        PromoCode[]
+  // Loyalty card (opt-in, the phone number is the card): null until the
+  // customer agrees to join. A phone is unique among *enrolled* clients of
+  // a boutique — a partial unique index in the migration SQL, since Prisma
+  // can't express one (see 20260930140000_add_loyalty). Points only ever
+  // change inside a sale/cancel transaction (lib/shop/record-sale.ts,
+  // lib/actions/sales.ts), never from client input.
+  loyaltyEnrolledAt DateTime?
+  loyaltyPoints     Int         @default(0)
+  createdAt         DateTime    @default(now())
 
   @@index([fullName])
   @@index([productType])
 }
 
 model Sale {
-  id             String     @id @default(cuid())
-  reference      String     @unique
-  clientId       String?
-  client         Client?    @relation(fields: [clientId], references: [id])
-  items          SaleItem[]
-  subtotal       Decimal    @db.Decimal(10, 2)
-  discount       Decimal    @default(0) @db.Decimal(10, 2)
-  total          Decimal    @db.Decimal(10, 2)
-  status         SaleStatus @default(COMPLETED)
+  id                    String     @id @default(cuid())
+  reference             String     @unique
+  clientId              String?
+  client                Client?    @relation(fields: [clientId], references: [id])
+  items                 SaleItem[]
+  subtotal              Decimal    @db.Decimal(10, 2)
+  discount              Decimal    @default(0) @db.Decimal(10, 2)
+  total                 Decimal    @db.Decimal(10, 2)
+  status                SaleStatus @default(COMPLETED)
   // Free text for historical manual sales ("cash", "card", "transfer");
   // the checkout only ever writes "cash" or "wallet".
-  paymentMethod  String?
+  paymentMethod         String?
   // Snapshot of the WalletAccount provider name at sale time, not a
   // foreign key — a wallet account can later be renamed or deleted, but a
   // past sale and its cash closing must keep saying where the money went.
-  walletProvider String?
+  walletProvider        String?
   // Cash handed over by the customer, for the change on the receipt. Null
   // for wallet sales and for cash sales where it wasn't entered.
-  amountReceived Decimal?   @db.Decimal(10, 2)
-  notes          String?
+  amountReceived        Decimal?   @db.Decimal(10, 2)
+  // Loyalty: points credited/spent by this sale, and the reward discount it
+  // got (kept apart from the manual `discount`). Recorded per sale so a
+  // cancellation reverses exactly what happened, and the client's points
+  // history is just their sales — no separate ledger to drift.
+  loyaltyPointsEarned   Int        @default(0)
+  loyaltyPointsRedeemed Int        @default(0)
+  loyaltyDiscount       Decimal    @default(0) @db.Decimal(10, 2)
+  notes                 String?
   // Stamped at creation from the admin's current scope (manual sale) or
   // copied from the source Order (auto-created on deliverOrder).
-  productType    String
-  storeType      StoreType  @relation(fields: [productType], references: [key])
+  productType           String
+  storeType             StoreType  @relation(fields: [productType], references: [key])
   // Who recorded the sale (checkout or manual). Null for sales auto-created
   // from a delivered online order, and SetNull if that account is later
   // deleted so the sale itself survives.
-  sellerId       String?
-  seller         AdminUser? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
-  createdAt      DateTime   @default(now())
+  sellerId              String?
+  seller                AdminUser? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  createdAt             DateTime   @default(now())
 
   @@index([clientId])
   @@index([createdAt])

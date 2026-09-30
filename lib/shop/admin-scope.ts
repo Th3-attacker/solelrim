@@ -166,6 +166,25 @@ export async function requireCheckoutScope(): Promise<{
   return { admin, productType };
 }
 
+// For checkout Server Actions: the same gate as requireCheckoutScope, but
+// the two refusals a seller must be told about come back as a value
+// instead of a throw — Next.js masks a thrown action's message in
+// production, and a throw would also wipe the checkout screen's state via
+// the error boundary.
+export async function tryCheckoutScope(): Promise<
+  | { admin: AdminUser; productType: string; error?: undefined }
+  | { error: "unauthorized" | "licenseBlocked" }
+> {
+  try {
+    return await requireCheckoutScope();
+  } catch (err) {
+    if (err instanceof Error && (err.message === "unauthorized" || err.message === "licenseBlocked")) {
+      return { error: err.message };
+    }
+    throw err;
+  }
+}
+
 // Read-only counterpart for checkout pages that only *show* past data
 // (reprinting a receipt): same identities and boutique lock, but no license
 // gate — viewing an existing sale isn't a write, so a suspended boutique can

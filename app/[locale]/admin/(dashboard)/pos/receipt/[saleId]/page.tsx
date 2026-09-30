@@ -62,6 +62,8 @@ export default async function ReceiptPage({
     lines: receipt.lines,
     subtotal: receipt.subtotal,
     discount: receipt.discount,
+    loyaltyDiscount: receipt.loyaltyDiscount,
+    loyaltyPointsEarned: receipt.loyaltyPointsEarned,
     total: receipt.total,
     paymentLabel,
     amountReceived: receipt.amountReceived,
@@ -71,6 +73,8 @@ export default async function ReceiptPage({
     reference: t("reference"),
     subtotal: t("subtotal"),
     discount: t("discount"),
+    loyaltyDiscount: t("loyaltyReward"),
+    loyaltyPoints: t("loyaltyPointsEarned"),
     total: t("total"),
     payment: t("paymentMethod"),
     amountReceived: t("amountReceived"),
@@ -165,7 +169,10 @@ export default async function ReceiptPage({
           so for the records. */}
       {!data.cancelled && (
         <div className="rounded-md border p-4 print:hidden">
-          <WhatsAppReceiptForm message={buildReceiptText(data, labels, money)} />
+          <WhatsAppReceiptForm
+            message={buildReceiptText(data, labels, money)}
+            defaultPhone={receipt.clientPhone ?? ""}
+          />
         </div>
       )}
     </div>

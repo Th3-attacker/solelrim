@@ -5,6 +5,8 @@ const LABELS = {
   reference: "Réf",
   subtotal: "Sous-total",
   discount: "Remise",
+  loyaltyDiscount: "Récompense fidélité",
+  loyaltyPoints: "Points gagnés",
   total: "Total",
   payment: "Paiement",
   amountReceived: "Reçu",
@@ -23,6 +25,8 @@ const BASE: ReceiptData = {
   lines: [{ productName: "Robe Isla", size: "M", color: "Noir", quantity: 2, lineTotal: 2400 }],
   subtotal: 2400,
   discount: 0,
+  loyaltyDiscount: 0,
+  loyaltyPointsEarned: 0,
   total: 2400,
   paymentLabel: "Espèces",
   amountReceived: null,
@@ -45,6 +49,30 @@ describe("buildReceiptSummary", () => {
       { key: "amountReceived", value: "3000 MRU" },
       { key: "change", value: "600 MRU" },
     ]);
+  });
+
+  it("shows the loyalty reward apart from the manual discount, and the points earned last", () => {
+    const rows = buildReceiptSummary(
+      { ...BASE, discount: 200, loyaltyDiscount: 1000, total: 1200, loyaltyPointsEarned: 12 },
+      money,
+    );
+
+    expect(rows.map((row) => row.key)).toEqual([
+      "subtotal",
+      "discount",
+      "loyaltyDiscount",
+      "total",
+      "payment",
+      "loyaltyPoints",
+    ]);
+    expect(rows[2].value).toBe("-1000 MRU");
+    expect(rows.at(-1)?.value).toBe("+12");
+  });
+
+  it("shows the subtotal when only the loyalty reward applied", () => {
+    const rows = buildReceiptSummary({ ...BASE, loyaltyDiscount: 1000, total: 1400 }, money);
+
+    expect(rows.map((row) => row.key)).toEqual(["subtotal", "loyaltyDiscount", "total", "payment"]);
   });
 
   it("never shows negative change", () => {

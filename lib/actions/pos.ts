@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireCheckoutScope } from "@/lib/shop/admin-scope";
+import { tryCheckoutScope } from "@/lib/shop/admin-scope";
 import { recordSale } from "@/lib/shop/record-sale";
 import { posSaleSchema } from "@/lib/validation/pos";
 
@@ -12,27 +12,18 @@ export type PosSaleResult = {
   reference?: string;
   total?: number;
   change?: number;
+  loyaltyPointsEarned?: number;
+  loyaltyPointsBalance?: number | null;
 };
 
 // An in-store sale recorded at the checkout by a seller, a boutique admin,
 // or a superadmin. The boutique always comes from the caller's own scope,
 // prices and totals are recomputed server-side (recordSale), and the sale
 // is stamped with who recorded it.
-// Auth/license refusals the checkout must explain to the seller. Returned
-// rather than thrown: Next.js masks a thrown Server Action's message in
-// production, so the screen couldn't tell "session expired" from "license
-// suspended" — and a throw would also wipe the cart via the error boundary.
-const SCOPE_ERRORS = new Set(["unauthorized", "licenseBlocked"]);
-
 export async function createPosSale(input: unknown): Promise<PosSaleResult> {
-  let scope: Awaited<ReturnType<typeof requireCheckoutScope>>;
-  try {
-    scope = await requireCheckoutScope();
-  } catch (err) {
-    if (err instanceof Error && SCOPE_ERRORS.has(err.message)) {
-      return { error: err.message };
-    }
-    throw err;
+  const scope = await tryCheckoutScope();
+  if (scope.error) {
+    return { error: scope.error };
   }
   const { admin, productType } = scope;
 
@@ -67,6 +58,7 @@ export async function createPosSale(input: unknown): Promise<PosSaleResult> {
     walletProvider,
     amountReceived,
     expectedTotal: data.expectedTotal,
+    loyalty: data.loyalty,
     items: data.items,
   });
   if ("error" in result) {
@@ -82,5 +74,7 @@ export async function createPosSale(input: unknown): Promise<PosSaleResult> {
     reference: result.reference,
     total: result.total,
     change: amountReceived != null ? amountReceived - result.total : undefined,
+    loyaltyPointsEarned: result.loyaltyPointsEarned,
+    loyaltyPointsBalance: result.loyaltyPointsBalance,
   };
 }

@@ -222,54 +222,91 @@ describe("createSale", () => {
 });
 
 describe("cancelSale", () => {
-  it("restores stock and marks the sale cancelled", async () => {
-    prismaMock.sale.findFirst.mockResolvedValue({
+  function completedSale(overrides: Record<string, unknown> = {}) {
+    return {
       id: "sale-1",
-      status: "COMPLETED",
+      clientId: null,
+      loyaltyPointsEarned: 0,
+      loyaltyPointsRedeemed: 0,
       items: [
         { variantId: "variant-1", quantity: 2 },
         { variantId: "variant-2", quantity: 1 },
       ],
-    } as never);
+      ...overrides,
+    };
+  }
+
+  it("restores stock and marks the sale cancelled", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(completedSale() as never);
     prismaMock.productVariant.update.mockResolvedValue({} as never);
-    prismaMock.sale.update.mockResolvedValue({} as never);
 
     const result = await cancelSale("sale-1");
 
     expect(result.error).toBeUndefined();
-    expect(prismaMock.sale.findFirst).toHaveBeenCalledWith({
-      where: { id: "sale-1", productType: "cosmetique" },
-      include: { items: true },
+    expect(prismaMock.sale.updateMany).toHaveBeenCalledWith({
+      where: { id: "sale-1", productType: "cosmetique", status: "COMPLETED" },
+      data: { status: "CANCELLED" },
     });
     expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
       where: { id: "variant-1" },
       data: { stock: { increment: 2 } },
     });
-    expect(prismaMock.sale.update).toHaveBeenCalledWith({
-      where: { id: "sale-1" },
-      data: { status: "CANCELLED" },
-    });
+    expect(prismaMock.productVariant.update).toHaveBeenCalledTimes(2);
+    expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
   });
 
   it("returns notFound for a sale outside the admin's boutique", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue(null);
 
     const result = await cancelSale("sale-from-another-boutique");
 
     expect(result.error).toBe("notFound");
-    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
   it("returns alreadyCancelled without touching stock twice", async () => {
-    prismaMock.sale.findFirst.mockResolvedValue({
-      id: "sale-1",
-      status: "CANCELLED",
-      items: [{ variantId: "variant-1", quantity: 2 }],
-    } as never);
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.sale.findFirst.mockResolvedValue({ id: "sale-1" } as never);
 
     const result = await cancelSale("sale-1");
 
     expect(result.error).toBe("alreadyCancelled");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("takes back earned points and gives back redeemed ones", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ clientId: "client-1", loyaltyPointsEarned: 5, loyaltyPointsRedeemed: 100 }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 12 }] as never);
+    prismaMock.client.update.mockResolvedValue({} as never);
+
+    await cancelSale("sale-1");
+
+    expect(prismaMock.client.update).toHaveBeenCalledWith({
+      where: { id: "client-1" },
+      data: { loyaltyPoints: 107 },
+    });
+  });
+
+  it("never drives the balance below zero when the earned points were already spent", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ clientId: "client-1", loyaltyPointsEarned: 30 }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 10 }] as never);
+    prismaMock.client.update.mockResolvedValue({} as never);
+
+    await cancelSale("sale-1");
+
+    expect(prismaMock.client.update).toHaveBeenCalledWith({
+      where: { id: "client-1" },
+      data: { loyaltyPoints: 0 },
+    });
   });
 });

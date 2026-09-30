@@ -189,7 +189,13 @@
     "onlineOrders": "الطلبات عبر الإنترنت",
     "onlineOrdersNoPhone": "لا يوجد رقم هاتف مسجل لهذا العميل — يتعذر مطابقة طلباته عبر الإنترنت.",
     "noClients": "لا يوجد عملاء بعد.",
-    "searchPlaceholder": "الاسم أو رقم الهاتف..."
+    "searchPlaceholder": "الاسم أو رقم الهاتف...",
+    "loyaltyPoints": "{points} نقطة",
+    "loyaltySince": "بطاقة ولاء منذ {date}",
+    "loyaltyNotEnrolled": "لا توجد بطاقة ولاء",
+    "purchaseCount": "المشتريات في المتجر",
+    "totalSpent": "إجمالي الإنفاق",
+    "pointsColumn": "النقاط"
   },
   "promoCodes": {
     "title": "أكواد الخصم",
@@ -523,7 +529,6 @@
     "brandingSection": "المتجر",
     "siteName": "اسم الموقع",
     "announcementText": "نص شريط الإعلانات",
-
     "productTypeSection": "المتجر الافتراضي",
     "productTypeHint": "يحدد المتجر الذي يظهر عندما يصل الزائر دون تحديد متجر في الرابط. يبقى كل متجر متاحًا عبر رابطه الخاص بغض النظر عن هذا الاختيار.",
     "productTypeSwitchConfirmTitle": "تغيير المتجر الافتراضي؟",
@@ -548,7 +553,6 @@
     },
     "themeCustomColor": "لون مخصص",
     "themeCustomColorLowContrast": "سيكون النص غير مقروء على هذا اللون — اختر درجة أفتح أو أغمق.",
-
     "colorModeSection": "الوضع الفاتح/الداكن",
     "colorModeSectionHint": "تلقائي يترك الزوار يختارون (زر في الرأس). فاتح/داكن يقفل المتجر على وضع واحد ويخفي هذا الزر.",
     "colorModeOptions": {
@@ -556,7 +560,6 @@
       "light": "فاتح",
       "dark": "داكن"
     },
-
     "heroSection": "الصورة الرئيسية",
     "heroImage": "صورة الهيرو",
     "heroVariant": "التخطيط",
@@ -572,24 +575,20 @@
     "heroSubtitle": "العنوان الفرعي",
     "heroCtaLabel": "نص الزر",
     "heroCtaLabelPlaceholder": "مثال: تسوّق التشكيلة",
-
     "cardsSection": "بطاقات المنتجات",
     "cardVariant": "التخطيط",
     "cardVariantDefault": "الحالية (خلفية رمادية)",
     "cardVariantBordered": "بزر \"عرض المنتج\"",
     "cardVariantCart": "بزر إضافة إلى السلة",
-
     "footerVariant": "التخطيط",
     "footerVariantColumns": "أعمدة (روابط تفصيلية)",
     "footerVariantMinimal": "بسيط (سطر واحد)",
     "footerVariantCentered": "في المنتصف",
     "layoutVariantsSection": "التخطيط (الصورة الرئيسية، بطاقات المنتجات، وتذييل الصفحة)",
     "layoutVariantsSectionHint": "خاص بالمدير العام فقط — المتجر يتحكم بالمحتوى، ويبقى التخطيط مُدارًا مركزيًا.",
-
     "seoSection": "تحسين محركات البحث (SEO)",
     "seoTitle": "عنوان الصفحة",
     "seoDescription": "الوصف",
-
     "walletsSection": "محافظ الدفع",
     "addWallet": "إضافة محفظة",
     "editWallet": "تعديل المحفظة",
@@ -598,13 +597,11 @@
     "walletNumber": "الرقم",
     "walletLogo": "الشعار",
     "walletLogoHint": "اختياري — يظهر رمز عام إذا لم يوجد شعار.",
-
     "socialSection": "وسائل التواصل الاجتماعي",
     "addSocialLink": "إضافة رابط تواصل",
     "socialPlatform": "المنصة",
     "socialPlatformPlaceholder": "مثال: انستغرام، سناب شات...",
     "socialUrl": "الرابط",
-
     "testimonialsSection": "آراء العملاء",
     "testimonialsSectionHint": "قسم اختياري يظهر في الصفحة الرئيسية للمتجر. معطّل افتراضيًا.",
     "testimonialsEnabledOn": "ظاهر في المتجر",
@@ -620,7 +617,6 @@
     "testimonialLinkOrderHint": "إذا كان الرأي يطابق طلبية حقيقية تم تسليمها، اربطه لإظهار شارة «شراء موثّق» في المتجر.",
     "testimonialInvalidOrder": "هذه الطلبية لم تعد متاحة للربط.",
     "testimonialVerified": "شراء موثّق",
-
     "adminUsersSection": "حسابات إدارة المتاجر",
     "newAdminUser": "مدير متجر جديد",
     "sellersSection": "البائعون",
@@ -642,7 +638,6 @@
     "adminUserAppearanceToggle": "إدارة المظهر",
     "adminUserAppearanceOn": "إدارة المظهر مسموحة — اضغط للإزالة",
     "adminUserAppearanceOff": "إدارة المظهر غير مسموحة — اضغط للسماح",
-
     "boutiquesSection": "المتاجر",
     "noBoutiques": "لا توجد متاجر بعد.",
     "boutiqueRenameTitle": "إعادة تسمية — {label}",
@@ -696,7 +691,14 @@
     "licenseBannerGracePeriod": "انتهى ترخيص هذا المتجر في {date} — فترة سماح، سيُحظر المتجر إذا لم يُجدَّد.",
     "licenseBannerExpired": "انتهى ترخيص هذا المتجر في {date}. المتجر وإجراءات الإدارة محظورة.",
     "licenseBannerSuspended": "هذا المتجر معلّق. المتجر وإجراءات الإدارة محظورة.",
-    "licenseBannerCancelled": "أُلغي ترخيص هذا المتجر. المتجر وإجراءات الإدارة محظورة."
+    "licenseBannerCancelled": "أُلغي ترخيص هذا المتجر. المتجر وإجراءات الإدارة محظورة.",
+    "loyaltySection": "بطاقة الولاء",
+    "loyaltyHint": "يكسب الزبون نقاطًا مع كل شراء في المتجر ويستبدلها بتخفيض.",
+    "loyaltyEnabled": "تفعيل بطاقة الولاء",
+    "loyalty_spendPerPoint": "المبلغ المنفق مقابل نقطة",
+    "loyalty_rewardPoints": "النقاط اللازمة للمكافأة",
+    "loyalty_rewardValue": "قيمة المكافأة",
+    "loyaltyPreview": "نقطة واحدة لكل {spend} ؛ {points} نقطة = تخفيض {value}."
   },
   "boutiquesOverview": {
     "title": "نظرة عامة",
@@ -778,7 +780,27 @@
       "insufficientAmount": "المبلغ المستلم أقل من الإجمالي.",
       "totalChanged": "تغيّر أحد الأسعار. تحقق من الإجمالي الجديد قبل التحصيل.",
       "unauthorized": "انتهت صلاحية جلستك. سجّل الدخول مجددًا للمتابعة.",
-      "licenseBlocked": "المتجر معلّق أو انتهت صلاحية ترخيصه: عمليات البيع محظورة."
+      "licenseBlocked": "المتجر معلّق أو انتهت صلاحية ترخيصه: عمليات البيع محظورة.",
+      "insufficientPoints": "لم يعد لدى الزبون نقاط كافية. تم تحديث الرصيد."
+    },
+    "loyaltyCard": "بطاقة الولاء (اختياري)",
+    "loyaltyLookup": "بحث",
+    "loyaltyNotFound": "لا توجد بطاقة لهذا الرقم. تسجيل الزبون؟",
+    "loyaltyName": "اسم الزبون (اختياري)",
+    "loyaltyEnroll": "إنشاء البطاقة",
+    "loyaltyEnrolled": "تم إنشاء بطاقة الولاء.",
+    "loyaltyBalance": "{points, plural, =0 {لا نقاط} one {نقطة واحدة} two {نقطتان} few {# نقاط} many {# نقطة} other {# نقطة}}",
+    "loyaltyDetach": "إزالة البطاقة",
+    "loyaltyRedeem": "استخدام المكافأة: −{value} ({points} نقطة)",
+    "loyaltyNotEnough": "بقي {points} نقطة قبل المكافأة.",
+    "loyaltyReward": "مكافأة الولاء",
+    "loyaltyWillEarn": "هذا البيع يمنح {points} نقطة.",
+    "loyaltyPointsEarned": "النقاط المكتسبة",
+    "loyaltyError": {
+      "invalidPhone": "رقم الهاتف غير صالح.",
+      "disabled": "بطاقة الولاء معطلة لهذا المتجر.",
+      "unauthorized": "انتهت جلستك. سجّل الدخول من جديد للمتابعة.",
+      "licenseBlocked": "المتجر موقوف أو انتهت رخصته."
     }
   },
   "sales": {
