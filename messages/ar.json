@@ -1048,11 +1048,12 @@
     "allPayments": "كل طرق الدفع",
     "cash": "نقدًا",
     "wallet": "محفظة",
-    "salesCount": "المبيعات",
+    "salesCount": "المبيعات المكتملة",
     "soldTotal": "إجمالي المبيعات",
     "collectedCash": "المحصّل نقدًا",
     "collectedWallet": "المحصّل عبر {wallet}",
     "collectedOther": "طرق دفع أخرى",
-    "noSales": "ليس لديك أي مبيعات بعد."
+    "noSales": "ليس لديك أي مبيعات بعد.",
+    "cancelledCount": "إضافة إلى {count} ملغاة (غير محتسبة)"
   }
 }

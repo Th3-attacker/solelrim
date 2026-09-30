@@ -63,6 +63,15 @@ export function MySalesFilters({ walletProviders }: { walletProviders: string[] 
   const set = (key: keyof Filters) => (value: string) =>
     setFilters((prev) => ({ ...prev, [key]: value === ALL ? "" : value }));
   const hasFilters = Object.values(filters).some(Boolean);
+  // A wallet named in the URL but since removed from the boutique still
+  // gets an option, so the select doesn't show up blank.
+  const urlProvider = filters.payment.startsWith("wallet:")
+    ? filters.payment.slice("wallet:".length)
+    : "";
+  const providers =
+    urlProvider && !walletProviders.includes(urlProvider)
+      ? [...walletProviders, urlProvider]
+      : walletProviders;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:items-end">
@@ -125,7 +134,7 @@ export function MySalesFilters({ walletProviders }: { walletProviders: string[] 
           <SelectContent>
             <SelectItem value={ALL}>{t("allPayments")}</SelectItem>
             <SelectItem value="cash">{t("cash")}</SelectItem>
-            {walletProviders.map((provider) => (
+            {providers.map((provider) => (
               <SelectItem key={provider} value={`wallet:${provider}`}>
                 {provider}
               </SelectItem>

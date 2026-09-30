@@ -5,6 +5,7 @@ import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
 import { getMySales, MY_SALES_PAGE_SIZE } from "@/lib/queries/my-sales";
 import { parseMySalesFilters } from "@/lib/shop/my-sales-filters";
 import { formatPrice } from "@/lib/format/currency";
+import { toPageNumber } from "@/lib/shop/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ListPagination } from "@/components/ui/list-pagination";
@@ -20,7 +21,7 @@ export default async function MySalesPage({
 }) {
   const params = await searchParams;
   const filters = parseMySalesFilters(params);
-  const page = Number(typeof params.page === "string" ? params.page : "") || 1;
+  const page = toPageNumber(Number(typeof params.page === "string" ? params.page : ""));
   const { admin, productType } = await requireCheckoutViewScope();
 
   const [{ sales, total, summary, walletProviders }, t, tCommon, format] = await Promise.all([
@@ -55,7 +56,15 @@ export default async function MySalesPage({
       <MySalesFilters walletProviders={walletProviders} />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <Tile label={t("salesCount")} value={String(summary.salesCount)} />
+        <Tile
+          label={t("salesCount")}
+          value={String(summary.salesCount)}
+          hint={
+            summary.cancelledCount > 0
+              ? t("cancelledCount", { count: summary.cancelledCount })
+              : undefined
+          }
+        />
         <Tile label={t("soldTotal")} value={money(summary.soldTotal)} strong />
         {summary.breakdown.map((row) => (
           <Tile
@@ -147,7 +156,17 @@ export default async function MySalesPage({
   );
 }
 
-function Tile({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Tile({
+  label,
+  value,
+  strong,
+  hint,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  hint?: string;
+}) {
   return (
     <div className="flex flex-col gap-1 rounded-md border p-3">
       <span className="text-xs text-muted-foreground">{label}</span>
@@ -161,6 +180,7 @@ function Tile({ label, value, strong }: { label: string; value: string; strong?:
       >
         {value}
       </span>
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
     </div>
   );
 }

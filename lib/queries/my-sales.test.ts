@@ -51,7 +51,8 @@ describe("getMySales", () => {
 
     const { summary } = await getMySales("sport", "seller-1", parseMySalesFilters({}));
 
-    expect(summary.salesCount).toBe(5);
+    expect(summary.salesCount).toBe(4);
+    expect(summary.cancelledCount).toBe(1);
     expect(summary.soldTotal).toBe(4250.5);
     expect(summary.breakdown).toEqual([
       { method: "cash", provider: null, total: 3000, count: 2 },
@@ -61,6 +62,7 @@ describe("getMySales", () => {
   });
 
   it("sums nothing when filtering on cancelled sales", async () => {
+    prismaMock.sale.count.mockResolvedValue(2);
     const { summary } = await getMySales(
       "sport",
       "seller-1",
@@ -69,5 +71,7 @@ describe("getMySales", () => {
 
     expect(groupByMock).not.toHaveBeenCalled();
     expect(summary.soldTotal).toBe(0);
+    expect(summary.salesCount).toBe(0);
+    expect(summary.cancelledCount).toBe(2);
   });
 });

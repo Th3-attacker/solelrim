@@ -1048,11 +1048,12 @@
     "allPayments": "Tous les paiements",
     "cash": "Espèces",
     "wallet": "Wallet",
-    "salesCount": "Ventes",
+    "salesCount": "Ventes validées",
     "soldTotal": "Total vendu",
     "collectedCash": "Encaissé en espèces",
     "collectedWallet": "Encaissé par {wallet}",
     "collectedOther": "Autres paiements",
-    "noSales": "Vous n'avez encore aucune vente."
+    "noSales": "Vous n'avez encore aucune vente.",
+    "cancelledCount": "+ {count, plural, one {# vente annulée, non comptée} other {# ventes annulées, non comptées}}"
   }
 }

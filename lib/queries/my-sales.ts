@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 import { buildPaymentBreakdown, roundMoney } from "@/lib/shop/cash";
 import { mySalesWhere, type MySalesFilters } from "@/lib/shop/my-sales-filters";
 
@@ -14,7 +15,7 @@ export async function getMySales(
   filters: MySalesFilters,
   page = 1,
 ) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = mySalesWhere(productType, sellerId, filters);
   const completedWhere = { ...where, status: "COMPLETED" as const };
 
@@ -88,7 +89,10 @@ export async function getMySales(
     total: count,
     page: currentPage,
     summary: {
-      salesCount: count,
+      // Same completed sales as the amounts next to it; the cancelled ones
+      // in the filtered list are counted apart.
+      salesCount: breakdown.reduce((sum, row) => sum + row.count, 0),
+      cancelledCount: count - breakdown.reduce((sum, row) => sum + row.count, 0),
       soldTotal: roundMoney(breakdown.reduce((sum, row) => sum + row.total, 0)),
       breakdown,
     },
