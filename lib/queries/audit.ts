@@ -54,16 +54,18 @@ export async function getAuditLog(productType: string | null, filters: AuditLogF
 }
 
 // Everyone who appears in the log, for the "user" filter — read from the
-// log itself so deleted accounts stay filterable.
+// log itself so deleted accounts stay filterable. Grouped in the database:
+// Prisma's `distinct` would fetch every matching row and de-duplicate in
+// memory, and this table grows with every sale.
 export async function getAuditLogActors(productType: string | null) {
-  const rows = await prisma.adminAuditLog.findMany({
+  const rows = await prisma.adminAuditLog.groupBy({
+    by: ["adminUserId"],
     where: productType ? { productType } : {},
-    distinct: ["adminUserId"],
-    orderBy: [{ adminUserId: "asc" }, { createdAt: "desc" }],
-    select: { adminUserId: true, adminEmail: true },
+    _max: { adminEmail: true },
+    orderBy: { adminUserId: "asc" },
     take: 200,
   });
   return rows
-    .map((row) => ({ id: row.adminUserId, email: row.adminEmail }))
+    .map((row) => ({ id: row.adminUserId, email: row._max.adminEmail ?? "?" }))
     .sort((a, b) => a.email.localeCompare(b.email));
 }

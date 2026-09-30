@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
@@ -59,19 +59,19 @@ describe("getAuditLog", () => {
 
 describe("getAuditLogActors", () => {
   it("lists the boutique's users once each, sorted by email", async () => {
-    prismaMock.adminAuditLog.findMany.mockResolvedValue([
-      { adminUserId: "u2", adminEmail: "zeina@shop.mr" },
-      { adminUserId: "u1", adminEmail: "amina@shop.mr" },
+    (prismaMock.adminAuditLog.groupBy as unknown as Mock).mockResolvedValue([
+      { adminUserId: "u1", _max: { adminEmail: "zeina@shop.mr" } },
+      { adminUserId: "u2", _max: { adminEmail: "amina@shop.mr" } },
     ] as never);
 
     const actors = await getAuditLogActors("sport");
 
     expect(actors).toEqual([
-      { id: "u1", email: "amina@shop.mr" },
-      { id: "u2", email: "zeina@shop.mr" },
+      { id: "u2", email: "amina@shop.mr" },
+      { id: "u1", email: "zeina@shop.mr" },
     ]);
-    expect(prismaMock.adminAuditLog.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { productType: "sport" }, distinct: ["adminUserId"] }),
+    expect(prismaMock.adminAuditLog.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({ by: ["adminUserId"], where: { productType: "sport" } }),
     );
   });
 });
