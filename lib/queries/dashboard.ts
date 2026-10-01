@@ -33,32 +33,41 @@ export async function getRevenueByDay(productType: string, daysBack?: number) {
   }));
 }
 
+// Ranked by units actually kept: a cancelled sale never counts, and units
+// already refunded are taken off, like the revenue figures above.
 export async function getBestSellers(productType: string, limit = 5) {
-  const grouped = await prisma.saleItem.groupBy({
-    by: ["variantId"],
-    where: { sale: { productType } },
-    _sum: { quantity: true, lineTotal: true },
-    orderBy: { _sum: { quantity: "desc" } },
-    take: limit,
-  });
+  const rows = await prisma.$queryRaw<
+    { variantId: string; quantity: number; revenue: number }[]
+  >`
+    SELECT i."variantId",
+           SUM(i."quantity" - i."refundedQuantity")::int AS quantity,
+           SUM(i."lineTotal" * (i."quantity" - i."refundedQuantity") / i."quantity")::float AS revenue
+    FROM "SaleItem" i
+    JOIN "Sale" s ON s.id = i."saleId"
+    WHERE s."productType" = ${productType} AND s."status" <> 'CANCELLED'
+    GROUP BY i."variantId"
+    HAVING SUM(i."quantity" - i."refundedQuantity") > 0
+    ORDER BY quantity DESC, revenue DESC
+    LIMIT ${limit}
+  `;
 
   const variants = await prisma.productVariant.findMany({
-    where: { id: { in: grouped.map((g) => g.variantId) } },
+    where: { id: { in: rows.map((row) => row.variantId) } },
     include: { product: true },
   });
   const variantById = new Map(variants.map((v) => [v.id, v]));
 
-  return grouped
-    .map((g) => {
-      const variant = variantById.get(g.variantId);
+  return rows
+    .map((row) => {
+      const variant = variantById.get(row.variantId);
       if (!variant) return null;
       return {
-        variantId: g.variantId,
+        variantId: row.variantId,
         productName: variant.product.name,
         size: variant.size,
         color: variant.color,
-        quantity: g._sum.quantity ?? 0,
-        revenue: g._sum.lineTotal?.toNumber() ?? 0,
+        quantity: Number(row.quantity),
+        revenue: Number(row.revenue),
       };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);

@@ -6,6 +6,7 @@ import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { recordSale } from "@/lib/shop/record-sale";
 import { saleEditSchema } from "@/lib/validation/sale-edit";
+import { saleCancelSchema } from "@/lib/validation/sale-cancel";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";
 
 export type SaleActionResult = { error?: string; saleId?: string };
@@ -33,8 +34,11 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
   return { saleId: result.saleId };
 }
 
-export async function cancelSale(saleId: string): Promise<{ error?: string }> {
+export async function cancelSale(input: unknown): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
+  const parsed = saleCancelSchema.safeParse(input);
+  if (!parsed.success) return { error: "invalid" };
+  const { saleId, reason } = parsed.data;
   const actor = await getAuditActor(admin);
 
   try {
@@ -66,7 +70,7 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
 
       const sale = await tx.sale.findUniqueOrThrow({
         where: { id: saleId },
-        include: { items: true },
+        include: { items: true, cashSession: { select: { status: true } } },
       });
 
       for (const item of sale.items) {
@@ -104,7 +108,11 @@ export async function cancelSale(saleId: string): Promise<{ error?: string }> {
           status: "CANCELLED",
           restockedItems: sale.items.reduce((sum, i) => sum + i.quantity, 0),
           loyaltyPointsChange: pointsChange,
+          // The till's figures were frozen at its close: the cancellation
+          // isn't in them, so the history says so (same as updateSale).
+          ...(sale.cashSession?.status === "CLOSED" && { closedTill: true }),
         },
+        reason,
       });
     });
   } catch (err) {

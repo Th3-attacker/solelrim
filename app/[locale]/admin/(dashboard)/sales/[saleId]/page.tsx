@@ -66,7 +66,7 @@ export default async function SaleDetailPage({
               clientLocked={sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0}
             />
           )}
-          {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} />}
+          {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} tillClosed={sale.cashSession?.status === "CLOSED"} />}
         </div>
       </div>
 
