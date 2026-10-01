@@ -226,6 +226,14 @@
   --muted-foreground: #a0a0a0;
 }
 
+/* A page that opts in (a child carrying data-page-surface="muted", like the
+   checkout) sits on the muted surface instead of the plain background, so
+   its white (bg-card) panels stand out from it — in dark mode too, where
+   --card is the dark panel color. */
+.shop-theme:has([data-page-surface="muted"]) {
+  background-color: var(--muted);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

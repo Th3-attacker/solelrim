@@ -349,11 +349,14 @@ export function CheckoutFlow({
 
   if (step === "success") {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-12 text-center">
+      <div
+        data-page-surface="muted"
+        className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border bg-card p-6 text-center sm:my-6 sm:p-8"
+      >
         <h1 className="text-heading-xs">{t("successTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
         <div className="flex w-full flex-col items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-md border bg-muted/30 py-1.5 pr-1.5 pl-3">
+          <div className="flex items-center gap-1 rounded-md border bg-card py-1.5 pr-1.5 pl-3">
             <span className="font-mono text-sm">{reference}</span>
             <Button
               type="button"
@@ -406,7 +409,7 @@ export function CheckoutFlow({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div data-page-surface="muted" className="flex flex-col gap-6 sm:gap-8">
       <div className="flex flex-col gap-4">
         <Link
           href={basePath || "/"}
@@ -421,7 +424,7 @@ export function CheckoutFlow({
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div
           key={step}
-          className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+          className="flex flex-col gap-6 rounded-2xl border bg-card p-4 duration-200 animate-in fade-in-0 slide-in-from-bottom-2 sm:p-6"
         >
           {step === 1 && (
             <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
@@ -484,7 +487,7 @@ export function CheckoutFlow({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex items-center justify-between gap-2 self-start rounded-lg bg-muted/50 px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
+                className="flex items-center justify-between gap-2 self-start rounded-lg border bg-card px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
               >
                 <span className="truncate">
                   {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
@@ -592,7 +595,7 @@ export function CheckoutFlow({
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {settings.wallets.map((wallet, index) => (
                           <Popover key={index}>
-                            <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-3 text-center transition-colors hover:bg-muted/50">
+                            <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-card p-3 text-center transition-colors hover:bg-muted/50">
                               <PopoverTrigger asChild>
                                 <button type="button" className="flex flex-col items-center gap-1.5">
                                   {wallet.logoUrl ? (
