@@ -135,7 +135,10 @@
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --background: oklch(1 0 0);
+  /* Pages sit on the muted tone and their panels (--card, --popover) are
+     white — the checkout's look, now the whole app's. Components that need
+     a surface of their own use bg-card, not bg-background. */
+  --background: oklch(0.97 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -174,7 +177,7 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.269 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -224,14 +227,6 @@
   --primary-foreground: #252525;
   --ring: #606060;
   --muted-foreground: #a0a0a0;
-}
-
-/* A page that opts in (a child carrying data-page-surface="muted", like the
-   checkout) sits on the muted surface instead of the plain background, so
-   its white (bg-card) panels stand out from it — in dark mode too, where
-   --card is the dark panel color. */
-.shop-theme:has([data-page-surface="muted"]) {
-  background-color: var(--muted);
 }
 
 @layer base {

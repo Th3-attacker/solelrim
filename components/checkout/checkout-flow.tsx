@@ -350,7 +350,6 @@ export function CheckoutFlow({
   if (step === "success") {
     return (
       <div
-        data-page-surface="muted"
         className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border bg-card p-6 text-center sm:my-6 sm:p-8"
       >
         <h1 className="text-heading-xs">{t("successTitle")}</h1>
@@ -409,7 +408,7 @@ export function CheckoutFlow({
   }
 
   return (
-    <div data-page-surface="muted" className="flex flex-col gap-6 sm:gap-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <div className="flex flex-col gap-4">
         <Link
           href={basePath || "/"}

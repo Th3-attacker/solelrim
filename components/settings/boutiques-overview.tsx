@@ -131,7 +131,7 @@ function Stat({
         ? "text-warning"
         : "text-foreground";
   return (
-    <div className="flex flex-col gap-0.5 rounded-md border p-2">
+    <div className="flex flex-col gap-0.5 rounded-md border bg-card p-2">
       <span className={`text-xl font-semibold ${toneClass}`}>{value}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>

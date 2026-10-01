@@ -27,7 +27,7 @@ export async function TrustBadges() {
   return (
     <div className="flex flex-col items-center gap-6">
       <SectionTitle>{t("trustSectionTitle")}</SectionTitle>
-      <div className="grid w-full gap-3 desktop:gap-4 rounded-2xl border bg-muted/30 p-6 sm:grid-cols-3 sm:p-8">
+      <div className="grid w-full gap-3 desktop:gap-4 rounded-2xl border bg-card p-6 sm:grid-cols-3 sm:p-8">
         {items.map((item, index) => (
           <div
             key={item.title}

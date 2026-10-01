@@ -102,7 +102,7 @@ export function CartPanel({
           {t("emptyCart")}
         </p>
       ) : (
-        <ul className="flex flex-col divide-y rounded-md border">
+        <ul className="flex flex-col divide-y rounded-md border bg-card">
           {cart.map((line) => (
             <li
               key={line.variantId}

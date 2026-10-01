@@ -193,7 +193,7 @@ export default async function ShopLayout({
             <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
               {announcementText}
             </div>
-            <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">
+            <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
                   <MobileNav categories={categories} productType={storeType} basePath={basePath} />

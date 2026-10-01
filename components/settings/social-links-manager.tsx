@@ -68,7 +68,7 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
       {links.length > 0 && (
         <div className="flex flex-col gap-2">
           {links.map((link, index) => (
-            <div key={link.id} className="flex items-center gap-2 rounded-md border p-2">
+            <div key={link.id} className="flex items-center gap-2 rounded-md border bg-card p-2">
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-sm font-medium">{link.platform}</span>
                 <a

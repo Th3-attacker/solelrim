@@ -96,7 +96,7 @@ export function TwoFactorSettings({
           <StatusAlert variant="warning">{t("twoFactorRequiredNotice")}</StatusAlert>
         )}
 
-        <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+        <div className="flex items-center justify-between gap-4 rounded-md border bg-card p-3">
           <div className="flex items-center gap-3">
             {factorId ? (
               <ShieldCheck className="size-5 shrink-0 text-success" />

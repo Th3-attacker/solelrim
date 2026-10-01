@@ -171,7 +171,7 @@ export default async function ReceiptPage({
       {/* Nothing to send for a voided sale — the printed copy still says
           so for the records. */}
       {!data.cancelled && (
-        <div className="rounded-md border p-4 print:hidden">
+        <div className="rounded-md border bg-card p-4 print:hidden">
           <WhatsAppReceiptForm
             message={buildReceiptText(data, labels, money)}
             defaultPhone={receipt.clientPhone ?? ""}

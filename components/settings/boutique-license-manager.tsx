@@ -228,7 +228,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border p-2">
+    <div className="flex flex-col gap-2 rounded-md border bg-card p-2">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-medium">{storeType.label}</span>

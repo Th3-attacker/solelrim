@@ -41,7 +41,7 @@ export default async function LicenseContractPage({
       <div className="print:hidden">
         <PrintInvoiceButton />
       </div>
-      <div className="rounded-lg border p-8 print:border-0 print:p-0">
+      <div className="rounded-lg border bg-card p-8 print:border-0 print:p-0">
         <LicenseContractDocument boutique={boutique} solalContact={solalContact} />
       </div>
     </div>

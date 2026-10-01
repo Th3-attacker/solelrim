@@ -230,7 +230,7 @@ export default async function OrderDetailPage({
           <img
             src={signedUrl}
             alt={t("paymentProof")}
-            className="max-w-sm rounded-lg border"
+            className="max-w-sm rounded-lg border bg-card"
           />
         ) : (
           <p className="text-sm text-muted-foreground">{t("paymentProof")}</p>

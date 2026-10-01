@@ -70,7 +70,7 @@ export function VariantFields({
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-6"
+            className="grid grid-cols-2 gap-2 rounded-md border bg-card p-3 sm:grid-cols-6"
           >
             <div className="flex flex-col gap-1">
               <Label className="text-xs">{sizeLabel}</Label>

@@ -417,7 +417,7 @@ export function CheckoutScreen({
             variant renders on the server — the catalog column keeps its
             width either way and nothing visibly swaps layouts. */}
         {isWide === true && (
-          <aside className="self-start rounded-lg border p-4 lg:sticky lg:top-4">
+          <aside className="self-start rounded-lg border bg-card p-4 lg:sticky lg:top-4">
             {cartPanel}
           </aside>
         )}

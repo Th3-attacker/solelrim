@@ -92,7 +92,7 @@ export default async function MySalesPage({
       ) : (
         <ul className="flex flex-col gap-3">
           {sales.map((sale) => (
-            <li key={sale.id} className="flex flex-col gap-2 rounded-md border p-3 sm:p-4">
+            <li key={sale.id} className="flex flex-col gap-2 rounded-md border bg-card p-3 sm:p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
@@ -174,7 +174,7 @@ function Tile({
   hint?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border p-3">
+    <div className="flex flex-col gap-1 rounded-md border bg-card p-3">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span
         dir="ltr"

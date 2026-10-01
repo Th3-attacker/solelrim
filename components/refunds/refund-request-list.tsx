@@ -54,7 +54,7 @@ export function RefundRequestList({
       {requests.map((request) => (
         <li
           key={request.id}
-          className="flex flex-col gap-2 rounded-md border p-3 text-sm sm:p-4"
+          className="flex flex-col gap-2 rounded-md border bg-card p-3 text-sm sm:p-4"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">

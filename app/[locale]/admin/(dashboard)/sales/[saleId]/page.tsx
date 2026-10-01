@@ -70,7 +70,7 @@ export default async function SaleDetailPage({
         </div>
       </div>
 
-      <div className="rounded-lg border p-6">
+      <div className="rounded-lg border bg-card p-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-lg font-semibold">SOLAL</p>
