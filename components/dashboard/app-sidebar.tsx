@@ -12,6 +12,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { StoreScopeSwitcher } from "@/components/dashboard/store-scope-switcher";
@@ -85,7 +86,7 @@ export function AppSidebar({
       ],
     },
     {
-      label: t("activitySection"),
+      label: t("posSection"),
       items: [
         { href: "/admin/pos", label: t("pos"), icon: CashRegister },
         { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
@@ -96,6 +97,11 @@ export function AppSidebar({
           icon: ArrowCounterClockwise,
           badge: pendingRefundCount > 0 ? pendingRefundCount : undefined,
         },
+      ],
+    },
+    {
+      label: t("salesSection"),
+      items: [
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         {
           href: "/admin/orders",
@@ -153,6 +159,11 @@ export function AppSidebar({
       <SidebarContent>
         {sections.map((section, index) => (
           <SidebarGroup key={section.label ?? `section-${index}`}>
+            {/* The group labels disappear when the sidebar is collapsed to
+                icons: a rule between groups keeps the categories apart. */}
+            {index > 0 && (
+              <SidebarSeparator className="mx-0 -mt-2 mb-1 hidden group-data-[collapsible=icon]:block" />
+            )}
             {section.label && (
               <SidebarGroupLabel className="text-sm font-semibold">
                 {section.label}
