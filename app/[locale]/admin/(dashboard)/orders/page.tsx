@@ -115,7 +115,7 @@ export default async function AdminOrdersPage({
               return (
                 <TableRow key={order.id}>
                   <TableCell>
-                    <div className="relative size-10 overflow-hidden rounded-md bg-muted">
+                    <div className="relative size-10 overflow-hidden rounded-md border bg-card">
                       {image ? (
                         <Image
                           src={getProductImageUrl(image.storagePath)}

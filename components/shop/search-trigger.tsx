@@ -187,7 +187,7 @@ export function SearchTrigger({
             )}
           >
             {item.type === "product" ? (
-              <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted">
+              <div className="relative size-10 shrink-0 overflow-hidden rounded-md border bg-card">
                 {item.imageUrl && (
                   <Image
                     src={item.imageUrl}
@@ -229,7 +229,7 @@ export function SearchTrigger({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t("searchPlaceholder")}
-            className="h-auto rounded-lg bg-muted/40 py-2.5 ps-9 text-base shadow-none"
+            className="h-auto rounded-lg bg-card py-2.5 ps-9 text-base shadow-none"
           />
         </div>
       </form>

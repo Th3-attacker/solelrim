@@ -605,7 +605,7 @@ export function CheckoutFlow({
                                       className="size-8 shrink-0 rounded-lg object-cover"
                                     />
                                   ) : (
-                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-card">
                                       <Wallet className="size-4 text-muted-foreground" />
                                     </div>
                                   )}

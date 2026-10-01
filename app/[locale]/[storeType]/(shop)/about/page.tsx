@@ -110,7 +110,7 @@ export default async function AboutPage({
                 href={`${basePath}/products/${product.slug}`}
                 className="group flex flex-col gap-2"
               >
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
+                <div className="relative aspect-square w-full overflow-hidden rounded-2xl border bg-card">
                   <Image
                     src={getProductImageUrl(product.images[0].storagePath)}
                     alt={product.name}

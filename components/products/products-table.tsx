@@ -98,7 +98,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
   return (
     <div className="flex flex-col gap-3">
       {someSelected && (
-        <div className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/50 px-3 py-2">
+        <div className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
           <span className="text-sm font-medium">
             {t("selectedCount", { count: selected.size })}
           </span>

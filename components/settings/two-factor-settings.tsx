@@ -173,7 +173,7 @@ export function TwoFactorSettings({
             />
             <div className="flex w-full flex-col gap-1 text-center">
               <p className="text-xs text-muted-foreground">{t("twoFactorSecretHint")}</p>
-              <code className="rounded-md border bg-muted px-2 py-1 text-xs break-all">
+              <code className="rounded-md border bg-card px-2 py-1 text-xs break-all">
                 {enrollment.secret}
               </code>
             </div>

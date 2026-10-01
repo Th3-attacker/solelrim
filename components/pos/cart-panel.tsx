@@ -262,7 +262,7 @@ export function CartPanel({
             </FieldError>
           )}
           {change !== null && hasSellableLine && (
-            <p className="flex justify-between rounded-md bg-muted p-2 text-sm font-medium tabular-nums">
+            <p className="flex justify-between rounded-md border bg-card p-2 text-sm font-medium tabular-nums">
               <span>{t("change")}</span>
               <span>{formatPrice(change, currency)}</span>
             </p>

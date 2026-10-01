@@ -29,7 +29,7 @@ export async function FeaturedShowcase({
       key={product.id}
       className="group flex w-[62%] shrink-0 snap-start flex-col gap-3 sm:w-[46%] sm:gap-4 desktop:w-[31%]"
     >
-      <div className="relative aspect-4/5 w-full overflow-hidden rounded-2xl bg-muted">
+      <div className="relative aspect-4/5 w-full overflow-hidden rounded-2xl border bg-card">
         {product.images[0] ? (
           <Image
             src={getProductImageUrl(product.images[0].storagePath)}
