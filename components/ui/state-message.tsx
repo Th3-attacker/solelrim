@@ -13,7 +13,7 @@ export function StateMessage({
 }) {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 py-12 text-center">
-      <div className="flex size-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+      <div className="flex size-14 items-center justify-center rounded-full border bg-card text-primary">
         <Icon className="size-7" />
       </div>
       <div className="flex flex-col gap-1.5">
