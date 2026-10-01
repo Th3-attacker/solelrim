@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: mockDeep<PrismaClient>(),
@@ -101,6 +102,37 @@ describe("updateClientRecord", () => {
       where: { id: "client-1", productType: "cosmetique" },
       data: expect.objectContaining({ fullName: "Fatima M." }),
     });
+  });
+
+  it("refuses to clear the number of a client who has a loyalty card", async () => {
+    prismaMock.client.findFirst.mockResolvedValue({ id: "client-1" } as never);
+
+    const result = await updateClientRecord("client-1", { ...VALID_INPUT, phone: "" });
+
+    expect(result.error).toBe("loyaltyPhoneRequired");
+    expect(prismaMock.client.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("lets a client without a card drop their number", async () => {
+    prismaMock.client.findFirst.mockResolvedValue(null);
+    prismaMock.client.updateMany.mockResolvedValue({ count: 1 } as never);
+
+    const result = await updateClientRecord("client-1", { ...VALID_INPUT, phone: "" });
+
+    expect(result.error).toBeUndefined();
+  });
+
+  it("reports loyaltyPhoneTaken when another card already uses the number", async () => {
+    prismaMock.client.updateMany.mockRejectedValue(
+      new PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+      }),
+    );
+
+    const result = await updateClientRecord("client-1", VALID_INPUT);
+
+    expect(result.error).toBe("loyaltyPhoneTaken");
   });
 });
 

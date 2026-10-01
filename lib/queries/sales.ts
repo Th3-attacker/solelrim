@@ -13,6 +13,7 @@ export function getSaleById(id: string, productType: string) {
     where: { id, productType },
     include: {
       client: true,
+      cashSession: { select: { status: true } },
       items: { include: { variant: { include: { product: true } } } },
     },
   });

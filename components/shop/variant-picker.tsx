@@ -119,7 +119,7 @@ export function VariantPicker({
         </div>
       )}
 
-      <div className="divide-y divide-border rounded-lg border">
+      <div className="divide-y divide-border rounded-lg border bg-card">
         {colors.length > 1 && (
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
             <p className="text-sm font-medium">{colorLabel}</p>

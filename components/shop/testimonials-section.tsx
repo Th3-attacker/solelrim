@@ -29,7 +29,7 @@ export async function TestimonialsSection({
         {testimonials.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col gap-3 rounded-2xl bg-muted p-6"
+            className="flex flex-col gap-3 rounded-2xl border bg-card p-6"
           >
             {item.rating && (
               <div className="flex items-center gap-0.5" aria-hidden>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X, Upload } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -57,15 +58,13 @@ export function ProductImageManager({
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const result = await deleteProductImage(id);
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      setItems((prev) => prev.filter((i) => i.id !== id));
-    });
+  async function handleDelete(id: string) {
+    const result = await deleteProductImage(id);
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
   function handleColorChange(id: string, value: string) {
@@ -87,7 +86,7 @@ export function ProductImageManager({
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {items.map((image) => (
           <div key={image.id} className="flex flex-col gap-1">
-            <div className="group relative aspect-square overflow-hidden rounded-md bg-muted">
+            <div className="group relative aspect-square overflow-hidden rounded-md border bg-card">
               <Image
                 src={getProductImageUrl(image.storagePath)}
                 alt=""
@@ -95,15 +94,23 @@ export function ProductImageManager({
                 className="object-cover"
                 sizes="25vw"
               />
-              <button
-                type="button"
-                onClick={() => handleDelete(image.id)}
-                disabled={pending}
-                aria-label={tCommon("delete")}
-                className="absolute top-1 end-1 rounded-full bg-background/90 p-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
-              >
-                {pending ? <Spinner className="size-3" /> : <X className="size-3" />}
-              </button>
+              <ConfirmDialog
+                trigger={
+                  <button
+                    type="button"
+                    disabled={pending}
+                    aria-label={tCommon("delete")}
+                    className="absolute top-1 end-1 rounded-full bg-background/90 p-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    {pending ? <Spinner className="size-3" /> : <X className="size-3" />}
+                  </button>
+                }
+                title={tCommon("deleteConfirmTitle")}
+                description={tCommon("deleteConfirmBody")}
+                confirmLabel={tCommon("delete")}
+                destructive
+                onConfirm={() => handleDelete(image.id)}
+              />
             </div>
             <Select
               value={image.color ?? NO_COLOR}

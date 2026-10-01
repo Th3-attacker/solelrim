@@ -23,6 +23,7 @@ import {
   type BoutiqueSettingsInput,
 } from "@/lib/validation/settings";
 import { updateBoutiqueSettings } from "@/lib/actions/settings";
+import { FieldError } from "@/components/ui/status-alert";
 
 export function BoutiqueSettingsForm({
   defaultValues,
@@ -122,9 +123,9 @@ export function BoutiqueSettingsForm({
               {...register("adminWhatsappNumber")}
             />
             {errors.adminWhatsappNumber && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {tCommon("requiredField")}
-              </p>
+              </FieldError>
             )}
           </div>
 

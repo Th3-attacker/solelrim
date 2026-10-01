@@ -20,8 +20,6 @@ export const REJECT_REASON_PRESETS = [
   "undeliverable_location",
 ] as const;
 
-export type RejectReasonPreset = (typeof REJECT_REASON_PRESETS)[number];
-
 function resolveLocale(locale: string | null | undefined): SupportedLocale {
   const locales: readonly string[] = routing.locales;
   return locale && locales.includes(locale)

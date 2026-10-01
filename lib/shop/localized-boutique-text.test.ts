@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
+import { resolveBoutiqueText, resolveSiteName } from "@/lib/shop/localized-boutique-text";
 
 const BOUTIQUE = {
   siteName: "Solal Sport",
@@ -54,5 +54,17 @@ describe("resolveBoutiqueText", () => {
     expect(resolved.heroTitle).toBe("Bienvenue");
     expect(resolved.heroSubtitle).toBe("Le meilleur du sport");
     expect(resolved.seoTitle).toBe("Solal | Sport");
+  });
+});
+
+describe("resolveSiteName", () => {
+  const names = { siteName: "Boutique", siteNameAr: "متجر", siteNameEn: "  " };
+
+  it("uses the Arabic override in Arabic", () => {
+    expect(resolveSiteName(names, "ar")).toBe("متجر");
+  });
+
+  it("falls back to the French base when the override is blank", () => {
+    expect(resolveSiteName(names, "en")).toBe("Boutique");
   });
 });

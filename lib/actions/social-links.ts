@@ -30,26 +30,6 @@ export async function createSocialLink(input: unknown) {
   return { link };
 }
 
-export async function updateSocialLink(id: string, input: unknown) {
-  const { productType } = await requireWritableAdminScope();
-  const parsed = socialLinkSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: "invalid" as const };
-  }
-
-  const updated = await prisma.socialLink.updateMany({
-    where: { id, productType },
-    data: parsed.data,
-  });
-  if (updated.count === 0) {
-    return { error: "notFound" as const };
-  }
-
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
-  return {};
-}
-
 export async function deleteSocialLink(id: string) {
   const { productType } = await requireWritableAdminScope();
 

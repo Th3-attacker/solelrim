@@ -74,13 +74,13 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group relative flex h-full flex-col gap-3 rounded-2xl bg-muted p-4 transition-[transform,box-shadow] duration-300 ease-out",
+        "group relative flex h-full flex-col gap-3 rounded-2xl border bg-card p-4 transition-[transform,box-shadow] duration-300 ease-out",
         !isOutOfStock && "hover:-translate-y-1 hover:shadow-lg",
       )}
     >
       {/* The out-of-stock fade lives on the photo only, not the whole card —
           dimming text/badges too (a blanket opacity used to) crushes their
-          contrast against bg-muted well below WCAG AA, since opacity blends
+          contrast against the card well below WCAG AA, since opacity blends
           them toward whatever's behind the card instead of just muting the
           photo. */}
       <div className={cn("relative aspect-square w-full", isOutOfStock && "opacity-60")}>
@@ -108,7 +108,7 @@ export function ProductCard({
               <Badge
                 key={badge.key}
                 dir={badge.key === "promo" ? "ltr" : undefined}
-                className="border-0 bg-background text-foreground shadow-sm"
+                className="border-0 bg-muted text-foreground shadow-sm"
               >
                 {badge.label}
               </Badge>

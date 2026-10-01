@@ -16,7 +16,6 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import {
   createSocialLink,
-  updateSocialLink,
   deleteSocialLink,
   moveSocialLink,
 } from "@/lib/actions/social-links";
@@ -74,35 +73,6 @@ describe("createSocialLink", () => {
     expect(prismaMock.socialLink.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ position: 0 }) }),
     );
-  });
-});
-
-describe("updateSocialLink", () => {
-  it("rejects malformed input", async () => {
-    const result = await updateSocialLink("link-1", { platform: "", url: "" });
-
-    expect(result.error).toBe("invalid");
-    expect(prismaMock.socialLink.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("reports notFound when the link isn't in this boutique", async () => {
-    prismaMock.socialLink.updateMany.mockResolvedValue({ count: 0 } as never);
-
-    const result = await updateSocialLink("link-1", VALID_INPUT);
-
-    expect(result.error).toBe("notFound");
-  });
-
-  it("updates a link scoped to this boutique", async () => {
-    prismaMock.socialLink.updateMany.mockResolvedValue({ count: 1 } as never);
-
-    const result = await updateSocialLink("link-1", VALID_INPUT);
-
-    expect(result.error).toBeUndefined();
-    expect(prismaMock.socialLink.updateMany).toHaveBeenCalledWith({
-      where: { id: "link-1", productType: "cosmetique" },
-      data: VALID_INPUT,
-    });
   });
 });
 

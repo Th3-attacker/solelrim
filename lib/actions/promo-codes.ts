@@ -19,9 +19,9 @@ export async function createPromoCode(
 ): Promise<PromoCodeActionResult> {
   const { productType } = await requireWritableAdminScope();
 
-  // Server-side feature-flag check (lib/shop/feature-flags.ts) — a
-  // BOUTIQUE_ADMIN whose boutique has coupons disabled can't create one
-  // regardless of whether the "Codes promo" nav item is hidden from them.
+  // Server-side feature-flag check — a BOUTIQUE_ADMIN whose boutique has
+  // coupons disabled can't create one regardless of whether the "Codes
+  // promo" nav item is hidden from them.
   const storeType = await prisma.storeType.findUnique({
     where: { key: productType },
     select: { couponsEnabled: true },

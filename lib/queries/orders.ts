@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 import type { OrderStatus } from "@/lib/generated/prisma/client";
 
 export type OrderListFilters = {
@@ -32,7 +33,7 @@ function buildOrdersWhere(filters: OrderListFilters) {
 export const ORDERS_PAGE_SIZE = 20;
 
 export async function getAllOrders(filters: OrderListFilters, page = 1) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = buildOrdersWhere(filters);
 
   const [orders, total] = await Promise.all([
@@ -81,26 +82,18 @@ export function getAllOrdersForExport(filters: OrderListFilters) {
   });
 }
 
-// Order has no Client relation — checkout is a guest flow, only ever
-// collects name/phone/city — so a client's online order history can only
-// be found by matching phone number, scoped to the same boutique.
-export function getOrdersByPhone(phone: string, productType: string) {
-  return prisma.order.findMany({
-    where: { customerPhone: phone, productType },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
 export const CLIENT_ORDERS_PAGE_SIZE = 20;
 
-// Paginated counterpart to getOrdersByPhone, for a client detail page whose
-// online order history can grow past a single page.
+// Order has no Client relation — checkout is a guest flow, only ever
+// collects name/phone/city — so a client's online order history can only
+// be found by matching phone number, scoped to the same boutique. Paginated
+// since that history can grow past a single page.
 export async function getOrdersByPhonePage(
   phone: string,
   productType: string,
   page = 1,
 ) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = { customerPhone: phone, productType };
 
   const [orders, total] = await Promise.all([

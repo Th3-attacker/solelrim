@@ -22,7 +22,7 @@ export function OrderSummary({
   const tCart = useTranslations("cart");
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border bg-muted/30 p-5">
+    <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
       <h2 className="text-label-xs">{t("orderSummary")}</h2>
 
       <div className="flex flex-col gap-3">

@@ -84,7 +84,16 @@
       "Bash(timeout 180 npx vitest run)",
       "Bash(grep -n \"ProductDetailView$\\\\|<ProductDetailView\" /home/th3/Documents/office-folder/solelrim/app/'[locale]'/'[storeType]'/'\\(shop\\)'/products/'[productSlug]'/page.tsx)",
       "Bash(pnpm exec *)",
-      "Bash(docker info *)"
+      "Bash(docker info *)",
+      "Bash(python3 /tmp/claude-1000/-home-th3-Documents-office-folder-solelrim/5ecddb96-346d-4c62-948c-bb98dc991737/scratchpad/client.py)",
+      "Bash(grep -rhoE 't\\\\\\(\"loyalty[A-Za-z_.]*\"|t\\\\\\(`loyalty[^`]*`' components/pos app/\\\\[locale\\\\]/admin/\\\\\\(dashboard\\\\\\)/pos)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(npx eslint *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(awk '/^diff --git a\\\\/prisma/,0')",
+      "Bash(grep -n \"admin,$\" lib/actions/products.ts lib/actions/orders.ts)"
     ],
     "additionalDirectories": [
       "/tmp/claude-1000/-home-th3-Documents-office-folder-solelrim/d3ce6a1d-ae56-4fcc-ae9d-944b0e305fc3/scratchpad",

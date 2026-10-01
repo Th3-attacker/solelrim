@@ -446,6 +446,8 @@ export async function deleteStoreType(productType: string): Promise<{ error?: st
     testimonialCount,
     walletAccountCount,
     promoCodeCount,
+    cashSessionCount,
+    dayClosureCount,
   ] = await Promise.all([
     prisma.product.count({ where: { productType } }),
     prisma.order.count({ where: { productType } }),
@@ -456,6 +458,8 @@ export async function deleteStoreType(productType: string): Promise<{ error?: st
     prisma.testimonial.count({ where: { productType } }),
     prisma.walletAccount.count({ where: { productType } }),
     prisma.promoCode.count({ where: { productType } }),
+    prisma.cashSession.count({ where: { productType } }),
+    prisma.storeDayClosure.count({ where: { productType } }),
   ]);
   const hasData =
     productCount +
@@ -466,7 +470,9 @@ export async function deleteStoreType(productType: string): Promise<{ error?: st
       socialLinkCount +
       testimonialCount +
       walletAccountCount +
-      promoCodeCount >
+      promoCodeCount +
+      cashSessionCount +
+      dayClosureCount >
     0;
   if (hasData) {
     return { error: "hasData" };
@@ -588,9 +594,9 @@ export async function updateBoutiqueLicense(
   return {};
 }
 
-// Per-boutique feature flag (lib/shop/feature-flags.ts) — superadmin-only,
-// same "infrastructure" tier as domain/license rather than something a
-// BOUTIQUE_ADMIN can flip on themselves.
+// Per-boutique feature flag — superadmin-only, same "infrastructure" tier
+// as domain/license rather than something a BOUTIQUE_ADMIN can flip on
+// themselves.
 export async function setCouponsEnabled(
   productType: string,
   enabled: boolean,

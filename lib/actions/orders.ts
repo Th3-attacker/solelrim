@@ -432,10 +432,11 @@ export async function confirmOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.confirm",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -511,10 +512,12 @@ export async function rejectOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.reject",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");
@@ -541,10 +544,11 @@ export async function shipOrder(
     select: { reference: true },
   });
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.ship",
     targetLabel: order?.reference ?? orderId,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -609,6 +613,18 @@ export async function deliverOrder(
         });
       }
 
+      // Online orders are always paid by mobile money, so the sale says so —
+      // a later refund then knows how the money goes back (the order doesn't
+      // record which wallet, only the sender's number). The customer is
+      // linked only when their phone matches exactly one client of the
+      // boutique; a doubtful match is left unlinked rather than guessed.
+      const matchingClients = await tx.client.findMany({
+        where: { productType: order.productType, phone: order.customerPhone },
+        select: { id: true },
+        take: 2,
+      });
+      const clientId = matchingClients.length === 1 ? matchingClients[0].id : null;
+
       let attempt = 0;
       while (attempt < 3) {
         const reference = buildSaleReference();
@@ -616,6 +632,8 @@ export async function deliverOrder(
           await tx.sale.create({
             data: {
               reference,
+              clientId,
+              paymentMethod: "wallet",
               subtotal: order.subtotal,
               discount: order.discount,
               total: order.total,
@@ -653,10 +671,11 @@ export async function deliverOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.deliver",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -733,10 +752,12 @@ export async function cancelOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.cancel",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");

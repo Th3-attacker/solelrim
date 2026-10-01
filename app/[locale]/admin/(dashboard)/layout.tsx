@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { countPendingRefunds } from "@/lib/queries/refunds";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -29,15 +30,21 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [storeTypes, currentScope, admin, supabase] = await Promise.all([
+  const [storeTypes, admin, supabase] = await Promise.all([
     getStoreTypes(),
-    getAdminScope(),
     getCurrentAdmin(),
     createClient(),
   ]);
-  const [{ data: { user } }, pendingOrderCount] = await Promise.all([
+  // getAdminScope() refuses a SELLER (it guards every admin data page), but
+  // this layout also wraps the checkout a seller does use — a seller's
+  // scope is simply their own locked boutique.
+  const currentScope =
+    admin.role === "SELLER" ? admin.productType! : await getAdminScope();
+  const [{ data: { user } }, pendingOrderCount, pendingRefundCount] = await Promise.all([
     supabase.auth.getUser(),
     getPendingOrderCount(currentScope),
+    // Only an admin decides refunds, so only they get the badge.
+    admin.role === "SELLER" ? Promise.resolve(0) : countPendingRefunds(currentScope),
   ]);
 
   const currentStoreType = storeTypes.find((type) => type.key === currentScope);
@@ -52,6 +59,7 @@ export default async function DashboardLayout({
             role={admin.role}
             email={user?.email ?? ""}
             pendingOrderCount={pendingOrderCount}
+            pendingRefundCount={pendingRefundCount}
           />
         </div>
         <SidebarInset>
@@ -75,7 +83,7 @@ export default async function DashboardLayout({
               />
             </div>
           )}
-          <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+          <main className="min-w-0 flex-1 p-4 md:p-6 print:p-0">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

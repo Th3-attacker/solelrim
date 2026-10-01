@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ImageSquare, Trash, Upload } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { uploadStoreLogo, removeStoreLogo } from "@/lib/actions/settings";
 
@@ -29,22 +30,20 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
     });
   }
 
-  function handleRemove() {
-    startTransition(async () => {
-      const result = await removeStoreLogo();
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      window.location.reload();
-    });
+  async function handleRemove() {
+    const result = await removeStoreLogo();
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    window.location.reload();
   }
 
   return (
     <div className="flex flex-col gap-2">
       <span className="text-sm font-medium">{t("logo")}</span>
       <div className="flex items-center gap-4">
-        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-card">
           {logoUrl ? (
             <Image
               src={logoUrl}
@@ -75,15 +74,23 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
           {tCommon("edit")}
         </Button>
         {logoUrl && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            loading={pending}
-            onClick={handleRemove}
-          >
-            <Trash className="size-4" />
-          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                loading={pending}
+              >
+                <Trash className="size-4" />
+              </Button>
+            }
+            title={tCommon("removeImageConfirmTitle")}
+            description={tCommon("deleteConfirmBody")}
+            confirmLabel={tCommon("delete")}
+            destructive
+            onConfirm={handleRemove}
+          />
         )}
       </div>
     </div>

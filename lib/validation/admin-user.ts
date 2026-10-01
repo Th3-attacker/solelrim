@@ -6,5 +6,3 @@ export const adminUserInputSchema = z.object({
   productType: z.string().min(1),
   canManageAppearance: z.boolean().optional().default(false),
 });
-
-export type AdminUserInput = z.infer<typeof adminUserInputSchema>;

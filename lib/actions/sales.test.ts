@@ -16,7 +16,7 @@ vi.mock("next/cache", () => ({
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { createSale, cancelSale } from "@/lib/actions/sales";
+import { createSale, cancelSale, updateSale } from "@/lib/actions/sales";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -67,9 +67,24 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
+  prismaMock.$queryRaw.mockResolvedValue([{ id: "session-1" }] as never);
 });
 
 describe("createSale", () => {
+  it("refuses a back-office sale while the admin's own till is closed", async () => {
+    prismaMock.$queryRaw.mockResolvedValue([] as never);
+
+    const result = await createSale({
+      clientId: null,
+      discount: 0,
+      paymentMethod: "cash",
+      items: [{ variantId: "variant-1", quantity: 2 }],
+    });
+
+    expect(result.error).toBe("noOpenSession");
+    expect(prismaMock.sale.create).not.toHaveBeenCalled();
+  });
+
   it("creates a sale, decrements stock, and returns the sale id", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant()] as never);
     prismaMock.productVariant.updateMany.mockResolvedValue({ count: 1 } as never);
@@ -90,9 +105,34 @@ describe("createSale", () => {
     });
     expect(prismaMock.sale.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ productType: "cosmetique", total: 40 }),
+        data: expect.objectContaining({
+          productType: "cosmetique",
+          total: 40,
+          // A manual sale is attributed to the admin who recorded it, same
+          // as a checkout sale is to its seller.
+          sellerId: "admin-user-1",
+        }),
       }),
     );
+  });
+
+  it("rejects a SELLER — the manual sale form is admin-only, sellers use the checkout", async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "admin-1",
+      role: "SELLER",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    await expect(
+      createSale({
+        clientId: null,
+        discount: 0,
+        paymentMethod: "cash",
+        items: [{ variantId: "variant-1", quantity: 1 }],
+      }),
+    ).rejects.toThrow("forbidden");
   });
 
   it("rejects a variant belonging to a different boutique (tenant isolation)", async () => {
@@ -197,54 +237,312 @@ describe("createSale", () => {
 });
 
 describe("cancelSale", () => {
-  it("restores stock and marks the sale cancelled", async () => {
-    prismaMock.sale.findFirst.mockResolvedValue({
+  function completedSale(overrides: Record<string, unknown> = {}) {
+    return {
       id: "sale-1",
-      status: "COMPLETED",
+      reference: "VNT-1",
+      clientId: null,
+      loyaltyPointsEarned: 0,
+      loyaltyPointsRedeemed: 0,
       items: [
         { variantId: "variant-1", quantity: 2 },
         { variantId: "variant-2", quantity: 1 },
       ],
-    } as never);
-    prismaMock.productVariant.update.mockResolvedValue({} as never);
-    prismaMock.sale.update.mockResolvedValue({} as never);
+      ...overrides,
+    };
+  }
 
-    const result = await cancelSale("sale-1");
+  it("restores stock and marks the sale cancelled", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(completedSale() as never);
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+
+    const result = await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(result.error).toBeUndefined();
-    expect(prismaMock.sale.findFirst).toHaveBeenCalledWith({
-      where: { id: "sale-1", productType: "cosmetique" },
-      include: { items: true },
+    expect(prismaMock.sale.updateMany).toHaveBeenCalledWith({
+      where: { id: "sale-1", productType: "cosmetique", status: "COMPLETED" },
+      data: { status: "CANCELLED" },
     });
     expect(prismaMock.productVariant.update).toHaveBeenCalledWith({
       where: { id: "variant-1" },
       data: { stock: { increment: 2 } },
     });
-    expect(prismaMock.sale.update).toHaveBeenCalledWith({
-      where: { id: "sale-1" },
-      data: { status: "CANCELLED" },
+    expect(prismaMock.productVariant.update).toHaveBeenCalledTimes(2);
+    expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "sale.cancel",
+        targetId: "sale-1",
+        targetLabel: "VNT-1",
+        oldValue: { status: "COMPLETED" },
+        newValue: { status: "CANCELLED", restockedItems: 3, loyaltyPointsChange: 0 },
+        reason: "Erreur de caisse",
+      }),
+    });
+  });
+
+  it("refuses a cancellation without a reason", async () => {
+    expect((await cancelSale({ saleId: "sale-1", reason: " " })).error).toBe("invalid");
+    expect((await cancelSale({ saleId: "sale-1" })).error).toBe("invalid");
+    expect(prismaMock.sale.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("flags in the history a sale cancelled after its till was closed", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ cashSession: { status: "CLOSED" } }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
+
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        newValue: expect.objectContaining({ closedTill: true }),
+      }),
     });
   });
 
   it("returns notFound for a sale outside the admin's boutique", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue(null);
 
-    const result = await cancelSale("sale-from-another-boutique");
+    const result = await cancelSale({ saleId: "sale-from-another-boutique", reason: "Erreur de caisse" });
 
     expect(result.error).toBe("notFound");
-    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
   it("returns alreadyCancelled without touching stock twice", async () => {
-    prismaMock.sale.findFirst.mockResolvedValue({
-      id: "sale-1",
-      status: "CANCELLED",
-      items: [{ variantId: "variant-1", quantity: 2 }],
-    } as never);
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.sale.findFirst.mockResolvedValue({ status: "CANCELLED" } as never);
 
-    const result = await cancelSale("sale-1");
+    const result = await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(result.error).toBe("alreadyCancelled");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+    expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses to cancel a sale that was (partly) refunded", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
+    prismaMock.sale.findFirst.mockResolvedValue({ status: "PARTIALLY_REFUNDED" } as never);
+
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("refunded");
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses to cancel while a refund request is pending", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.refundRequest.findFirst.mockResolvedValue({ id: "request-1" } as never);
+
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("pendingRefund");
+    expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("takes back earned points and gives back redeemed ones", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ clientId: "client-1", loyaltyPointsEarned: 5, loyaltyPointsRedeemed: 100 }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 12 }] as never);
+    prismaMock.client.update.mockResolvedValue({} as never);
+
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
+
+    expect(prismaMock.client.update).toHaveBeenCalledWith({
+      where: { id: "client-1" },
+      data: { loyaltyPoints: 107 },
+    });
+  });
+
+  it("never drives the balance below zero when the earned points were already spent", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ clientId: "client-1", loyaltyPointsEarned: 30 }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+    prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 10 }] as never);
+    prismaMock.client.update.mockResolvedValue({} as never);
+
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
+
+    expect(prismaMock.client.update).toHaveBeenCalledWith({
+      where: { id: "client-1" },
+      data: { loyaltyPoints: 0 },
+    });
+  });
+});
+
+describe("updateSale", () => {
+  function recordedSale(overrides: Record<string, unknown> = {}) {
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue({
+      id: "sale-1",
+      reference: "VNT-1",
+      status: "COMPLETED",
+      paymentMethod: "cash",
+      walletProvider: null,
+      clientId: null,
+      client: null,
+      notes: null,
+      loyaltyPointsEarned: 0,
+      loyaltyPointsRedeemed: 0,
+      cashSession: { status: "OPEN" },
+      refundRequests: [],
+      ...overrides,
+    } as never);
+  }
+
+  const TO_WALLET = {
+    saleId: "sale-1",
+    paymentMethod: "wallet",
+    walletAccountId: "wallet-1",
+    clientId: null,
+    notes: "",
+    reason: "Mauvais moyen choisi",
+  };
+
+  it("never lets a seller edit a sale", async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue({
+      id: "seller-1",
+      supabaseUserId: "admin-1",
+      role: "SELLER",
+      productType: "cosmetique",
+      createdAt: new Date(),
+    } as never);
+
+    await expect(updateSale(TO_WALLET)).rejects.toThrow("forbidden");
+    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+  });
+
+  it("corrects the payment and keeps the old and new value with the reason", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({});
+    expect(prismaMock.walletAccount.findFirst).toHaveBeenCalledWith({
+      where: { id: "wallet-1", productType: "cosmetique" },
+      select: { provider: true },
+    });
+    expect(prismaMock.sale.update).toHaveBeenCalledWith({
+      where: { id: "sale-1" },
+      data: {
+        paymentMethod: "wallet",
+        walletProvider: "Bankily",
+        clientId: null,
+        notes: null,
+        amountReceived: null,
+      },
+    });
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "sale.update",
+        targetLabel: "VNT-1",
+        oldValue: { paymentMethod: "cash", walletProvider: null },
+        newValue: { paymentMethod: "wallet", walletProvider: "Bankily" },
+        reason: "Mauvais moyen choisi",
+      }),
+    });
+  });
+
+  it("ignores any other field sent along — items and amounts never change", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    await updateSale({ ...TO_WALLET, total: 1, discount: 999, items: [], status: "CANCELLED" });
+
+    const { data } = prismaMock.sale.update.mock.calls[0][0];
+    expect(Object.keys(data).sort()).toEqual(
+      ["amountReceived", "clientId", "notes", "paymentMethod", "walletProvider"].sort(),
+    );
+  });
+
+  it("refuses a wallet or a client of another boutique", async () => {
+    recordedSale();
+    prismaMock.walletAccount.findFirst.mockResolvedValue(null);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "invalid" });
+
+    prismaMock.client.findFirst.mockResolvedValue(null);
+    expect(
+      await updateSale({
+        saleId: "sale-1",
+        paymentMethod: "cash",
+        clientId: "other-boutique-client",
+        reason: "Client oublié",
+      }),
+    ).toEqual({ error: "invalid" });
+    expect(prismaMock.sale.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a sale of another boutique", async () => {
+    prismaMock.$queryRaw.mockResolvedValue([] as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "notFound" });
+  });
+
+  it("requires a reason", async () => {
+    expect(await updateSale({ ...TO_WALLET, reason: " " })).toEqual({ error: "invalid" });
+  });
+
+  it("flags a change on a sale whose till is already closed", async () => {
+    recordedSale({ cashSession: { status: "CLOSED" } });
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    await updateSale(TO_WALLET);
+
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        newValue: expect.objectContaining({ closedTill: true }),
+      }),
+    });
+  });
+
+  it("keeps the payment once a refund went back by it", async () => {
+    recordedSale({ refundRequests: [{ id: "request-1" }] });
+    prismaMock.walletAccount.findFirst.mockResolvedValue({ provider: "Bankily" } as never);
+
+    expect(await updateSale(TO_WALLET)).toEqual({ error: "paymentLocked" });
+  });
+
+  it("keeps the client once loyalty points are tied to them", async () => {
+    recordedSale({ clientId: "client-1", loyaltyPointsEarned: 12 });
+    prismaMock.client.findFirst.mockResolvedValue({ fullName: "Autre" } as never);
+
+    expect(
+      await updateSale({
+        saleId: "sale-1",
+        paymentMethod: "cash",
+        clientId: "client-2",
+        reason: "Mauvais client",
+      }),
+    ).toEqual({ error: "clientLocked" });
+  });
+
+  it("keeps a payment the form can't offer when only the note changes", async () => {
+    recordedSale({ paymentMethod: "card" });
+
+    expect(
+      await updateSale({ saleId: "sale-1", clientId: null, notes: "Payé par carte", reason: "Note" }),
+    ).toEqual({});
+    expect(prismaMock.sale.update).toHaveBeenCalledWith({
+      where: { id: "sale-1" },
+      data: { paymentMethod: "card", walletProvider: null, clientId: null, notes: "Payé par carte" },
+    });
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ oldValue: { notes: null }, newValue: { notes: "Payé par carte" } }),
+    });
+  });
+
+  it("refuses a cancelled sale, and an edit that changes nothing", async () => {
+    recordedSale({ status: "CANCELLED" });
+    expect(await updateSale({ ...TO_WALLET })).toEqual({ error: "notEditable" });
+
+    recordedSale();
+    expect(
+      await updateSale({ saleId: "sale-1", paymentMethod: "cash", clientId: null, reason: "Rien" }),
+    ).toEqual({ error: "noChanges" });
   });
 });

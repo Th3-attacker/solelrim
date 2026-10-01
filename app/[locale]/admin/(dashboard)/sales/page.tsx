@@ -6,8 +6,8 @@ import { Plus, Receipt } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
 import { getAdminScope } from "@/lib/shop/admin-scope";
+import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { StateMessage } from "@/components/ui/state-message";
 import { ExportCsvButton } from "@/components/ui/export-csv-button";
 import { formatPrice } from "@/lib/format/currency";
@@ -40,13 +40,13 @@ export default async function AdminSalesPage() {
     reference: sale.reference,
     client: sale.client?.fullName ?? t("walkInClient"),
     total: formatPrice(sale.total, tCommon("currency")),
-    status: sale.status === "COMPLETED" ? t("completed") : t("cancelled"),
+    status: t(`saleStatus.${sale.status}`),
     date: format.dateTime(sale.createdAt, { dateStyle: "medium" }),
   }));
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <div className="flex items-center gap-2">
           <ExportCsvButton
@@ -93,11 +93,7 @@ export default async function AdminSalesPage() {
                 </TableCell>
                 <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={sale.status === "COMPLETED" ? "secondary" : "destructive"}
-                  >
-                    {sale.status === "COMPLETED" ? t("completed") : t("cancelled")}
-                  </Badge>
+                  <SaleStatusBadge status={sale.status} />
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {format.dateTime(sale.createdAt, { dateStyle: "medium" })}

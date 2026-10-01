@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { shipOrder, deliverOrder, cancelOrder } from "@/lib/actions/orders";
@@ -19,13 +20,14 @@ export function OrderProgressActions({
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [advancePending, startAdvanceTransition] = useTransition();
+  const [advancePending, setAdvancePending] = useState(false);
   const [cancelPending, startCancelTransition] = useTransition();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState("");
 
-  function handleAdvance() {
-    startAdvanceTransition(async () => {
+  async function handleAdvance() {
+    setAdvancePending(true);
+    try {
       const action = status === "CONFIRMED" ? shipOrder : deliverOrder;
       const result = await action(orderId);
       if (result.error) {
@@ -34,7 +36,9 @@ export function OrderProgressActions({
       }
       router.refresh();
       toast.success(status === "CONFIRMED" ? t("shipAction") : t("deliverAction"));
-    });
+    } finally {
+      setAdvancePending(false);
+    }
   }
 
   function handleCancel() {
@@ -55,9 +59,17 @@ export function OrderProgressActions({
 
   return (
     <div className="flex gap-2">
-      <Button loading={advancePending} disabled={cancelPending} onClick={handleAdvance}>
-        {status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
-      </Button>
+      <ConfirmDialog
+        trigger={
+          <Button loading={advancePending} disabled={cancelPending}>
+            {status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
+          </Button>
+        }
+        title={t(status === "CONFIRMED" ? "shipConfirmTitle" : "deliverConfirmTitle")}
+        description={t(status === "CONFIRMED" ? "shipConfirmBody" : "deliverConfirmBody")}
+        confirmLabel={status === "CONFIRMED" ? t("shipAction") : t("deliverAction")}
+        onConfirm={handleAdvance}
+      />
 
       <ResponsiveFormDialog
         open={cancelOpen}

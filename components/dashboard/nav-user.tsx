@@ -70,7 +70,7 @@ export function NavUser({
             <SidebarMenuButton
               size="lg"
               tooltip={roleLabel}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
             >
               {avatar}
               <div className="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden">

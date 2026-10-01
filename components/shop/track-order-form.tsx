@@ -16,6 +16,7 @@ import { trackOrder, type TrackOrderResult } from "@/lib/actions/orders";
 import { trackOrderSchema } from "@/lib/validation/order";
 import { buildWhatsAppLink } from "@/lib/shop/contact";
 import type { z } from "zod";
+import { FieldError } from "@/components/ui/status-alert";
 
 type FormValues = z.input<typeof trackOrderSchema>;
 
@@ -115,7 +116,7 @@ export function TrackOrderForm({
                 {...register("phone")}
               />
               {errors.phone && (
-                <p className="text-sm text-destructive">{tCommon("invalidPhone")}</p>
+                <FieldError>{tCommon("invalidPhone")}</FieldError>
               )}
             </div>
             <div className="flex flex-col gap-2">
@@ -127,7 +128,7 @@ export function TrackOrderForm({
                 {...register("reference")}
               />
               {errors.reference && (
-                <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+                <FieldError>{tCommon("requiredField")}</FieldError>
               )}
             </div>
             <Button type="submit" loading={submitting} className="w-full">

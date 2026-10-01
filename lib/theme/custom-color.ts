@@ -1,11 +1,5 @@
 import type { ThemePreset } from "@/lib/theme/presets";
 
-const HEX_RE = /^#[0-9a-fA-F]{6}$/;
-
-export function isValidHexColor(value: string): boolean {
-  return HEX_RE.test(value);
-}
-
 function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];

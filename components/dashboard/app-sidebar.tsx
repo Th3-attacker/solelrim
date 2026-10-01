@@ -12,6 +12,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { StoreScopeSwitcher } from "@/components/dashboard/store-scope-switcher";
@@ -19,6 +20,12 @@ import { NavUser } from "@/components/dashboard/nav-user";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import {
+  ArrowCounterClockwise,
+  CashRegister,
+  ListChecks,
+  Receipt,
+  Money,
+  Vault,
   ClipboardText,
   ClockCounterClockwise,
   SquaresFour,
@@ -40,12 +47,14 @@ export function AppSidebar({
   role,
   email,
   pendingOrderCount,
+  pendingRefundCount,
 }: {
   storeTypes: StoreTypeOption[];
   currentScope: string;
-  role: "SUPERADMIN" | "BOUTIQUE_ADMIN";
+  role: "SUPERADMIN" | "BOUTIQUE_ADMIN" | "SELLER";
   email: string;
   pendingOrderCount: number;
+  pendingRefundCount: number;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -53,7 +62,21 @@ export function AppSidebar({
   const side = getDirection(locale) === "rtl" ? "right" : "left";
   const { setOpenMobile } = useSidebar();
 
-  const sections: { label?: string; items: NavItem[] }[] = [
+  // A seller only ever reaches the checkout (proxy.ts redirects every
+  // other admin path) — no point listing links they'd bounce off.
+  const sellerSections: { label?: string; items: NavItem[] }[] = [
+    {
+      items: [
+        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
+        { href: "/admin/pos/register", label: t("register"), icon: Money },
+        { href: "/admin/pos/my-sales", label: t("mySales"), icon: Receipt },
+        { href: "/admin/pos/refunds", label: t("refunds"), icon: ArrowCounterClockwise },
+        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
+      ],
+    },
+  ];
+
+  const adminSections: { label?: string; items: NavItem[] }[] = [
     { items: [{ href: "/admin", label: t("dashboard"), icon: SquaresFour }] },
     {
       label: t("catalogSection"),
@@ -63,7 +86,7 @@ export function AppSidebar({
       ],
     },
     {
-      label: t("activitySection"),
+      label: t("salesSection"),
       items: [
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
         {
@@ -77,18 +100,46 @@ export function AppSidebar({
       ],
     },
     {
+      label: t("posSection"),
+      items: [
+        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
+        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
+        { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
+        {
+          href: "/admin/pos/refunds",
+          label: t("refunds"),
+          icon: ArrowCounterClockwise,
+          badge: pendingRefundCount > 0 ? pendingRefundCount : undefined,
+        },
+      ],
+    },
+    {
       label: t("adminSection"),
       items: [
         { href: "/admin/settings", label: t("settings"), icon: Gear },
-        // Superadmin-only (app/[locale]/admin/(dashboard)/audit-log/page.tsx
-        // enforces this server-side too — hidden here just to not show a
-        // link a boutique admin would hit a 404 on).
-        ...(role === "SUPERADMIN"
-          ? [{ href: "/admin/audit-log", label: t("auditLog"), icon: ClockCounterClockwise }]
-          : []),
+        // Sellers never get here (they have their own sections); the page
+        // itself scopes a boutique admin to their own boutique.
+        { href: "/admin/audit-log", label: t("auditLog"), icon: ClockCounterClockwise },
       ],
     },
   ];
+
+  const sections = role === "SELLER" ? sellerSections : adminSections;
+  const allHrefs = sections.flatMap((section) => section.items.map((item) => item.href));
+  // The most specific link wins: on /admin/pos/sessions, "Caisse"
+  // (/admin/pos) must not light up too.
+  const matches = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
+  const activeHref = allHrefs
+    .filter(matches)
+    .sort((a, b) => b.length - a.length)[0];
+
+  const roleLabel =
+    role === "SUPERADMIN"
+      ? t("superadmin")
+      : role === "SELLER"
+        ? t("seller")
+        : t("boutiqueAdmin");
 
   return (
     <Sidebar side={side} collapsible="icon">
@@ -108,6 +159,11 @@ export function AppSidebar({
       <SidebarContent>
         {sections.map((section, index) => (
           <SidebarGroup key={section.label ?? `section-${index}`}>
+            {/* The group labels disappear when the sidebar is collapsed to
+                icons: a rule between groups keeps the categories apart. */}
+            {index > 0 && (
+              <SidebarSeparator className="mx-0 -mt-2 mb-1 hidden group-data-[collapsible=icon]:block" />
+            )}
             {section.label && (
               <SidebarGroupLabel className="text-sm font-semibold">
                 {section.label}
@@ -116,10 +172,7 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
-                  const isActive =
-                    item.href === "/admin"
-                      ? pathname === "/admin"
-                      : pathname.startsWith(item.href);
+                  const isActive = item.href === activeHref;
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
@@ -127,11 +180,11 @@ export function AppSidebar({
                         isActive={isActive}
                         size="lg"
                         tooltip={item.label}
-                        className="text-base [&_svg]:size-5"
+                        className="text-base group-data-[collapsible=icon]:justify-center [&_svg]:size-5"
                       >
                         <Link href={item.href} onClick={() => setOpenMobile(false)}>
                           <item.icon />
-                          <span>{item.label}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                       {item.badge !== undefined && (
@@ -148,10 +201,7 @@ export function AppSidebar({
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          email={email}
-          roleLabel={role === "SUPERADMIN" ? t("superadmin") : t("boutiqueAdmin")}
-        />
+        <NavUser email={email} roleLabel={roleLabel} />
       </SidebarFooter>
     </Sidebar>
   );

@@ -3,7 +3,7 @@ import { getTranslations, getFormatter } from "next-intl/server";
 import { getOrderById } from "@/lib/queries/orders";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { PrintLabelButton } from "@/components/orders/print-label-button";
-import { PrintPageSize } from "@/components/orders/print-page-size";
+import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { formatPrice } from "@/lib/format/currency";
 
 export default async function OrderLabelPage({
@@ -27,7 +27,8 @@ export default async function OrderLabelPage({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <PrintPageSize />
+      {/* A real label printer feeds a fixed 10x15cm sheet. */}
+      <PrintPageStyle rule="@page { size: 10cm 15cm; margin: 5mm; }" />
       <PrintLabelButton />
 
       <div className="flex w-[10cm] flex-col gap-2 border p-3 text-[11px] leading-tight print:w-full print:border-0 print:p-0">

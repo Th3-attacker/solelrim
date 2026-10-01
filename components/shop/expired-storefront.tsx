@@ -30,7 +30,7 @@ export async function ExpiredStorefront({
           className="size-14 object-contain"
         />
       ) : (
-        <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <div className="flex size-14 items-center justify-center rounded-full border bg-card text-muted-foreground">
           <Prohibit className="size-6" />
         </div>
       )}

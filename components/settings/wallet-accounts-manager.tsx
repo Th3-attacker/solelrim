@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Plus, Trash, CaretUp, CaretDown, Pencil, Wallet, X } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,15 +76,13 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const result = await deleteWalletAccount(id);
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      router.refresh();
-    });
+  async function handleDelete(id: string) {
+    const result = await deleteWalletAccount(id);
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    router.refresh();
   }
 
   function handleMove(id: string, direction: "up" | "down") {
@@ -104,7 +103,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
       {wallets.length > 0 && (
         <div className="flex flex-col gap-2">
           {wallets.map((wallet, index) => (
-            <div key={wallet.id} className="flex items-center gap-3 rounded-md border p-2">
+            <div key={wallet.id} className="flex items-center gap-3 rounded-md border bg-card p-2">
               {wallet.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -113,7 +112,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                   className="size-8 shrink-0 rounded-md object-cover"
                 />
               ) : (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-card">
                   <Wallet className="size-4 text-muted-foreground" />
                 </div>
               )}
@@ -153,16 +152,24 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
               >
                 <CaretDown className="size-4" />
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={pending}
-                onClick={() => handleDelete(wallet.id)}
-                aria-label={tCommon("delete")}
-              >
-                <Trash className="size-4" />
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={pending}
+                    aria-label={tCommon("delete")}
+                  >
+                    <Trash className="size-4" />
+                  </Button>
+                }
+                title={tCommon("deleteConfirmTitle")}
+                description={tCommon("deleteConfirmBody")}
+                confirmLabel={tCommon("delete")}
+                destructive
+                onConfirm={() => handleDelete(wallet.id)}
+              />
             </div>
           ))}
         </div>

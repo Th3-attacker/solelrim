@@ -122,7 +122,7 @@ export function FilterPanel({
     ) : null;
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 w-full rounded-lg border p-4 duration-200">
+    <div className="animate-in fade-in slide-in-from-top-2 w-full rounded-lg border bg-card p-4 duration-200">
       <div className="hidden md:grid md:grid-cols-3 md:gap-8">
         <div>
           <h3 className="mb-2 text-sm font-medium">{t("sortBy")}</h3>
