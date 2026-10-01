@@ -84,7 +84,7 @@ export function FavoritesTrigger({
             <div className="flex flex-col gap-4">
               {favoriteProducts.map((product) => (
                 <div key={product.id} className="flex gap-3">
-                  <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <div className="relative size-16 shrink-0 overflow-hidden rounded-md border bg-card">
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}

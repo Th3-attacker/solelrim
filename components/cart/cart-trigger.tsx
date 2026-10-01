@@ -119,7 +119,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
             <div className="flex flex-col gap-4">
               {items.map((line) => (
                 <div key={line.variantId} className="flex gap-3">
-                  <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <div className="relative size-16 shrink-0 overflow-hidden rounded-md border bg-card">
                     {line.imageStoragePath ? (
                       <Image
                         src={getProductImageUrl(line.imageStoragePath)}

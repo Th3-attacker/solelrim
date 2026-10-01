@@ -110,7 +110,7 @@ export default async function AboutPage({
                 href={`${basePath}/products/${product.slug}`}
                 className="group flex flex-col gap-2"
               >
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
+                <div className="relative aspect-square w-full overflow-hidden rounded-2xl border bg-card">
                   <Image
                     src={getProductImageUrl(product.images[0].storagePath)}
                     alt={product.name}
@@ -144,7 +144,7 @@ export default async function AboutPage({
         <TrustBadges />
       </div>
 
-      <div className="flex flex-col items-center gap-6 rounded-3xl bg-muted/30 px-6 py-12 text-center">
+      <div className="flex flex-col items-center gap-6 rounded-3xl border bg-card px-6 py-12 text-center">
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
             {t("findEyebrow")}

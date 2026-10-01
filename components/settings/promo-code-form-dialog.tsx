@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { promoCodeSchema, type PromoCodeInput } from "@/lib/validation/promo-code";
 import { createPromoCode, updatePromoCode } from "@/lib/actions/promo-codes";
+import { FieldError } from "@/components/ui/status-alert";
 
 const GENERAL_CODE_VALUE = "__general__";
 
@@ -96,9 +97,13 @@ export function PromoCodeFormDialog({
     setSubmitting(false);
 
     if (result.error) {
-      toast.error(
-        result.error === "duplicateCode" ? t("duplicateCodeError") : tCommon("error"),
-      );
+      if (result.error === "duplicateCode") {
+        toast.error(t("duplicateCodeError"));
+      } else if (result.error === "featureDisabled") {
+        toast.error(t("featureDisabledError"));
+      } else {
+        toast.error(tCommon("error"));
+      }
       return;
     }
 
@@ -133,9 +138,9 @@ export function PromoCodeFormDialog({
             {...register("code")}
           />
           {errors.code && (
-            <p className="text-sm text-destructive">
+            <FieldError>
               {fieldErrorMessage(errors.code.message)}
-            </p>
+            </FieldError>
           )}
         </div>
 
@@ -167,9 +172,9 @@ export function PromoCodeFormDialog({
               {...register("discountValue")}
             />
             {errors.discountValue && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {fieldErrorMessage(errors.discountValue.message)}
-              </p>
+              </FieldError>
             )}
           </div>
         </div>

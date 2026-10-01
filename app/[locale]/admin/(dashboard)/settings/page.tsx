@@ -13,10 +13,19 @@ import { LayoutVariantsPicker } from "@/components/settings/layout-variants-pick
 import { SocialLinksManager } from "@/components/settings/social-links-manager";
 import { WalletAccountsManager } from "@/components/settings/wallet-accounts-manager";
 import { TestimonialsManager } from "@/components/settings/testimonials-manager";
+import { SellersManager } from "@/components/settings/sellers-manager";
+import { LoyaltySettingsForm } from "@/components/settings/loyalty-settings-form";
+import { listSellers } from "@/lib/queries/sellers";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { requireAdminScope } from "@/lib/shop/admin-scope";
 import { THEME_PRESETS, DEFAULT_THEME_ID } from "@/lib/theme/presets";
+
+// The settings sections that aren't a Card of their own sit in the same
+// white panel, so each reads as its own block on the muted page.
+function SettingsPanel({ children }: { children: React.ReactNode }) {
+  return <section className="rounded-xl border bg-card p-4 sm:p-6">{children}</section>;
+}
 
 export default async function SettingsPage() {
   const [t, { admin, productType }] = await Promise.all([
@@ -24,10 +33,11 @@ export default async function SettingsPage() {
     requireAdminScope(),
   ]);
 
-  const [boutique, deliveredOrders, mfaStatus] = await Promise.all([
+  const [boutique, deliveredOrders, mfaStatus, sellers] = await Promise.all([
     getBoutiqueSettings(productType),
     getDeliveredOrders(productType),
     getMfaStatus(),
+    listSellers(productType),
   ]);
 
   return (
@@ -48,33 +58,65 @@ export default async function SettingsPage() {
           this boutique — shown regardless of which scope is selected. */}
       <TwoFactorSettings factorId={mfaStatus.factorId} required={mfaStatus.required} />
 
-      <LogoUpload
-        logoUrl={
-          boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
-        }
-      />
+      <SettingsPanel>
+        <SellersManager
+          key={productType}
+          productType={productType}
+          sellers={sellers.sellers}
+          quota={sellers.quota}
+          canEditQuota={admin.role === "SUPERADMIN"}
+        />
+      </SettingsPanel>
 
-      <HeroImageUpload
-        heroImageUrl={
-          boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
-        }
-      />
+      <SettingsPanel>
+        <LoyaltySettingsForm
+          key={`loyalty-${productType}`}
+          rule={{
+            enabled: boutique.loyaltyEnabled,
+            spendPerPoint: boutique.loyaltySpendPerPoint,
+            rewardPoints: boutique.loyaltyRewardPoints,
+            rewardValue: boutique.loyaltyRewardValue,
+          }}
+        />
+      </SettingsPanel>
+
+      <SettingsPanel>
+        <LogoUpload
+          logoUrl={
+            boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
+          }
+        />
+      </SettingsPanel>
+
+      <SettingsPanel>
+        <HeroImageUpload
+          heroImageUrl={
+            boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
+          }
+        />
+      </SettingsPanel>
 
       {(admin.role === "SUPERADMIN" || admin.canManageAppearance) && (
         <>
-          <ThemePicker
-            presets={THEME_PRESETS}
-            currentThemeId={boutique.themeId ?? DEFAULT_THEME_ID}
-            customColor={boutique.customThemeColor}
-          />
+          <SettingsPanel>
+            <ThemePicker
+              presets={THEME_PRESETS}
+              currentThemeId={boutique.themeId ?? DEFAULT_THEME_ID}
+              customColor={boutique.customThemeColor}
+            />
+          </SettingsPanel>
+          <SettingsPanel>
 
-          <ColorModePicker currentMode={boutique.colorMode} />
+            <ColorModePicker currentMode={boutique.colorMode} />
+          </SettingsPanel>
 
-          <LayoutVariantsPicker
-            heroVariant={boutique.heroVariant}
-            cardVariant={boutique.cardVariant}
-            footerVariant={boutique.footerVariant}
-          />
+          <SettingsPanel>
+            <LayoutVariantsPicker
+              heroVariant={boutique.heroVariant}
+              cardVariant={boutique.cardVariant}
+              footerVariant={boutique.footerVariant}
+            />
+          </SettingsPanel>
         </>
       )}
 
@@ -105,34 +147,40 @@ export default async function SettingsPage() {
         }}
       />
 
-      <WalletAccountsManager
-        wallets={boutique.walletAccounts.map((wallet) => ({
-          id: wallet.id,
-          provider: wallet.provider,
-          number: wallet.number,
-          logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
-        }))}
-      />
+      <SettingsPanel>
+        <WalletAccountsManager
+          wallets={boutique.walletAccounts.map((wallet) => ({
+            id: wallet.id,
+            provider: wallet.provider,
+            number: wallet.number,
+            logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+          }))}
+        />
+      </SettingsPanel>
 
-      <SocialLinksManager
-        links={boutique.socialLinks.map((link) => ({
-          id: link.id,
-          platform: link.platform,
-          url: link.url,
-        }))}
-      />
+      <SettingsPanel>
+        <SocialLinksManager
+          links={boutique.socialLinks.map((link) => ({
+            id: link.id,
+            platform: link.platform,
+            url: link.url,
+          }))}
+        />
+      </SettingsPanel>
 
-      <TestimonialsManager
-        enabled={boutique.testimonialsEnabled}
-        testimonials={boutique.testimonials.map((item) => ({
-          id: item.id,
-          customerName: item.customerName,
-          quote: item.quote,
-          rating: item.rating,
-          orderId: item.orderId,
-        }))}
-        deliveredOrders={deliveredOrders}
-      />
+      <SettingsPanel>
+        <TestimonialsManager
+          enabled={boutique.testimonialsEnabled}
+          testimonials={boutique.testimonials.map((item) => ({
+            id: item.id,
+            customerName: item.customerName,
+            quote: item.quote,
+            rating: item.rating,
+            orderId: item.orderId,
+          }))}
+          deliveredOrders={deliveredOrders}
+        />
+      </SettingsPanel>
     </div>
   );
 }

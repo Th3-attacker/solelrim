@@ -17,8 +17,8 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { routing } from "@/i18n/routing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
-import { getLicenseStatus } from "@/lib/shop/license";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
 
@@ -81,10 +81,10 @@ export async function submitOrder(
   const productType = requestedProductType;
 
   // Belt-and-suspenders: the (shop) layout already blocks every page once
-  // the license expires, so this only matters for a tab left open across
-  // that moment — same rule, checked again server-side before an order can
-  // actually be created.
-  if (getLicenseStatus(matchedStoreType.licenseExpiresAt) === "expired") {
+  // the license is suspended/expired/cancelled, so this only matters for a
+  // tab left open across that moment — same rule, checked again
+  // server-side before an order can actually be created.
+  if (isLicenseBlocking(getEffectiveLicenseState(matchedStoreType))) {
     return { error: "storefrontExpired" };
   }
 
@@ -402,7 +402,7 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
 export async function confirmOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
   try {
@@ -432,10 +432,11 @@ export async function confirmOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.confirm",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -448,7 +449,7 @@ export async function rejectOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
   const parsed = cancelReasonSchema.safeParse({ reason });
@@ -511,10 +512,12 @@ export async function rejectOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.reject",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");
@@ -526,7 +529,7 @@ export async function rejectOrder(
 export async function shipOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
 
   const updated = await prisma.order.updateMany({
     where: { id: orderId, status: "CONFIRMED", productType },
@@ -541,10 +544,11 @@ export async function shipOrder(
     select: { reference: true },
   });
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.ship",
     targetLabel: order?.reference ?? orderId,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -561,7 +565,7 @@ const BEST_SELLER_COUNT = 5;
 export async function deliverOrder(
   orderId: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
   try {
@@ -609,6 +613,18 @@ export async function deliverOrder(
         });
       }
 
+      // Online orders are always paid by mobile money, so the sale says so —
+      // a later refund then knows how the money goes back (the order doesn't
+      // record which wallet, only the sender's number). The customer is
+      // linked only when their phone matches exactly one client of the
+      // boutique; a doubtful match is left unlinked rather than guessed.
+      const matchingClients = await tx.client.findMany({
+        where: { productType: order.productType, phone: order.customerPhone },
+        select: { id: true },
+        take: 2,
+      });
+      const clientId = matchingClients.length === 1 ? matchingClients[0].id : null;
+
       let attempt = 0;
       while (attempt < 3) {
         const reference = buildSaleReference();
@@ -616,6 +632,8 @@ export async function deliverOrder(
           await tx.sale.create({
             data: {
               reference,
+              clientId,
+              paymentMethod: "wallet",
               subtotal: order.subtotal,
               discount: order.discount,
               total: order.total,
@@ -653,10 +671,11 @@ export async function deliverOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.deliver",
     targetLabel: orderReference,
+    targetId: orderId,
   });
 
   revalidatePath("/admin/orders");
@@ -670,7 +689,7 @@ export async function cancelOrder(
   orderId: string,
   reason: string,
 ): Promise<{ error?: string }> {
-  const { admin, productType } = await requireAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
   const parsed = cancelReasonSchema.safeParse({ reason });
@@ -733,10 +752,12 @@ export async function cancelOrder(
   }
 
   await logAdminAction({
-    adminUserId: admin.id,
+    admin,
     productType,
     action: "order.cancel",
     targetLabel: orderReference,
+    targetId: orderId,
+    reason,
   });
 
   revalidatePath("/admin/orders");

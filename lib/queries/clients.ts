@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 
 export function getAllClients(productType: string) {
   return prisma.client.findMany({
@@ -15,7 +16,7 @@ export async function getClientsPage(
   productType: string,
   filters: { search?: string; page?: number } = {},
 ) {
-  const page = Math.max(1, filters.page ?? 1);
+  const page = toPageNumber(filters.page);
   const where = {
     productType,
     ...(filters.search && {
@@ -55,7 +56,7 @@ export async function getClientSalesPage(
   productType: string,
   page = 1,
 ) {
-  const currentPage = Math.max(1, page);
+  const currentPage = toPageNumber(page);
   const where = { clientId, productType };
 
   const [sales, total] = await Promise.all([
@@ -70,4 +71,18 @@ export async function getClientSalesPage(
   ]);
 
   return { sales, total, page: currentPage };
+}
+
+// Cancelled sales are voided, so they count toward neither the purchase
+// count nor the amount spent; refunds are taken off the amount spent.
+export async function getClientSalesStats(clientId: string, productType: string) {
+  const stats = await prisma.sale.aggregate({
+    where: { clientId, productType, status: { not: "CANCELLED" } },
+    _count: { _all: true },
+    _sum: { total: true, refundedAmount: true },
+  });
+  return {
+    purchaseCount: stats._count._all,
+    totalSpent: Number(stats._sum.total ?? 0) - Number(stats._sum.refundedAmount ?? 0),
+  };
 }

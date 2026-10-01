@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { testimonialSchema } from "@/lib/validation/settings";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 
 export async function createTestimonial(input: unknown) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = testimonialSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" as const };
@@ -45,7 +45,7 @@ export async function createTestimonial(input: unknown) {
 }
 
 export async function deleteTestimonial(id: string) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const deleted = await prisma.testimonial.deleteMany({ where: { id, productType } });
   if (deleted.count === 0) {
@@ -58,7 +58,7 @@ export async function deleteTestimonial(id: string) {
 }
 
 export async function moveTestimonial(id: string, direction: "up" | "down") {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const testimonials = await prisma.testimonial.findMany({
     where: { productType },
@@ -87,7 +87,7 @@ export async function moveTestimonial(id: string, direction: "up" | "down") {
 }
 
 export async function setTestimonialsEnabled(enabled: boolean): Promise<{ error?: string }> {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   await prisma.storeType.update({
     where: { key: productType },

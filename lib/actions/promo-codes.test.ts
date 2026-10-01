@@ -68,6 +68,10 @@ beforeEach(() => {
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
   asAdmin();
+  // createPromoCode's own feature-flag check, and findValidPromoCode's
+  // (previewPromoCode) — both read StoreType.couponsEnabled, on by default
+  // so existing tests don't need to know about it.
+  prismaMock.storeType.findUnique.mockResolvedValue({ couponsEnabled: true } as never);
 });
 
 describe("createPromoCode", () => {
@@ -262,6 +266,20 @@ describe("previewPromoCode", () => {
     });
 
     expect(prismaMock.promoCode.update).not.toHaveBeenCalled();
+  });
+
+  it("reports notFound (not a distinct 'disabled' error) when coupons are off for the boutique", async () => {
+    prismaMock.storeType.findUnique.mockResolvedValue({ couponsEnabled: false } as never);
+    prismaMock.promoCode.findUnique.mockResolvedValue(baseCode as never);
+
+    const result = await previewPromoCode({
+      code: "welcome10",
+      productType: "cosmetique",
+      customerPhone: "22345678",
+      subtotal: 2000,
+    });
+
+    expect(result).toEqual({ error: "notFound" });
   });
 
   it("returns notFound for an unknown code", async () => {

@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusAlert } from "@/components/ui/status-alert";
 
 export default async function OrderDetailPage({
   params,
@@ -58,11 +59,11 @@ export default async function OrderDetailPage({
         {order.status === "PENDING" && (
           <div className="flex flex-wrap items-center gap-3">
             {differenceInHours(new Date(), order.createdAt) >= STALE_PENDING_HOURS && (
-              <p className="text-sm text-warning">
+              <StatusAlert variant="warning" className="w-auto">
                 {t("pendingSince", {
                   time: format.relativeTime(order.createdAt, new Date()),
                 })}
-              </p>
+              </StatusAlert>
             )}
             <OrderActions orderId={order.id} />
           </div>
@@ -229,7 +230,7 @@ export default async function OrderDetailPage({
           <img
             src={signedUrl}
             alt={t("paymentProof")}
-            className="max-w-sm rounded-lg border"
+            className="max-w-sm rounded-lg border bg-card"
           />
         ) : (
           <p className="text-sm text-muted-foreground">{t("paymentProof")}</p>

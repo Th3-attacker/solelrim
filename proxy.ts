@@ -12,6 +12,12 @@ function isAdminPath(pathWithoutLocale: string) {
   );
 }
 
+// The only admin area a SELLER may open — the checkout and everything
+// under it (receipts, cash closing).
+function isSellerPath(pathWithoutLocale: string) {
+  return pathWithoutLocale === "/admin/pos" || pathWithoutLocale.startsWith("/admin/pos/");
+}
+
 function isAdminLoginPath(pathWithoutLocale: string) {
   return (
     pathWithoutLocale === "/admin/login" ||
@@ -136,12 +142,20 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Stamped into app_metadata at creation (lib/actions/sellers.ts) — only a
+  // service-role client can write it, so it's as tamper-proof as
+  // mfa_required, and reading it here costs no database round trip. This is
+  // routing only: the real guard is server-side (requireAdminScope and
+  // getAdminScope both refuse a SELLER).
+  const isSeller = user.app_metadata?.role === "SELLER";
+
   // A SUPERADMIN can mandate 2FA for a specific admin (setAdminMfaRequired,
   // written to app_metadata since only a service-role client can set it —
   // the targeted admin can't clear it on themselves). Until that admin has
   // a verified factor, every admin page but Settings (where they enroll
-  // one) bounces them there instead of loading normally.
-  if (user.app_metadata?.mfa_required === true) {
+  // one) bounces them there instead of loading normally. Never applied to a
+  // seller: they can't open Settings to enroll, so it would only loop.
+  if (user.app_metadata?.mfa_required === true && !isSeller) {
     const { data: factors } = await supabase.auth.mfa.listFactors();
     const hasFactor = (factors?.totp.length ?? 0) > 0;
     if (!hasFactor && pathWithoutLocale !== "/admin/settings") {
@@ -149,6 +163,12 @@ export async function proxy(request: NextRequest) {
       url.pathname = `/${locale}/admin/settings`;
       return NextResponse.redirect(url);
     }
+  }
+
+  if (isSeller && !isSellerPath(pathWithoutLocale)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/admin/pos`;
+    return NextResponse.redirect(url);
   }
 
   if (isLoginRoute) {

@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { getCurrentAdmin } from "@/lib/auth/admin";
+import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Independent from StoreSettings.productType (the public "live" toggle) —
@@ -11,10 +13,17 @@ import type { AdminUser } from "@/lib/generated/prisma/client";
 export const ADMIN_SCOPE_COOKIE = "admin_store_scope";
 
 export async function getAdminScope(): Promise<string> {
+  const admin = await getCurrentAdmin().catch(() => null);
+  // Every admin data page (orders, clients, sales, revenue, ...) resolves
+  // its boutique through here, so refusing a SELLER here is the
+  // server-side guard behind proxy.ts's redirect — a request that skips
+  // the proxy still can't read those pages.
+  if (admin?.role === "SELLER") {
+    throw new Error("forbidden");
+  }
   // A boutique admin is permanently locked to their assigned boutique —
   // the free-choice cookie is never consulted for this role, so nothing
   // (a stale cookie, a crafted request) can move them outside it.
-  const admin = await getCurrentAdmin().catch(() => null);
   if (admin?.role === "BOUTIQUE_ADMIN") {
     return admin.productType!;
   }
@@ -37,16 +46,44 @@ export async function getAdminScope(): Promise<string> {
 // The single replacement for every action's old
 // `requireAdmin(); ...; const productType = await getAdminScope();` pair —
 // resolves both "is this a recognized admin" and "which boutique are they
-// acting on" in one call, with the BOUTIQUE_ADMIN lock from getAdminScope()
-// above applying automatically.
+// acting on" in one call, with the boutique lock from getAdminScope() above
+// applying automatically.
+//
+// Rejects SELLER: every admin action (products, orders, settings, ...)
+// goes through here (directly or via requireWritableAdminScope /
+// requireAppearanceScope / requireSuperAdminScope), so this one check is
+// what keeps a seller confined to the checkout even if they call an admin
+// Server Action directly instead of going through the UI.
 export async function requireAdminScope(): Promise<{
   admin: AdminUser;
   productType: string;
 }> {
   const admin = await getCurrentAdmin();
-  const productType =
-    admin.role === "BOUTIQUE_ADMIN" ? admin.productType! : await getAdminScope();
-  return { admin, productType };
+  if (admin.role === "SELLER") {
+    throw new Error("forbidden");
+  }
+  return { admin, productType: await resolveProductType(admin) };
+}
+
+// The audit log: a boutique admin reads only their own boutique's entries,
+// a superadmin every boutique's (null = no boutique restriction), a seller
+// none at all.
+export async function requireAuditLogScope(): Promise<{
+  admin: AdminUser;
+  productType: string | null;
+}> {
+  const admin = await getCurrentAdmin();
+  if (admin.role === "SELLER") {
+    throw new Error("forbidden");
+  }
+  return { admin, productType: admin.role === "SUPERADMIN" ? null : admin.productType! };
+}
+
+// The single boutique-resolution rule every gate shares: a superadmin acts
+// on whichever boutique they've selected, every other role on the one
+// they're locked to.
+async function resolveProductType(admin: AdminUser): Promise<string> {
+  return admin.role === "SUPERADMIN" ? await getAdminScope() : admin.productType!;
 }
 
 // For settings reserved to SUPERADMIN (theme/color, color mode, hero/card
@@ -77,5 +114,99 @@ export async function requireAppearanceScope(): Promise<{
   if (admin.role !== "SUPERADMIN" && !admin.canManageAppearance) {
     throw new Error("forbidden");
   }
+  await assertLicenseWritable(admin, productType);
   return { admin, productType };
+}
+
+// Thrown by assertLicenseWritable/requireWritableAdminScope so callers (the
+// dashboard's error.tsx) can tell "your boutique is suspended/expired" apart
+// from an unexpected bug, instead of showing the same generic error for
+// both.
+export class LicenseBlockedError extends Error {
+  constructor() {
+    super("licenseBlocked");
+    this.name = "LicenseBlockedError";
+  }
+}
+
+// A SUPERADMIN always bypasses — they're the ones who suspend/reactivate a
+// boutique in the first place (updateBoutiqueLicense), and must never be
+// locked out of the very screen that does that. Only a BOUTIQUE_ADMIN
+// acting on their own (or, via the free-choice cookie, a SUPERADMIN acting
+// *as* a boutique — but that path never reaches here since it's still a
+// SUPERADMIN role) boutique gets blocked.
+async function assertLicenseWritable(admin: AdminUser, productType: string): Promise<void> {
+  if (admin.role === "SUPERADMIN") return;
+
+  const storeType = await prisma.storeType.findUnique({
+    where: { key: productType },
+    select: { licenseType: true, licenseStatus: true, licenseExpiresAt: true },
+  });
+  if (!storeType) return;
+
+  if (isLicenseBlocking(getEffectiveLicenseState(storeType))) {
+    throw new LicenseBlockedError();
+  }
+}
+
+// The gate every mutating Server Action (lib/actions/*.ts) uses instead of
+// requireAdminScope: same identity + scope resolution, plus "is this
+// boutique actually allowed to be written to right now". Read-only call
+// sites (the categories/settings pages, which only need `admin`/productType
+// to render) deliberately keep using plain requireAdminScope — a suspended
+// boutique's own admin can still see their dashboard and the license
+// section explaining why, only writes are rejected here, not the whole UI.
+export async function requireWritableAdminScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireAdminScope();
+  await assertLicenseWritable(admin, productType);
+  return { admin, productType };
+}
+
+// The checkout's own gate — the one place a SELLER is let in, alongside a
+// boutique admin and a superadmin. Same boutique lock (a seller or boutique
+// admin always acts on their own boutique) and same license gate as
+// requireWritableAdminScope, just without refusing the SELLER role. Opt-in
+// by design: only checkout actions call this, so every other admin action
+// stays closed to sellers by default.
+export async function requireCheckoutScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireCheckoutViewScope();
+  await assertLicenseWritable(admin, productType);
+  return { admin, productType };
+}
+
+// For checkout Server Actions: the same gate as requireCheckoutScope, but
+// the two refusals a seller must be told about come back as a value
+// instead of a throw — Next.js masks a thrown action's message in
+// production, and a throw would also wipe the checkout screen's state via
+// the error boundary.
+export async function tryCheckoutScope(): Promise<
+  | { admin: AdminUser; productType: string; error?: undefined }
+  | { error: "unauthorized" | "licenseBlocked" }
+> {
+  try {
+    return await requireCheckoutScope();
+  } catch (err) {
+    if (err instanceof Error && (err.message === "unauthorized" || err.message === "licenseBlocked")) {
+      return { error: err.message };
+    }
+    throw err;
+  }
+}
+
+// Read-only counterpart for checkout pages that only *show* past data
+// (reprinting a receipt): same identities and boutique lock, but no license
+// gate — viewing an existing sale isn't a write, so a suspended boutique can
+// still hand a customer a copy of yesterday's receipt.
+export async function requireCheckoutViewScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const admin = await getCurrentAdmin();
+  return { admin, productType: await resolveProductType(admin) };
 }

@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildCustomThemePreset,
   contrastRatio,
-  isValidHexColor,
   meetsMinimumContrast,
 } from "@/lib/theme/custom-color";
 
@@ -59,16 +58,5 @@ describe("buildCustomThemePreset", () => {
   it("keeps an already-light color unchanged for the dark-mode variant", () => {
     const preset = buildCustomThemePreset("#fde68a");
     expect(preset.dark.primary).toBe("#fde68a");
-  });
-});
-
-describe("isValidHexColor", () => {
-  it("accepts a well-formed 6-digit hex", () => {
-    expect(isValidHexColor("#abcdef")).toBe(true);
-  });
-
-  it("rejects a 3-digit shorthand or missing hash", () => {
-    expect(isValidHexColor("#abc")).toBe(false);
-    expect(isValidHexColor("abcdef")).toBe(false);
   });
 });

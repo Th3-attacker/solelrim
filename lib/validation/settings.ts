@@ -66,14 +66,10 @@ export const socialLinkSchema = z.object({
     .refine((value) => /^https?:\/\//i.test(value), "invalidUrl"),
 });
 
-export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
-
 export const walletAccountSchema = z.object({
   provider: z.string().trim().min(1).max(40),
   number: z.string().trim().min(1).max(30),
 });
-
-export type WalletAccountInput = z.infer<typeof walletAccountSchema>;
 
 export const testimonialSchema = z.object({
   customerName: z.string().trim().min(1).max(80),
@@ -83,8 +79,6 @@ export const testimonialSchema = z.object({
   // — this only shapes the input, it isn't the trust boundary.
   orderId: z.string().trim().min(1).optional(),
 });
-
-export type TestimonialInput = z.infer<typeof testimonialSchema>;
 
 export const customThemeColorSchema = z.object({
   color: z
@@ -96,16 +90,12 @@ export const customThemeColorSchema = z.object({
     .refine(meetsMinimumContrast, "lowContrast"),
 });
 
-export type CustomThemeColorInput = z.infer<typeof customThemeColorSchema>;
-
 export const colorModeSchema = z.enum(["auto", "light", "dark"]);
 
 export const productTypeInputSchema = z.object({
   name: z.string().trim().min(1).max(40),
   categories: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
 });
-
-export type ProductTypeInput = z.infer<typeof productTypeInputSchema>;
 
 // Renaming a boutique only ever touches its label — the key stays
 // immutable post-creation (it's baked into existing URLs and every
@@ -114,8 +104,6 @@ export type ProductTypeInput = z.infer<typeof productTypeInputSchema>;
 export const storeTypeLabelSchema = z.object({
   label: z.string().trim().min(1).max(40),
 });
-
-export type StoreTypeLabelInput = z.infer<typeof storeTypeLabelSchema>;
 
 // A bare hostname, no protocol/path — e.g. "solel.com", not
 // "https://solel.com/". Superadmin-only (lib/actions/settings.ts).
@@ -140,4 +128,28 @@ export const storeDomainSchema = z.object({
     .refine((value) => value === "" || HOSTNAME_RE.test(value), "invalid"),
 });
 
-export type StoreDomainInput = z.infer<typeof storeDomainSchema>;
+// Superadmin-only (lib/actions/settings.ts: updateBoutiqueLicense). Only
+// ACTIVE/SUSPENDED/CANCELLED are ever submitted here — GRACE_PERIOD/EXPIRED
+// are derived, never written (see lib/shop/license.ts).
+export const licenseTypeSchema = z.enum(["MONTHLY", "YEARLY", "PERPETUAL"]);
+export const licenseStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "CANCELLED"]);
+
+// The Client's legal name/raison sociale for the license contract's section
+// 34 (components/settings/license-contract-document.tsx). Empty string
+// clears it back to null, same convention as storeDomainSchema.
+export const licenseClientNameSchema = z.object({
+  licenseClientName: z.string().trim().max(200),
+});
+
+// SOLAL's own (the Concédant's) contact info for the same contract's
+// section 34 — superadmin-only (lib/actions/settings.ts:
+// updateSolalContact). Every field is optional/blank-able: an empty string
+// is stored as-is and rendered as "[à compléter]" by
+// license-contract-document.tsx, same placeholder convention as the source
+// document until a superadmin fills it in.
+export const solalContactSchema = z.object({
+  address: z.string().trim().max(300),
+  phone: z.string().trim().max(60),
+  email: z.string().trim().max(200).email().or(z.literal("")),
+  website: z.string().trim().max(200),
+});

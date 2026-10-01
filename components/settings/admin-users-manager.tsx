@@ -11,6 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -80,15 +81,13 @@ export function AdminUsersManager({
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const result = await deleteBoutiqueAdmin(id);
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      router.refresh();
-    });
+  async function handleDelete(id: string) {
+    const result = await deleteBoutiqueAdmin(id);
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    router.refresh();
   }
 
   function handleToggleAppearance(id: string, next: boolean) {
@@ -113,15 +112,13 @@ export function AdminUsersManager({
     });
   }
 
-  function handleResetMfa(id: string) {
-    startTransition(async () => {
-      const result = await resetAdminMfa(id);
-      if (result.error) {
-        toast.error(tCommon("error"));
-        return;
-      }
-      toast.success(t("adminUserResetMfaSuccess"));
-    });
+  async function handleResetMfa(id: string) {
+    const result = await resetAdminMfa(id);
+    if (result.error) {
+      toast.error(tCommon("error"));
+      return;
+    }
+    toast.success(t("adminUserResetMfaSuccess"));
   }
 
   return (
@@ -129,7 +126,7 @@ export function AdminUsersManager({
       {admins.length > 0 && (
         <div className="flex flex-col gap-2">
           {admins.map((admin) => (
-            <div key={admin.id} className="flex items-center gap-2 rounded-md border p-2">
+            <div key={admin.id} className="flex items-center gap-2 rounded-md border bg-card p-2">
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium">{admin.email}</span>
                 <span className="text-xs text-muted-foreground">{admin.boutiqueLabel}</span>
@@ -164,27 +161,42 @@ export function AdminUsersManager({
               >
                 <ShieldCheck className="size-4" />
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={pending}
-                onClick={() => handleResetMfa(admin.id)}
-                aria-label={t("adminUserResetMfa")}
-                title={t("adminUserResetMfa")}
-              >
-                <ArrowCounterClockwise className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={pending}
-                onClick={() => handleDelete(admin.id)}
-                aria-label={tCommon("delete")}
-              >
-                <Trash className="size-4" />
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={pending}
+                    aria-label={t("adminUserResetMfa")}
+                    title={t("adminUserResetMfa")}
+                  >
+                    <ArrowCounterClockwise className="size-4" />
+                  </Button>
+                }
+                title={t("adminUserResetMfaConfirmTitle")}
+                description={t("adminUserResetMfaConfirmBody")}
+                confirmLabel={t("adminUserResetMfa")}
+                onConfirm={() => handleResetMfa(admin.id)}
+              />
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={pending}
+                    aria-label={tCommon("delete")}
+                  >
+                    <Trash className="size-4" />
+                  </Button>
+                }
+                title={t("adminUserDeleteConfirmTitle")}
+                description={t("adminUserDeleteConfirmBody")}
+                confirmLabel={tCommon("delete")}
+                destructive
+                onConfirm={() => handleDelete(admin.id)}
+              />
             </div>
           ))}
         </div>

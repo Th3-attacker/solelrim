@@ -36,7 +36,7 @@ export function ProductGallery({
               aria-label={`${index + 1}`}
               aria-current={index === selectedIndex}
               className={cn(
-                "relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-inset transition-all",
+                "relative size-14 shrink-0 overflow-hidden rounded-lg bg-card ring-1 ring-inset transition-all",
                 index === selectedIndex
                   ? "ring-2 ring-foreground"
                   : "ring-border hover:ring-foreground/40",
@@ -48,7 +48,7 @@ export function ProductGallery({
         </div>
       )}
 
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border bg-card">
         {current ? (
           <Image
             src={current.url}

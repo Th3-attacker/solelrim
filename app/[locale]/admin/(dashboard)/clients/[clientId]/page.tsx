@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
-import { Gift } from "@phosphor-icons/react/dist/ssr";
+import { Gift, IdentificationCard } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
-import { getClientById, getClientSalesPage, CLIENT_SALES_PAGE_SIZE } from "@/lib/queries/clients";
+import {
+  getClientById,
+  getClientSalesPage,
+  getClientSalesStats,
+  CLIENT_SALES_PAGE_SIZE,
+} from "@/lib/queries/clients";
 import { getOrdersByPhonePage, CLIENT_ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { ClientForm } from "@/components/clients/client-form";
@@ -49,11 +54,12 @@ export default async function ClientDetailPage({
 
   // Only ever looked up once we know the client (need their id/phone), so
   // these can't run in the same Promise.all above.
-  const [{ sales, total: salesTotal }, ordersResult] = await Promise.all([
+  const [{ sales, total: salesTotal }, ordersResult, stats] = await Promise.all([
     getClientSalesPage(clientId, scope, salesPage),
     client.phone
       ? getOrdersByPhonePage(client.phone, scope, ordersPage)
       : Promise.resolve({ orders: [], total: 0, page: 1 }),
+    getClientSalesStats(clientId, scope),
   ]);
   const onlineOrders = ordersResult.orders;
   const ordersTotal = ordersResult.total;
@@ -75,6 +81,38 @@ export default async function ClientDetailPage({
             }
           />
           <DeleteClientButton clientId={client.id} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {client.loyaltyEnrolledAt ? (
+          <div className="col-span-2 flex items-start gap-2 rounded-md border bg-card p-3">
+            <IdentificationCard aria-hidden="true" className="mt-0.5 size-5 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-lg font-semibold tabular-nums">
+                {t("loyaltyPoints", { points: client.loyaltyPoints })}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {t("loyaltySince", {
+                  date: format.dateTime(client.loyaltyEnrolledAt, { dateStyle: "medium" }),
+                })}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="col-span-2 flex items-center rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+            {t("loyaltyNotEnrolled")}
+          </div>
+        )}
+        <div className="flex flex-col rounded-md border bg-card p-3">
+          <span className="text-lg font-semibold tabular-nums">{stats.purchaseCount}</span>
+          <span className="text-xs text-muted-foreground">{t("purchaseCount")}</span>
+        </div>
+        <div className="flex flex-col rounded-md border bg-card p-3">
+          <span className="text-lg font-semibold tabular-nums">
+            {formatPrice(stats.totalSpent, tCommon("currency"))}
+          </span>
+          <span className="text-xs text-muted-foreground">{t("totalSpent")}</span>
         </div>
       </div>
 
@@ -101,6 +139,7 @@ export default async function ClientDetailPage({
                   <TableHead>{tSales("reference")}</TableHead>
                   <TableHead>{tSales("date")}</TableHead>
                   <TableHead>{tSales("total")}</TableHead>
+                  <TableHead>{t("pointsColumn")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,6 +157,21 @@ export default async function ClientDetailPage({
                       {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
                     </TableCell>
                     <TableCell>{formatPrice(sale.total, tCommon("currency"))}</TableCell>
+                    <TableCell
+                      dir="ltr"
+                      className={
+                        sale.status === "CANCELLED"
+                          ? "tabular-nums text-muted-foreground line-through"
+                          : "tabular-nums"
+                      }
+                    >
+                      {[
+                        sale.loyaltyPointsEarned > 0 && `+${sale.loyaltyPointsEarned}`,
+                        sale.loyaltyPointsRedeemed > 0 && `-${sale.loyaltyPointsRedeemed}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" / ") || "—"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -10,8 +10,6 @@ export const SORT_OPTIONS = [
   { value: "price-desc", labelKey: "sortPriceDesc" },
 ] as const;
 
-export type SortValue = (typeof SORT_OPTIONS)[number]["value"];
-
 // Bucket boundaries are tuned to this catalog's actual price spread (tens to
 // low thousands of MRU), not a generic $0-200 scale.
 export const PRICE_BUCKETS = [

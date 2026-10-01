@@ -31,11 +31,16 @@ import {
   paymentSenderPhoneSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
+import { StatusAlert, FieldError } from "@/components/ui/status-alert";
 
 type Settings = {
   wallets: { provider: string; number: string; logoUrl: string | null }[];
   adminWhatsappNumber: string | null;
   paymentInstructions: string | null;
+  // UX only — hides a field that would always fail server-side anyway
+  // (findValidPromoCode re-checks this per boutique, see
+  // lib/shop/promo-code.ts). Never the actual trust boundary.
+  couponsEnabled: boolean;
 };
 
 type Step = 1 | 2 | 3 | "success";
@@ -344,11 +349,13 @@ export function CheckoutFlow({
 
   if (step === "success") {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-12 text-center">
+      <div
+        className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border bg-card p-6 text-center sm:my-6 sm:p-8"
+      >
         <h1 className="text-heading-xs">{t("successTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
         <div className="flex w-full flex-col items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-md border bg-muted/30 py-1.5 pr-1.5 pl-3">
+          <div className="flex items-center gap-1 rounded-md border bg-card py-1.5 pr-1.5 pl-3">
             <span className="font-mono text-sm">{reference}</span>
             <Button
               type="button"
@@ -401,7 +408,7 @@ export function CheckoutFlow({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <div className="flex flex-col gap-4">
         <Link
           href={basePath || "/"}
@@ -416,7 +423,7 @@ export function CheckoutFlow({
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div
           key={step}
-          className="flex flex-col gap-6 duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+          className="flex flex-col gap-6 rounded-2xl border bg-card p-4 duration-200 animate-in fade-in-0 slide-in-from-bottom-2 sm:p-6"
         >
           {step === 1 && (
             <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
@@ -433,9 +440,9 @@ export function CheckoutFlow({
                     {...register("customerName")}
                   />
                   {errors.customerName && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerName.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -448,9 +455,9 @@ export function CheckoutFlow({
                     {...register("customerPhone")}
                   />
                   {errors.customerPhone && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerPhone.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -461,9 +468,9 @@ export function CheckoutFlow({
                     {...register("customerCity")}
                   />
                   {errors.customerCity && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerCity.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
               </div>
@@ -479,7 +486,7 @@ export function CheckoutFlow({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex items-center justify-between gap-2 self-start rounded-lg bg-muted/50 px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
+                className="flex items-center justify-between gap-2 self-start rounded-lg border bg-card px-3 py-2 text-start text-sm transition-colors hover:bg-muted"
               >
                 <span className="truncate">
                   {customerInfo.customerName} · {customerInfo.customerPhone} ·{" "}
@@ -496,47 +503,49 @@ export function CheckoutFlow({
                 <p className="text-sm text-muted-foreground">{t("step2Hint")}</p>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="promoCode">{t("promoCode")}</Label>
-                {appliedPromo ? (
-                  <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-                    <span className="font-mono font-medium">{appliedPromo.code}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleRemovePromoCode}
-                      aria-label={t("removePromoCode")}
-                    >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      id="promoCode"
-                      value={promoInput}
-                      onChange={(e) => {
-                        setPromoInput(e.target.value);
-                        setPromoError(null);
-                      }}
-                      placeholder={t("promoCodePlaceholder")}
-                      aria-invalid={!!promoError}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      loading={applyingPromo}
-                      disabled={!promoInput.trim()}
-                      onClick={handleApplyPromoCode}
-                    >
-                      {t("applyPromoCode")}
-                    </Button>
-                  </div>
-                )}
-                {promoError && <p className="text-sm text-destructive">{promoError}</p>}
-              </div>
+              {settings.couponsEnabled && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="promoCode">{t("promoCode")}</Label>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                      <span className="font-mono font-medium">{appliedPromo.code}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleRemovePromoCode}
+                        aria-label={t("removePromoCode")}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        id="promoCode"
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value);
+                          setPromoError(null);
+                        }}
+                        placeholder={t("promoCodePlaceholder")}
+                        aria-invalid={!!promoError}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        loading={applyingPromo}
+                        disabled={!promoInput.trim()}
+                        onClick={handleApplyPromoCode}
+                      >
+                        {t("applyPromoCode")}
+                      </Button>
+                    </div>
+                  )}
+                  {promoError && <FieldError>{promoError}</FieldError>}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(1)}>
@@ -585,7 +594,7 @@ export function CheckoutFlow({
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {settings.wallets.map((wallet, index) => (
                           <Popover key={index}>
-                            <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-muted/30 p-3 text-center transition-colors hover:bg-muted/50">
+                            <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-card p-3 text-center transition-colors hover:bg-muted/50">
                               <PopoverTrigger asChild>
                                 <button type="button" className="flex flex-col items-center gap-1.5">
                                   {wallet.logoUrl ? (
@@ -596,7 +605,7 @@ export function CheckoutFlow({
                                       className="size-8 shrink-0 rounded-lg object-cover"
                                     />
                                   ) : (
-                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-card">
                                       <Wallet className="size-4 text-muted-foreground" />
                                     </div>
                                   )}
@@ -646,7 +655,7 @@ export function CheckoutFlow({
                       aria-invalid={!!senderPhoneError}
                     />
                     {senderPhoneError && (
-                      <p className="text-sm text-destructive">{senderPhoneError}</p>
+                      <FieldError>{senderPhoneError}</FieldError>
                     )}
                     <p className="text-xs text-muted-foreground">
                       {t("paymentSenderPhoneHint")}
@@ -656,10 +665,10 @@ export function CheckoutFlow({
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
                     {promoDroppedMessage && (
-                      <p className="text-sm text-destructive">{promoDroppedMessage}</p>
+                      <StatusAlert variant="warning">{promoDroppedMessage}</StatusAlert>
                     )}
                     {fileSizeError && (
-                      <p className="text-sm text-destructive">{fileSizeError}</p>
+                      <FieldError>{fileSizeError}</FieldError>
                     )}
                     <Input
                       id="screenshot"

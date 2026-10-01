@@ -18,6 +18,7 @@ import { VariantFields } from "@/components/products/variant-fields";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { createProduct, updateProduct } from "@/lib/actions/products";
 import type { ProductType } from "@/lib/shop/product-type";
+import { FieldError } from "@/components/ui/status-alert";
 
 type Category = { id: string; name: string };
 type ProductFormValues = z.input<typeof productSchema>;
@@ -92,7 +93,7 @@ export function ProductForm({
             <Label htmlFor="name">{t("name")}</Label>
             <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
             {errors.name && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <FieldError>{tCommon("requiredField")}</FieldError>
             )}
           </div>
 
@@ -111,7 +112,7 @@ export function ProductForm({
               {...register("basePrice")}
             />
             {errors.basePrice && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <FieldError>{tCommon("requiredField")}</FieldError>
             )}
           </div>
 
@@ -135,7 +136,7 @@ export function ProductForm({
               onChange={(id) => setValue("categoryId", id)}
             />
             {errors.categoryId && (
-              <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+              <FieldError>{tCommon("requiredField")}</FieldError>
             )}
           </div>
 

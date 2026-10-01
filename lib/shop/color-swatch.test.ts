@@ -14,6 +14,21 @@ describe("getSwatchColors", () => {
     expect(getSwatchColors("Chartreuse")).toEqual(["#a1a1aa"]);
   });
 
+  it("resolves common fashion color names like olive", () => {
+    expect(getSwatchColors("Olive")).toEqual(["#6b7a3a"]);
+    expect(getSwatchColors("kaki")).toEqual(["#7d7a54"]);
+  });
+
+  it("resolves the extended fashion palette (charcoal, terracotta, cognac)", () => {
+    expect(getSwatchColors("Charbon")).toEqual(["#374151"]);
+    expect(getSwatchColors("Terracotta")).toEqual(["#c2410c"]);
+    expect(getSwatchColors("cognac")).toEqual(["#7c4a1e"]);
+  });
+
+  it("still falls back to neutral for an accented name it doesn't know", () => {
+    expect(getSwatchColors("Écarlate")).toEqual(["#a1a1aa"]);
+  });
+
   it("splits a compound hyphenated name into one hex per segment", () => {
     expect(getSwatchColors("Black-White")).toEqual(["#18181b", "#ffffff"]);
   });

@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { socialLinkSchema } from "@/lib/validation/settings";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 
 export async function createSocialLink(input: unknown) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
   const parsed = socialLinkSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" as const };
@@ -30,28 +30,8 @@ export async function createSocialLink(input: unknown) {
   return { link };
 }
 
-export async function updateSocialLink(id: string, input: unknown) {
-  const { productType } = await requireAdminScope();
-  const parsed = socialLinkSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: "invalid" as const };
-  }
-
-  const updated = await prisma.socialLink.updateMany({
-    where: { id, productType },
-    data: parsed.data,
-  });
-  if (updated.count === 0) {
-    return { error: "notFound" as const };
-  }
-
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
-  return {};
-}
-
 export async function deleteSocialLink(id: string) {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const deleted = await prisma.socialLink.deleteMany({ where: { id, productType } });
   if (deleted.count === 0) {
@@ -64,7 +44,7 @@ export async function deleteSocialLink(id: string) {
 }
 
 export async function moveSocialLink(id: string, direction: "up" | "down") {
-  const { productType } = await requireAdminScope();
+  const { productType } = await requireWritableAdminScope();
 
   const links = await prisma.socialLink.findMany({
     where: { productType },

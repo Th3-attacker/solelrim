@@ -80,7 +80,7 @@ export default async function ContactPage({
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center transition-colors hover:bg-muted/70"
+            className="flex flex-col items-center gap-3 rounded-2xl border bg-card p-8 text-center transition-colors hover:bg-muted"
           >
             <ChatCircle className="size-8 text-primary" />
             <p className="text-heading-xs">{t("whatsappTitle")}</p>
@@ -93,7 +93,7 @@ export default async function ContactPage({
             href={orderWhatsappHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center transition-colors hover:bg-muted/70"
+            className="flex flex-col items-center gap-3 rounded-2xl border bg-card p-8 text-center transition-colors hover:bg-muted"
           >
             <Package className="size-8 text-primary" />
             <p className="text-heading-xs">{t("orderTitle")}</p>
@@ -102,7 +102,7 @@ export default async function ContactPage({
         )}
 
         {socialLinks.length > 0 && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted/40 p-8 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border bg-card p-8 text-center">
             <ShareNetwork className="size-8 text-primary" />
             <p className="text-heading-xs">{t("socialTitle")}</p>
             <p className="text-paragraph-sm text-muted-foreground">{t("socialDesc")}</p>

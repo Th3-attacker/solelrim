@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { toPageNumber } from "@/lib/shop/pagination";
 
 export const PRODUCTS_PAGE_SIZE = 50;
 
@@ -6,7 +7,7 @@ export async function getAllProducts(
   productType: string,
   filters: { search?: string; categoryId?: string; page?: number } = {},
 ) {
-  const page = Math.max(1, filters.page ?? 1);
+  const page = toPageNumber(filters.page);
   const where = {
     productType,
     ...(filters.categoryId && { categoryId: filters.categoryId }),
