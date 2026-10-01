@@ -86,20 +86,6 @@ export function AppSidebar({
       ],
     },
     {
-      label: t("posSection"),
-      items: [
-        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
-        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
-        { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
-        {
-          href: "/admin/pos/refunds",
-          label: t("refunds"),
-          icon: ArrowCounterClockwise,
-          badge: pendingRefundCount > 0 ? pendingRefundCount : undefined,
-        },
-      ],
-    },
-    {
       label: t("salesSection"),
       items: [
         { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
@@ -111,6 +97,20 @@ export function AppSidebar({
         },
         { href: "/admin/clients", label: t("clients"), icon: Users },
         { href: "/admin/promo-codes", label: t("promoCodes"), icon: Ticket },
+      ],
+    },
+    {
+      label: t("posSection"),
+      items: [
+        { href: "/admin/pos", label: t("pos"), icon: CashRegister },
+        { href: "/admin/pos/sessions", label: t("cashSessions"), icon: ListChecks },
+        { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
+        {
+          href: "/admin/pos/refunds",
+          label: t("refunds"),
+          icon: ArrowCounterClockwise,
+          badge: pendingRefundCount > 0 ? pendingRefundCount : undefined,
+        },
       ],
     },
     {
