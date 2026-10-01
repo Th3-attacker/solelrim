@@ -854,8 +854,10 @@ describe("deliverOrder", () => {
       subtotal: decimal(3000),
       total: decimal(3000),
       productType: "cosmetique",
+      customerPhone: "22334455",
       items: [{ variantId: "variant-1", quantity: 2, unitPrice: 1500, lineTotal: 3000 }],
     } as never);
+    prismaMock.client.findMany.mockResolvedValue([] as never);
   }
 
   it("returns invalidTransition when the order isn't SHIPPING", async () => {
@@ -883,6 +885,31 @@ describe("deliverOrder", () => {
     const saleArgs = prismaMock.sale.create.mock.calls[0][0];
     expect(saleArgs.data.notes).toContain("CMD-20260729-1234");
     expect(revalidatePath).toHaveBeenCalledWith("/admin/sales");
+  });
+
+  it("books the sale as a wallet payment, linked to the one client with that phone", async () => {
+    primeSuccessfulDelivery();
+    prismaMock.client.findMany.mockResolvedValue([{ id: "client-1" }] as never);
+    prismaMock.sale.create.mockResolvedValue({ id: "sale-1" } as never);
+
+    await deliverOrder("order-1");
+
+    expect(prismaMock.client.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { productType: "cosmetique", phone: "22334455" } }),
+    );
+    const saleArgs = prismaMock.sale.create.mock.calls[0][0];
+    expect(saleArgs.data).toMatchObject({ paymentMethod: "wallet", clientId: "client-1" });
+  });
+
+  it("leaves the sale unlinked when no client, or several, share the phone", async () => {
+    primeSuccessfulDelivery();
+    prismaMock.sale.create.mockResolvedValue({ id: "sale-1" } as never);
+    await deliverOrder("order-1");
+    expect(prismaMock.sale.create.mock.calls[0][0].data.clientId).toBeNull();
+
+    prismaMock.client.findMany.mockResolvedValue([{ id: "a" }, { id: "b" }] as never);
+    await deliverOrder("order-1");
+    expect(prismaMock.sale.create.mock.calls[1][0].data.clientId).toBeNull();
   });
 
   it("does not touch stock directly — only status, featured flags, and the sale", async () => {
