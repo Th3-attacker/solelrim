@@ -169,11 +169,11 @@ export function AppSidebar({
                         isActive={isActive}
                         size="lg"
                         tooltip={item.label}
-                        className="text-base [&_svg]:size-5"
+                        className="text-base group-data-[collapsible=icon]:justify-center [&_svg]:size-5"
                       >
                         <Link href={item.href} onClick={() => setOpenMobile(false)}>
                           <item.icon />
-                          <span>{item.label}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                       {item.badge !== undefined && (
