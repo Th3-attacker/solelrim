@@ -31,6 +31,7 @@ import {
   paymentSenderPhoneSchema,
   type CheckoutCustomerInput,
 } from "@/lib/validation/order";
+import { StatusAlert, FieldError } from "@/components/ui/status-alert";
 
 type Settings = {
   wallets: { provider: string; number: string; logoUrl: string | null }[];
@@ -437,9 +438,9 @@ export function CheckoutFlow({
                     {...register("customerName")}
                   />
                   {errors.customerName && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerName.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -452,9 +453,9 @@ export function CheckoutFlow({
                     {...register("customerPhone")}
                   />
                   {errors.customerPhone && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerPhone.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -465,9 +466,9 @@ export function CheckoutFlow({
                     {...register("customerCity")}
                   />
                   {errors.customerCity && (
-                    <p className="text-sm text-destructive">
+                    <FieldError>
                       {fieldErrorMessage(errors.customerCity.message)}
-                    </p>
+                    </FieldError>
                   )}
                 </div>
               </div>
@@ -540,7 +541,7 @@ export function CheckoutFlow({
                       </Button>
                     </div>
                   )}
-                  {promoError && <p className="text-sm text-destructive">{promoError}</p>}
+                  {promoError && <FieldError>{promoError}</FieldError>}
                 </div>
               )}
 
@@ -652,7 +653,7 @@ export function CheckoutFlow({
                       aria-invalid={!!senderPhoneError}
                     />
                     {senderPhoneError && (
-                      <p className="text-sm text-destructive">{senderPhoneError}</p>
+                      <FieldError>{senderPhoneError}</FieldError>
                     )}
                     <p className="text-xs text-muted-foreground">
                       {t("paymentSenderPhoneHint")}
@@ -662,10 +663,10 @@ export function CheckoutFlow({
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="screenshot">{t("uploadScreenshot")}</Label>
                     {promoDroppedMessage && (
-                      <p className="text-sm text-destructive">{promoDroppedMessage}</p>
+                      <StatusAlert variant="warning">{promoDroppedMessage}</StatusAlert>
                     )}
                     {fileSizeError && (
-                      <p className="text-sm text-destructive">{fileSizeError}</p>
+                      <FieldError>{fileSizeError}</FieldError>
                     )}
                     <Input
                       id="screenshot"

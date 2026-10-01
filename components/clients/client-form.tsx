@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "@/components/ui/toast";
+import { FieldError } from "@/components/ui/status-alert";
 
 export function ClientForm({
   defaultValues,
@@ -70,9 +71,9 @@ export function ClientForm({
             <Label htmlFor="fullName">{t("fullName")}</Label>
             <Input id="fullName" {...register("fullName")} />
             {errors.fullName && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {tCommon("requiredField")}
-              </p>
+              </FieldError>
             )}
           </div>
 
@@ -92,9 +93,9 @@ export function ClientForm({
               }}
             />
             {errors.phone && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {tCommon("invalidPhone")}
-              </p>
+              </FieldError>
             )}
           </div>
 
@@ -102,9 +103,9 @@ export function ClientForm({
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" {...register("email")} />
             {errors.email && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {tCommon("requiredField")}
-              </p>
+              </FieldError>
             )}
           </div>
 

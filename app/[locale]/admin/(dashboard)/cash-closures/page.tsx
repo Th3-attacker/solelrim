@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusAlert } from "@/components/ui/status-alert";
 
 // The boutique admin's daily closure (requireAdminScope refuses a seller;
 // proxy.ts redirects them before that).
@@ -141,9 +142,9 @@ export default async function CashClosuresPage({
                 <>
                   <SessionTotalsView totals={day.consolidated} />
                   {day.openCount > 0 && (
-                    <p className="text-sm text-destructive">
+                    <StatusAlert variant="warning">
                       {t("openSessionsHint", { count: day.openCount })}
-                    </p>
+                    </StatusAlert>
                   )}
                   <CloseDayButton date={date} disabled={day.openCount > 0} />
                 </>

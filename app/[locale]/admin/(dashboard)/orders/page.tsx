@@ -1,7 +1,7 @@
 import { getTranslations, getFormatter } from "next-intl/server";
 import Image from "next/image";
 import { differenceInHours } from "date-fns";
-import { ClipboardText, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import { ClipboardText, MagnifyingGlass, Warning } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getAllOrders, getAllOrdersForExport, ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
 import { parseOrderDateFilters } from "@/lib/orders/filters";
@@ -146,7 +146,8 @@ export default async function AdminOrdersPage({
                   <TableCell className="text-muted-foreground">
                     {format.dateTime(order.createdAt, { dateStyle: "medium" })}
                     {isStale && (
-                      <p className="text-warning">
+                      <p className="mt-1 flex items-center gap-1 text-[color-mix(in_oklch,var(--warning),black_45%)] dark:text-warning">
+                        <Warning weight="fill" aria-hidden="true" className="size-3.5 shrink-0" />
                         {t("pendingSince", {
                           time: format.relativeTime(order.createdAt, new Date()),
                         })}

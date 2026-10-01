@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/format/currency";
 import { getSwatchStyle } from "@/lib/shop/color-swatch";
 import { cn } from "@/lib/utils";
 import type { PosWallet } from "@/lib/queries/pos";
+import { FieldError } from "@/components/ui/status-alert";
 
 // Derived by CheckoutScreen from the *current* catalog on every render, so
 // price and stock are never a stale snapshot from when the item was added.
@@ -256,9 +257,9 @@ export function CartPanel({
             </Button>
           </div>
           {shortBy > 0 && (
-            <p className="text-sm text-destructive">
+            <FieldError>
               {t("amountTooLow", { amount: formatPrice(shortBy, currency) })}
-            </p>
+            </FieldError>
           )}
           {change !== null && hasSellableLine && (
             <p className="flex justify-between rounded-md bg-muted p-2 text-sm font-medium tabular-nums">

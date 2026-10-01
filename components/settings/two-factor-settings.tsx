@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ShieldCheck, ShieldSlash, ShieldWarning } from "@phosphor-icons/react/dist/ssr";
+import { ShieldCheck, ShieldSlash } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { enrollTotpFactor, verifyTotpEnrollment, unenrollTotpFactor } from "@/lib/actions/mfa";
+import { StatusAlert, FieldError } from "@/components/ui/status-alert";
 
 type EnrollmentData = { factorId: string; qrCode: string; secret: string };
 
@@ -92,10 +93,7 @@ export function TwoFactorSettings({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {required && !factorId && (
-          <div className="flex items-center gap-2 rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
-            <ShieldWarning className="size-5 shrink-0" />
-            {t("twoFactorRequiredNotice")}
-          </div>
+          <StatusAlert variant="warning">{t("twoFactorRequiredNotice")}</StatusAlert>
         )}
 
         <div className="flex items-center justify-between gap-4 rounded-md border p-3">
@@ -195,7 +193,7 @@ export function TwoFactorSettings({
                 aria-invalid={verifyError}
               />
               {verifyError && (
-                <p className="text-sm text-destructive">{t("twoFactorInvalidCode")}</p>
+                <FieldError>{t("twoFactorInvalidCode")}</FieldError>
               )}
             </div>
           </div>

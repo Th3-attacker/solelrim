@@ -23,6 +23,7 @@ import {
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
 import { createSale } from "@/lib/actions/sales";
 import { formatPrice } from "@/lib/format/currency";
+import { FieldError } from "@/components/ui/status-alert";
 
 type Client = { id: string; fullName: string };
 type Variant = {
@@ -223,7 +224,7 @@ export function SaleForm({
           ))}
 
           {errors.items?.root && (
-            <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+            <FieldError>{tCommon("requiredField")}</FieldError>
           )}
 
           <div className="flex justify-end text-sm font-medium">

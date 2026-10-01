@@ -4,6 +4,7 @@ import {
   CheckCircle,
   InfoIcon,
   Warning,
+  WarningCircle,
   XCircle,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -66,4 +67,23 @@ function StatusAlert({
   );
 }
 
-export { StatusAlert, statusAlertVariants };
+// The error line under a single form field: the same red and icon as an
+// error StatusAlert, without the box.
+function FieldError({ className, children, ...props }: React.ComponentProps<"p">) {
+  return (
+    <p
+      data-slot="field-error"
+      role="alert"
+      className={cn(
+        "flex items-start gap-1.5 text-sm leading-snug text-[color-mix(in_oklch,var(--destructive),black_20%)] dark:text-destructive",
+        className,
+      )}
+      {...props}
+    >
+      <WarningCircle weight="fill" aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+      <span className="min-w-0 break-words">{children}</span>
+    </p>
+  );
+}
+
+export { StatusAlert, FieldError, statusAlertVariants };

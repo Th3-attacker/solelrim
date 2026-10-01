@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { productSchema } from "@/lib/validation/product";
 import type { ProductType } from "@/lib/shop/product-type";
+import { FieldError } from "@/components/ui/status-alert";
 
 type ProductFormValues = z.input<typeof productSchema>;
 
@@ -62,7 +63,7 @@ export function VariantFields({
       </div>
 
       {errors.variants?.root && (
-        <p className="text-sm text-destructive">{tCommon("requiredField")}</p>
+        <FieldError>{tCommon("requiredField")}</FieldError>
       )}
 
       <div className="flex flex-col gap-3">

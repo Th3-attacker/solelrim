@@ -14,6 +14,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { FieldError } from "@/components/ui/status-alert";
 
 const initialLoginState: LoginState = {};
 const initialMfaState: MfaState = {};
@@ -59,9 +60,9 @@ export function LoginForm({
               />
             </div>
             {mfaState.error && (
-              <p className="text-sm text-destructive">
+              <FieldError>
                 {mfaState.error === "rateLimited" ? t("rateLimitedError") : t("mfaInvalidCode")}
-              </p>
+              </FieldError>
             )}
             <Button type="submit" loading={mfaPending} className="w-full">
               {t("mfaSubmit")}
@@ -114,9 +115,9 @@ export function LoginForm({
             />
           </div>
           {loginState.error && (
-            <p className="text-sm text-destructive">
+            <FieldError>
               {loginState.error === "rateLimited" ? t("rateLimitedError") : t("error")}
-            </p>
+            </FieldError>
           )}
           <Button type="submit" loading={loginPending} className="w-full">
             {t("submit")}
