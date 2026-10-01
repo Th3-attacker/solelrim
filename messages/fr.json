@@ -863,9 +863,21 @@
     "refundedAmount": "Remboursé",
     "cancelError": {
       "refunded": "Cette vente a été (partiellement) remboursée : elle ne peut plus être annulée.",
-      "pendingRefund": "Une demande de remboursement est en attente : traitez-la avant d'annuler la vente."
+      "pendingRefund": "Une demande de remboursement est en attente : traitez-la avant d'annuler la vente.",
+      "invalid": "Motif d'annulation invalide (3 caractères minimum).",
+      "notFound": "Vente introuvable.",
+      "alreadyCancelled": "Cette vente est déjà annulée."
     },
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "cancelDialog": {
+      "title": "Annuler cette vente ?",
+      "hint": "Le stock est remis en rayon et les points fidélité sont annulés. Cette action est définitive.",
+      "reason": "Motif de l'annulation",
+      "reasonPlaceholder": "Ex : erreur de saisie, client revenu sur sa décision…",
+      "closedTill": "La caisse de cette vente est déjà clôturée : ses totaux figés ne changeront pas. Si de l'argent a été rendu au client, notez-le dans le motif.",
+      "confirm": "Annuler la vente",
+      "keep": "Conserver la vente"
+    }
   },
   "errors": {
     "notFoundTitle": "Page introuvable",

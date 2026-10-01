@@ -105,7 +105,7 @@ export async function BoutiquesOverview({ storeTypes }: { storeTypes: Boutique[]
 
 function RevenueTile({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border bg-muted/30 p-3">
+    <div className="flex flex-col gap-1 rounded-md border bg-card p-3">
       <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </span>
@@ -131,7 +131,7 @@ function Stat({
         ? "text-warning"
         : "text-foreground";
   return (
-    <div className="flex flex-col gap-0.5 rounded-md border p-2">
+    <div className="flex flex-col gap-0.5 rounded-md border bg-card p-2">
       <span className={`text-xl font-semibold ${toneClass}`}>{value}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>

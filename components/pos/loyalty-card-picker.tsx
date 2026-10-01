@@ -89,7 +89,7 @@ export function LoyaltyCardPicker({
   if (card) {
     const canRedeem = card.points >= rule.rewardPoints;
     return (
-      <div className="flex flex-col gap-2 rounded-md border p-3">
+      <div className="flex flex-col gap-2 rounded-md border bg-card p-3">
         <div className="flex items-start gap-2">
           <IdentificationCard aria-hidden="true" className="mt-0.5 size-5 text-primary" />
           <div className="flex min-w-0 flex-1 flex-col">

@@ -112,7 +112,7 @@ export function SellersManager({
       {sellers.length > 0 && (
         <div className="flex flex-col gap-2">
           {sellers.map((seller) => (
-            <div key={seller.id} className="flex items-center gap-2 rounded-md border p-2">
+            <div key={seller.id} className="flex items-center gap-2 rounded-md border bg-card p-2">
               <span className="min-w-0 flex-1 truncate text-sm font-medium">{seller.email}</span>
               <AlertDialog>
                 <AlertDialogTrigger asChild>

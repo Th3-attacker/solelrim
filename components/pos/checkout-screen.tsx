@@ -379,7 +379,7 @@ export function CheckoutScreen({
                       onClick={() => handleProductClick(product)}
                       className="flex h-full w-full flex-col overflow-hidden rounded-lg border bg-card text-start transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <span className="relative flex aspect-square w-full items-center justify-center bg-muted">
+                      <span className="relative flex aspect-square w-full items-center justify-center border-b bg-card">
                         {product.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -417,7 +417,7 @@ export function CheckoutScreen({
             variant renders on the server — the catalog column keeps its
             width either way and nothing visibly swaps layouts. */}
         {isWide === true && (
-          <aside className="self-start rounded-lg border p-4 lg:sticky lg:top-4">
+          <aside className="self-start rounded-lg border bg-card p-4 lg:sticky lg:top-4">
             {cartPanel}
           </aside>
         )}
@@ -475,7 +475,7 @@ export function CheckoutScreen({
                 <dd>{formatPrice(completed.total, currency)}</dd>
               </div>
               {completed.change !== undefined && (
-                <div className="flex justify-between rounded-md bg-muted p-2 font-medium">
+                <div className="flex justify-between rounded-md border bg-card p-2 font-medium">
                   <dt>{t("change")}</dt>
                   <dd>{formatPrice(completed.change, currency)}</dd>
                 </div>

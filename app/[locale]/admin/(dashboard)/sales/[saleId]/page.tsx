@@ -66,11 +66,11 @@ export default async function SaleDetailPage({
               clientLocked={sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0}
             />
           )}
-          {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} />}
+          {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} tillClosed={sale.cashSession?.status === "CLOSED"} />}
         </div>
       </div>
 
-      <div className="rounded-lg border p-6">
+      <div className="rounded-lg border bg-card p-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-lg font-semibold">SOLAL</p>

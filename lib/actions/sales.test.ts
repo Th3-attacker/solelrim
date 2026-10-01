@@ -257,7 +257,7 @@ describe("cancelSale", () => {
     prismaMock.sale.findUniqueOrThrow.mockResolvedValue(completedSale() as never);
     prismaMock.productVariant.update.mockResolvedValue({} as never);
 
-    const result = await cancelSale("sale-1");
+    const result = await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(result.error).toBeUndefined();
     expect(prismaMock.sale.updateMany).toHaveBeenCalledWith({
@@ -277,6 +277,29 @@ describe("cancelSale", () => {
         targetLabel: "VNT-1",
         oldValue: { status: "COMPLETED" },
         newValue: { status: "CANCELLED", restockedItems: 3, loyaltyPointsChange: 0 },
+        reason: "Erreur de caisse",
+      }),
+    });
+  });
+
+  it("refuses a cancellation without a reason", async () => {
+    expect((await cancelSale({ saleId: "sale-1", reason: " " })).error).toBe("invalid");
+    expect((await cancelSale({ saleId: "sale-1" })).error).toBe("invalid");
+    expect(prismaMock.sale.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("flags in the history a sale cancelled after its till was closed", async () => {
+    prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
+      completedSale({ cashSession: { status: "CLOSED" } }) as never,
+    );
+    prismaMock.productVariant.update.mockResolvedValue({} as never);
+
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
+
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        newValue: expect.objectContaining({ closedTill: true }),
       }),
     });
   });
@@ -285,7 +308,7 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue(null);
 
-    const result = await cancelSale("sale-from-another-boutique");
+    const result = await cancelSale({ saleId: "sale-from-another-boutique", reason: "Erreur de caisse" });
 
     expect(result.error).toBe("notFound");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
@@ -295,7 +318,7 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue({ status: "CANCELLED" } as never);
 
-    const result = await cancelSale("sale-1");
+    const result = await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(result.error).toBe("alreadyCancelled");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
@@ -306,7 +329,7 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue({ status: "PARTIALLY_REFUNDED" } as never);
 
-    expect((await cancelSale("sale-1")).error).toBe("refunded");
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("refunded");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
@@ -314,7 +337,7 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
     prismaMock.refundRequest.findFirst.mockResolvedValue({ id: "request-1" } as never);
 
-    expect((await cancelSale("sale-1")).error).toBe("pendingRefund");
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("pendingRefund");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
@@ -327,7 +350,7 @@ describe("cancelSale", () => {
     prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 12 }] as never);
     prismaMock.client.update.mockResolvedValue({} as never);
 
-    await cancelSale("sale-1");
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(prismaMock.client.update).toHaveBeenCalledWith({
       where: { id: "client-1" },
@@ -344,7 +367,7 @@ describe("cancelSale", () => {
     prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 10 }] as never);
     prismaMock.client.update.mockResolvedValue({} as never);
 
-    await cancelSale("sale-1");
+    await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" });
 
     expect(prismaMock.client.update).toHaveBeenCalledWith({
       where: { id: "client-1" },

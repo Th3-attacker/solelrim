@@ -39,7 +39,7 @@ export function OpenRegisterForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-md border p-6"
+      className="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-md border bg-card p-6"
     >
       <div className="flex flex-col items-center gap-2 text-center">
         <CashRegister aria-hidden="true" className="size-10 text-primary" />

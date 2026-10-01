@@ -43,7 +43,7 @@ export function HeroImageUpload({ heroImageUrl }: { heroImageUrl: string | null 
     <div className="flex flex-col gap-2">
       <span className="text-sm font-medium">{t("heroImage")}</span>
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+        <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-card">
           {heroImageUrl ? (
             <Image
               src={heroImageUrl}

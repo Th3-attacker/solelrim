@@ -43,7 +43,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
     <div className="flex flex-col gap-2">
       <span className="text-sm font-medium">{t("logo")}</span>
       <div className="flex items-center gap-4">
-        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-card">
           {logoUrl ? (
             <Image
               src={logoUrl}

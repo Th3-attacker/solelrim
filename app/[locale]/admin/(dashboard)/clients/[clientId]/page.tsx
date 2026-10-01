@@ -86,7 +86,7 @@ export default async function ClientDetailPage({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {client.loyaltyEnrolledAt ? (
-          <div className="col-span-2 flex items-start gap-2 rounded-md border p-3">
+          <div className="col-span-2 flex items-start gap-2 rounded-md border bg-card p-3">
             <IdentificationCard aria-hidden="true" className="mt-0.5 size-5 text-primary" />
             <div className="flex flex-col">
               <span className="text-lg font-semibold tabular-nums">
@@ -104,11 +104,11 @@ export default async function ClientDetailPage({
             {t("loyaltyNotEnrolled")}
           </div>
         )}
-        <div className="flex flex-col rounded-md border p-3">
+        <div className="flex flex-col rounded-md border bg-card p-3">
           <span className="text-lg font-semibold tabular-nums">{stats.purchaseCount}</span>
           <span className="text-xs text-muted-foreground">{t("purchaseCount")}</span>
         </div>
-        <div className="flex flex-col rounded-md border p-3">
+        <div className="flex flex-col rounded-md border bg-card p-3">
           <span className="text-lg font-semibold tabular-nums">
             {formatPrice(stats.totalSpent, tCommon("currency"))}
           </span>

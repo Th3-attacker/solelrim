@@ -86,7 +86,7 @@ export function ProductImageManager({
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {items.map((image) => (
           <div key={image.id} className="flex flex-col gap-1">
-            <div className="group relative aspect-square overflow-hidden rounded-md bg-muted">
+            <div className="group relative aspect-square overflow-hidden rounded-md border bg-card">
               <Image
                 src={getProductImageUrl(image.storagePath)}
                 alt=""

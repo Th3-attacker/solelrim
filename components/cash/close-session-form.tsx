@@ -13,6 +13,7 @@ import { closeCashSession } from "@/lib/actions/cash-sessions";
 import { cashDifference } from "@/lib/shop/cash";
 import { formatPrice } from "@/lib/format/currency";
 import { useCashError } from "@/components/cash/use-cash-error";
+import { StatusAlert, FieldError } from "@/components/ui/status-alert";
 
 // The difference shown here is a preview; the server recomputes the
 // expected cash inside the closing transaction and records its own figure.
@@ -71,19 +72,13 @@ export function CloseSessionForm({
         />
       </div>
       {difference !== null && (
-        <p
-          className={
-            difference === 0
-              ? "text-sm text-muted-foreground"
-              : "text-sm font-medium text-destructive"
-          }
-        >
+        <StatusAlert variant={difference === 0 ? "success" : difference < 0 ? "error" : "warning"}>
           {difference === 0
             ? t("differenceNone")
             : t(difference < 0 ? "differenceShort" : "differenceOver", {
                 amount: money(Math.abs(difference)),
               })}
-        </p>
+        </StatusAlert>
       )}
       <div className="flex flex-col gap-2">
         <Label htmlFor="cash-close-note">
@@ -97,7 +92,7 @@ export function CloseSessionForm({
           aria-invalid={noteMissing}
           onChange={(e) => setNote(e.target.value)}
         />
-        {noteMissing && <p className="text-xs text-destructive">{t("noteRequiredHint")}</p>}
+        {noteMissing && <FieldError>{t("noteRequiredHint")}</FieldError>}
       </div>
       <Button type="submit" variant="destructive" className="self-start" disabled={!valid}>
         {t("closeAction")}

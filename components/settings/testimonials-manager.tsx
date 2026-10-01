@@ -138,7 +138,7 @@ export function TestimonialsManager({
       {testimonials.length > 0 && (
         <div className="flex flex-col gap-2">
           {testimonials.map((item, index) => (
-            <div key={item.id} className="flex items-start gap-2 rounded-md border p-2">
+            <div key={item.id} className="flex items-start gap-2 rounded-md border bg-card p-2">
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{item.customerName}</span>

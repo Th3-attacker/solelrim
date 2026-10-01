@@ -103,7 +103,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
       {wallets.length > 0 && (
         <div className="flex flex-col gap-2">
           {wallets.map((wallet, index) => (
-            <div key={wallet.id} className="flex items-center gap-3 rounded-md border p-2">
+            <div key={wallet.id} className="flex items-center gap-3 rounded-md border bg-card p-2">
               {wallet.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -112,7 +112,7 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
                   className="size-8 shrink-0 rounded-md object-cover"
                 />
               ) : (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-card">
                   <Wallet className="size-4 text-muted-foreground" />
                 </div>
               )}

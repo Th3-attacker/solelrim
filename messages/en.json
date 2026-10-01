@@ -863,9 +863,21 @@
     "refundedAmount": "Refunded",
     "cancelError": {
       "refunded": "This sale was (partly) refunded: it can no longer be cancelled.",
-      "pendingRefund": "A refund request is pending: handle it before cancelling the sale."
+      "pendingRefund": "A refund request is pending: handle it before cancelling the sale.",
+      "invalid": "Invalid cancellation reason (at least 3 characters).",
+      "notFound": "Sale not found.",
+      "alreadyCancelled": "This sale is already cancelled."
     },
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "cancelDialog": {
+      "title": "Cancel this sale?",
+      "hint": "Stock goes back on the shelf and loyalty points are reversed. This cannot be undone.",
+      "reason": "Reason for cancelling",
+      "reasonPlaceholder": "E.g. entry mistake, customer changed their mind…",
+      "closedTill": "This sale's till is already closed: its frozen totals won't change. If money was handed back to the customer, mention it in the reason.",
+      "confirm": "Cancel sale",
+      "keep": "Keep sale"
+    }
   },
   "errors": {
     "notFoundTitle": "Page not found",
