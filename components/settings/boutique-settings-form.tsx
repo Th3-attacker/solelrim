@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
@@ -43,13 +43,15 @@ export function BoutiqueSettingsForm({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<BoutiqueSettingsInput>({
     resolver: zodResolver(boutiqueSettingsSchema),
     defaultValues,
   });
+
+  const heroImagePosition = useWatch({ control, name: "heroImagePosition" });
 
   const onSubmit: SubmitHandler<BoutiqueSettingsInput> = async (data) => {
     setSubmitting(true);
@@ -150,7 +152,7 @@ export function BoutiqueSettingsForm({
             <div className="flex flex-col gap-2">
               <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
               <Select
-                value={watch("heroImagePosition") ?? "right"}
+                value={heroImagePosition ?? "right"}
                 onValueChange={(value) =>
                   setValue("heroImagePosition", value as "left" | "right")
                 }

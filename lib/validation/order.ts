@@ -18,7 +18,7 @@ export type CheckoutCustomerInput = z.infer<typeof checkoutCustomerSchema>;
 // on its own to match the screenshot to a transaction.
 export const paymentSenderPhoneSchema = z.string().regex(/^[234]\d{7}$/, "invalidPhone");
 
-export const orderItemInputSchema = z.object({
+const orderItemInputSchema = z.object({
   variantId: z.string().min(1),
   // Upper bound is a sanity ceiling well above any real stock level — the
   // atomic `stock: { gte: quantity }` guard in submitOrder is what actually

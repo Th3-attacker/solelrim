@@ -38,4 +38,3 @@ export const posSaleSchema = z.discriminatedUnion("paymentMethod", [
   }),
 ]);
 
-export type PosSaleInput = z.input<typeof posSaleSchema>;

@@ -90,9 +90,9 @@ export default async function SessionDetailPage({
                     <CashDifference value={session.cashDifference} format={money} />
                   </dd>
                 </div>
-                {session.closingNote && (
+                {(session.autoClosed || session.closingNote) && (
                   <p className="mt-1 text-muted-foreground">
-                    {t("closingNote")}: {session.closingNote}
+                    {t("closingNote")}: {session.autoClosed ? t("autoClosedNote") : session.closingNote}
                   </p>
                 )}
               </dl>

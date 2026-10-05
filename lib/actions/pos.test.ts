@@ -69,6 +69,7 @@ const CASH = { paymentMethod: "cash", items: ITEMS, discount: 0, expectedTotal: 
 
 beforeEach(() => {
   mockReset(prismaMock);
+  prismaMock.cashSession.findMany.mockResolvedValue([]); // no stale till to auto-close
   createClientMock.mockReset();
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),

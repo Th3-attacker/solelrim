@@ -17,4 +17,3 @@ export const saleEditSchema = z
   })
   .refine((data) => data.paymentMethod !== "wallet" || data.walletAccountId !== null);
 
-export type SaleEditInput = z.input<typeof saleEditSchema>;
