@@ -122,7 +122,7 @@ export async function requireAppearanceScope(): Promise<{
 // dashboard's error.tsx) can tell "your boutique is suspended/expired" apart
 // from an unexpected bug, instead of showing the same generic error for
 // both.
-export class LicenseBlockedError extends Error {
+class LicenseBlockedError extends Error {
   constructor() {
     super("licenseBlocked");
     this.name = "LicenseBlockedError";

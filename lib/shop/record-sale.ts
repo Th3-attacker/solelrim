@@ -32,7 +32,7 @@ export type RecordSaleInput = {
   items: { variantId: string; quantity: number }[];
 };
 
-export type RecordSaleError =
+type RecordSaleError =
   | "invalid"
   | "noOpenSession"
   | "insufficientStock"

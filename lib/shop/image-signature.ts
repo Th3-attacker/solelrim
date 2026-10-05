@@ -66,7 +66,7 @@ export function detectImageSignature(bytes: Uint8Array): DetectedImage | null {
 // (Next's image optimizer on the public storefront, a thumbnailer) decodes
 // it. ~40 MP is far past any real product/logo/payment photo (a 12 MP phone
 // camera is 4032×3024) and far below bomb territory.
-export const MAX_IMAGE_PIXELS = 40_000_000;
+const MAX_IMAGE_PIXELS = 40_000_000;
 
 function u32be(b: Uint8Array, o: number): number {
   return (b[o] * 2 ** 24 + (b[o + 1] << 16) + (b[o + 2] << 8) + b[o + 3]) >>> 0;

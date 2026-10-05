@@ -7,4 +7,3 @@ export const saleCancelSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
-export type SaleCancelInput = z.input<typeof saleCancelSchema>;

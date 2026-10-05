@@ -10,7 +10,7 @@ export type { LicenseStatus, LicenseType };
 export const LICENSE_GRACE_PERIOD_DAYS = 3;
 
 // How many days before licenseExpiresAt the admin dashboard starts warning.
-export const LICENSE_EXPIRING_SOON_DAYS = 7;
+const LICENSE_EXPIRING_SOON_DAYS = 7;
 
 export type LicenseInfo = {
   licenseType: LicenseType;

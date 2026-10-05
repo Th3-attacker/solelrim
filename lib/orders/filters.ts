@@ -2,7 +2,7 @@ import { addDays, endOfDay, isValid, parseISO, startOfDay } from "date-fns";
 
 export const MAX_ORDER_DATE_RANGE_DAYS = 15;
 
-export function parseOrderDateParam(value?: string): Date | undefined {
+function parseOrderDateParam(value?: string): Date | undefined {
   if (!value) return undefined;
   const parsed = parseISO(value);
   return isValid(parsed) ? parsed : undefined;
