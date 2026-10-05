@@ -30,6 +30,7 @@ import {
   ClockCounterClockwise,
   SquaresFour,
   Package,
+  Question,
   Gear,
   ShoppingCart,
   Tag,
@@ -49,6 +50,12 @@ type NavItem = {
 
 type Translate = ReturnType<typeof useTranslations<"nav">>;
 type NavSection = { label?: string; items: NavItem[] };
+
+const helpLink = (t: Translate): NavItem => ({
+  href: "/admin/help",
+  label: t("help"),
+  icon: Question,
+});
 
 // The checkout links both roles share, so a rename or a new route is made
 // once.
@@ -79,6 +86,7 @@ function sellerSections(t: Translate): NavSection[] {
         { href: "/admin/pos/my-sales", label: t("mySales"), icon: Receipt },
         pos.refunds(),
         pos.sessions,
+        helpLink(t),
       ],
     },
   ];
@@ -132,6 +140,7 @@ function adminSections(
           label: t("auditLog"),
           icon: ClockCounterClockwise,
         },
+        helpLink(t),
       ],
     },
   ];
