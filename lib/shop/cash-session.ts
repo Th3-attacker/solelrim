@@ -126,8 +126,18 @@ export const AUTO_CLOSE_NOTE =
 // counted the cash: countedCash and the difference stay empty and the
 // closure is flagged autoClosed, to be reconciled by an admin. Runs lazily
 // wherever a till is looked up, and is safe to call concurrently — each till
-// is flipped by a conditional update, so only one caller closes it.
+// is flipped by a conditional update, so only one caller closes it. Housekeeping
+// only: a failure is logged and swallowed, so it can never block the sale or
+// the till opening that triggered it.
 export async function closeStaleSessions(productType: string, now = new Date()): Promise<void> {
+  try {
+    await sweepStaleSessions(productType, now);
+  } catch (error) {
+    console.error("closeStaleSessions failed", error);
+  }
+}
+
+async function sweepStaleSessions(productType: string, now: Date): Promise<void> {
   const stale = await prisma.cashSession.findMany({
     where: {
       productType,

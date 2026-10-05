@@ -78,4 +78,14 @@ describe("closeStaleSessions", () => {
     expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
     expect(prismaMock.cashSession.update).not.toHaveBeenCalled();
   });
+
+  it("never throws: a failed sweep is logged and the caller carries on", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    prismaMock.cashSession.findMany.mockRejectedValue(new Error("db down"));
+
+    await expect(closeStaleSessions("sport", now)).resolves.toBeUndefined();
+
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+  });
 });
