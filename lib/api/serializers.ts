@@ -1,0 +1,82 @@
+import { getProductImageUrl, getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
+import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
+import { resolveStoreTheme } from "@/lib/theme/presets";
+import { findWalletProvider, walletLogoSrc } from "@/lib/shop/wallet-providers";
+import type { OpenBoutique } from "@/lib/api/boutique";
+import type { Prisma } from "@/lib/generated/prisma/client";
+
+// What the app is allowed to see. Each shape is built field by field, never
+// by spreading a database row, so a column added to the schema later (a cost,
+// an internal note) can't leak into the public API by accident.
+
+type ProductRow = Prisma.ProductGetPayload<{
+  include: { category: true; images: true; variants: true };
+}>;
+
+export function serializeBoutique(boutique: OpenBoutique, locale: string, origin: string) {
+  const text = resolveBoutiqueText(boutique, locale);
+  const theme = resolveStoreTheme(boutique);
+  return {
+    key: boutique.key,
+    name: text.siteName ?? boutique.label,
+    announcement: boutique.announcementText?.trim() || null,
+    logoUrl: boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null,
+    heroImageUrl: boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null,
+    heroTitle: text.heroTitle,
+    heroSubtitle: text.heroSubtitle,
+    heroCtaLabel: boutique.heroCtaLabel,
+    theme: { id: theme.id, colorMode: boutique.colorMode, light: theme.light, dark: theme.dark },
+    couponsEnabled: boutique.couponsEnabled,
+    payment: {
+      instructions: boutique.paymentInstructions,
+      whatsappNumber: boutique.adminWhatsappNumber,
+      wallets: boutique.walletAccounts.map((wallet) => {
+        const bundled = walletLogoSrc(wallet.provider, null);
+        const uploaded = wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null;
+        return {
+          provider: wallet.provider,
+          // The app can ship its own logo for a known provider; logoUrl is
+          // for the others (and a fallback).
+          providerKey: findWalletProvider(wallet.provider)?.key ?? null,
+          number: wallet.number,
+          logoUrl: bundled ? new URL(bundled, origin).toString() : uploaded,
+        };
+      }),
+    },
+    socialLinks: boutique.socialLinks.map((link) => ({ platform: link.platform, url: link.url })),
+  };
+}
+
+export function serializeProductSummary(product: ProductRow) {
+  const price = getPriceRange(product.variants, product.basePrice);
+  return {
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    category: { id: product.category.id, name: product.category.name },
+    imageUrl: product.images[0] ? getProductImageUrl(product.images[0].storagePath) : null,
+    price: { min: price.min, max: price.max },
+    compareAtPrice: product.compareAtPrice?.toNumber() ?? null,
+    isFeatured: product.isFeatured,
+    inStock: product.variants.some((variant) => variant.stock > 0),
+  };
+}
+
+export function serializeProductDetail(product: ProductRow) {
+  return {
+    ...serializeProductSummary(product),
+    description: product.description,
+    images: product.images.map((image) => ({
+      url: getProductImageUrl(image.storagePath),
+      color: image.color ?? null,
+    })),
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      size: variant.size,
+      color: variant.color,
+      price: getVariantPrice(variant, product.basePrice),
+      stock: variant.stock,
+    })),
+  };
+}

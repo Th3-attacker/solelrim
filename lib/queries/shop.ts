@@ -24,6 +24,30 @@ export function getActiveProducts(
   });
 }
 
+// One page of a boutique's active catalogue, newest first, with the total the
+// app needs to know when to stop scrolling (the website's grid loads it all).
+export async function getActiveProductsPage(
+  productType: string,
+  { categoryId, page, pageSize }: { categoryId?: string; page: number; pageSize: number },
+) {
+  const where = { isActive: true, productType, ...(categoryId ? { categoryId } : {}) };
+  const [items, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+        images: { orderBy: { position: "asc" }, take: 1 },
+        variants: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.product.count({ where }),
+  ]);
+  return { items, total };
+}
+
 // Accent-insensitive product name search, done in the database via the
 // unaccent extension (prisma/migrations/20260820110000_enable_unaccent)
 // instead of fetching the whole active catalog and filtering it in JS —
