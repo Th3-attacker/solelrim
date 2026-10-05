@@ -61,6 +61,7 @@ function baseVariant(overrides: Partial<Record<string, unknown>> = {}) {
 
 beforeEach(() => {
   mockReset(prismaMock);
+  prismaMock.cashSession.findMany.mockResolvedValue([]); // no stale till to auto-close
   createClientMock.mockReset();
   revalidatePathMock.mockReset();
   asAdmin();

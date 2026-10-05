@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { buildSaleReference } from "@/lib/shop/reference";
 import { writeAuditLog, type AuditActor } from "@/lib/audit";
+import { closeStaleSessions } from "@/lib/shop/cash-session";
 
 // Deliberately NOT a "use server" module: every export of one becomes a
 // Server Action callable from the browser, and this takes productType as a
@@ -66,6 +67,9 @@ const KNOWN_ERRORS: ReadonlySet<string> = new Set<RecordSaleError>([
 // too — the whole sale commits or nothing does.
 export async function recordSale(input: RecordSaleInput): Promise<RecordSaleResult> {
   const { productType, items, loyalty } = input;
+
+  // A till forgotten for 24 h must not keep selling.
+  await closeStaleSessions(productType);
 
   try {
     return await prisma.$transaction(async (tx) => {

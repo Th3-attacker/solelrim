@@ -1,5 +1,9 @@
 import type { PrismaClient } from "@/lib/generated/prisma/client";
-import type { TransactionClient } from "@/lib/generated/prisma/internal/prismaNamespace";
+import type {
+  InputJsonObject,
+  TransactionClient,
+} from "@/lib/generated/prisma/internal/prismaNamespace";
+import { prisma } from "@/lib/prisma";
 import {
   computeSessionTotals,
   type PaymentGroup,
@@ -107,4 +111,71 @@ export async function loadSessionTotals(
 // boutique row (sales, orders, audit entries) aren't blocked by it.
 export async function lockBoutiqueDay(tx: TransactionClient, productType: string): Promise<void> {
   await tx.$queryRaw`SELECT 1 FROM "StoreType" WHERE "key" = ${productType} FOR NO KEY UPDATE`;
+}
+
+// A till still open this long after it was opened is one somebody forgot.
+export const STALE_SESSION_MS = 24 * 60 * 60 * 1000;
+
+// Stored on the till and in the audit log; the screens show a translated
+// version (the autoClosed flag), this is the fallback for exports.
+export const AUTO_CLOSE_NOTE =
+  "Fermée automatiquement : caisse restée ouverte plus de 24 h (fermeture oubliée).";
+
+// Closes every till of the boutique that has been open for 24 hours, so a
+// forgotten one can't keep taking sales or block the day closure. Nobody
+// counted the cash: countedCash and the difference stay empty and the
+// closure is flagged autoClosed, to be reconciled by an admin. Runs lazily
+// wherever a till is looked up, and is safe to call concurrently — each till
+// is flipped by a conditional update, so only one caller closes it.
+export async function closeStaleSessions(productType: string, now = new Date()): Promise<void> {
+  const stale = await prisma.cashSession.findMany({
+    where: {
+      productType,
+      status: "OPEN",
+      openedAt: { lt: new Date(now.getTime() - STALE_SESSION_MS) },
+    },
+    select: { id: true },
+  });
+
+  for (const { id } of stale) {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.cashSession.updateMany({
+        where: { id, status: "OPEN" },
+        data: {
+          status: "CLOSED",
+          closedAt: now,
+          autoClosed: true,
+          closingNote: AUTO_CLOSE_NOTE,
+        },
+      });
+      if (updated.count === 0) return; // someone closed it meanwhile
+
+      const session = await tx.cashSession.findUniqueOrThrow({ where: { id } });
+      const totals = await loadSessionTotals(tx, {
+        id,
+        productType,
+        openingFloat: session.openingFloat.toNumber(),
+      });
+      await tx.cashSession.update({
+        where: { id },
+        data: {
+          expectedCash: totals.expectedCash,
+          closingSummary: totals as unknown as InputJsonObject,
+        },
+      });
+      await tx.adminAuditLog.create({
+        data: {
+          adminUserId: "system",
+          adminEmail: "system",
+          productType,
+          action: "cash.autoClose",
+          targetId: id,
+          targetLabel: session.sellerEmail,
+          oldValue: { status: "OPEN" },
+          newValue: { status: "CLOSED", expectedCash: totals.expectedCash },
+          reason: AUTO_CLOSE_NOTE,
+        },
+      });
+    });
+  }
 }

@@ -631,6 +631,9 @@ model CashSession {
   countedCash    Decimal?          @db.Decimal(10, 2)
   cashDifference Decimal?          @db.Decimal(10, 2)
   closingNote    String?
+  // Closed by the system after staying open too long, not by a person:
+  // closedById and countedCash stay empty.
+  autoClosed     Boolean           @default(false)
   // The full totals (breakdown by payment method, movements) frozen at
   // close, so later changes to its sales never rewrite a closed till.
   closingSummary Json?

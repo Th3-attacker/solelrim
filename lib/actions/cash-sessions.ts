@@ -14,7 +14,12 @@ import {
   parseBusinessDate,
   roundMoney,
 } from "@/lib/shop/cash";
-import { loadSessionTotals, lockBoutiqueDay, sessionTotalsOf } from "@/lib/shop/cash-session";
+import {
+  closeStaleSessions,
+  loadSessionTotals,
+  lockBoutiqueDay,
+  sessionTotalsOf,
+} from "@/lib/shop/cash-session";
 import {
   cashMovementSchema,
   closeSessionSchema,
@@ -47,6 +52,9 @@ export async function openCashSession(input: unknown): Promise<CashActionResult>
 
   const actor = await getAuditActor(admin);
   const businessDate = businessDateOf(new Date());
+
+  // A forgotten till of this seller would otherwise block opening a new one.
+  await closeStaleSessions(productType);
 
   try {
     const session = await prisma.$transaction(async (tx) => {
@@ -231,6 +239,7 @@ export async function closeStoreDay(input: unknown): Promise<{ error?: string }>
   if (!businessDate || businessDate > businessDateOf(new Date())) return { error: "invalid" };
 
   const actor = await getAuditActor(admin);
+  await closeStaleSessions(productType);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -252,7 +261,10 @@ export async function closeStoreDay(input: unknown): Promise<{ error?: string }>
         await Promise.all(sessions.map((session) => sessionTotalsOf(tx, session))),
       );
       const countedCash = roundMoney(
-        sessions.reduce((sum, session) => sum + Number(session.countedCash ?? 0), 0),
+        sessions.reduce(
+          (sum, session) => sum + Number(session.countedCash ?? session.expectedCash ?? 0),
+          0,
+        ),
       );
       const difference = cashDifference(countedCash, day.expectedCash);
 

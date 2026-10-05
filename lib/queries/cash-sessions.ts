@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { toPageNumber } from "@/lib/shop/pagination";
 import { combineSessionTotals, roundMoney, type BreakdownRow } from "@/lib/shop/cash";
-import { sessionTotalsOf } from "@/lib/shop/cash-session";
+import { closeStaleSessions, sessionTotalsOf } from "@/lib/shop/cash-session";
 
 // Every function here takes productType (and the viewer) already resolved
 // from the caller's own scope — never from the URL.
@@ -19,6 +19,7 @@ function decimal(value: { toNumber(): number } | null): number | null {
 }
 
 export async function getOpenSession(sellerId: string, productType: string) {
+  await closeStaleSessions(productType);
   const session = await prisma.cashSession.findFirst({
     where: { sellerId, productType, status: "OPEN" },
     select: { id: true, openingFloat: true, openedAt: true },
@@ -64,6 +65,7 @@ export async function getSessionView(
     countedCash: decimal(session.countedCash),
     cashDifference: decimal(session.cashDifference),
     closingNote: session.closingNote,
+    autoClosed: session.autoClosed,
     totals,
     movements: session.movements.map((movement) => ({
       id: movement.id,
@@ -79,6 +81,7 @@ export async function getSessionView(
 export const SESSIONS_PAGE_SIZE = 30;
 
 export async function listSessions(productType: string, viewer: SessionViewer, page = 1) {
+  await closeStaleSessions(productType);
   const currentPage = toPageNumber(page);
   const where = { productType, ...viewerFilter(viewer) };
   const [sessions, total] = await Promise.all([
@@ -118,6 +121,7 @@ export async function listSessions(productType: string, viewer: SessionViewer, p
 // closed, live if still open), the day consolidated, and its closure if the
 // admin already closed it.
 export async function getDayView(productType: string, businessDate: Date) {
+  await closeStaleSessions(productType);
   const [sessions, earlierOpenCount, closure] = await Promise.all([
     prisma.cashSession.findMany({
       where: { productType, businessDate },
@@ -140,7 +144,9 @@ export async function getDayView(productType: string, businessDate: Date) {
       sellerEmail: session.sellerEmail,
       openedAt: session.openedAt,
       closedAt: session.closedAt,
-      countedCash: decimal(session.countedCash),
+      // An auto-closed till was never counted: count what it should hold, so
+      // it adds no invented shortage to the day.
+      countedCash: decimal(session.countedCash) ?? decimal(session.expectedCash),
       cashDifference: decimal(session.cashDifference),
       totals: await sessionTotalsOf(prisma, session),
     })),
