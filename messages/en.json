@@ -611,10 +611,8 @@
     "addWallet": "Add a wallet",
     "editWallet": "Edit wallet",
     "walletProvider": "Provider",
-    "walletProviderPlaceholder": "E.g. Bankily, Masrivi, Sedad...",
+    "walletProviderPlaceholder": "E.g. My bank",
     "walletNumber": "Number",
-    "walletLogo": "Logo",
-    "walletLogoHint": "Optional — a generic icon is shown when there's no logo.",
     "socialSection": "Social media",
     "addSocialLink": "Add a social link",
     "socialPlatform": "Platform",
@@ -724,7 +722,9 @@
     "adminUserResetMfaConfirmBody": "Their current two-step verification will be removed: they'll set up a new one at their next sign-in.",
     "licenseStatusConfirmTitle": "Set “{label}” to “{status}”?",
     "licenseStatusConfirmLock": "The shop and its admin actions (sales, till, orders…) will be blocked.",
-    "licenseStatusConfirmUnlock": "The shop and all its actions will be available again."
+    "licenseStatusConfirmUnlock": "The shop and all its actions will be available again.",
+    "walletProviderChoose": "Choose a provider",
+    "walletProviderOther": "Other…"
   },
   "boutiquesOverview": {
     "title": "Overview",
@@ -1238,9 +1238,9 @@
         "when": "Do it once at the start, then adjust when your details change.",
         "steps": [
           "Open “Settings”.",
-          "Fill in the boutique details, add the logo and the banner image.",
+          "Fill in the boutique details and add the logo.",
           "Add your social links and testimonials.",
-          "Add your payment accounts (wallets): they are used for wallet sales at the checkout.",
+          "Add your payment accounts (wallets): pick the provider and its logo appears automatically.",
           "Set up the loyalty programme if you use it."
         ],
         "issues": [
@@ -1499,6 +1499,14 @@
         "steps": [
           "These settings are available only if support has granted you the right.",
           "Ask for it to be switched on, saying what you want to change."
+        ]
+      },
+      "heroSeo": {
+        "title": "Main image and search engine optimisation (SEO)",
+        "when": "To change the boutique's main image or the texts shown in Google.",
+        "steps": [
+          "These are managed by support.",
+          "Send the image you want (PNG, JPEG or WebP) and, for SEO, the title and description you want."
         ]
       }
     }

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getBoutiqueSettings } from "@/lib/queries/settings";
 import { getDeliveredOrders } from "@/lib/queries/orders";
 import { getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import { walletLogoSrc } from "@/lib/shop/wallet-providers";
 import { getMfaStatus } from "@/lib/auth/mfa";
 import { TwoFactorSettings } from "@/components/settings/two-factor-settings";
 import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-form";
@@ -88,13 +89,15 @@ export default async function SettingsPage() {
         />
       </SettingsPanel>
 
-      <SettingsPanel>
-        <HeroImageUpload
-          heroImageUrl={
-            boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
-          }
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <HeroImageUpload
+            heroImageUrl={
+              boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
+            }
+          />
+        </SettingsPanel>
+      )}
 
       {(admin.role === "SUPERADMIN" || admin.canManageAppearance) && (
         <>
@@ -121,6 +124,7 @@ export default async function SettingsPage() {
       )}
 
       <BoutiqueSettingsForm
+        canEditSeo={admin.role === "SUPERADMIN"}
         heroVariant={boutique.heroVariant}
         defaultValues={{
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
@@ -153,7 +157,10 @@ export default async function SettingsPage() {
             id: wallet.id,
             provider: wallet.provider,
             number: wallet.number,
-            logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+            logoUrl: walletLogoSrc(
+              wallet.provider,
+              wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+            ),
           }))}
         />
       </SettingsPanel>

@@ -102,6 +102,17 @@ export async function requireSuperAdminScope(): Promise<{
   return { admin, productType };
 }
 
+// requireSuperAdminScope, plus the license gate of requireWritableAdminScope:
+// for a superadmin's writes to a boutique.
+export async function requireWritableSuperAdminScope(): Promise<{
+  admin: AdminUser;
+  productType: string;
+}> {
+  const { admin, productType } = await requireSuperAdminScope();
+  await assertLicenseWritable(admin, productType);
+  return { admin, productType };
+}
+
 // Theme/color, color mode, and hero/card layout variants: superadmin-only
 // by default, but a BOUTIQUE_ADMIN can be granted a per-account exception
 // (AdminUser.canManageAppearance, set via setAdminCanManageAppearance) to

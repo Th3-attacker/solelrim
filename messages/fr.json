@@ -611,10 +611,8 @@
     "addWallet": "Ajouter une wallet",
     "editWallet": "Modifier la wallet",
     "walletProvider": "Fournisseur",
-    "walletProviderPlaceholder": "Ex. Bankily, Masrivi, Sedad...",
+    "walletProviderPlaceholder": "Ex. Ma banque",
     "walletNumber": "Numéro",
-    "walletLogo": "Logo",
-    "walletLogoHint": "Facultatif — sans logo, une icône générique s'affiche.",
     "socialSection": "Réseaux sociaux",
     "addSocialLink": "Ajouter un réseau",
     "socialPlatform": "Plateforme",
@@ -724,7 +722,9 @@
     "adminUserResetMfaConfirmBody": "Sa vérification en deux étapes actuelle sera supprimée : il devra en configurer une nouvelle à sa prochaine connexion.",
     "licenseStatusConfirmTitle": "Passer « {label} » en « {status} » ?",
     "licenseStatusConfirmLock": "La boutique et ses actions d'administration (ventes, caisse, commandes…) seront bloquées.",
-    "licenseStatusConfirmUnlock": "La boutique et toutes ses actions seront à nouveau disponibles."
+    "licenseStatusConfirmUnlock": "La boutique et toutes ses actions seront à nouveau disponibles.",
+    "walletProviderChoose": "Choisir un fournisseur",
+    "walletProviderOther": "Autre…"
   },
   "boutiquesOverview": {
     "title": "Vue d'ensemble",
@@ -1238,9 +1238,9 @@
         "when": "À faire une fois au début, puis à ajuster quand les informations changent.",
         "steps": [
           "Ouvrez « Paramètres ».",
-          "Renseignez les informations de la boutique, ajoutez le logo et l'image de bannière.",
+          "Renseignez les informations de la boutique et ajoutez le logo.",
           "Ajoutez vos liens sociaux et vos témoignages.",
-          "Ajoutez vos comptes de paiement (wallets) : ils servent aux ventes par wallet à la caisse.",
+          "Ajoutez vos comptes de paiement (wallets) : choisissez le fournisseur, son logo s'affiche automatiquement.",
           "Réglez le programme de fidélité si vous l'utilisez."
         ],
         "issues": [
@@ -1499,6 +1499,14 @@
         "steps": [
           "Ces réglages sont accessibles seulement si l'assistance vous en a donné le droit.",
           "Demandez l'activation en précisant ce que vous souhaitez changer."
+        ]
+      },
+      "heroSeo": {
+        "title": "Image principale et référencement (SEO)",
+        "when": "Pour changer l'image principale de la boutique ou les textes qui apparaissent dans Google.",
+        "steps": [
+          "Ces éléments sont gérés par l'assistance.",
+          "Envoyez l'image souhaitée (format PNG, JPEG ou WebP) et, pour le SEO, le titre et la description voulus."
         ]
       }
     }

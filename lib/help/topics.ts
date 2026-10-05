@@ -56,6 +56,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   { id: "adminAccount", group: "support", audiences: ADMIN, support: true },
   { id: "lostTwoFactor", group: "support", audiences: ADMIN, support: true },
   { id: "appearance", group: "support", audiences: ADMIN, support: true },
+  { id: "heroSeo", group: "support", audiences: ADMIN, support: true },
 ];
 
 export function topicsFor(audience: HelpAudience): HelpTopic[] {

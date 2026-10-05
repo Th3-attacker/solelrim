@@ -25,7 +25,11 @@ import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/produ
 import { slugify } from "@/lib/shop/slug";
 import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireWritableAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
+import {
+  requireWritableAdminScope,
+  requireWritableSuperAdminScope,
+  requireAppearanceScope,
+} from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
@@ -37,15 +41,28 @@ const PRODUCT_IMAGES_BUCKET = "product-images";
 export async function updateBoutiqueSettings(
   input: BoutiqueSettingsInput,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   const parsed = boutiqueSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
+  // The SEO texts are the superadmin's: a boutique admin's form doesn't show
+  // them, and whatever they send for them is left out, not trusted.
+  const {
+    seoTitle,
+    seoTitleAr,
+    seoTitleEn,
+    seoDescription,
+    seoDescriptionAr,
+    seoDescriptionEn,
+    ...general
+  } = parsed.data;
+  const seo = { seoTitle, seoTitleAr, seoTitleEn, seoDescription, seoDescriptionAr, seoDescriptionEn };
+
   await prisma.storeType.update({
     where: { key: productType },
-    data: parsed.data,
+    data: admin.role === "SUPERADMIN" ? { ...general, ...seo } : general,
   });
 
   revalidatePath("/admin/settings");
@@ -124,14 +141,14 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   return {};
 }
 
-// --- Per-boutique storefront settings (hero image + theme) — both roles,
-// same scope as updateBoutiqueSettings above. Each boutique has its own
-// public route now, so its own admin manages its own storefront look. ---
+// --- Per-boutique storefront settings (hero image + theme). The hero image
+// is superadmin-only (like the SEO texts): it is the boutique's main image
+// on search results and shares. Same scope as updateBoutiqueSettings above. ---
 
 export async function uploadStoreHeroImage(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -177,7 +194,7 @@ export async function uploadStoreHeroImage(
 }
 
 export async function removeStoreHeroImage(): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {

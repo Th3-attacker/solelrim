@@ -24,6 +24,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import {
   updateBoutiqueSettings,
+  uploadStoreHeroImage,
+  removeStoreHeroImage,
   setStoreTheme,
   setCustomThemeColor,
   setColorMode,
@@ -115,6 +117,34 @@ describe("updateBoutiqueSettings", () => {
     );
   });
 
+  it("ignores the SEO texts sent by a boutique admin", async () => {
+    asBoutiqueAdmin("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueSettings({
+      adminWhatsappNumber: "22345678",
+      announcementText: "Soldes",
+      seoTitle: "Titre pirate",
+      seoDescription: "Description pirate",
+    });
+
+    const { data } = prismaMock.storeType.update.mock.calls[0][0];
+    expect(data).toMatchObject({ announcementText: "Soldes" });
+    expect(data).not.toHaveProperty("seoTitle");
+    expect(data).not.toHaveProperty("seoDescription");
+  });
+
+  it("saves the SEO texts for a superadmin", async () => {
+    asSuperAdminScopedTo("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueSettings({ adminWhatsappNumber: "22345678", seoTitle: "Mon titre" });
+
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ seoTitle: "Mon titre" }) }),
+    );
+  });
+
   it("rejects input missing the required whatsapp number", async () => {
     asBoutiqueAdmin();
 
@@ -123,6 +153,16 @@ describe("updateBoutiqueSettings", () => {
     });
 
     expect(result.error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("hero image (superadmin only)", () => {
+  it("refuses a boutique admin both an upload and a removal", async () => {
+    asBoutiqueAdmin("cosmetique");
+
+    await expect(uploadStoreHeroImage(new FormData())).rejects.toThrow("forbidden");
+    await expect(removeStoreHeroImage()).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 });

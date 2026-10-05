@@ -5,6 +5,7 @@ import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
 import { getWalletLogoUrl } from "@/lib/supabase/storage";
+import { walletLogoSrc } from "@/lib/shop/wallet-providers";
 
 export async function generateMetadata({
   params,
@@ -49,7 +50,10 @@ export default async function CheckoutPage({
         wallets: boutique.walletAccounts.map((wallet) => ({
           provider: wallet.provider,
           number: wallet.number,
-          logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+          logoUrl: walletLogoSrc(
+            wallet.provider,
+            wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+          ),
         })),
         adminWhatsappNumber: boutique.adminWhatsappNumber,
         paymentInstructions: boutique.paymentInstructions,

@@ -129,7 +129,8 @@ export default async function ShopLayout({
     price: getPriceRange(product.variants, product.basePrice).min,
   }));
 
-  const announcementText = boutique.announcementText?.trim() || t("announcementBar");
+  // No text, no bar: nothing is shown in its place.
+  const announcementText = boutique.announcementText?.trim();
 
   const socialLinks = boutique.socialLinks.map((link) => ({
     id: link.id,
@@ -190,9 +191,11 @@ export default async function ShopLayout({
             />
           )}
           <div className="shop-theme flex min-h-screen flex-col">
-            <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
-              {announcementText}
-            </div>
+            {announcementText && (
+              <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
+                {announcementText}
+              </div>
+            )}
             <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
