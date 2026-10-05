@@ -106,6 +106,26 @@ export function buildClientDeliveredMessage(params: {
   });
 }
 
+export type OrderPushEvent = "confirmed" | "rejected" | "shipped" | "delivered" | "cancelled";
+
+// The short title + body of a push notification about an order, in the
+// language the customer ordered in (the same bundles as the WhatsApp texts).
+export function buildOrderPushMessage(params: {
+  event: OrderPushEvent;
+  locale: string | null;
+  reference: string;
+}): { title: string; body: string } {
+  const orders = MESSAGE_BUNDLES[resolveLocale(params.locale)].orders;
+  const body = {
+    confirmed: orders.pushConfirmed,
+    rejected: orders.pushRejected,
+    shipped: orders.pushShipped,
+    delivered: orders.pushDelivered,
+    cancelled: orders.pushCancelled,
+  }[params.event];
+  return { title: fillTemplate(orders.pushTitle, { reference: params.reference }), body };
+}
+
 export function buildClientWhatsAppLink(phone: string, message: string): string {
   // customerPhone is stored as a bare 8-digit local number (see
   // checkoutCustomerSchema / /^[234]\d{7}$/), with no country code — wa.me

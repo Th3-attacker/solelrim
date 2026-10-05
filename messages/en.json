@@ -507,7 +507,13 @@
     "shipConfirmTitle": "Mark the order as shipped?",
     "shipConfirmBody": "The order will move to “shipped”. This step can't be undone.",
     "deliverConfirmTitle": "Mark the order as delivered?",
-    "deliverConfirmBody": "The order will be closed as delivered. This step can't be undone."
+    "deliverConfirmBody": "The order will be closed as delivered. This step can't be undone.",
+    "pushTitle": "Order {reference}",
+    "pushConfirmed": "Your order is confirmed.",
+    "pushRejected": "Your order could not be accepted.",
+    "pushShipped": "Your order is on its way.",
+    "pushDelivered": "Your order has been delivered. Thank you!",
+    "pushCancelled": "Your order has been cancelled."
   },
   "settings": {
     "title": "Settings",

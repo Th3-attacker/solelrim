@@ -507,7 +507,13 @@
     "shipConfirmTitle": "تحديد الطلب كمشحون؟",
     "shipConfirmBody": "سينتقل الطلب إلى «مشحون». لا يمكن التراجع عن هذه الخطوة.",
     "deliverConfirmTitle": "تحديد الطلب كمُسلَّم؟",
-    "deliverConfirmBody": "سيُغلق الطلب كمُسلَّم. لا يمكن التراجع عن هذه الخطوة."
+    "deliverConfirmBody": "سيُغلق الطلب كمُسلَّم. لا يمكن التراجع عن هذه الخطوة.",
+    "pushTitle": "الطلب {reference}",
+    "pushConfirmed": "تم تأكيد طلبك.",
+    "pushRejected": "تعذّر قبول طلبك.",
+    "pushShipped": "طلبك في الطريق إليك.",
+    "pushDelivered": "تم تسليم طلبك. شكراً لك!",
+    "pushCancelled": "تم إلغاء طلبك."
   },
   "settings": {
     "title": "الإعدادات",

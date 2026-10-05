@@ -21,6 +21,7 @@ import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
+import { sendOrderPush } from "@/lib/push/order-push";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -439,6 +440,7 @@ export async function confirmOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "confirmed");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");
@@ -520,6 +522,7 @@ export async function rejectOrder(
     reason,
   });
 
+  await sendOrderPush(orderId, "rejected");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");
@@ -551,6 +554,7 @@ export async function shipOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "shipped");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
@@ -678,6 +682,7 @@ export async function deliverOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "delivered");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/sales");
@@ -760,6 +765,7 @@ export async function cancelOrder(
     reason,
   });
 
+  await sendOrderPush(orderId, "cancelled");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");

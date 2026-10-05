@@ -507,7 +507,13 @@
     "shipConfirmTitle": "Marquer la commande comme expédiée ?",
     "shipConfirmBody": "La commande passera en « expédiée ». Cette étape ne peut pas être annulée.",
     "deliverConfirmTitle": "Marquer la commande comme livrée ?",
-    "deliverConfirmBody": "La commande sera clôturée comme livrée. Cette étape ne peut pas être annulée."
+    "deliverConfirmBody": "La commande sera clôturée comme livrée. Cette étape ne peut pas être annulée.",
+    "pushTitle": "Commande {reference}",
+    "pushConfirmed": "Votre commande est confirmée.",
+    "pushRejected": "Votre commande n'a pas pu être acceptée.",
+    "pushShipped": "Votre commande est en cours de livraison.",
+    "pushDelivered": "Votre commande a été livrée. Merci !",
+    "pushCancelled": "Votre commande a été annulée."
   },
   "settings": {
     "title": "Paramètres",

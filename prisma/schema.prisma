@@ -485,6 +485,21 @@ model SaleItem {
   @@index([variantId])
 }
 
+// A phone (the mobile app, via Expo) that asked to be told how one order
+// progresses. There are no customer accounts: the token hangs off the order,
+// proven with the same phone + reference the customer uses to track it, and
+// goes away with the order.
+model PushToken {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  token     String
+  createdAt DateTime @default(now())
+
+  @@unique([orderId, token])
+  @@index([orderId])
+}
+
 model Order {
   id                 String        @id @default(cuid())
   reference          String        @unique
@@ -523,6 +538,7 @@ model Order {
   cancelledAt        DateTime?
   cancelReason       String?
   testimonials       Testimonial[]
+  pushTokens         PushToken[]
 
   @@index([status])
   @@index([createdAt])

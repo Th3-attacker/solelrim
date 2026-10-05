@@ -32,6 +32,7 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
 | `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }` | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
 | `POST /boutiques/{key}/orders` (multipart) | Place an order → `201 { reference, orderId }` |
 | `POST /boutiques/{key}/orders/track` `{ phone, reference }` | `{ reference, status, total, createdAt, statusSince }` |
+| `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below) |
 
 ### Placing an order
 `multipart/form-data` fields: `customerName`, `customerPhone` (8 digits,
@@ -49,7 +50,24 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
   -F screenshot=@proof.png
 ```
 
-## Not there yet
-Push notifications (order status changes) come next: the app will register its
-device token against an order, and the server will push on confirm / reject /
-ship / deliver.
+## Push notifications
+There are no accounts, so a device token hangs off an **order**, proven with the
+same phone + reference as tracking.
+
+1. After placing an order, the app asks the user for notification permission and
+   gets its Expo token (`ExponentPushToken[...]`).
+2. It calls `POST /boutiques/{key}/orders/push` with `{ phone, reference, token }`
+   (`DELETE` with the same body to stop). Up to 5 devices per order; the oldest
+   is dropped past that.
+3. When the boutique confirms, rejects, ships, delivers or cancels the order,
+   the server sends a push to every registered device, in the language the order
+   was placed in, with `data: { reference, status, boutique }` so a tap can open
+   the tracking screen.
+
+A device that uninstalled the app is forgotten automatically. A failed push never
+blocks the admin's action. The WhatsApp messages the admin can send are
+unchanged: push is an addition. Server side, `EXPO_ACCESS_TOKEN` (optional) is
+the Expo "enhanced push security" token.
+
+If a customer reinstalls the app, they get their order back by tracking it with
+the phone and reference; notifications then need a new `POST .../orders/push`.

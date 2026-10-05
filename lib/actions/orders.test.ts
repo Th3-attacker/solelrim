@@ -12,6 +12,7 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
+vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
@@ -37,6 +38,7 @@ import {
   cancelOrder,
   trackOrder,
 } from "@/lib/actions/orders";
+import { sendOrderPush } from "@/lib/push/order-push";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -739,6 +741,7 @@ describe("confirmOrder", () => {
         data: expect.objectContaining({ status: "CONFIRMED" }),
       }),
     );
+    expect(sendOrderPush).toHaveBeenCalledWith("order-1", "confirmed");
     expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
     expect(revalidatePath).toHaveBeenCalledWith("/admin/orders/order-1");
     expect(revalidatePath).toHaveBeenCalledWith("/");
@@ -838,6 +841,17 @@ describe("shipOrder", () => {
       where: { id: "order-1", status: "CONFIRMED", productType: "cosmetique" },
       data: expect.objectContaining({ status: "SHIPPING" }),
     });
+  });
+
+  it("tells the customer's phone, and only when the change really happened", async () => {
+    vi.mocked(sendOrderPush).mockClear();
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+    await shipOrder("order-1");
+    expect(sendOrderPush).not.toHaveBeenCalled();
+
+    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+    await shipOrder("order-1");
+    expect(sendOrderPush).toHaveBeenCalledWith("order-1", "shipped");
   });
 });
 
