@@ -6,7 +6,7 @@ export const routing = defineRouting({
   localePrefix: "always",
 });
 
-export const rtlLocales: readonly string[] = ["ar"];
+const rtlLocales: readonly string[] = ["ar"];
 
 export function getDirection(locale: string): "rtl" | "ltr" {
   return rtlLocales.includes(locale) ? "rtl" : "ltr";

@@ -17,6 +17,7 @@ export const AUDIT_ACTION_LABEL_KEY = {
   "cash.in": "actionCashIn",
   "cash.out": "actionCashOut",
   "cash.close": "actionCashClose",
+  "cash.autoClose": "actionCashAutoClose",
   "cash.dayClose": "actionCashDayClose",
   "refund.request": "actionRefundRequest",
   "refund.approve": "actionRefundApprove",

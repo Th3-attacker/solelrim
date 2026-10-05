@@ -6,8 +6,6 @@
 // categories the admin explicitly creates for it.
 export type ProductType = string;
 
-export const PRODUCT_TYPES: readonly ProductType[] = ["sport", "cosmetique"];
-
 export const DEFAULT_PRODUCT_TYPE: ProductType = "sport";
 
 // Purely structural/functional presets — no brand copy (site name, SEO,
@@ -20,7 +18,7 @@ export const SUGGESTED_CATEGORIES: Record<string, string[]> = {
 
 // A sentinel that must never resolve to a real boutique key (see
 // RESERVED_STORE_TYPE_KEYS below).
-export const NOT_FOUND_STORE_TYPE_KEY = "__not-found__";
+const NOT_FOUND_STORE_TYPE_KEY = "__not-found__";
 
 // Keys a boutique can never claim (createProductType, lib/actions/settings.ts):
 // - "admin" would collide with the static app/[locale]/admin/ route — Next.js

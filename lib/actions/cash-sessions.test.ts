@@ -72,6 +72,7 @@ function tillFigures() {
 
 beforeEach(() => {
   mockReset(prismaMock);
+  prismaMock.cashSession.findMany.mockResolvedValue([]); // no stale till to auto-close
   createClientMock.mockReset();
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
@@ -305,6 +306,11 @@ describe("closeCashSession", () => {
 });
 
 describe("closeStoreDay", () => {
+  // The first till lookup is the stale-till sweep; the day's own tills come after.
+  beforeEach(() => {
+    prismaMock.cashSession.findMany.mockResolvedValueOnce([]);
+  });
+
   function closedTill(overrides: Record<string, unknown> = {}) {
     return {
       id: "session-1",

@@ -3,7 +3,7 @@ import { z } from "zod";
 const emptyToNull = (val: unknown) =>
   val === "" || val === undefined ? null : val;
 
-export const variantSchema = z.object({
+const variantSchema = z.object({
   id: z.string().optional(),
   size: z.string().min(1),
   color: z.string().min(1),

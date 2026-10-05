@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form";
+import { useFieldArray, useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
@@ -54,7 +54,6 @@ export function SaleForm({
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<SaleFormValues, unknown, SaleInput>({
@@ -89,7 +88,10 @@ export function SaleForm({
     toast.success(tCommon("save"));
   };
 
-  const watchedItems = watch("items");
+  const [watchedItems, clientId, paymentMethod] = useWatch({
+    control,
+    name: ["items", "clientId", "paymentMethod"],
+  });
   const total = watchedItems.reduce((sum, item) => {
     const variant = variants.find((v) => v.id === item.variantId);
     const quantity = Number(item.quantity) || 0;
@@ -103,7 +105,7 @@ export function SaleForm({
           <div className="flex flex-col gap-2">
             <Label>{t("client")}</Label>
             <Select
-              value={(watch("clientId") as string | null) ?? "__walkin__"}
+              value={(clientId as string | null) ?? "__walkin__"}
               onValueChange={(value) =>
                 setValue("clientId", value === "__walkin__" ? null : value)
               }
@@ -135,7 +137,7 @@ export function SaleForm({
           <div className="flex flex-col gap-2">
             <Label htmlFor="paymentMethod">{t("paymentMethod")}</Label>
             <Select
-              value={(watch("paymentMethod") as string | null) ?? "__none__"}
+              value={(paymentMethod as string | null) ?? "__none__"}
               onValueChange={(value) =>
                 setValue("paymentMethod", value === "__none__" ? null : value)
               }
@@ -182,7 +184,7 @@ export function SaleForm({
               <div className="flex flex-col gap-1 sm:col-span-4">
                 <Label className="text-xs">{t("selectVariant")}</Label>
                 <Select
-                  value={watch(`items.${index}.variantId`)}
+                  value={watchedItems[index]?.variantId}
                   onValueChange={(value) =>
                     setValue(`items.${index}.variantId`, value)
                   }

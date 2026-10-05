@@ -3,7 +3,7 @@
 // cancelled marker). No i18n or formatting library inside: the caller
 // passes translated labels and its own money formatter.
 
-export type ReceiptLine = {
+type ReceiptLine = {
   productName: string;
   size: string;
   color: string;
@@ -27,7 +27,7 @@ export type ReceiptData = {
   amountReceived: number | null;
 };
 
-export type ReceiptSummaryKey =
+type ReceiptSummaryKey =
   | "subtotal"
   | "discount"
   | "loyaltyDiscount"

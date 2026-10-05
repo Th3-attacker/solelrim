@@ -20,7 +20,7 @@ export const PRICE_BUCKETS = [
   { value: "2000+", min: 2000, max: Infinity },
 ] as const;
 
-export function productPrice(product: Product): number {
+function productPrice(product: Product): number {
   return getPriceRange(product.variants, product.basePrice).min;
 }
 

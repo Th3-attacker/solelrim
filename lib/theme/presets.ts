@@ -48,7 +48,7 @@ export const DEFAULT_THEME_ID = "default";
 // fixed THEME_PRESETS entries above.
 export const CUSTOM_THEME_ID = "custom";
 
-export function getThemePreset(id: string | null | undefined): ThemePreset {
+function getThemePreset(id: string | null | undefined): ThemePreset {
   return THEME_PRESETS.find((preset) => preset.id === id) ?? THEME_PRESETS[0];
 }
 
