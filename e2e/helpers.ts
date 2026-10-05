@@ -1,12 +1,13 @@
 import path from "node:path";
 import { expect, type Page } from "@playwright/test";
 
-// Targets a real, known product in the "sport" boutique (Tshirt Plyester,
-// WHITE/M variant in stock) — there's no seeded/isolated test fixture
-// boutique yet, so this exercises the actual dev database's real catalog
-// (see e2e/checkout.spec.ts and e2e/admin-login.spec.ts for the same
-// constraint on the admin side).
-const PRODUCT_URL = "/fr/sport/products/tshirt-plyester";
+// Targets a real, known product in the "sport" boutique (T-shirt, WHITE/M
+// variant in stock) — there's no seeded/isolated test fixture boutique yet,
+// so this exercises the actual dev database's real catalog (see
+// e2e/checkout.spec.ts and e2e/admin-login.spec.ts for the same constraint
+// on the admin side). The catalog moves: E2E_PRODUCT_SLUG points the tests
+// at another product that has a WHITE/M variant in stock.
+export const PRODUCT_URL = `/fr/sport/products/${process.env.E2E_PRODUCT_SLUG ?? "t-shirt"}`;
 const PAYMENT_PROOF = path.join(__dirname, "fixtures/payment-proof.png");
 const ORDER_REFERENCE_RE = /CMD-\d{8}-\d{4}/;
 
@@ -43,6 +44,8 @@ export async function submitCheckoutOrder(page: Page): Promise<string> {
   await expect(page.getByRole("heading", { name: "Paiement" })).toBeVisible();
   await page.getByRole("button", { name: "Voir les numéros de paiement" }).click();
   await page.getByLabel("Capture d'écran du paiement").setInputFiles(PAYMENT_PROOF);
+  // The order can't be confirmed without the number the payment was sent from.
+  await page.getByLabel("Numéro d'envoi").fill("37737353");
 
   await page.getByRole("button", { name: "Confirmer la commande" }).click();
   await expect(page.getByText("Commande envoyée !")).toBeVisible({ timeout: 15_000 });

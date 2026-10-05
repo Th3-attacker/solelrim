@@ -1,12 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import type { Result } from "axe-core";
-import { hasAdminCredentials, loginAsAdmin } from "./helpers";
+import { PRODUCT_URL, hasAdminCredentials, loginAsAdmin } from "./helpers";
 
 // Same real boutique/product as checkout.spec.ts and admin-order-lifecycle.spec.ts
 // use — no seeded/isolated fixture boutique exists yet (see e2e/helpers.ts).
 const STORE_HOME = "/fr/sport";
-const PRODUCT_URL = "/fr/sport/products/tshirt-plyester";
 
 // Gated on critical/serious only for now. Moderate/minor findings can exist
 // project-wide (long-tail contrast on secondary text, third-party widget
