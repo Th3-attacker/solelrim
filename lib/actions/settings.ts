@@ -47,11 +47,19 @@ export async function updateBoutiqueSettings(
     return { error: "invalid" };
   }
 
-  // The SEO texts and the hero image position are the superadmin's: a
-  // boutique admin's form doesn't show them, and whatever they send for them
-  // is left out, not trusted.
+  // The "Image principale" section (hero texts and image position) and the
+  // SEO texts are the superadmin's: a boutique admin's form doesn't show
+  // them, and whatever they send for them is left out, not trusted.
   const {
     heroImagePosition,
+    heroBadgeText,
+    heroTitle,
+    heroTitleAr,
+    heroTitleEn,
+    heroSubtitle,
+    heroSubtitleAr,
+    heroSubtitleEn,
+    heroCtaLabel,
     seoTitle,
     seoTitleAr,
     seoTitleEn,
@@ -62,6 +70,14 @@ export async function updateBoutiqueSettings(
   } = parsed.data;
   const superadminOnly = {
     heroImagePosition,
+    heroBadgeText,
+    heroTitle,
+    heroTitleAr,
+    heroTitleEn,
+    heroSubtitle,
+    heroSubtitleAr,
+    heroSubtitleEn,
+    heroCtaLabel,
     seoTitle,
     seoTitleAr,
     seoTitleEn,

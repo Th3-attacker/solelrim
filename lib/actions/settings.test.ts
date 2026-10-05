@@ -119,7 +119,7 @@ describe("updateBoutiqueSettings", () => {
     );
   });
 
-  it("ignores the SEO texts and the hero image position sent by a boutique admin", async () => {
+  it("ignores the hero section fields and the SEO texts sent by a boutique admin", async () => {
     asBoutiqueAdmin("cosmetique");
     prismaMock.storeType.update.mockResolvedValue({} as never);
 
@@ -129,6 +129,8 @@ describe("updateBoutiqueSettings", () => {
       seoTitle: "Titre pirate",
       seoDescription: "Description pirate",
       heroImagePosition: "left",
+      heroTitle: "Titre pirate",
+      heroCtaLabel: "Acheter",
     });
 
     const { data } = prismaMock.storeType.update.mock.calls[0][0];
@@ -136,6 +138,8 @@ describe("updateBoutiqueSettings", () => {
     expect(data).not.toHaveProperty("seoTitle");
     expect(data).not.toHaveProperty("seoDescription");
     expect(data).not.toHaveProperty("heroImagePosition");
+    expect(data).not.toHaveProperty("heroTitle");
+    expect(data).not.toHaveProperty("heroCtaLabel");
   });
 
   it("saves the SEO texts for a superadmin", async () => {
