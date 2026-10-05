@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 // A seller sees their own tills; an admin every till of the boutique.
 export default async function SessionsPage({
@@ -38,6 +39,7 @@ export default async function SessionsPage({
 
   return (
     <div className="flex flex-col gap-6">
+      {showSeller && <SectionTabs group="cash" current="/admin/pos/sessions" />}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">{t("sessionsTitle")}</h1>
         <Button asChild variant="ghost">

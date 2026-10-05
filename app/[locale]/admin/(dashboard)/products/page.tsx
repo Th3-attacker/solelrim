@@ -8,6 +8,7 @@ import { StateMessage } from "@/components/ui/state-message";
 import { ListPagination } from "@/components/ui/list-pagination";
 import { ProductFilters } from "@/components/products/product-filters";
 import { ProductsTable } from "@/components/products/products-table";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 export default async function AdminProductsPage({
   searchParams,
@@ -30,6 +31,7 @@ export default async function AdminProductsPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs group="catalog" current="/admin/products" />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <Button asChild>

@@ -66,7 +66,9 @@
     "cashClosures": "الإقفالات",
     "mySales": "مبيعاتي",
     "refunds": "الاسترجاعات",
-    "help": "المساعدة"
+    "help": "المساعدة",
+    "cashOverview": "الجلسات والإقفالات",
+    "sectionTabs": "أقسام مرتبطة"
   },
   "auth": {
     "login": {

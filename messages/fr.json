@@ -66,7 +66,9 @@
     "cashClosures": "Clôtures",
     "mySales": "Mes ventes",
     "refunds": "Remboursements",
-    "help": "Aide"
+    "help": "Aide",
+    "cashOverview": "Sessions et clôtures",
+    "sectionTabs": "Sections associées"
   },
   "auth": {
     "login": {

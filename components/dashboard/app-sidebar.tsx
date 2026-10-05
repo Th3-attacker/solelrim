@@ -25,16 +25,11 @@ import {
   ListChecks,
   Receipt,
   Money,
-  Vault,
   ClipboardText,
-  ClockCounterClockwise,
   SquaresFour,
   Package,
-  Question,
   Gear,
   ShoppingCart,
-  Tag,
-  Ticket,
   Users,
 } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
@@ -46,16 +41,13 @@ type NavItem = {
   label: string;
   icon: typeof SquaresFour;
   badge?: number;
+  // Other pages that live under this entry as tabs (see SectionTabs): the
+  // entry stays lit on them.
+  alsoActiveFor?: string[];
 };
 
 type Translate = ReturnType<typeof useTranslations<"nav">>;
 type NavSection = { label?: string; items: NavItem[] };
-
-const helpLink = (t: Translate): NavItem => ({
-  href: "/admin/help",
-  label: t("help"),
-  icon: Question,
-});
 
 // The checkout links both roles share, so a rename or a new route is made
 // once.
@@ -86,7 +78,6 @@ function sellerSections(t: Translate): NavSection[] {
         { href: "/admin/pos/my-sales", label: t("mySales"), icon: Receipt },
         pos.refunds(),
         pos.sessions,
-        helpLink(t),
       ],
     },
   ];
@@ -102,46 +93,53 @@ function adminSections(
     {
       label: t("catalogSection"),
       items: [
-        { href: "/admin/products", label: t("products"), icon: Package },
-        { href: "/admin/categories", label: t("categories"), icon: Tag },
+        {
+          href: "/admin/products",
+          label: t("products"),
+          icon: Package,
+          alsoActiveFor: ["/admin/categories"],
+        },
       ],
     },
     {
       label: t("salesSection"),
       items: [
-        { href: "/admin/sales", label: t("sales"), icon: ShoppingCart },
+        {
+          href: "/admin/sales",
+          label: t("sales"),
+          icon: ShoppingCart,
+          // Refunds are tabs of the sales page; their badge shows here.
+          badge: counts.pendingRefundCount > 0 ? counts.pendingRefundCount : undefined,
+          alsoActiveFor: ["/admin/pos/refunds"],
+        },
         {
           href: "/admin/orders",
           label: t("orders"),
           icon: ClipboardText,
           badge: counts.pendingOrderCount > 0 ? counts.pendingOrderCount : undefined,
         },
-        { href: "/admin/clients", label: t("clients"), icon: Users },
-        { href: "/admin/promo-codes", label: t("promoCodes"), icon: Ticket },
+        {
+          href: "/admin/clients",
+          label: t("clients"),
+          icon: Users,
+          alsoActiveFor: ["/admin/promo-codes"],
+        },
       ],
     },
     {
       label: t("posSection"),
       items: [
         pos.pos,
-        pos.sessions,
-        { href: "/admin/cash-closures", label: t("cashClosures"), icon: Vault },
-        pos.refunds(counts.pendingRefundCount),
+        {
+          ...pos.sessions,
+          label: t("cashOverview"),
+          alsoActiveFor: ["/admin/cash-closures"],
+        },
       ],
     },
     {
       label: t("adminSection"),
-      items: [
-        { href: "/admin/settings", label: t("settings"), icon: Gear },
-        // Sellers never get here (they have their own sections); the page
-        // itself scopes a boutique admin to their own boutique.
-        {
-          href: "/admin/audit-log",
-          label: t("auditLog"),
-          icon: ClockCounterClockwise,
-        },
-        helpLink(t),
-      ],
+      items: [{ href: "/admin/settings", label: t("settings"), icon: Gear }],
     },
   ];
 }
@@ -179,11 +177,12 @@ export function AppSidebar({
       : pathname === href || pathname.startsWith(`${href}/`);
   const activeHref = sections
     .flatMap((section) => section.items)
-    .map((item) => item.href)
-    .reduce<string | undefined>(
-      (best, href) => (matches(href) && (!best || href.length > best.length) ? href : best),
+    .flatMap((item) => [item.href, ...(item.alsoActiveFor ?? [])].map((href) => ({ item, href })))
+    .reduce<{ item: NavItem; href: string } | undefined>(
+      (best, entry) =>
+        matches(entry.href) && (!best || entry.href.length > best.href.length) ? entry : best,
       undefined,
-    );
+    )?.item.href;
 
   const roleLabel =
     role === "SUPERADMIN" ? t("superadmin") : role === "SELLER" ? t("seller") : t("boutiqueAdmin");
@@ -252,7 +251,7 @@ export function AppSidebar({
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser email={email} roleLabel={roleLabel} />
+        <NavUser email={email} roleLabel={roleLabel} showHistory={role !== "SELLER"} />
       </SidebarFooter>
     </Sidebar>
   );
