@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
@@ -43,7 +43,6 @@ export function ProductForm({
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<ProductFormValues, unknown, ProductInput>({
@@ -60,6 +59,11 @@ export function ProductForm({
         { size: "", color: "", sku: "", stock: 0, lowStockThreshold: 5 },
       ],
     },
+  });
+
+  const [categoryId, isActive, isFeatured] = useWatch({
+    control,
+    name: ["categoryId", "isActive", "isFeatured"],
   });
 
   const onSubmit: SubmitHandler<ProductInput> = async (data) => {
@@ -132,7 +136,7 @@ export function ProductForm({
             <Label>{t("category")}</Label>
             <CategorySelect
               categories={categories}
-              value={watch("categoryId")}
+              value={categoryId}
               onChange={(id) => setValue("categoryId", id)}
             />
             {errors.categoryId && (
@@ -142,7 +146,7 @@ export function ProductForm({
 
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
-              checked={watch("isActive")}
+              checked={isActive}
               onCheckedChange={(checked) => setValue("isActive", checked === true)}
             />
             {t("active")}
@@ -150,7 +154,7 @@ export function ProductForm({
 
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
-              checked={watch("isFeatured")}
+              checked={isFeatured}
               onCheckedChange={(checked) => setValue("isFeatured", checked === true)}
             />
             {t("isFeatured")}

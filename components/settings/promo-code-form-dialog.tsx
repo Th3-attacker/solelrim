@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import type { z } from "zod";
@@ -74,13 +74,18 @@ export function PromoCodeFormDialog({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     reset,
     formState: { errors },
   } = useForm<PromoCodeFormValues, unknown, PromoCodeInput>({
     resolver: zodResolver(promoCodeSchema),
     defaultValues,
+  });
+
+  const [discountType, clientId, expiresAt, maxUses] = useWatch({
+    control,
+    name: ["discountType", "clientId", "expiresAt", "maxUses"],
   });
 
   function fieldErrorMessage(message?: string) {
@@ -148,7 +153,7 @@ export function PromoCodeFormDialog({
           <div className="flex flex-col gap-2">
             <Label htmlFor="discountType">{t("discountType")}</Label>
             <Select
-              value={watch("discountType")}
+              value={discountType}
               onValueChange={(value) =>
                 setValue("discountType", value as "PERCENT" | "FIXED")
               }
@@ -185,7 +190,7 @@ export function PromoCodeFormDialog({
             <p className="text-sm text-muted-foreground">{fixedClient.fullName}</p>
           ) : (
             <Select
-              value={(watch("clientId") as string | null) ?? GENERAL_CODE_VALUE}
+              value={(clientId as string | null) ?? GENERAL_CODE_VALUE}
               onValueChange={(value) =>
                 setValue("clientId", value === GENERAL_CODE_VALUE ? null : value)
               }
@@ -211,7 +216,7 @@ export function PromoCodeFormDialog({
             <Input
               id="expiresAt"
               type="date"
-              value={watch("expiresAt") ?? ""}
+              value={expiresAt ?? ""}
               onChange={(e) => setValue("expiresAt", e.target.value || null)}
             />
           </div>
@@ -222,7 +227,7 @@ export function PromoCodeFormDialog({
               type="number"
               min="1"
               placeholder={t("unlimited")}
-              value={(watch("maxUses") as number | null) ?? ""}
+              value={(maxUses as number | null) ?? ""}
               onChange={(e) =>
                 setValue("maxUses", e.target.value ? Number(e.target.value) : null)
               }
