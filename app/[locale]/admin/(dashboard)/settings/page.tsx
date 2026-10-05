@@ -36,7 +36,8 @@ export default async function SettingsPage() {
 
   const [boutique, deliveredOrders, mfaStatus, sellers] = await Promise.all([
     getBoutiqueSettings(productType),
-    getDeliveredOrders(productType),
+    // Only the testimonials panel (superadmin) needs them.
+    admin.role === "SUPERADMIN" ? getDeliveredOrders(productType) : Promise.resolve([]),
     getMfaStatus(),
     listSellers(productType),
   ]);
@@ -81,13 +82,15 @@ export default async function SettingsPage() {
         />
       </SettingsPanel>
 
-      <SettingsPanel>
-        <LogoUpload
-          logoUrl={
-            boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
-          }
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <LogoUpload
+            logoUrl={
+              boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
+            }
+          />
+        </SettingsPanel>
+      )}
 
       {admin.role === "SUPERADMIN" && (
         <SettingsPanel>
@@ -124,7 +127,7 @@ export default async function SettingsPage() {
       )}
 
       <BoutiqueSettingsForm
-        canEditSeo={admin.role === "SUPERADMIN"}
+        canEditSuperadminFields={admin.role === "SUPERADMIN"}
         heroVariant={boutique.heroVariant}
         defaultValues={{
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
@@ -175,19 +178,21 @@ export default async function SettingsPage() {
         />
       </SettingsPanel>
 
-      <SettingsPanel>
-        <TestimonialsManager
-          enabled={boutique.testimonialsEnabled}
-          testimonials={boutique.testimonials.map((item) => ({
-            id: item.id,
-            customerName: item.customerName,
-            quote: item.quote,
-            rating: item.rating,
-            orderId: item.orderId,
-          }))}
-          deliveredOrders={deliveredOrders}
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <TestimonialsManager
+            enabled={boutique.testimonialsEnabled}
+            testimonials={boutique.testimonials.map((item) => ({
+              id: item.id,
+              customerName: item.customerName,
+              quote: item.quote,
+              rating: item.rating,
+              orderId: item.orderId,
+            }))}
+            deliveredOrders={deliveredOrders}
+          />
+        </SettingsPanel>
+      )}
     </div>
   );
 }

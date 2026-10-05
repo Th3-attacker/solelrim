@@ -1238,8 +1238,8 @@
         "when": "À faire une fois au début, puis à ajuster quand les informations changent.",
         "steps": [
           "Ouvrez « Paramètres ».",
-          "Renseignez les informations de la boutique et ajoutez le logo.",
-          "Ajoutez vos liens sociaux et vos témoignages.",
+          "Renseignez les informations de la boutique (WhatsApp, instructions de paiement, bande d'annonce).",
+          "Ajoutez vos liens sociaux.",
           "Ajoutez vos comptes de paiement (wallets) : choisissez le fournisseur, son logo s'affiche automatiquement.",
           "Réglez le programme de fidélité si vous l'utilisez."
         ],
@@ -1502,11 +1502,12 @@
         ]
       },
       "heroSeo": {
-        "title": "Image principale et référencement (SEO)",
-        "when": "Pour changer l'image principale de la boutique ou les textes qui apparaissent dans Google.",
+        "title": "Logo, image principale, SEO et avis clients",
+        "when": "Pour changer le logo, l'image principale, les textes qui apparaissent dans Google ou les avis clients affichés sur la boutique.",
         "steps": [
           "Ces éléments sont gérés par l'assistance.",
-          "Envoyez l'image souhaitée (format PNG, JPEG ou WebP) et, pour le SEO, le titre et la description voulus."
+          "Envoyez le logo ou l'image souhaitée (PNG, JPEG ou WebP).",
+          "Pour le SEO, envoyez le titre et la description voulus ; pour un avis client, le nom du client et son texte."
         ]
       }
     }

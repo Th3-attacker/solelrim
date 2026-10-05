@@ -47,9 +47,11 @@ export async function updateBoutiqueSettings(
     return { error: "invalid" };
   }
 
-  // The SEO texts are the superadmin's: a boutique admin's form doesn't show
-  // them, and whatever they send for them is left out, not trusted.
+  // The SEO texts and the hero image position are the superadmin's: a
+  // boutique admin's form doesn't show them, and whatever they send for them
+  // is left out, not trusted.
   const {
+    heroImagePosition,
     seoTitle,
     seoTitleAr,
     seoTitleEn,
@@ -58,11 +60,19 @@ export async function updateBoutiqueSettings(
     seoDescriptionEn,
     ...general
   } = parsed.data;
-  const seo = { seoTitle, seoTitleAr, seoTitleEn, seoDescription, seoDescriptionAr, seoDescriptionEn };
+  const superadminOnly = {
+    heroImagePosition,
+    seoTitle,
+    seoTitleAr,
+    seoTitleEn,
+    seoDescription,
+    seoDescriptionAr,
+    seoDescriptionEn,
+  };
 
   await prisma.storeType.update({
     where: { key: productType },
-    data: admin.role === "SUPERADMIN" ? { ...general, ...seo } : general,
+    data: admin.role === "SUPERADMIN" ? { ...general, ...superadminOnly } : general,
   });
 
   revalidatePath("/admin/settings");
@@ -73,7 +83,7 @@ export async function updateBoutiqueSettings(
 export async function uploadStoreLogo(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -121,7 +131,7 @@ export async function uploadStoreLogo(
 }
 
 export async function removeStoreLogo(): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {

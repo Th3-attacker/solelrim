@@ -28,12 +28,12 @@ import { FieldError } from "@/components/ui/status-alert";
 export function BoutiqueSettingsForm({
   defaultValues,
   heroVariant,
-  canEditSeo,
+  canEditSuperadminFields,
 }: {
   defaultValues: BoutiqueSettingsInput;
-  // The SEO texts are the superadmin's (updateBoutiqueSettings ignores them
-  // from anyone else).
-  canEditSeo: boolean;
+  // The SEO texts and the hero image position are the superadmin's
+  // (updateBoutiqueSettings ignores them from anyone else).
+  canEditSuperadminFields: boolean;
   // Read-only here — editing it is superadmin-only (LayoutVariantsPicker).
   // Only used to decide whether heroImagePosition is still relevant to show.
   heroVariant: string;
@@ -152,7 +152,7 @@ export function BoutiqueSettingsForm({
           <CardTitle className="text-base">{t("heroSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          {heroVariant === "split" && (
+          {canEditSuperadminFields && heroVariant === "split" && (
             <div className="flex flex-col gap-2">
               <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
               <Select
@@ -218,7 +218,7 @@ export function BoutiqueSettingsForm({
         </CardContent>
       </Card>
 
-      {canEditSeo && (
+      {canEditSuperadminFields && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("seoSection")}</CardTitle>

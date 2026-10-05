@@ -26,6 +26,8 @@ import {
   updateBoutiqueSettings,
   uploadStoreHeroImage,
   removeStoreHeroImage,
+  uploadStoreLogo,
+  removeStoreLogo,
   setStoreTheme,
   setCustomThemeColor,
   setColorMode,
@@ -117,7 +119,7 @@ describe("updateBoutiqueSettings", () => {
     );
   });
 
-  it("ignores the SEO texts sent by a boutique admin", async () => {
+  it("ignores the SEO texts and the hero image position sent by a boutique admin", async () => {
     asBoutiqueAdmin("cosmetique");
     prismaMock.storeType.update.mockResolvedValue({} as never);
 
@@ -126,12 +128,14 @@ describe("updateBoutiqueSettings", () => {
       announcementText: "Soldes",
       seoTitle: "Titre pirate",
       seoDescription: "Description pirate",
+      heroImagePosition: "left",
     });
 
     const { data } = prismaMock.storeType.update.mock.calls[0][0];
     expect(data).toMatchObject({ announcementText: "Soldes" });
     expect(data).not.toHaveProperty("seoTitle");
     expect(data).not.toHaveProperty("seoDescription");
+    expect(data).not.toHaveProperty("heroImagePosition");
   });
 
   it("saves the SEO texts for a superadmin", async () => {
@@ -157,10 +161,12 @@ describe("updateBoutiqueSettings", () => {
   });
 });
 
-describe("hero image (superadmin only)", () => {
+describe("hero image and logo (superadmin only)", () => {
   it("refuses a boutique admin both an upload and a removal", async () => {
     asBoutiqueAdmin("cosmetique");
 
+    await expect(uploadStoreLogo(new FormData())).rejects.toThrow("forbidden");
+    await expect(removeStoreLogo()).rejects.toThrow("forbidden");
     await expect(uploadStoreHeroImage(new FormData())).rejects.toThrow("forbidden");
     await expect(removeStoreHeroImage()).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
