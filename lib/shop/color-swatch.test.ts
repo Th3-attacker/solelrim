@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSwatchColors, getSwatchColor, getSwatchStyle } from "@/lib/shop/color-swatch";
+import { getSwatchColors, getSwatchColor, getSwatchStyle, lookupSwatchHexes } from "@/lib/shop/color-swatch";
 
 describe("getSwatchColors", () => {
   it("resolves a known French color name", () => {
@@ -54,5 +54,15 @@ describe("getSwatchStyle", () => {
     expect(style.background).toContain("conic-gradient(");
     expect(style.background).toContain("#18181b 0%");
     expect(style.background).toContain("#ffffff 50%");
+  });
+});
+
+describe("lookupSwatchHexes", () => {
+  it("gives null instead of the neutral fallback for an unknown name", () => {
+    expect(lookupSwatchHexes("Chartreuse")).toEqual([null]);
+  });
+
+  it("resolves each segment of a compound name", () => {
+    expect(lookupSwatchHexes("noir - Écarlate")).toEqual(["#18181b", null]);
   });
 });

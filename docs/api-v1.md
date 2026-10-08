@@ -27,12 +27,44 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
 | `GET /boutiques` | Boutiques the customer can pick (closed ones are left out) |
 | `GET /boutiques/{key}` | Branding, theme, payment details and wallets, social links, categories |
 | `GET /boutiques/{key}/products?category=&q=&page=&pageSize=` | Catalogue page (`pageSize` ≤ 50, default 20) or search (`q`, rate-limited, one capped page) |
-| `GET /boutiques/{key}/products/{slug}` | Product with images and variants (id, size, color, price, stock) |
+| `GET /boutiques/{key}/products/{slug}` | Product with images and variants (id, size, color, price, stock, lowStockThreshold) |
 | `POST /boutiques/{key}/stocks` `{ variantIds }` | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists |
 | `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }` | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
 | `POST /boutiques/{key}/orders` (multipart) | Place an order → `201 { reference, orderId }` |
 | `POST /boutiques/{key}/orders/track` `{ phone, reference }` | `{ reference, status, total, createdAt, statusSince }` |
 | `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below) |
+
+### Products
+Every product (catalogue, search and product page) carries:
+- `colors`: the distinct variant colors, in the order the admin entered them.
+  Exact strings, as on the variants and images (`"Noir"` and `"noir"` are two colors).
+- `colorsInStock`: the subset with at least one variant in stock.
+- `colorSwatches`: `[{ name, hex, hexes }]`, one per entry of `colors`, from the
+  website's swatch table. `hexes` has one hex per hyphen segment
+  (`"Noir-Blanc"` → `["#18181b", "#ffffff"]`), `null` for a name the table
+  doesn't know; `hex` is the first one.
+
+On the product page, `variants` come in size order: letter sizes XXS…XXXL
+(`2XL`/`3XL` accepted), then numeric sizes by value (`38`, `40,5`, `42`), then
+anything else (`TU`, `6 ans`…) in entry order; equal sizes keep entry order.
+Each variant's `lowStockThreshold` is the stock at or under which the website
+shows "only n left".
+
+```json
+{
+  "id": "cm…", "slug": "t-shirt", "name": "T-shirt",
+  "category": { "id": "cm…", "name": "Vêtements" },
+  "imageUrl": "https://…/product-images/p/a.jpg",
+  "price": { "min": 1000, "max": 1200 }, "compareAtPrice": 1500,
+  "isFeatured": true, "inStock": true,
+  "colors": ["Noir", "Noir-Blanc"],
+  "colorsInStock": ["Noir"],
+  "colorSwatches": [
+    { "name": "Noir", "hex": "#18181b", "hexes": ["#18181b"] },
+    { "name": "Noir-Blanc", "hex": "#18181b", "hexes": ["#18181b", "#ffffff"] }
+  ]
+}
+```
 
 ### Placing an order
 `multipart/form-data` fields: `customerName`, `customerPhone` (8 digits,

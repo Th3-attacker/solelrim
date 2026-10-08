@@ -3,6 +3,7 @@ import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { resolveStoreTheme } from "@/lib/theme/presets";
 import { findWalletProvider, walletLogoSrc } from "@/lib/shop/wallet-providers";
+import { lookupSwatchHexes } from "@/lib/shop/color-swatch";
 import type { OpenBoutique } from "@/lib/api/boutique";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
@@ -48,8 +49,27 @@ export function serializeBoutique(boutique: OpenBoutique, locale: string, origin
   };
 }
 
+// Distinct variant colors in the order they were entered — re-sorted here
+// because the product page gets its variants in size order. Exact strings:
+// "Noir" and "noir" are two colors, as they are for the variants themselves.
+function distinctColors(variants: ProductRow["variants"]) {
+  const entryOrder = [...variants].sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  return [...new Set(entryOrder.map((variant) => variant.color))];
+}
+
+// The website's swatch lookup (lib/shop/color-swatch.ts), so the app shows the
+// same dots. One hex per hyphen segment ("Noir-Blanc"); null where the name
+// isn't known, for the app to pick its own fallback.
+function serializeColorSwatch(name: string) {
+  const hexes = lookupSwatchHexes(name);
+  return { name, hex: hexes[0] ?? null, hexes };
+}
+
 export function serializeProductSummary(product: ProductRow) {
   const price = getPriceRange(product.variants, product.basePrice);
+  const colors = distinctColors(product.variants);
   return {
     id: product.id,
     slug: product.slug,
@@ -60,6 +80,9 @@ export function serializeProductSummary(product: ProductRow) {
     compareAtPrice: product.compareAtPrice?.toNumber() ?? null,
     isFeatured: product.isFeatured,
     inStock: product.variants.some((variant) => variant.stock > 0),
+    colors,
+    colorsInStock: distinctColors(product.variants.filter((variant) => variant.stock > 0)),
+    colorSwatches: colors.map(serializeColorSwatch),
   };
 }
 
@@ -77,6 +100,7 @@ export function serializeProductDetail(product: ProductRow) {
       color: variant.color,
       price: getVariantPrice(variant, product.basePrice),
       stock: variant.stock,
+      lowStockThreshold: variant.lowStockThreshold,
     })),
   };
 }

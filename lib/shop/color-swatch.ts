@@ -130,6 +130,17 @@ export function getSwatchColors(colorName: string): string[] {
   return parts.length > 0 ? parts.map(resolveOne) : [FALLBACK_COLOR];
 }
 
+/** Same lookup as getSwatchColors, but null for a segment it doesn't know
+ * instead of the neutral fallback — for the mobile API, which lets the app
+ * pick its own fallback. */
+export function lookupSwatchHexes(colorName: string): (string | null)[] {
+  const parts = colorName
+    .split("-")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.map((part) => COLOR_MAP[normalize(part)] ?? null);
+}
+
 export function getSwatchColor(colorName: string): string {
   return getSwatchColors(colorName)[0];
 }

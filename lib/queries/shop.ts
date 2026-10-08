@@ -1,6 +1,13 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { sortBySize } from "@/lib/shop/size-order";
+
+// Variants in the order the admin entered them (one product's variants are
+// often created in the same instant, so the cuid breaks the tie). Without an
+// orderBy Postgres returns them in no guaranteed order, and the API's
+// `colors` list is meant to follow entry order.
+const VARIANT_ENTRY_ORDER = [{ createdAt: "asc" }, { id: "asc" }] satisfies Prisma.ProductVariantOrderByWithRelationInput[];
 
 export function getActiveProducts(
   productType: string,
@@ -17,7 +24,7 @@ export function getActiveProducts(
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
-      variants: true,
+      variants: { orderBy: VARIANT_ENTRY_ORDER },
     },
     orderBy: { createdAt: "desc" },
     ...(options?.take ? { take: options.take } : {}),
@@ -37,7 +44,7 @@ export async function getActiveProductsPage(
       include: {
         category: true,
         images: { orderBy: { position: "asc" }, take: 1 },
-        variants: true,
+        variants: { orderBy: VARIANT_ENTRY_ORDER },
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
@@ -82,7 +89,7 @@ export async function searchActiveProducts(
     include: {
       category: true,
       images: { orderBy: { position: "asc" }, take: 1 },
-      variants: true,
+      variants: { orderBy: VARIANT_ENTRY_ORDER },
     },
   });
 
@@ -107,18 +114,22 @@ export const getAllShopCategories = cache(function getAllShopCategories(
 // Wrapped in React's per-request cache — generateMetadata and the page
 // component below both call this for the same product, and without cache()
 // that's two round trips to the DB instead of one.
-export const getActiveProductBySlug = cache(function getActiveProductBySlug(
+// Variants come back sorted by size (S, M, L, XL — see sortBySize), then in
+// entry order within a size, for both the product page and the mobile API.
+export const getActiveProductBySlug = cache(async function getActiveProductBySlug(
   slug: string,
   productType: string,
 ) {
-  return prisma.product.findFirst({
+  const product = await prisma.product.findFirst({
     where: { slug, isActive: true, productType },
     include: {
       category: true,
       images: { orderBy: { position: "asc" } },
-      variants: { orderBy: [{ size: "asc" }, { color: "asc" }] },
+      variants: { orderBy: VARIANT_ENTRY_ORDER },
     },
   });
+  if (!product) return null;
+  return { ...product, variants: sortBySize(product.variants, (variant) => variant.size) };
 });
 
 // Legacy links shared before the slug migration still use the raw id —
