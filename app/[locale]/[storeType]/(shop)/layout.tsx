@@ -213,7 +213,11 @@ export default async function ShopLayout({
                         className="size-8 shrink-0 object-contain"
                       />
                     )}
-                    {siteName}
+                    {/* Logo alone on phones, logo and name from md up. The
+                        name stays for screen readers as the link's label. */}
+                    <span className={logoUrl ? "sr-only md:not-sr-only md:truncate" : "truncate"}>
+                      {siteName}
+                    </span>
                   </Link>
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
