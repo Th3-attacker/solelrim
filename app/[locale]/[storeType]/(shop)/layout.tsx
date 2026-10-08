@@ -23,6 +23,8 @@ import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
+import { SOLAL_STORE_TYPE } from "@/lib/brand/solal";
+import { SolalHeaderLogo } from "@/components/shop/solal-logo";
 
 // Meta keywords have had no effect on Google ranking since 2009 — this
 // exists only because a couple of smaller engines/directories still read
@@ -204,20 +206,31 @@ export default async function ShopLayout({
                     href={basePath || "/"}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
                   >
-                    {logoUrl && (
-                      <Image
-                        src={logoUrl}
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="size-8 shrink-0 object-contain"
-                      />
+                    {storeType === SOLAL_STORE_TYPE ? (
+                      <>
+                        <span className="flex text-primary">
+                          <SolalHeaderLogo />
+                        </span>
+                        <span className="sr-only">{siteName}</span>
+                      </>
+                    ) : (
+                      <>
+                        {logoUrl && (
+                          <Image
+                            src={logoUrl}
+                            alt=""
+                            width={32}
+                            height={32}
+                            className="size-8 shrink-0 object-contain"
+                          />
+                        )}
+                        {/* Logo alone on phones, logo and name from md up. The
+                            name stays for screen readers as the link's label. */}
+                        <span className={logoUrl ? "sr-only md:not-sr-only md:truncate" : "truncate"}>
+                          {siteName}
+                        </span>
+                      </>
                     )}
-                    {/* Logo alone on phones, logo and name from md up. The
-                        name stays for screen readers as the link's label. */}
-                    <span className={logoUrl ? "sr-only md:not-sr-only md:truncate" : "truncate"}>
-                      {siteName}
-                    </span>
                   </Link>
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">
