@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
+import { SOLAL_COLORS, SOLAL_LOGO_RATIO, solalLogoSvg, svgDataUri } from "@/lib/brand/solal";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -9,6 +10,8 @@ export const contentType = "image/png";
 // locale rather than one on every share-scrape / crawler hit (every
 // storefront page now points its og:image here — see lib/shop/metadata.ts).
 export const revalidate = 86400;
+
+const LOGO_HEIGHT = 150;
 
 // Default social-share card, used whenever a page doesn't have its own
 // boutique logo or product photo to show instead (see lib/shop/metadata.ts).
@@ -32,22 +35,18 @@ export default async function OpengraphImage({
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 24,
-          background: "#18181b",
+          gap: 40,
+          background: SOLAL_COLORS.marine,
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        <div
-          style={{
-            fontSize: 120,
-            fontWeight: 700,
-            letterSpacing: 4,
-            color: "#ffffff",
-          }}
-        >
-          SOLAL
-        </div>
-        <div style={{ fontSize: 32, color: "#a1a1aa" }}>
+        <img
+          src={svgDataUri(solalLogoSvg(SOLAL_COLORS.white))}
+          width={Math.round(LOGO_HEIGHT * SOLAL_LOGO_RATIO)}
+          height={LOGO_HEIGHT}
+          alt="SOLAL"
+        />
+        <div style={{ fontSize: 32, color: "#D6E2F0" }}>
           {t("ogTagline")}
         </div>
       </div>
