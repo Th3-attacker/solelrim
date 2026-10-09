@@ -82,6 +82,27 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
   -F screenshot=@proof.png
 ```
 
+### Resending an order (Idempotency-Key)
+A lost connection or a double tap can send the same order twice. Send an
+`Idempotency-Key` header on `POST .../orders`: any string of 1–64 printable
+ASCII characters (a UUID is fine), generated once per order and **the same on
+every resend** of that order.
+
+- A resend with a key already used in this boutique answers the first
+  `201 { reference, orderId }` again: no second order, no stock or promo code
+  taken twice. It is answered even if the body differs or the rate limit is
+  reached. Keys are remembered as long as the order exists (at least 24 h).
+- Two sends running at the same time still make one order (unique key per
+  boutique in the database); both get the same `201`.
+- The same key in another boutique is a different order.
+- A malformed key (empty, over 64 characters, spaces or non-ASCII) → `400 invalid`.
+- No header: unchanged behaviour (each send is a new order). The website
+  doesn't send one.
+
+**Mobile side:** create the key when the customer taps "Order" (not per HTTP
+attempt), keep it with the pending order until a `201` arrives, and reuse it
+for every retry.
+
 ## Push notifications
 There are no accounts, so a device token hangs off an **order**, proven with the
 same phone + reference as tracking.

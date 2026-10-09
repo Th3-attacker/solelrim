@@ -342,6 +342,48 @@ describe("submitOrder", () => {
     expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
   });
 
+  it("stores the Idempotency-Key on the order", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+
+    await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ idempotencyKey: "key-1" }) }),
+    );
+  });
+
+  it("answers with the winning order when a concurrent resend with the same key commits first", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }), remove }) },
+    });
+    prismaMock.order.create.mockRejectedValue(
+      new PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["productType", "idempotencyKey"] },
+      }),
+    );
+    prismaMock.order.findUnique.mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+    expect(prismaMock.order.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" } },
+      }),
+    );
+    // Not retried with a fresh reference, and this attempt's upload is cleaned up.
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalled();
+  });
+
   it("rejects a missing payment screenshot", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const form = buildOrderForm({ screenshot: "none" });

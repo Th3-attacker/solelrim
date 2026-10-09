@@ -135,3 +135,16 @@ export function getOrderById(id: string, productType: string) {
     },
   });
 }
+
+// The order an earlier request with this Idempotency-Key created in this
+// boutique, answered exactly like a fresh submit.
+export async function findOrderByIdempotencyKey(
+  productType: string,
+  idempotencyKey: string,
+): Promise<{ reference: string; orderId: string } | null> {
+  const order = await prisma.order.findUnique({
+    where: { productType_idempotencyKey: { productType, idempotencyKey } },
+    select: { id: true, reference: true },
+  });
+  return order ? { reference: order.reference, orderId: order.id } : null;
+}

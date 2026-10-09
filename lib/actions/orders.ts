@@ -22,6 +22,7 @@ import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license"
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
+import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -45,7 +46,9 @@ export type SubmitOrderResult = {
 
 export async function submitOrder(
   formData: FormData,
+  options?: { idempotencyKey?: string },
 ): Promise<SubmitOrderResult> {
+  const idempotencyKey = options?.idempotencyKey ?? null;
   const ip = await getClientIp();
   const allowed = await checkRateLimit(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
   if (!allowed) {
@@ -266,6 +269,7 @@ export async function submitOrder(
             paymentSenderPhone: senderPhoneParsed.data,
             locale,
             productType,
+            idempotencyKey,
             items: {
               create: orderItems.map((i) => ({
                 variantId: i.variantId,
@@ -289,6 +293,15 @@ export async function submitOrder(
         const target = Array.isArray(err.meta?.target)
           ? err.meta.target.join(",")
           : String(err.meta?.target ?? "");
+        // A resend with the same Idempotency-Key committed first (the app's
+        // two requests ran side by side). This transaction rolled back, so
+        // nothing was reserved twice: answer with the order that won.
+        if (idempotencyKey && target.includes("idempotencyKey")) {
+          await discardProof();
+          const existing = await findOrderByIdempotencyKey(productType, idempotencyKey);
+          if (existing) return existing;
+          return { error: "invalid" };
+        }
         if (target.includes("promoCodeId_customerPhone")) {
           await discardProof();
           return { error: "alreadyUsed" };

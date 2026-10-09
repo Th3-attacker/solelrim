@@ -539,7 +539,13 @@ model Order {
   cancelReason       String?
   testimonials       Testimonial[]
   pushTokens         PushToken[]
+  // The mobile app's Idempotency-Key header: a resend of the same order
+  // (lost connection, double tap) finds this row instead of creating a
+  // second one. Null for website orders and older app versions — Postgres
+  // lets any number of rows share a null in the unique index below.
+  idempotencyKey     String?
 
+  @@unique([productType, idempotencyKey])
   @@index([status])
   @@index([createdAt])
   @@index([productType])
