@@ -384,6 +384,94 @@ describe("submitOrder", () => {
     expect(remove).toHaveBeenCalled();
   });
 
+  it("stores the wallet transaction id, trimmed and upper-cased, and the screenshot's SHA-256", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "  bk12ab34 ");
+
+    await submitOrder(form);
+
+    expect(prismaMock.order.findFirst).toHaveBeenCalledWith({
+      where: {
+        productType: "cosmetique",
+        paymentTransactionId: "BK12AB34",
+        status: { notIn: ["REJECTED", "CANCELLED"] },
+      },
+      select: { id: true },
+    });
+    const { createHash } = await import("node:crypto");
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          paymentTransactionId: "BK12AB34",
+          paymentProofHash: createHash("sha256").update(PNG_MAGIC_BYTES).digest("hex"),
+        }),
+      }),
+    );
+  });
+
+  it("leaves the transaction id empty when the form doesn't send one (the website)", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+
+    await submitOrder(buildOrderForm());
+
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ paymentTransactionId: null }) }),
+    );
+  });
+
+  it("refuses a transaction id already used by a live order of the boutique, before uploading", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const upload = vi.fn();
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload }) } });
+    prismaMock.order.findFirst.mockResolvedValue({ id: "order-0" } as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "BK12AB34");
+
+    expect(await submitOrder(form)).toEqual({ error: "transactionAlreadyUsed" });
+    expect(upload).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("answers transactionAlreadyUsed when a concurrent order with the same id commits first", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }), remove }) },
+    });
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    prismaMock.order.create.mockRejectedValue(
+      new PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["Order_productType_paymentTransactionId_active_key"] },
+      }),
+    );
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "BK12AB34");
+
+    expect(await submitOrder(form)).toEqual({ error: "transactionAlreadyUsed" });
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalled();
+  });
+
+  it("refuses a transaction id longer than 64 characters", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "X".repeat(65));
+
+    expect(await submitOrder(form)).toEqual({ error: "invalid" });
+  });
+
   it("rejects a missing payment screenshot", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const form = buildOrderForm({ screenshot: "none" });

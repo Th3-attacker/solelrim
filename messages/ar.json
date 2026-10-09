@@ -462,6 +462,8 @@
     "viewDetails": "عرض التفاصيل",
     "paymentProof": "إثبات الدفع",
     "paymentSenderPhone": "رقم إرسال الدفع",
+    "paymentTransactionId": "رقم المعاملة",
+    "proofReused": "تم استخدام هذه الصورة من قبل في:",
     "confirmAction": "تأكيد",
     "confirmActionConfirmTitle": "هل تريد تأكيد هذا الطلب؟",
     "confirmActionDescription": "هذا الإجراء نهائي ولا يمكن التراجع عنه.",

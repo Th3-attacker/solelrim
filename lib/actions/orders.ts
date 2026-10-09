@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -163,6 +164,32 @@ export async function submitOrder(
   const promoCodeInput =
     typeof rawPromoCode === "string" && rawPromoCode.trim() ? rawPromoCode.trim() : null;
 
+  // Optional — the id the wallet showed for the transfer. Normalized so the
+  // same id typed twice ("ab12 " / "AB12") is seen as the same.
+  const rawTransactionId = formData.get("paymentTransactionId");
+  const paymentTransactionId =
+    typeof rawTransactionId === "string" && rawTransactionId.trim()
+      ? rawTransactionId.trim().toUpperCase()
+      : null;
+  if (paymentTransactionId && paymentTransactionId.length > 64) {
+    return { error: "invalid" };
+  }
+  // Fast-fail before the upload; the partial unique index on Order is what
+  // actually settles two orders racing with the same id.
+  if (paymentTransactionId) {
+    const used = await prisma.order.findFirst({
+      where: {
+        productType,
+        paymentTransactionId,
+        status: { notIn: ["REJECTED", "CANCELLED"] },
+      },
+      select: { id: true },
+    });
+    if (used) {
+      return { error: "transactionAlreadyUsed" };
+    }
+  }
+
   const file = formData.get("screenshot");
   if (!(file instanceof File) || file.size === 0) {
     return { error: "invalidFile" };
@@ -183,6 +210,10 @@ export async function submitOrder(
   if (!detected) {
     return { error: "invalidFile" };
   }
+
+  // The same image on another order is flagged to the admin (see
+  // getOrdersSharingPaymentProof), not refused here.
+  const paymentProofHash = createHash("sha256").update(new Uint8Array(fileBuffer)).digest("hex");
 
   const supabase = createAdminClient();
   const storagePath = `orders/${crypto.randomUUID()}.${detected.extension}`;
@@ -279,6 +310,8 @@ export async function submitOrder(
             promoCodeId,
             paymentProofPath: storagePath,
             paymentSenderPhone: senderPhoneParsed.data,
+            paymentTransactionId,
+            paymentProofHash,
             locale,
             productType,
             idempotencyKey,
@@ -313,6 +346,10 @@ export async function submitOrder(
           const existing = await findOrderByIdempotencyKey(productType, idempotencyKey);
           if (existing) return existing;
           return { error: "invalid" };
+        }
+        if (target.includes("paymentTransactionId")) {
+          await discardProof();
+          return { error: "transactionAlreadyUsed" };
         }
         if (target.includes("promoCodeId_customerPhone")) {
           await discardProof();

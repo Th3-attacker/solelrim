@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { differenceInHours } from "date-fns";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
-import { getOrderById } from "@/lib/queries/orders";
+import { getOrderById, getOrdersSharingPaymentProof } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { REASON_LABEL_KEY } from "@/lib/shop/client-messages";
@@ -45,7 +45,10 @@ export default async function OrderDetailPage({
     notFound();
   }
 
-  const signedUrl = await getSignedPaymentProofUrl(order.paymentProofPath);
+  const [signedUrl, proofSharedWith] = await Promise.all([
+    getSignedPaymentProofUrl(order.paymentProofPath),
+    getOrdersSharingPaymentProof(order),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -224,6 +227,24 @@ export default async function OrderDetailPage({
           <p className="mb-2 text-sm text-muted-foreground">
             {t("paymentSenderPhone")}: <span className="font-medium text-foreground">{order.paymentSenderPhone}</span>
           </p>
+        )}
+        {order.paymentTransactionId && (
+          <p className="mb-2 text-sm text-muted-foreground">
+            {t("paymentTransactionId")}: <span className="font-mono font-medium text-foreground">{order.paymentTransactionId}</span>
+          </p>
+        )}
+        {proofSharedWith.length > 0 && (
+          <StatusAlert variant="warning" className="mb-2 max-w-sm">
+            {t("proofReused")}{" "}
+            {proofSharedWith.map((other, index) => (
+              <span key={other.id}>
+                {index > 0 && ", "}
+                <Link href={`/admin/orders/${other.id}`} className="font-medium underline">
+                  {other.reference}
+                </Link>
+              </span>
+            ))}
+          </StatusAlert>
         )}
         {signedUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

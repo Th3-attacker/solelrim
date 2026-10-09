@@ -31,6 +31,7 @@ const STATUS_BY_ERROR: Record<string, number> = {
   insufficientStock: 409,
   alreadyUsed: 409,
   referenceCollision: 409,
+  transactionAlreadyUsed: 409,
 };
 
 // retryAfter (seconds) comes with "rateLimited" and becomes Retry-After.

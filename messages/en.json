@@ -462,6 +462,8 @@
     "viewDetails": "View details",
     "paymentProof": "Payment proof",
     "paymentSenderPhone": "Payment sender's number",
+    "paymentTransactionId": "Transaction ID",
+    "proofReused": "Screenshot already used for:",
     "confirmAction": "Confirm",
     "confirmActionConfirmTitle": "Confirm this order?",
     "confirmActionDescription": "This action is final and cannot be undone.",

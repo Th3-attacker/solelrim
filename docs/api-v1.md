@@ -17,7 +17,8 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
   `invalidFile` 400, `fileTooLarge` 413, `notFound` 404, `storefrontExpired`
   403 (the boutique's license is suspended, expired or cancelled),
   `rateLimited` 429, `insufficientStock` 409, `alreadyUsed` 409,
-  `referenceCollision` 409, `uploadFailed` 502; any other business error 422.
+  `referenceCollision` 409, `transactionAlreadyUsed` 409, `uploadFailed` 502;
+  any other business error 422.
 - Catalogue `GET`s may be cached for 30 s; everything else is `no-store`.
 - Money amounts are numbers in the boutique's currency (MRU).
 
@@ -89,7 +90,8 @@ shows "only n left".
 starts with 2, 3 or 4), `customerCity`, `paymentSenderPhone` (same format),
 `locale` (`fr|en|ar`, language of the messages sent about the order), `items`
 (JSON string `[{"variantId":"…","quantity":1}]`), `promoCode` (optional),
-`screenshot` (the payment proof, PNG/JPEG/WebP). The boutique is the one in the
+`paymentTransactionId` (optional, see below), `screenshot` (the payment
+proof, PNG/JPEG/WebP). The boutique is the one in the
 URL; a `productType` field in the body is overridden.
 
 ```sh
@@ -99,6 +101,22 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
   -F 'items=[{"variantId":"<id>","quantity":1}]' \
   -F screenshot=@proof.png
 ```
+
+### Payment checks
+- `paymentTransactionId` (optional, ≤ 64 characters): the transaction id the
+  wallet (Bankily, Masrivi…) shows after the transfer. Stored trimmed and
+  upper-cased (`" bk12ab34 "` → `"BK12AB34"`). If another order of the same
+  boutique that isn't rejected or cancelled already carries it →
+  `409 { "error": "transactionAlreadyUsed" }`. Blank or missing: no check
+  (the website doesn't ask for it). Over 64 characters → `400 invalid`.
+- The screenshot's SHA-256 is recorded. The same image on another order of
+  the boutique doesn't refuse the order: the admin's order page warns
+  "Screenshot already used for CMD-…".
+
+**Mobile side:** add an optional "Transaction ID" field to the payment step and
+send it as `paymentTransactionId`. On `transactionAlreadyUsed`, tell the
+customer this transaction is already attached to an order and let them correct
+the id (keep the rest of the form).
 
 ### Resending an order (Idempotency-Key)
 A lost connection or a double tap can send the same order twice. Send an

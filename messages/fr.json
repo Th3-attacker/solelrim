@@ -462,6 +462,8 @@
     "viewDetails": "Voir le détail",
     "paymentProof": "Capture de paiement",
     "paymentSenderPhone": "Numéro d'envoi du paiement",
+    "paymentTransactionId": "Identifiant de transaction",
+    "proofReused": "Capture déjà utilisée pour :",
     "confirmAction": "Confirmer",
     "confirmActionConfirmTitle": "Confirmer cette commande ?",
     "confirmActionDescription": "Cette action est définitive et ne peut pas être annulée.",

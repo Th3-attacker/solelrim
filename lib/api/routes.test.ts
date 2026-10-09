@@ -91,6 +91,11 @@ describe("POST orders", () => {
 
     submitOrderMock.mockResolvedValue({ error: "insufficientStock" });
     expect((await postOrder(post("/x", new FormData()), ctx("sport"))).status).toBe(409);
+
+    submitOrderMock.mockResolvedValue({ error: "transactionAlreadyUsed" });
+    const reused = await postOrder(post("/x", new FormData()), ctx("sport"));
+    expect(reused.status).toBe(409);
+    expect(await reused.json()).toEqual({ error: "transactionAlreadyUsed" });
   });
 
   it("sends Retry-After with a 429", async () => {
