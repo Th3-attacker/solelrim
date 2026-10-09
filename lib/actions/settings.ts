@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseISO, isValid } from "date-fns";
@@ -25,7 +26,11 @@ import { SUGGESTED_CATEGORIES, RESERVED_STORE_TYPE_KEYS } from "@/lib/shop/produ
 import { slugify } from "@/lib/shop/slug";
 import { getSiteUrl } from "@/lib/shop/site-url";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireWritableAdminScope, requireAppearanceScope } from "@/lib/shop/admin-scope";
+import {
+  requireWritableAdminScope,
+  requireWritableSuperAdminScope,
+  requireAppearanceScope,
+} from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
@@ -37,15 +42,54 @@ const PRODUCT_IMAGES_BUCKET = "product-images";
 export async function updateBoutiqueSettings(
   input: BoutiqueSettingsInput,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { admin, productType } = await requireWritableAdminScope();
   const parsed = boutiqueSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
   }
 
+  // The "Image principale" section (hero texts and image position) and the
+  // SEO texts are the superadmin's: a boutique admin's form doesn't show
+  // them, and whatever they send for them is left out, not trusted.
+  const {
+    heroImagePosition,
+    heroBadgeText,
+    heroTitle,
+    heroTitleAr,
+    heroTitleEn,
+    heroSubtitle,
+    heroSubtitleAr,
+    heroSubtitleEn,
+    heroCtaLabel,
+    seoTitle,
+    seoTitleAr,
+    seoTitleEn,
+    seoDescription,
+    seoDescriptionAr,
+    seoDescriptionEn,
+    ...general
+  } = parsed.data;
+  const superadminOnly = {
+    heroImagePosition,
+    heroBadgeText,
+    heroTitle,
+    heroTitleAr,
+    heroTitleEn,
+    heroSubtitle,
+    heroSubtitleAr,
+    heroSubtitleEn,
+    heroCtaLabel,
+    seoTitle,
+    seoTitleAr,
+    seoTitleEn,
+    seoDescription,
+    seoDescriptionAr,
+    seoDescriptionEn,
+  };
+
   await prisma.storeType.update({
     where: { key: productType },
-    data: parsed.data,
+    data: admin.role === "SUPERADMIN" ? { ...general, ...superadminOnly } : general,
   });
 
   revalidatePath("/admin/settings");
@@ -56,7 +100,7 @@ export async function updateBoutiqueSettings(
 export async function uploadStoreLogo(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -104,7 +148,7 @@ export async function uploadStoreLogo(
 }
 
 export async function removeStoreLogo(): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
@@ -124,14 +168,14 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   return {};
 }
 
-// --- Per-boutique storefront settings (hero image + theme) — both roles,
-// same scope as updateBoutiqueSettings above. Each boutique has its own
-// public route now, so its own admin manages its own storefront look. ---
+// --- Per-boutique storefront settings (hero image + theme). The hero image
+// is superadmin-only (like the SEO texts): it is the boutique's main image
+// on search results and shares. Same scope as updateBoutiqueSettings above. ---
 
 export async function uploadStoreHeroImage(
   formData: FormData,
 ): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -177,7 +221,7 @@ export async function uploadStoreHeroImage(
 }
 
 export async function removeStoreHeroImage(): Promise<{ error?: string }> {
-  const { productType } = await requireWritableAdminScope();
+  const { productType } = await requireWritableSuperAdminScope();
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
@@ -610,6 +654,28 @@ export async function setCouponsEnabled(
 
   revalidatePath("/admin/settings/global");
   revalidatePath("/admin/promo-codes");
+  return {};
+}
+
+// Hours before an unvalidated PENDING order is cancelled on its own (null =
+// never). Superadmin-only like the coupons flag; one of the preset choices,
+// so a typo can't set "2 hours" and wipe a day's orders.
+export async function setPendingAutoCancelHours(
+  productType: string,
+  hours: number | null,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  if (hours !== null && !(PENDING_AUTO_CANCEL_CHOICES as readonly number[]).includes(hours)) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { pendingAutoCancelHours: hours },
+  });
+
+  revalidatePath("/admin/settings/global");
   return {};
 }
 

@@ -24,6 +24,10 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import {
   updateBoutiqueSettings,
+  uploadStoreHeroImage,
+  removeStoreHeroImage,
+  uploadStoreLogo,
+  removeStoreLogo,
   setStoreTheme,
   setCustomThemeColor,
   setColorMode,
@@ -37,6 +41,7 @@ import {
   updateBoutiqueLicense,
   updateLicenseClientName,
   setCouponsEnabled,
+  setPendingAutoCancelHours,
   updateSolalContact,
   deleteStoreType,
 } from "@/lib/actions/settings";
@@ -115,6 +120,40 @@ describe("updateBoutiqueSettings", () => {
     );
   });
 
+  it("ignores the hero section fields and the SEO texts sent by a boutique admin", async () => {
+    asBoutiqueAdmin("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueSettings({
+      adminWhatsappNumber: "22345678",
+      announcementText: "Soldes",
+      seoTitle: "Titre pirate",
+      seoDescription: "Description pirate",
+      heroImagePosition: "left",
+      heroTitle: "Titre pirate",
+      heroCtaLabel: "Acheter",
+    });
+
+    const { data } = prismaMock.storeType.update.mock.calls[0][0];
+    expect(data).toMatchObject({ announcementText: "Soldes" });
+    expect(data).not.toHaveProperty("seoTitle");
+    expect(data).not.toHaveProperty("seoDescription");
+    expect(data).not.toHaveProperty("heroImagePosition");
+    expect(data).not.toHaveProperty("heroTitle");
+    expect(data).not.toHaveProperty("heroCtaLabel");
+  });
+
+  it("saves the SEO texts for a superadmin", async () => {
+    asSuperAdminScopedTo("cosmetique");
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    await updateBoutiqueSettings({ adminWhatsappNumber: "22345678", seoTitle: "Mon titre" });
+
+    expect(prismaMock.storeType.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ seoTitle: "Mon titre" }) }),
+    );
+  });
+
   it("rejects input missing the required whatsapp number", async () => {
     asBoutiqueAdmin();
 
@@ -123,6 +162,18 @@ describe("updateBoutiqueSettings", () => {
     });
 
     expect(result.error).toBe("invalid");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("hero image and logo (superadmin only)", () => {
+  it("refuses a boutique admin both an upload and a removal", async () => {
+    asBoutiqueAdmin("cosmetique");
+
+    await expect(uploadStoreLogo(new FormData())).rejects.toThrow("forbidden");
+    await expect(removeStoreLogo()).rejects.toThrow("forbidden");
+    await expect(uploadStoreHeroImage(new FormData())).rejects.toThrow("forbidden");
+    await expect(removeStoreHeroImage()).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 });
@@ -585,6 +636,38 @@ describe("setCouponsEnabled (superadmin only)", () => {
       where: { key: "sport" },
       data: { couponsEnabled: false },
     });
+  });
+});
+
+describe("setPendingAutoCancelHours (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(setPendingAutoCancelHours("sport", 48)).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("sets one of the preset delays, or turns it off", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    expect(await setPendingAutoCancelHours("sport", 48)).toEqual({});
+    expect(await setPendingAutoCancelHours("sport", null)).toEqual({});
+    expect(prismaMock.storeType.update).toHaveBeenNthCalledWith(1, {
+      where: { key: "sport" },
+      data: { pendingAutoCancelHours: 48 },
+    });
+    expect(prismaMock.storeType.update).toHaveBeenNthCalledWith(2, {
+      where: { key: "sport" },
+      data: { pendingAutoCancelHours: null },
+    });
+  });
+
+  it("refuses a delay that isn't one of the presets", async () => {
+    asSuperAdmin();
+
+    expect(await setPendingAutoCancelHours("sport", 2)).toEqual({ error: "invalid" });
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 });
 

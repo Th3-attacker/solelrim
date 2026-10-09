@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CaretUpDown, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { CaretUpDown, ClockCounterClockwise, Question, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertDialog,
@@ -29,6 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
+import { Link } from "@/i18n/navigation";
 import { getDirection } from "@/i18n/routing";
 import { logout } from "@/lib/actions/auth";
 
@@ -39,14 +40,17 @@ function initials(email: string): string {
 export function NavUser({
   email,
   roleLabel,
+  showHistory,
 }: {
   email: string;
   roleLabel: string;
+  // The audit log is for admins; a seller has no page to open it from.
+  showHistory: boolean;
 }) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const [loggingOut, startLogout] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -92,6 +96,21 @@ export function NavUser({
                 {nameBlock}
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/admin/help" onClick={() => setOpenMobile(false)}>
+                <Question />
+                {t("help")}
+              </Link>
+            </DropdownMenuItem>
+            {showHistory && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin/audit-log" onClick={() => setOpenMobile(false)}>
+                  <ClockCounterClockwise />
+                  {t("auditLog")}
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"

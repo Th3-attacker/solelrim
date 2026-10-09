@@ -8,11 +8,15 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(),
+}));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import {
   createTestimonial,
@@ -24,12 +28,33 @@ import {
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
 
+const cookiesMock = cookies as unknown as Mock;
+
+// Testimonials are the superadmin's, acting on whichever boutique they have
+// selected (the scope cookie, validated against the real StoreType table).
 function asAdmin(productType = "cosmetique") {
+  createClientMock.mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "super-1" } } }) },
+  });
+  prismaMock.adminUser.findUnique.mockResolvedValue({
+    id: "admin-user-1",
+    supabaseUserId: "super-1",
+    role: "SUPERADMIN",
+    productType: null,
+    createdAt: new Date(),
+  } as never);
+  prismaMock.storeType.findMany.mockResolvedValue([
+    { key: productType, label: "Boutique", createdAt: new Date() },
+  ] as never);
+  cookiesMock.mockResolvedValue({ get: () => ({ value: productType }) });
+}
+
+function asBoutiqueAdmin(productType = "cosmetique") {
   createClientMock.mockResolvedValue({
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "admin-1" } } }) },
   });
   prismaMock.adminUser.findUnique.mockResolvedValue({
-    id: "admin-user-1",
+    id: "admin-user-2",
     supabaseUserId: "admin-1",
     role: "BOUTIQUE_ADMIN",
     productType,
@@ -40,6 +65,7 @@ function asAdmin(productType = "cosmetique") {
 beforeEach(() => {
   mockReset(prismaMock);
   createClientMock.mockReset();
+  cookiesMock.mockReset();
   asAdmin();
 });
 
@@ -157,5 +183,17 @@ describe("setTestimonialsEnabled", () => {
       where: { key: "cosmetique" },
       data: { testimonialsEnabled: true },
     });
+  });
+});
+
+describe("boutique admin", () => {
+  it("can no longer touch the testimonials: they belong to the superadmin", async () => {
+    asBoutiqueAdmin();
+
+    await expect(createTestimonial({ customerName: "A", quote: "B" })).rejects.toThrow("forbidden");
+    await expect(deleteTestimonial("t-1")).rejects.toThrow("forbidden");
+    await expect(moveTestimonial("t-1", "up")).rejects.toThrow("forbidden");
+    await expect(setTestimonialsEnabled(true)).rejects.toThrow("forbidden");
+    expect(prismaMock.testimonial.create).not.toHaveBeenCalled();
   });
 });

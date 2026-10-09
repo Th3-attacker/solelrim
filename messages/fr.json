@@ -65,7 +65,10 @@
     "cashSessions": "Sessions de caisse",
     "cashClosures": "Clôtures",
     "mySales": "Mes ventes",
-    "refunds": "Remboursements"
+    "refunds": "Remboursements",
+    "help": "Aide",
+    "cashOverview": "Sessions et clôtures",
+    "sectionTabs": "Sections associées"
   },
   "auth": {
     "login": {
@@ -459,6 +462,8 @@
     "viewDetails": "Voir le détail",
     "paymentProof": "Capture de paiement",
     "paymentSenderPhone": "Numéro d'envoi du paiement",
+    "paymentTransactionId": "Identifiant de transaction",
+    "proofReused": "Capture déjà utilisée pour :",
     "confirmAction": "Confirmer",
     "confirmActionConfirmTitle": "Confirmer cette commande ?",
     "confirmActionDescription": "Cette action est définitive et ne peut pas être annulée.",
@@ -475,6 +480,7 @@
     "reasonInvalidPayment": "Paiement invalide",
     "reasonOutOfStock": "Produit en rupture de stock",
     "reasonUndeliverableLocation": "Lieu de livraison non desservi",
+    "reasonPaymentTimeout": "Paiement non validé à temps (annulation automatique)",
     "reasonOther": "Autre",
     "reasonOtherPlaceholder": "Précisez la raison...",
     "sendConfirmationToClient": "Envoyer la confirmation au client",
@@ -504,7 +510,13 @@
     "shipConfirmTitle": "Marquer la commande comme expédiée ?",
     "shipConfirmBody": "La commande passera en « expédiée ». Cette étape ne peut pas être annulée.",
     "deliverConfirmTitle": "Marquer la commande comme livrée ?",
-    "deliverConfirmBody": "La commande sera clôturée comme livrée. Cette étape ne peut pas être annulée."
+    "deliverConfirmBody": "La commande sera clôturée comme livrée. Cette étape ne peut pas être annulée.",
+    "pushTitle": "Commande {reference}",
+    "pushConfirmed": "Votre commande est confirmée.",
+    "pushRejected": "Votre commande n'a pas pu être acceptée.",
+    "pushShipped": "Votre commande est en cours de livraison.",
+    "pushDelivered": "Votre commande a été livrée. Merci !",
+    "pushCancelled": "Votre commande a été annulée."
   },
   "settings": {
     "title": "Paramètres",
@@ -608,10 +620,8 @@
     "addWallet": "Ajouter une wallet",
     "editWallet": "Modifier la wallet",
     "walletProvider": "Fournisseur",
-    "walletProviderPlaceholder": "Ex. Bankily, Masrivi, Sedad...",
+    "walletProviderPlaceholder": "Ex. Ma banque",
     "walletNumber": "Numéro",
-    "walletLogo": "Logo",
-    "walletLogoHint": "Facultatif — sans logo, une icône générique s'affiche.",
     "socialSection": "Réseaux sociaux",
     "addSocialLink": "Ajouter un réseau",
     "socialPlatform": "Plateforme",
@@ -689,6 +699,8 @@
     },
     "couponsFeatureOn": "Codes promo activés",
     "couponsFeatureOff": "Codes promo désactivés",
+    "pendingAutoCancelOff": "Annulation auto : jamais",
+    "pendingAutoCancelAfter": "Annulation auto après {hours} h",
     "licenseClientName": "Nom / raison sociale du client",
     "licenseClientNamePlaceholder": "Ex. Boutique Aïcha SARL",
     "licenseClientNameEdit": "Client",
@@ -721,7 +733,9 @@
     "adminUserResetMfaConfirmBody": "Sa vérification en deux étapes actuelle sera supprimée : il devra en configurer une nouvelle à sa prochaine connexion.",
     "licenseStatusConfirmTitle": "Passer « {label} » en « {status} » ?",
     "licenseStatusConfirmLock": "La boutique et ses actions d'administration (ventes, caisse, commandes…) seront bloquées.",
-    "licenseStatusConfirmUnlock": "La boutique et toutes ses actions seront à nouveau disponibles."
+    "licenseStatusConfirmUnlock": "La boutique et toutes ses actions seront à nouveau disponibles.",
+    "walletProviderChoose": "Choisir un fournisseur",
+    "walletProviderOther": "Autre…"
   },
   "boutiquesOverview": {
     "title": "Vue d'ensemble",
@@ -984,7 +998,7 @@
     "subtitle": "Entrez votre numéro de téléphone et la référence reçue à la commande pour voir son statut.",
     "phoneLabel": "Numéro de téléphone",
     "referenceLabel": "Référence de commande",
-    "referencePlaceholder": "CMD-20260815-1234",
+    "referencePlaceholder": "CMD-7KQ4M9XP",
     "submit": "Vérifier",
     "notFoundError": "Aucune commande ne correspond à ces informations.",
     "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",
@@ -1172,5 +1186,341 @@
       "clientLocked": "Des points fidélité sont liés au client actuel : il ne peut plus changer."
     },
     "currentPayment": "Actuel : {label}"
+  },
+  "help": {
+    "title": "Aide et mode d'emploi",
+    "hint": "Les gestes du quotidien, étape par étape, et ce qui demande l'assistance.",
+    "search": "Rechercher dans l'aide…",
+    "noResults": "Aucun résultat pour « {query} ».",
+    "when": "Quand",
+    "steps": "Comment faire",
+    "issues": "Bon à savoir",
+    "prepare": "À préparer",
+    "openPage": "Ouvrir la page",
+    "supportBadge": "Via l'assistance",
+    "groups": {
+      "start": "Démarrer",
+      "daily": "Au quotidien",
+      "endOfDay": "Fin de journée",
+      "special": "Cas particuliers",
+      "support": "Ce qui passe par l'assistance"
+    },
+    "contactTitle": "Contacter l'assistance",
+    "contactHint": "Pour ces demandes, l'équipe SOLAL intervient. Un message prérempli vous évite de réécrire vos informations.",
+    "whatsapp": "WhatsApp",
+    "email": "E-mail",
+    "noContact": "Les coordonnées de l'assistance ne sont pas encore renseignées. Contactez directement SOLAL.",
+    "whatsappMessage": "Bonjour, je suis {email} (boutique {boutique}). Demande : {topic}.",
+    "emailSubject": "Demande d'assistance : {topic}",
+    "emailBody": "Bonjour,\n\nBoutique : {boutique}\nCompte : {email}\nDemande : {topic}\n\nMerci.",
+    "generalTopic": "Question générale",
+    "audienceSeller": "Vendeur",
+    "audienceAdmin": "Administrateur",
+    "topics": {
+      "addProduct": {
+        "title": "Ajouter un produit",
+        "when": "Pour mettre un nouvel article en vente sur la boutique et à la caisse.",
+        "steps": [
+          "Ouvrez « Produits » dans le menu, puis ajoutez un produit.",
+          "Renseignez le nom, la description, le prix et la catégorie.",
+          "Ajoutez au moins une variante (taille, couleur, référence, stock).",
+          "Ajoutez les photos, puis enregistrez. Le produit est visible s'il est actif."
+        ],
+        "issues": [
+          "Une référence (SKU) déjà utilisée est refusée : chaque variante a la sienne.",
+          "Un produit déjà vendu ne peut pas être supprimé : désactivez-le plutôt."
+        ]
+      },
+      "manageCategories": {
+        "title": "Gérer les catégories",
+        "when": "Pour classer les produits et organiser la boutique.",
+        "steps": [
+          "Ouvrez « Catégories ».",
+          "Créez une catégorie en saisissant son nom.",
+          "Changez l'ordre avec les flèches : c'est l'ordre affiché aux clients.",
+          "Modifiez ou supprimez une catégorie avec les icônes de la ligne."
+        ],
+        "issues": [
+          "Une catégorie qui contient encore des produits ne peut pas être supprimée : déplacez d'abord ses produits."
+        ]
+      },
+      "configureBoutique": {
+        "title": "Configurer sa boutique",
+        "when": "À faire une fois au début, puis à ajuster quand les informations changent.",
+        "steps": [
+          "Ouvrez « Paramètres ».",
+          "Renseignez les informations de la boutique (WhatsApp, instructions de paiement, bande d'annonce).",
+          "Ajoutez vos liens sociaux.",
+          "Ajoutez vos comptes de paiement (wallets) : choisissez le fournisseur, son logo s'affiche automatiquement.",
+          "Réglez le programme de fidélité si vous l'utilisez."
+        ],
+        "issues": [
+          "Sans compte wallet, la caisse refuse un paiement par wallet : ajoutez-en un d'abord.",
+          "Les images doivent être au format PNG, JPEG ou WebP."
+        ]
+      },
+      "createSeller": {
+        "title": "Créer ou supprimer un vendeur",
+        "when": "Quand une personne doit encaisser à la caisse sans accéder au reste de l'administration.",
+        "steps": [
+          "Ouvrez « Paramètres », section vendeurs.",
+          "Ajoutez le vendeur avec son e-mail et un mot de passe, puis transmettez-lui ses accès.",
+          "Pour retirer un vendeur, fermez d'abord sa caisse (depuis « Sessions de caisse »), puis supprimez son compte."
+        ],
+        "issues": [
+          "Impossible de supprimer un vendeur dont la caisse est encore ouverte.",
+          "Si vous atteignez le nombre maximum de vendeurs, il faut contacter l'assistance (voir plus bas)."
+        ]
+      },
+      "twoFactor": {
+        "title": "Activer la double authentification (2FA)",
+        "when": "Pour protéger votre compte avec un code temporaire en plus du mot de passe.",
+        "steps": [
+          "Ouvrez « Paramètres », section « Sécurité ».",
+          "Scannez le QR code avec une application d'authentification.",
+          "Saisissez le code à 6 chiffres pour valider."
+        ],
+        "issues": [
+          "Gardez votre téléphone : si vous le perdez, seule l'assistance peut réinitialiser la 2FA (voir plus bas)."
+        ]
+      },
+      "processOrder": {
+        "title": "Traiter une commande en ligne",
+        "when": "Quand un client passe commande sur la boutique.",
+        "steps": [
+          "Ouvrez « Commandes » : les commandes à traiter portent un badge dans le menu.",
+          "Vérifiez la commande et la preuve de paiement, puis cliquez sur « Confirmer » ou « Refuser » (choisissez un motif).",
+          "Après la préparation, cliquez sur « Expédier », puis « Marquer comme livré » à la livraison.",
+          "Chaque étape propose d'envoyer un message WhatsApp au client."
+        ],
+        "issues": [
+          "Une commande déjà traitée par quelqu'un d'autre ne peut plus changer d'état.",
+          "Le stock insuffisant bloque la confirmation : mettez le stock à jour d'abord."
+        ]
+      },
+      "sellAtCheckout": {
+        "title": "Encaisser une vente",
+        "when": "Pour chaque vente en magasin. Il faut une caisse ouverte.",
+        "steps": [
+          "Ouvrez « Caisse ».",
+          "Touchez les produits pour les ajouter au panier (choisissez la taille et la couleur).",
+          "Choisissez le paiement : espèces (saisissez le montant reçu) ou wallet (choisissez le compte qui a reçu l'argent).",
+          "Cliquez sur « Encaisser ». Le reçu peut être envoyé au client par WhatsApp."
+        ],
+        "issues": [
+          "« Aucune caisse ouverte » : ouvrez d'abord votre caisse.",
+          "« Un prix a changé » : vérifiez le nouveau total avant d'encaisser.",
+          "Article en rupture : retirez-le du panier pour continuer."
+        ]
+      },
+      "openRegister": {
+        "title": "Ouvrir sa caisse",
+        "when": "Au début de la journée, avant la première vente.",
+        "steps": [
+          "Ouvrez « Caisse » (ou « Ma caisse »).",
+          "Comptez l'argent présent dans le tiroir et saisissez-le comme « Fond de caisse ».",
+          "Cliquez sur « Ouvrir la caisse »."
+        ],
+        "issues": [
+          "Chaque personne n'a qu'une caisse ouverte à la fois dans une boutique.",
+          "Impossible d'ouvrir une caisse sur une journée déjà clôturée par l'admin."
+        ]
+      },
+      "cashMovement": {
+        "title": "Entrée ou sortie d'argent en caisse",
+        "when": "Quand de l'argent entre ou sort du tiroir hors vente : appoint de monnaie, dépôt en banque, achat de sacs.",
+        "steps": [
+          "Ouvrez « Ma caisse », section « Entrées et sorties ».",
+          "Choisissez « Entrée » ou « Sortie » et saisissez le montant.",
+          "Indiquez le motif (obligatoire), puis « Enregistrer »."
+        ],
+        "issues": [
+          "Une sortie supérieure aux espèces attendues est refusée."
+        ]
+      },
+      "promoCode": {
+        "title": "Créer un code promo",
+        "when": "Pour offrir une remise aux clients de la boutique.",
+        "steps": [
+          "Ouvrez « Codes promo » et créez un code.",
+          "Choisissez le type de remise (pourcentage ou montant fixe).",
+          "Réservez-le à un client ou laissez-le général, ajoutez une date d'expiration ou un nombre d'utilisations maximum.",
+          "Pour l'arrêter, désactivez-le."
+        ],
+        "issues": [
+          "Si vos clients ne peuvent pas saisir de code au paiement, les coupons ne sont pas activés pour votre boutique : contactez l'assistance (voir plus bas)."
+        ]
+      },
+      "loyaltyCard": {
+        "title": "Carte de fidélité",
+        "when": "Pour faire gagner des points aux clients à chaque achat.",
+        "steps": [
+          "À la caisse, saisissez le numéro du client dans « Carte de fidélité » et cliquez sur « Chercher ».",
+          "Si aucune carte n'existe, cliquez sur « Créer la carte ».",
+          "La vente ajoute les points automatiquement ; le client peut utiliser sa récompense à une vente suivante."
+        ],
+        "issues": [
+          "Le programme doit être activé et réglé par l'admin dans « Paramètres »."
+        ]
+      },
+      "manageClients": {
+        "title": "Gérer les clients",
+        "when": "Pour retrouver un client, corriger sa fiche ou le supprimer.",
+        "steps": [
+          "Ouvrez « Clients ».",
+          "Créez ou modifiez une fiche avec le nom et le téléphone.",
+          "Ouvrez la fiche d'un client pour voir son historique."
+        ],
+        "issues": [
+          "Un client qui a déjà des ventes ne peut pas être supprimé."
+        ]
+      },
+      "closeRegister": {
+        "title": "Fermer sa caisse",
+        "when": "À la fin du service, ou quand vous quittez la caisse.",
+        "steps": [
+          "Ouvrez « Ma caisse ».",
+          "Comptez les espèces du tiroir et saisissez-les dans « Espèces comptées ».",
+          "Le système affiche l'écart avec les espèces attendues.",
+          "En cas d'écart, expliquez-le dans « Commentaire » (obligatoire), puis « Fermer la caisse »."
+        ],
+        "issues": [
+          "Une caisse fermée ne peut plus recevoir de vente.",
+          "Comptez avec soin : le résultat est figé à la fermeture."
+        ]
+      },
+      "closeDay": {
+        "title": "Clôturer la journée",
+        "when": "Chaque soir, quand toutes les caisses sont fermées. Réservé à l'admin de la boutique.",
+        "steps": [
+          "Ouvrez « Clôtures » et choisissez le jour.",
+          "Vérifiez que chaque caisse est fermée : sinon fermez-la depuis « Sessions de caisse ».",
+          "Contrôlez les totaux et l'écart du jour.",
+          "Cliquez sur « Clôturer la journée » : l'action est définitive."
+        ],
+        "issues": [
+          "Impossible de clôturer tant qu'une caisse de ce jour (ou d'un jour précédent) est ouverte.",
+          "Une journée ne se clôture qu'une fois, et on ne peut plus y ouvrir de caisse."
+        ]
+      },
+      "requestRefund": {
+        "title": "Demander un remboursement",
+        "when": "Quand un client rapporte un article.",
+        "steps": [
+          "Ouvrez la vente (depuis « Mes ventes ») et cliquez sur « Demander un remboursement ».",
+          "Choisissez les articles et les quantités rapportés.",
+          "Indiquez le motif, puis « Envoyer la demande »."
+        ],
+        "issues": [
+          "La demande doit être validée par l'admin de la boutique ; suivez son état dans « Remboursements ».",
+          "Une seule demande peut être en attente par vente."
+        ]
+      },
+      "decideRefund": {
+        "title": "Valider ou refuser un remboursement",
+        "when": "Quand un vendeur envoie une demande. Réservé à l'admin de la boutique.",
+        "steps": [
+          "Ouvrez « Remboursements » : les demandes en attente sont affichées en premier.",
+          "Lisez la demande, puis « Valider le remboursement » ou « Refuser » (avec un motif).",
+          "À la validation, les articles reviennent en stock."
+        ],
+        "issues": [
+          "Un remboursement en espèces sort de VOTRE caisse ouverte : ouvrez-la avant de valider, avec assez d'espèces.",
+          "Une demande déjà traitée ne peut plus être modifiée."
+        ]
+      },
+      "cancelSale": {
+        "title": "Annuler ou corriger une vente",
+        "when": "Quand une vente a été saisie par erreur. Réservé à l'admin de la boutique.",
+        "steps": [
+          "Ouvrez « Ventes » puis la vente concernée.",
+          "Corrigez-la, ou annulez-la en indiquant le motif."
+        ],
+        "issues": [
+          "Si le client a rapporté un article, utilisez plutôt un remboursement.",
+          "Toute annulation est enregistrée dans « Historique »."
+        ]
+      },
+      "forgottenRegister": {
+        "title": "Caisse oubliée ouverte",
+        "when": "Quand une caisse n'a pas été fermée en fin de journée.",
+        "steps": [
+          "Au bout de 24 h, la caisse est fermée automatiquement avec le motif « fermeture oubliée ».",
+          "Aucun comptage n'a été fait : l'admin compare les espèces à celles attendues (page de la session).",
+          "Pour fermer avant 24 h, l'admin ouvre « Sessions de caisse » et ferme la caisse du vendeur."
+        ],
+        "issues": [
+          "La clôture de la journée est bloquée tant qu'une caisse est ouverte.",
+          "Une caisse fermée automatiquement est signalée dans l'historique."
+        ]
+      },
+      "license": {
+        "title": "Licence expirée ou boutique suspendue",
+        "when": "Quand un bandeau signale que la boutique est suspendue ou expirée, ou que les actions sont bloquées.",
+        "steps": [
+          "Le renouvellement et la réactivation se font uniquement par l'assistance.",
+          "Indiquez le nom de la boutique et l'e-mail de votre compte.",
+          "Précisez le message affiché et la date d'expiration si vous la connaissez."
+        ]
+      },
+      "newBoutique": {
+        "title": "Nouvelle boutique ou type de boutique",
+        "when": "Pour créer une boutique, la renommer ou la supprimer.",
+        "steps": [
+          "Ces opérations sont faites par l'assistance.",
+          "Indiquez le nom souhaité, le type de commerce et l'e-mail du responsable."
+        ]
+      },
+      "domain": {
+        "title": "Nom de domaine de la boutique",
+        "when": "Pour que la boutique soit accessible sur votre propre adresse.",
+        "steps": [
+          "Le domaine est configuré par l'assistance.",
+          "Indiquez le nom de domaine voulu et prouvez que vous en êtes propriétaire.",
+          "L'assistance vous indiquera les réglages DNS à faire chez votre hébergeur de domaine."
+        ]
+      },
+      "sellerQuota": {
+        "title": "Nombre maximum de vendeurs",
+        "when": "Quand vous ne pouvez plus créer de vendeur car la limite est atteinte.",
+        "steps": [
+          "Le quota est modifié par l'assistance.",
+          "Indiquez le nombre de vendeurs dont vous avez besoin."
+        ]
+      },
+      "adminAccount": {
+        "title": "Compte administrateur : ajout ou suppression",
+        "when": "Quand un nouveau responsable doit avoir un accès administrateur, ou quand un accès doit être retiré.",
+        "steps": [
+          "Les comptes administrateur sont créés et supprimés par l'assistance.",
+          "Indiquez l'e-mail de la personne et l'action demandée."
+        ]
+      },
+      "lostTwoFactor": {
+        "title": "Double authentification perdue",
+        "when": "Quand vous avez changé de téléphone ou désinstallé l'application d'authentification et ne pouvez plus vous connecter.",
+        "steps": [
+          "Seule l'assistance peut réinitialiser votre 2FA.",
+          "Indiquez l'e-mail de votre compte, puis vous pourrez en enregistrer une nouvelle à votre prochaine connexion."
+        ]
+      },
+      "appearance": {
+        "title": "Thème et apparence de la boutique",
+        "when": "Quand vous ne voyez pas les réglages de thème, de couleurs ou de mise en page.",
+        "steps": [
+          "Ces réglages sont accessibles seulement si l'assistance vous en a donné le droit.",
+          "Demandez l'activation en précisant ce que vous souhaitez changer."
+        ]
+      },
+      "heroSeo": {
+        "title": "Logo, image principale, SEO et avis clients",
+        "when": "Pour changer le logo, l'image principale, les textes qui apparaissent dans Google ou les avis clients affichés sur la boutique.",
+        "steps": [
+          "Ces éléments sont gérés par l'assistance.",
+          "Envoyez le logo ou l'image souhaitée (PNG, JPEG ou WebP).",
+          "Pour le SEO, envoyez le titre et la description voulus ; pour un avis client, le nom du client et son texte."
+        ]
+      }
+    }
   }
 }

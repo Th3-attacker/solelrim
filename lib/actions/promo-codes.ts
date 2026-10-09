@@ -10,7 +10,7 @@ import {
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
 
 export type PromoCodeActionResult = { error?: string; promoCodeId?: string };
 
@@ -138,10 +138,12 @@ export async function deactivatePromoCode(
 }
 
 export type ApplyPromoCodeResult =
-  | { error: string }
+  | { error: string; retryAfter?: number }
   | { discountType: "PERCENT" | "FIXED"; discountValue: number; discount: number };
 
 const APPLY_PROMO_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 20 };
+// Per phone number too, so codes can't be tried one by one from many addresses.
+const APPLY_PROMO_PHONE_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
 
 // Public, unauthenticated preview for the checkout UI — read-only, never
 // touches usedCount. submitOrder re-validates the same code from scratch
@@ -151,14 +153,21 @@ export async function previewPromoCode(
   input: unknown,
 ): Promise<ApplyPromoCodeResult> {
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`promo:${ip}`, APPLY_PROMO_RATE_LIMIT);
-  if (!allowed) {
-    return { error: "rateLimited" };
+  const ipWait = await rateLimitRetryAfter(`promo:${ip}`, APPLY_PROMO_RATE_LIMIT);
+  if (ipWait !== null) {
+    return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const parsed = applyPromoCodeSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
+  }
+  const phoneWait = await rateLimitRetryAfter(
+    `promo-phone:${parsed.data.customerPhone}`,
+    APPLY_PROMO_PHONE_RATE_LIMIT,
+  );
+  if (phoneWait !== null) {
+    return { error: "rateLimited", retryAfter: phoneWait };
   }
 
   const result = await findValidPromoCode(prisma, parsed.data);

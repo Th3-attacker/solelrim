@@ -322,7 +322,22 @@ describe("previewPromoCode", () => {
       subtotal: 2000,
     });
 
-    expect(result).toEqual({ error: "rateLimited" });
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
+    expect(prismaMock.promoCode.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("is rate limited per phone number, 10 per 15 minutes", async () => {
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
+      Promise.resolve(args.where.key === "promo-phone:22345678" ? 10 : 0)) as never);
+
+    const result = await previewPromoCode({
+      code: "welcome10",
+      productType: "cosmetique",
+      customerPhone: "22345678",
+      subtotal: 2000,
+    });
+
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
     expect(prismaMock.promoCode.findUnique).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -15,18 +16,23 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
+import { sendOrderPush } from "@/lib/push/order-push";
+import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
 // Public, unauthenticated action that accepts a file upload — capped per IP
 // so it can't be used to spam Storage or flood the admin with fake orders.
-const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 5 };
+// Per IP, loose enough for customers sharing a carrier's address; the real
+// cap is per phone number, checked once the form is parsed.
+const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 20 };
+const SUBMIT_ORDER_PHONE_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 5 };
 
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
@@ -38,17 +44,21 @@ function resolveOrderLocale(value: FormDataEntryValue | null): string {
 
 export type SubmitOrderResult = {
   error?: string;
+  // With "rateLimited": seconds until the caller may try again.
+  retryAfter?: number;
   reference?: string;
   orderId?: string;
 };
 
 export async function submitOrder(
   formData: FormData,
+  options?: { idempotencyKey?: string },
 ): Promise<SubmitOrderResult> {
+  const idempotencyKey = options?.idempotencyKey ?? null;
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
-  if (!allowed) {
-    return { error: "rateLimited" };
+  const ipWait = await rateLimitRetryAfter(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
+  if (ipWait !== null) {
+    return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const customerParsed = checkoutCustomerSchema.safeParse({
@@ -58,6 +68,13 @@ export async function submitOrder(
   });
   if (!customerParsed.success) {
     return { error: "invalid" };
+  }
+  const phoneWait = await rateLimitRetryAfter(
+    `order-phone:${customerParsed.data.customerPhone}`,
+    SUBMIT_ORDER_PHONE_RATE_LIMIT,
+  );
+  if (phoneWait !== null) {
+    return { error: "rateLimited", retryAfter: phoneWait };
   }
 
   const senderPhoneParsed = paymentSenderPhoneSchema.safeParse(
@@ -147,6 +164,32 @@ export async function submitOrder(
   const promoCodeInput =
     typeof rawPromoCode === "string" && rawPromoCode.trim() ? rawPromoCode.trim() : null;
 
+  // Optional — the id the wallet showed for the transfer. Normalized so the
+  // same id typed twice ("ab12 " / "AB12") is seen as the same.
+  const rawTransactionId = formData.get("paymentTransactionId");
+  const paymentTransactionId =
+    typeof rawTransactionId === "string" && rawTransactionId.trim()
+      ? rawTransactionId.trim().toUpperCase()
+      : null;
+  if (paymentTransactionId && paymentTransactionId.length > 64) {
+    return { error: "invalid" };
+  }
+  // Fast-fail before the upload; the partial unique index on Order is what
+  // actually settles two orders racing with the same id.
+  if (paymentTransactionId) {
+    const used = await prisma.order.findFirst({
+      where: {
+        productType,
+        paymentTransactionId,
+        status: { notIn: ["REJECTED", "CANCELLED"] },
+      },
+      select: { id: true },
+    });
+    if (used) {
+      return { error: "transactionAlreadyUsed" };
+    }
+  }
+
   const file = formData.get("screenshot");
   if (!(file instanceof File) || file.size === 0) {
     return { error: "invalidFile" };
@@ -167,6 +210,10 @@ export async function submitOrder(
   if (!detected) {
     return { error: "invalidFile" };
   }
+
+  // The same image on another order is flagged to the admin (see
+  // getOrdersSharingPaymentProof), not refused here.
+  const paymentProofHash = createHash("sha256").update(new Uint8Array(fileBuffer)).digest("hex");
 
   const supabase = createAdminClient();
   const storagePath = `orders/${crypto.randomUUID()}.${detected.extension}`;
@@ -263,8 +310,11 @@ export async function submitOrder(
             promoCodeId,
             paymentProofPath: storagePath,
             paymentSenderPhone: senderPhoneParsed.data,
+            paymentTransactionId,
+            paymentProofHash,
             locale,
             productType,
+            idempotencyKey,
             items: {
               create: orderItems.map((i) => ({
                 variantId: i.variantId,
@@ -288,6 +338,19 @@ export async function submitOrder(
         const target = Array.isArray(err.meta?.target)
           ? err.meta.target.join(",")
           : String(err.meta?.target ?? "");
+        // A resend with the same Idempotency-Key committed first (the app's
+        // two requests ran side by side). This transaction rolled back, so
+        // nothing was reserved twice: answer with the order that won.
+        if (idempotencyKey && target.includes("idempotencyKey")) {
+          await discardProof();
+          const existing = await findOrderByIdempotencyKey(productType, idempotencyKey);
+          if (existing) return existing;
+          return { error: "invalid" };
+        }
+        if (target.includes("paymentTransactionId")) {
+          await discardProof();
+          return { error: "transactionAlreadyUsed" };
+        }
         if (target.includes("promoCodeId_customerPhone")) {
           await discardProof();
           return { error: "alreadyUsed" };
@@ -315,10 +378,13 @@ export async function submitOrder(
 // attempts. Requires the exact reference alongside the phone number (not
 // just the phone) precisely so knowing/guessing someone's number alone
 // isn't enough to see their order history.
-const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
+const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 30 };
+// Per phone number: guessing references for one customer stops here even
+// from many addresses.
+const TRACK_ORDER_PHONE_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
 
 export type TrackOrderResult =
-  | { error: string }
+  | { error: string; retryAfter?: number }
   | {
       reference: string;
       status: OrderStatus;
@@ -358,14 +424,21 @@ function getStatusSince(order: {
 
 export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
-  if (!allowed) {
-    return { error: "rateLimited" };
+  const ipWait = await rateLimitRetryAfter(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
+  if (ipWait !== null) {
+    return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const parsed = trackOrderSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
+  }
+  const phoneWait = await rateLimitRetryAfter(
+    `track-order-phone:${parsed.data.phone}`,
+    TRACK_ORDER_PHONE_RATE_LIMIT,
+  );
+  if (phoneWait !== null) {
+    return { error: "rateLimited", retryAfter: phoneWait };
   }
 
   const order = await prisma.order.findFirst({
@@ -439,6 +512,7 @@ export async function confirmOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "confirmed");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");
@@ -520,6 +594,7 @@ export async function rejectOrder(
     reason,
   });
 
+  await sendOrderPush(orderId, "rejected");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");
@@ -551,6 +626,7 @@ export async function shipOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "shipped");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
@@ -678,6 +754,7 @@ export async function deliverOrder(
     targetId: orderId,
   });
 
+  await sendOrderPush(orderId, "delivered");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/sales");
@@ -760,6 +837,7 @@ export async function cancelOrder(
     reason,
   });
 
+  await sendOrderPush(orderId, "cancelled");
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/");

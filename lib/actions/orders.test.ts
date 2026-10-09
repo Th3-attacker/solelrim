@@ -12,6 +12,7 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
+vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
@@ -37,6 +38,7 @@ import {
   cancelOrder,
   trackOrder,
 } from "@/lib/actions/orders";
+import { sendOrderPush } from "@/lib/push/order-push";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -340,6 +342,136 @@ describe("submitOrder", () => {
     expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
   });
 
+  it("stores the Idempotency-Key on the order", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+
+    await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ idempotencyKey: "key-1" }) }),
+    );
+  });
+
+  it("answers with the winning order when a concurrent resend with the same key commits first", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }), remove }) },
+    });
+    prismaMock.order.create.mockRejectedValue(
+      new PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["productType", "idempotencyKey"] },
+      }),
+    );
+    prismaMock.order.findUnique.mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+    expect(prismaMock.order.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" } },
+      }),
+    );
+    // Not retried with a fresh reference, and this attempt's upload is cleaned up.
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalled();
+  });
+
+  it("stores the wallet transaction id, trimmed and upper-cased, and the screenshot's SHA-256", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "  bk12ab34 ");
+
+    await submitOrder(form);
+
+    expect(prismaMock.order.findFirst).toHaveBeenCalledWith({
+      where: {
+        productType: "cosmetique",
+        paymentTransactionId: "BK12AB34",
+        status: { notIn: ["REJECTED", "CANCELLED"] },
+      },
+      select: { id: true },
+    });
+    const { createHash } = await import("node:crypto");
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          paymentTransactionId: "BK12AB34",
+          paymentProofHash: createHash("sha256").update(PNG_MAGIC_BYTES).digest("hex"),
+        }),
+      }),
+    );
+  });
+
+  it("leaves the transaction id empty when the form doesn't send one (the website)", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }) }) },
+    });
+    prismaMock.order.create.mockResolvedValue({ id: "order-1", reference: "CMD-X" } as never);
+
+    await submitOrder(buildOrderForm());
+
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ paymentTransactionId: null }) }),
+    );
+  });
+
+  it("refuses a transaction id already used by a live order of the boutique, before uploading", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const upload = vi.fn();
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload }) } });
+    prismaMock.order.findFirst.mockResolvedValue({ id: "order-0" } as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "BK12AB34");
+
+    expect(await submitOrder(form)).toEqual({ error: "transactionAlreadyUsed" });
+    expect(upload).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("answers transactionAlreadyUsed when a concurrent order with the same id commits first", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({
+      storage: { from: () => ({ upload: vi.fn().mockResolvedValue({ error: null }), remove }) },
+    });
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    prismaMock.order.create.mockRejectedValue(
+      new PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["Order_productType_paymentTransactionId_active_key"] },
+      }),
+    );
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "BK12AB34");
+
+    expect(await submitOrder(form)).toEqual({ error: "transactionAlreadyUsed" });
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalled();
+  });
+
+  it("refuses a transaction id longer than 64 characters", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
+    const form = buildOrderForm();
+    form.set("paymentTransactionId", "X".repeat(65));
+
+    expect(await submitOrder(form)).toEqual({ error: "invalid" });
+  });
+
   it("rejects a missing payment screenshot", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([baseVariant] as never);
     const form = buildOrderForm({ screenshot: "none" });
@@ -630,14 +762,25 @@ describe("submitOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(5);
+    prismaMock.rateLimitHit.count.mockResolvedValue(20);
 
     const result = await submitOrder(buildOrderForm());
 
-    expect(result).toEqual({ error: "rateLimited" });
+    // No hit found in the mock, so the wait is the whole one-hour window.
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 3600 });
     expect(prismaMock.rateLimitHit.create).not.toHaveBeenCalled();
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
     expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("caps orders per phone number, 5 an hour, whatever the IP", async () => {
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
+      Promise.resolve(args.where.key === "order-phone:22345678" ? 5 : 0)) as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 3600 });
+    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
   it("counts a rate-limit hit against the first IP in x-forwarded-for", async () => {
@@ -739,6 +882,7 @@ describe("confirmOrder", () => {
         data: expect.objectContaining({ status: "CONFIRMED" }),
       }),
     );
+    expect(sendOrderPush).toHaveBeenCalledWith("order-1", "confirmed");
     expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
     expect(revalidatePath).toHaveBeenCalledWith("/admin/orders/order-1");
     expect(revalidatePath).toHaveBeenCalledWith("/");
@@ -838,6 +982,17 @@ describe("shipOrder", () => {
       where: { id: "order-1", status: "CONFIRMED", productType: "cosmetique" },
       data: expect.objectContaining({ status: "SHIPPING" }),
     });
+  });
+
+  it("tells the customer's phone, and only when the change really happened", async () => {
+    vi.mocked(sendOrderPush).mockClear();
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+    await shipOrder("order-1");
+    expect(sendOrderPush).not.toHaveBeenCalled();
+
+    prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
+    await shipOrder("order-1");
+    expect(sendOrderPush).toHaveBeenCalledWith("order-1", "shipped");
   });
 });
 
@@ -1040,7 +1195,7 @@ describe("trackOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(10);
+    prismaMock.rateLimitHit.count.mockResolvedValue(30);
 
     const result = await trackOrder({
       phone: "37737353",
@@ -1048,7 +1203,21 @@ describe("trackOrder", () => {
       productType: "sport",
     });
 
-    expect(result).toEqual({ error: "rateLimited" });
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("caps lookups per phone number, 10 per 15 minutes, against guessing references", async () => {
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
+      Promise.resolve(args.where.key === "track-order-phone:37737353" ? 10 : 0)) as never);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "CMD-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
     expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
   });
 

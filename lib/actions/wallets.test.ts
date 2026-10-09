@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
-import { MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: mockDeep<PrismaClient>(),
@@ -43,35 +42,13 @@ function asAdmin(productType = "cosmetique") {
   } as never);
 }
 
-// Just the 8-byte PNG magic number — detectImageSignature() (real,
-// unmocked here; it already has its own tests) only inspects the leading
-// bytes, so this is enough to be recognized as a real PNG.
-const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-const GARBAGE_BYTES = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-
-function pngFile(name = "logo.png") {
-  return new File([PNG_BYTES], name, { type: "image/png" });
-}
-
-function garbageFile(name = "not-an-image.png") {
-  return new File([GARBAGE_BYTES], name, { type: "image/png" });
-}
-
-function oversizedFile() {
-  return new File([new Uint8Array(MAX_IMAGE_BYTES + 1)], "big.png", { type: "image/png" });
-}
-
 function walletFormData(fields: {
   provider?: string;
   number?: string;
-  logo?: File;
-  removeLogo?: string;
 }) {
   const fd = new FormData();
   if (fields.provider !== undefined) fd.set("provider", fields.provider);
   if (fields.number !== undefined) fd.set("number", fields.number);
-  if (fields.logo) fd.set("logo", fields.logo);
-  if (fields.removeLogo !== undefined) fd.set("removeLogo", fields.removeLogo);
   return fd;
 }
 
@@ -90,7 +67,7 @@ describe("createWalletAccount", () => {
     expect(prismaMock.walletAccount.create).not.toHaveBeenCalled();
   });
 
-  it("creates a wallet with no logo", async () => {
+  it("creates a wallet", async () => {
     prismaMock.walletAccount.aggregate.mockResolvedValue({ _max: { position: -1 } } as never);
     prismaMock.walletAccount.create.mockResolvedValue({ id: "w-1" } as never);
 
@@ -105,65 +82,9 @@ describe("createWalletAccount", () => {
         provider: "Bankily",
         number: "12345678",
         productType: "cosmetique",
-        logoStoragePath: null,
         position: 0,
       },
     });
-  });
-
-  it("uploads a valid logo image and stores its path", async () => {
-    const upload = vi.fn().mockResolvedValue({ error: null });
-    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload } as never) } });
-    prismaMock.walletAccount.aggregate.mockResolvedValue({ _max: { position: 0 } } as never);
-    prismaMock.walletAccount.create.mockResolvedValue({ id: "w-1" } as never);
-
-    const result = await createWalletAccount(
-      walletFormData({ provider: "Bankily", number: "12345678", logo: pngFile() }),
-    );
-
-    expect(result.error).toBeUndefined();
-    expect(upload).toHaveBeenCalledWith(
-      expect.stringMatching(/^branding\/wallet-.+\.png$/),
-      expect.anything(),
-      { contentType: "image/png" },
-    );
-    expect(prismaMock.walletAccount.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          logoStoragePath: expect.stringMatching(/^branding\/wallet-.+\.png$/),
-        }),
-      }),
-    );
-  });
-
-  it("rejects a file whose content isn't a real image", async () => {
-    const result = await createWalletAccount(
-      walletFormData({ provider: "Bankily", number: "12345678", logo: garbageFile() }),
-    );
-
-    expect(result.error).toBe("invalidFile");
-    expect(prismaMock.walletAccount.create).not.toHaveBeenCalled();
-  });
-
-  it("rejects a file over the size limit", async () => {
-    const result = await createWalletAccount(
-      walletFormData({ provider: "Bankily", number: "12345678", logo: oversizedFile() }),
-    );
-
-    expect(result.error).toBe("invalidFile");
-    expect(prismaMock.walletAccount.create).not.toHaveBeenCalled();
-  });
-
-  it("reports uploadFailed when storage upload errors", async () => {
-    const upload = vi.fn().mockResolvedValue({ error: { message: "storage down" } });
-    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload } as never) } });
-
-    const result = await createWalletAccount(
-      walletFormData({ provider: "Bankily", number: "12345678", logo: pngFile() }),
-    );
-
-    expect(result.error).toBe("uploadFailed");
-    expect(prismaMock.walletAccount.create).not.toHaveBeenCalled();
   });
 });
 
@@ -186,35 +107,7 @@ describe("updateWalletAccount", () => {
     expect(result.error).toBe("notFound");
   });
 
-  it("replaces an existing logo: removes the old one, uploads the new one", async () => {
-    prismaMock.walletAccount.findFirst.mockResolvedValue({
-      id: "w-1",
-      logoStoragePath: "branding/wallet-old.png",
-    } as never);
-    const upload = vi.fn().mockResolvedValue({ error: null });
-    const remove = vi.fn().mockResolvedValue({});
-    createAdminClientMock.mockReturnValue({
-      storage: { from: () => ({ upload, remove } as never) },
-    });
-    prismaMock.walletAccount.update.mockResolvedValue({} as never);
-
-    const result = await updateWalletAccount(
-      "w-1",
-      walletFormData({ provider: "Bankily", number: "12345678", logo: pngFile() }),
-    );
-
-    expect(result.error).toBeUndefined();
-    expect(remove).toHaveBeenCalledWith(["branding/wallet-old.png"]);
-    expect(upload).toHaveBeenCalled();
-    expect(prismaMock.walletAccount.update).toHaveBeenCalledWith({
-      where: { id: "w-1" },
-      data: expect.objectContaining({
-        logoStoragePath: expect.stringMatching(/^branding\/wallet-.+\.png$/),
-      }),
-    });
-  });
-
-  it("clears the logo when removeLogo is set and no new file is given", async () => {
+  it("drops the old uploaded logo once the provider is a known one", async () => {
     prismaMock.walletAccount.findFirst.mockResolvedValue({
       id: "w-1",
       logoStoragePath: "branding/wallet-old.png",
@@ -225,7 +118,7 @@ describe("updateWalletAccount", () => {
 
     const result = await updateWalletAccount(
       "w-1",
-      walletFormData({ provider: "Bankily", number: "12345678", removeLogo: "true" }),
+      walletFormData({ provider: "Bankily", number: "12345678" }),
     );
 
     expect(result.error).toBeUndefined();
@@ -236,7 +129,7 @@ describe("updateWalletAccount", () => {
     });
   });
 
-  it("keeps the existing logo when no file or removal flag is given", async () => {
+  it("keeps the uploaded logo of a provider we don't know", async () => {
     prismaMock.walletAccount.findFirst.mockResolvedValue({
       id: "w-1",
       logoStoragePath: "branding/wallet-old.png",
@@ -245,7 +138,7 @@ describe("updateWalletAccount", () => {
 
     const result = await updateWalletAccount(
       "w-1",
-      walletFormData({ provider: "Bankily", number: "12345678" }),
+      walletFormData({ provider: "Ma banque", number: "12345678" }),
     );
 
     expect(result.error).toBeUndefined();

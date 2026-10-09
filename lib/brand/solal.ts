@@ -1,0 +1,62 @@
+// The SOLAL logo picked in the design canvas ("Logo retenu · dune + Λ"): the
+// dune-shaped S as a symbol, and the name written SOLΛL in Inter ExtraBold
+// with 0.22em tracking. The wordmark is outlined from the font, so it renders
+// the same in next/og (which has no Inter) as anywhere else. public/brand/
+// holds the same artwork as files, for the admin logo upload and the app.
+
+// The boutique whose header shows this logo instead of the uploaded one.
+export const SOLAL_STORE_TYPE = "sport";
+
+export const SOLAL_COLORS = {
+  marine: "#1E3A5F",
+  // The marine on dark backgrounds.
+  light: "#7FB2E5",
+  white: "#FFFFFF",
+  black: "#171717",
+} as const;
+
+export const DUNE_PATH =
+  "M71 30 C 65 19, 35 18, 31 32 C 27 44, 40 47, 50 50 C 60 53, 73 56, 69 68 C 65 82, 35 82, 29 70";
+// The diagonal cut between the two crests.
+export const DUNE_CUT = "M55 38 L45 62";
+
+// SOLΛL at a 100px font size, baseline at y=0.
+export const WORDMARK_PATH = "M33.74 0.98L33.74 0.98Q24.66 0.98 17.92-1.76Q11.18-4.49 7.42-10.06Q3.66-15.63 3.52-24.02L3.52-24.02L20.07-24.02Q20.31-20.51 22.00-18.12Q23.68-15.72 26.64-14.53Q29.59-13.33 33.54-13.33L33.54-13.33Q37.11-13.33 39.70-14.31Q42.29-15.28 43.68-17.04Q45.07-18.80 45.07-21.14L45.07-21.14Q45.07-23.24 43.77-24.71Q42.48-26.17 39.89-27.29Q37.30-28.42 33.30-29.30L33.30-29.30L25.59-31.10Q16.16-33.25 10.79-38.13Q5.42-43.02 5.42-51.22L5.42-51.22Q5.42-57.96 9.08-63.04Q12.74-68.12 19.12-70.92Q25.49-73.73 33.74-73.73L33.74-73.73Q42.19-73.73 48.39-70.87Q54.59-68.02 58.01-62.92Q61.43-57.81 61.52-51.07L61.52-51.07L44.97-51.07Q44.63-55.03 41.75-57.23Q38.87-59.42 33.69-59.42L33.69-59.42Q30.27-59.42 27.93-58.52Q25.59-57.62 24.41-56.03Q23.24-54.44 23.24-52.39L23.24-52.39Q23.24-50.15 24.56-48.61Q25.88-47.07 28.32-46.04Q30.76-45.02 33.98-44.29L33.98-44.29L40.28-42.82Q45.56-41.70 49.68-39.77Q53.81-37.84 56.67-35.16Q59.52-32.47 61.01-28.96Q62.50-25.44 62.50-21.09L62.50-21.09Q62.50-14.21 59.06-9.25Q55.62-4.30 49.19-1.66Q42.77 0.98 33.74 0.98ZM126.69 0.98L126.69 0.98Q116.87 0.98 109.04-3.37Q101.20-7.71 96.61-16.06Q92.02-24.41 92.02-36.33L92.02-36.33Q92.02-48.34 96.61-56.69Q101.20-65.04 109.04-69.38Q116.87-73.73 126.69-73.73L126.69-73.73Q136.45-73.73 144.29-69.38Q152.13-65.04 156.69-56.69Q161.26-48.34 161.26-36.33L161.26-36.33Q161.26-24.37 156.69-16.02Q152.13-7.67 144.29-3.34Q136.45 0.98 126.69 0.98ZM126.69-14.16L126.69-14.16Q131.96-14.16 135.77-16.70Q139.58-19.24 141.63-24.19Q143.68-29.15 143.68-36.33L143.68-36.33Q143.68-43.55 141.63-48.54Q139.58-53.52 135.77-56.05Q131.96-58.59 126.69-58.59L126.69-58.59Q121.37-58.59 117.56-56.03Q113.75-53.47 111.70-48.51Q109.65-43.55 109.65-36.33L109.65-36.33Q109.65-29.15 111.70-24.22Q113.75-19.29 117.56-16.72Q121.37-14.16 126.69-14.16ZM240.63 0L192.97 0L192.97-72.75L210.21-72.75L210.21-14.06L240.63-14.06L240.63 0ZM287.29 0L268.15 0L292.42-72.75L315.51-72.75L340.51 0L321.18 0L311.07-31.79Q308.63-39.75 306.36-48.71Q304.09-57.67 301.79-67.29L301.79-67.29L305.65-67.29Q303.45-57.62 301.40-48.66Q299.35-39.70 297.05-31.79L297.05-31.79L287.29 0ZM418.13 0L370.47 0L370.47-72.75L387.71-72.75L387.71-14.06L418.13-14.06L418.13 0Z";
+const WORDMARK_WIDTH = 421.35;
+const WORDMARK_CAP_HEIGHT = 72.75;
+// The ink of each, tight, for drawing them inline: the wordmark from the
+// S to the last L (overshoots included), the symbol inside its mask region.
+export const WORDMARK_VIEWBOX = "3.5 -73.75 414.65 74.75";
+export const DUNE_VIEWBOX = "24 14 53 72";
+
+// Lockup proportions from the mockup: a 112px symbol, a 22px gap, 44px text.
+const LOCKUP_SYMBOL = (112 / 44) * 100;
+const LOCKUP_GAP = (22 / 44) * 100;
+const LOCKUP_WIDTH = LOCKUP_SYMBOL + LOCKUP_GAP + WORDMARK_WIDTH;
+export const SOLAL_LOGO_RATIO = LOCKUP_WIDTH / LOCKUP_SYMBOL;
+
+function symbolBody(color: string) {
+  return (
+    `<defs><mask id="dune"><rect width="100" height="100" fill="#fff"/><path d="${DUNE_CUT}" stroke="#000" stroke-width="6.5"/></mask></defs>` +
+    `<path d="${DUNE_PATH}" fill="none" stroke="${color}" stroke-width="13" stroke-linecap="round" mask="url(#dune)"/>`
+  );
+}
+
+export function solalSymbolSvg(color: string) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${symbolBody(color)}</svg>`;
+}
+
+export function solalLogoSvg(color: string) {
+  const baseline = LOCKUP_SYMBOL / 2 + WORDMARK_CAP_HEIGHT / 2;
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${LOCKUP_WIDTH} ${LOCKUP_SYMBOL}">` +
+    `<svg width="${LOCKUP_SYMBOL}" height="${LOCKUP_SYMBOL}" viewBox="0 0 100 100">${symbolBody(color)}</svg>` +
+    `<path transform="translate(${LOCKUP_SYMBOL + LOCKUP_GAP} ${baseline})" fill="${color}" d="${WORDMARK_PATH}"/>` +
+    `</svg>`
+  );
+}
+
+// For an <img src> in next/og, which doesn't render inline SVG masks.
+export function svgDataUri(svg: string) {
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}

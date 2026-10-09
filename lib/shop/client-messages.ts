@@ -36,6 +36,8 @@ export const REASON_LABEL_KEY: Record<string, keyof typeof MESSAGE_BUNDLES["fr"]
   invalid_payment: "reasonInvalidPayment",
   out_of_stock: "reasonOutOfStock",
   undeliverable_location: "reasonUndeliverableLocation",
+  // Set by the timer, not an admin (lib/shop/pending-expiry.ts).
+  payment_timeout: "reasonPaymentTimeout",
 };
 
 // Preset reasons are translated into the customer's locale; free-typed
@@ -104,6 +106,26 @@ export function buildClientDeliveredMessage(params: {
     name: params.customerName,
     reference: params.reference,
   });
+}
+
+export type OrderPushEvent = "confirmed" | "rejected" | "shipped" | "delivered" | "cancelled";
+
+// The short title + body of a push notification about an order, in the
+// language the customer ordered in (the same bundles as the WhatsApp texts).
+export function buildOrderPushMessage(params: {
+  event: OrderPushEvent;
+  locale: string | null;
+  reference: string;
+}): { title: string; body: string } {
+  const orders = MESSAGE_BUNDLES[resolveLocale(params.locale)].orders;
+  const body = {
+    confirmed: orders.pushConfirmed,
+    rejected: orders.pushRejected,
+    shipped: orders.pushShipped,
+    delivered: orders.pushDelivered,
+    cancelled: orders.pushCancelled,
+  }[params.event];
+  return { title: fillTemplate(orders.pushTitle, { reference: params.reference }), body };
 }
 
 export function buildClientWhatsAppLink(phone: string, message: string): string {

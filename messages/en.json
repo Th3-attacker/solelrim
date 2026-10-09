@@ -65,7 +65,10 @@
     "cashSessions": "Till sessions",
     "cashClosures": "Closures",
     "mySales": "My sales",
-    "refunds": "Refunds"
+    "refunds": "Refunds",
+    "help": "Help",
+    "cashOverview": "Sessions and closures",
+    "sectionTabs": "Related sections"
   },
   "auth": {
     "login": {
@@ -459,6 +462,8 @@
     "viewDetails": "View details",
     "paymentProof": "Payment proof",
     "paymentSenderPhone": "Payment sender's number",
+    "paymentTransactionId": "Transaction ID",
+    "proofReused": "Screenshot already used for:",
     "confirmAction": "Confirm",
     "confirmActionConfirmTitle": "Confirm this order?",
     "confirmActionDescription": "This action is final and cannot be undone.",
@@ -475,6 +480,7 @@
     "reasonInvalidPayment": "Invalid payment",
     "reasonOutOfStock": "Product out of stock",
     "reasonUndeliverableLocation": "Delivery location not covered",
+    "reasonPaymentTimeout": "Payment not validated in time (cancelled automatically)",
     "reasonOther": "Other",
     "reasonOtherPlaceholder": "Specify the reason...",
     "sendConfirmationToClient": "Send confirmation to client",
@@ -504,7 +510,13 @@
     "shipConfirmTitle": "Mark the order as shipped?",
     "shipConfirmBody": "The order will move to “shipped”. This step can't be undone.",
     "deliverConfirmTitle": "Mark the order as delivered?",
-    "deliverConfirmBody": "The order will be closed as delivered. This step can't be undone."
+    "deliverConfirmBody": "The order will be closed as delivered. This step can't be undone.",
+    "pushTitle": "Order {reference}",
+    "pushConfirmed": "Your order is confirmed.",
+    "pushRejected": "Your order could not be accepted.",
+    "pushShipped": "Your order is on its way.",
+    "pushDelivered": "Your order has been delivered. Thank you!",
+    "pushCancelled": "Your order has been cancelled."
   },
   "settings": {
     "title": "Settings",
@@ -608,10 +620,8 @@
     "addWallet": "Add a wallet",
     "editWallet": "Edit wallet",
     "walletProvider": "Provider",
-    "walletProviderPlaceholder": "E.g. Bankily, Masrivi, Sedad...",
+    "walletProviderPlaceholder": "E.g. My bank",
     "walletNumber": "Number",
-    "walletLogo": "Logo",
-    "walletLogoHint": "Optional — a generic icon is shown when there's no logo.",
     "socialSection": "Social media",
     "addSocialLink": "Add a social link",
     "socialPlatform": "Platform",
@@ -689,6 +699,8 @@
     },
     "couponsFeatureOn": "Promo codes enabled",
     "couponsFeatureOff": "Promo codes disabled",
+    "pendingAutoCancelOff": "Auto-cancel: never",
+    "pendingAutoCancelAfter": "Auto-cancel after {hours} h",
     "licenseClientName": "Client name / legal name",
     "licenseClientNamePlaceholder": "e.g. Aïcha Boutique LLC",
     "licenseClientNameEdit": "Client",
@@ -721,7 +733,9 @@
     "adminUserResetMfaConfirmBody": "Their current two-step verification will be removed: they'll set up a new one at their next sign-in.",
     "licenseStatusConfirmTitle": "Set “{label}” to “{status}”?",
     "licenseStatusConfirmLock": "The shop and its admin actions (sales, till, orders…) will be blocked.",
-    "licenseStatusConfirmUnlock": "The shop and all its actions will be available again."
+    "licenseStatusConfirmUnlock": "The shop and all its actions will be available again.",
+    "walletProviderChoose": "Choose a provider",
+    "walletProviderOther": "Other…"
   },
   "boutiquesOverview": {
     "title": "Overview",
@@ -984,7 +998,7 @@
     "subtitle": "Enter your phone number and the reference you received when you ordered to see its status.",
     "phoneLabel": "Phone number",
     "referenceLabel": "Order reference",
-    "referencePlaceholder": "CMD-20260815-1234",
+    "referencePlaceholder": "CMD-7KQ4M9XP",
     "submit": "Check",
     "notFoundError": "No order matches these details.",
     "rateLimitedError": "Too many attempts. Please try again in a few minutes.",
@@ -1172,5 +1186,341 @@
       "clientLocked": "Loyalty points are tied to the current client: it can no longer change."
     },
     "currentPayment": "Current: {label}"
+  },
+  "help": {
+    "title": "Help and user guide",
+    "hint": "Everyday tasks, step by step, and what needs support.",
+    "search": "Search the help…",
+    "noResults": "No results for “{query}”.",
+    "when": "When",
+    "steps": "How to",
+    "issues": "Good to know",
+    "prepare": "What to prepare",
+    "openPage": "Open the page",
+    "supportBadge": "Through support",
+    "groups": {
+      "start": "Getting started",
+      "daily": "Day to day",
+      "endOfDay": "End of day",
+      "special": "Special cases",
+      "support": "What goes through support"
+    },
+    "contactTitle": "Contact support",
+    "contactHint": "For these requests the SOLAL team steps in. A pre-filled message saves you retyping your details.",
+    "whatsapp": "WhatsApp",
+    "email": "E-mail",
+    "noContact": "Support contact details have not been set yet. Contact SOLAL directly.",
+    "whatsappMessage": "Hello, I am {email} (boutique {boutique}). Request: {topic}.",
+    "emailSubject": "Support request: {topic}",
+    "emailBody": "Hello,\n\nBoutique: {boutique}\nAccount: {email}\nRequest: {topic}\n\nThank you.",
+    "generalTopic": "General question",
+    "audienceSeller": "Seller",
+    "audienceAdmin": "Administrator",
+    "topics": {
+      "addProduct": {
+        "title": "Add a product",
+        "when": "To put a new item on sale in the shop and at the checkout.",
+        "steps": [
+          "Open “Products” in the menu, then add a product.",
+          "Fill in the name, description, price and category.",
+          "Add at least one variant (size, colour, SKU, stock).",
+          "Add the photos, then save. The product is visible once it is active."
+        ],
+        "issues": [
+          "A SKU that is already used is refused: each variant needs its own.",
+          "A product that has already been sold cannot be deleted: deactivate it instead."
+        ]
+      },
+      "manageCategories": {
+        "title": "Manage categories",
+        "when": "To sort products and organise the shop.",
+        "steps": [
+          "Open “Categories”.",
+          "Create a category by typing its name.",
+          "Change the order with the arrows: it is the order customers see.",
+          "Edit or delete a category with the icons on its row."
+        ],
+        "issues": [
+          "A category that still holds products cannot be deleted: move its products first."
+        ]
+      },
+      "configureBoutique": {
+        "title": "Set up your boutique",
+        "when": "Do it once at the start, then adjust when your details change.",
+        "steps": [
+          "Open “Settings”.",
+          "Fill in the boutique details (WhatsApp, payment instructions, announcement bar).",
+          "Add your social links.",
+          "Add your payment accounts (wallets): pick the provider and its logo appears automatically.",
+          "Set up the loyalty programme if you use it."
+        ],
+        "issues": [
+          "With no wallet account, the checkout refuses a wallet payment: add one first.",
+          "Images must be PNG, JPEG or WebP."
+        ]
+      },
+      "createSeller": {
+        "title": "Create or remove a seller",
+        "when": "When someone needs to sell at the checkout without access to the rest of the administration.",
+        "steps": [
+          "Open “Settings”, sellers section.",
+          "Add the seller with an e-mail and a password, then give them their access.",
+          "To remove a seller, first close their till (from “Till sessions”), then delete their account."
+        ],
+        "issues": [
+          "A seller whose till is still open cannot be deleted.",
+          "If you reach the maximum number of sellers, contact support (see below)."
+        ]
+      },
+      "twoFactor": {
+        "title": "Turn on two-factor authentication (2FA)",
+        "when": "To protect your account with a temporary code on top of the password.",
+        "steps": [
+          "Open “Settings”, security section.",
+          "Scan the QR code with an authenticator app.",
+          "Enter the 6-digit code to confirm."
+        ],
+        "issues": [
+          "Keep your phone: if you lose it, only support can reset 2FA (see below)."
+        ]
+      },
+      "processOrder": {
+        "title": "Process an online order",
+        "when": "When a customer places an order on the shop.",
+        "steps": [
+          "Open “Orders”: orders to handle show a badge in the menu.",
+          "Check the order and the proof of payment, then click “Confirm” or “Reject” (pick a reason).",
+          "Once prepared, click “Ship”, then “Mark as delivered” on delivery.",
+          "Each step offers to send a WhatsApp message to the customer."
+        ],
+        "issues": [
+          "An order already handled by someone else can no longer change status.",
+          "Not enough stock blocks the confirmation: update the stock first."
+        ]
+      },
+      "sellAtCheckout": {
+        "title": "Ring up a sale",
+        "when": "For each in-store sale. A till must be open.",
+        "steps": [
+          "Open “Checkout”.",
+          "Tap products to add them to the cart (choose the size and colour).",
+          "Choose the payment: cash (enter the amount received) or wallet (choose the account that received the money).",
+          "Click “Charge”. The receipt can be sent to the customer by WhatsApp."
+        ],
+        "issues": [
+          "“No open till”: open your till first.",
+          "“A price has changed”: check the new total before charging.",
+          "Sold-out item: remove it from the cart to continue."
+        ]
+      },
+      "openRegister": {
+        "title": "Open your till",
+        "when": "At the start of the day, before the first sale.",
+        "steps": [
+          "Open “Checkout” (or “My till”).",
+          "Count the money in the drawer and enter it as the “Opening float”.",
+          "Click “Open the till”."
+        ],
+        "issues": [
+          "Each person can only have one open till at a time in a boutique.",
+          "A till cannot be opened on a day the admin has already closed."
+        ]
+      },
+      "cashMovement": {
+        "title": "Cash in or cash out",
+        "when": "When money enters or leaves the drawer outside a sale: change top-up, bank deposit, buying bags.",
+        "steps": [
+          "Open “My till”, “Cash in and out” section.",
+          "Choose “Cash in” or “Cash out” and enter the amount.",
+          "Give the reason (required), then “Record”."
+        ],
+        "issues": [
+          "A cash out higher than the expected cash is refused."
+        ]
+      },
+      "promoCode": {
+        "title": "Create a promo code",
+        "when": "To give shop customers a discount.",
+        "steps": [
+          "Open “Promo codes” and create a code.",
+          "Choose the discount type (percentage or fixed amount).",
+          "Reserve it for one client or leave it general, add an expiry date or a maximum number of uses.",
+          "To stop it, deactivate it."
+        ],
+        "issues": [
+          "If customers cannot enter a code at checkout, coupons are not enabled for your boutique: contact support (see below)."
+        ]
+      },
+      "loyaltyCard": {
+        "title": "Loyalty card",
+        "when": "To let customers earn points on each purchase.",
+        "steps": [
+          "At the checkout, enter the customer's number under “Loyalty card” and click “Look up”.",
+          "If no card exists, click “Create card”.",
+          "The sale adds the points automatically; the customer can use their reward on a later sale."
+        ],
+        "issues": [
+          "The programme must be switched on and configured by the admin in “Settings”."
+        ]
+      },
+      "manageClients": {
+        "title": "Manage clients",
+        "when": "To find a customer, fix their record or delete it.",
+        "steps": [
+          "Open “Clients”.",
+          "Create or edit a record with the name and phone.",
+          "Open a client's record to see their history."
+        ],
+        "issues": [
+          "A client who already has sales cannot be deleted."
+        ]
+      },
+      "closeRegister": {
+        "title": "Close your till",
+        "when": "At the end of your shift, or when you leave the till.",
+        "steps": [
+          "Open “My till”.",
+          "Count the cash in the drawer and enter it in “Counted cash”.",
+          "The system shows the difference from the expected cash.",
+          "If there is a difference, explain it in “Comment” (required), then “Close the till”."
+        ],
+        "issues": [
+          "A closed till can no longer take sales.",
+          "Count carefully: the result is frozen when closing."
+        ]
+      },
+      "closeDay": {
+        "title": "Close the day",
+        "when": "Every evening, once all tills are closed. Boutique admin only.",
+        "steps": [
+          "Open “Closures” and pick the day.",
+          "Check that every till is closed: otherwise close it from “Till sessions”.",
+          "Review the day's totals and difference.",
+          "Click “Close the day”: this is final."
+        ],
+        "issues": [
+          "You cannot close while a till of that day (or an earlier one) is open.",
+          "A day is closed only once, and no till can be opened on it afterwards."
+        ]
+      },
+      "requestRefund": {
+        "title": "Request a refund",
+        "when": "When a customer brings an item back.",
+        "steps": [
+          "Open the sale (from “My sales”) and click “Request a refund”.",
+          "Choose the items and quantities returned.",
+          "Give the reason, then “Send the request”."
+        ],
+        "issues": [
+          "The boutique admin must approve it; follow its status in “Refunds”.",
+          "Only one request can be pending per sale."
+        ]
+      },
+      "decideRefund": {
+        "title": "Approve or reject a refund",
+        "when": "When a seller sends a request. Boutique admin only.",
+        "steps": [
+          "Open “Refunds”: pending requests are shown first.",
+          "Read the request, then “Approve refund” or “Reject” (with a reason).",
+          "On approval, the items go back into stock."
+        ],
+        "issues": [
+          "A cash refund leaves YOUR open till: open it before approving, with enough cash.",
+          "A request that has already been handled can no longer be changed."
+        ]
+      },
+      "cancelSale": {
+        "title": "Cancel or correct a sale",
+        "when": "When a sale was entered by mistake. Boutique admin only.",
+        "steps": [
+          "Open “Sales”, then the sale.",
+          "Correct it, or cancel it with a reason."
+        ],
+        "issues": [
+          "If the customer returned an item, use a refund instead.",
+          "Every cancellation is recorded in “History”."
+        ]
+      },
+      "forgottenRegister": {
+        "title": "Till left open",
+        "when": "When a till was not closed at the end of the day.",
+        "steps": [
+          "After 24 h the till is closed automatically with the reason “closing forgotten”.",
+          "No count was made: the admin compares the cash with the expected amount (session page).",
+          "To close before 24 h, the admin opens “Till sessions” and closes the seller's till."
+        ],
+        "issues": [
+          "Closing the day is blocked while a till is open.",
+          "An automatically closed till is flagged in the history."
+        ]
+      },
+      "license": {
+        "title": "Expired licence or suspended boutique",
+        "when": "When a banner says the boutique is suspended or expired, or actions are blocked.",
+        "steps": [
+          "Renewal and reactivation are done by support only.",
+          "Give the boutique name and your account e-mail.",
+          "Mention the message shown and the expiry date if you know it."
+        ]
+      },
+      "newBoutique": {
+        "title": "New boutique or boutique type",
+        "when": "To create a boutique, rename it or delete it.",
+        "steps": [
+          "These operations are done by support.",
+          "Give the name you want, the type of business and the manager's e-mail."
+        ]
+      },
+      "domain": {
+        "title": "Boutique domain name",
+        "when": "To make the boutique reachable at your own address.",
+        "steps": [
+          "The domain is set up by support.",
+          "Give the domain you want and show that you own it.",
+          "Support will tell you the DNS settings to make at your domain provider."
+        ]
+      },
+      "sellerQuota": {
+        "title": "Maximum number of sellers",
+        "when": "When you can no longer create a seller because the limit is reached.",
+        "steps": [
+          "The quota is changed by support.",
+          "Say how many sellers you need."
+        ]
+      },
+      "adminAccount": {
+        "title": "Admin account: add or remove",
+        "when": "When a new manager needs admin access, or when access must be removed.",
+        "steps": [
+          "Admin accounts are created and deleted by support.",
+          "Give the person's e-mail and the action you need."
+        ]
+      },
+      "lostTwoFactor": {
+        "title": "Lost two-factor authentication",
+        "when": "When you changed phone or removed the authenticator app and can no longer sign in.",
+        "steps": [
+          "Only support can reset your 2FA.",
+          "Give your account e-mail, then you can set up a new one at your next sign-in."
+        ]
+      },
+      "appearance": {
+        "title": "Boutique theme and appearance",
+        "when": "When you cannot see the theme, colour or layout settings.",
+        "steps": [
+          "These settings are available only if support has granted you the right.",
+          "Ask for it to be switched on, saying what you want to change."
+        ]
+      },
+      "heroSeo": {
+        "title": "Logo, main image, SEO and customer reviews",
+        "when": "To change the logo, the main image, the texts shown in Google or the customer reviews displayed on the boutique.",
+        "steps": [
+          "These are managed by support.",
+          "Send the logo or image you want (PNG, JPEG or WebP).",
+          "For SEO, send the title and description you want; for a customer review, the customer's name and their text."
+        ]
+      }
+    }
   }
 }

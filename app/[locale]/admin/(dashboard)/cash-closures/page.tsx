@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusAlert } from "@/components/ui/status-alert";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 // The boutique admin's daily closure (requireAdminScope refuses a seller;
 // proxy.ts redirects them before that).
@@ -48,6 +49,7 @@ export default async function CashClosuresPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs group="cash" current="/admin/cash-closures" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("closuresTitle")}</h1>

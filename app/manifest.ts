@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "SOLAL — rapide et simple.",
     start_url: "/",
     display: "standalone",
-    background_color: "#18181b",
-    theme_color: "#18181b",
+    background_color: "#1E3A5F",
+    theme_color: "#1E3A5F",
     icons: [
       { src: "/favicon.ico", sizes: "any", type: "image/x-icon" },
       { src: "/icon-192", sizes: "192x192", type: "image/png" },

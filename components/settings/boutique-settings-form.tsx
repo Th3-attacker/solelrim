@@ -28,8 +28,13 @@ import { FieldError } from "@/components/ui/status-alert";
 export function BoutiqueSettingsForm({
   defaultValues,
   heroVariant,
+  canEditSuperadminFields,
 }: {
   defaultValues: BoutiqueSettingsInput;
+  // The "Image principale" section (hero texts and image position) and the
+  // SEO texts are the superadmin's (updateBoutiqueSettings ignores them from
+  // anyone else).
+  canEditSuperadminFields: boolean;
   // Read-only here — editing it is superadmin-only (LayoutVariantsPicker).
   // Only used to decide whether heroImagePosition is still relevant to show.
   heroVariant: string;
@@ -143,105 +148,109 @@ export function BoutiqueSettingsForm({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("heroSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          {heroVariant === "split" && (
+      {canEditSuperadminFields && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("heroSection")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+            {heroVariant === "split" && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
+                <Select
+                  value={heroImagePosition ?? "right"}
+                  onValueChange={(value) =>
+                    setValue("heroImagePosition", value as "left" | "right")
+                  }
+                >
+                  <SelectTrigger id="heroImagePosition" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="right">
+                      {t("heroImagePositionRight")}
+                    </SelectItem>
+                    <SelectItem value="left">
+                      {t("heroImagePositionLeft")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="flex flex-col gap-2">
-              <Label htmlFor="heroImagePosition">{t("heroImagePosition")}</Label>
-              <Select
-                value={heroImagePosition ?? "right"}
-                onValueChange={(value) =>
-                  setValue("heroImagePosition", value as "left" | "right")
-                }
-              >
-                <SelectTrigger id="heroImagePosition" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="right">
-                    {t("heroImagePositionRight")}
-                  </SelectItem>
-                  <SelectItem value="left">
-                    {t("heroImagePositionLeft")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="heroBadgeText">{t("heroBadgeText")}</Label>
+              <Input
+                id="heroBadgeText"
+                placeholder={t("heroBadgeTextPlaceholder")}
+                {...register("heroBadgeText")}
+              />
             </div>
-          )}
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="heroBadgeText">{t("heroBadgeText")}</Label>
-            <Input
-              id="heroBadgeText"
-              placeholder={t("heroBadgeTextPlaceholder")}
-              {...register("heroBadgeText")}
-            />
-          </div>
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
+              {contentLang === "ar" ? (
+                <Input id="heroTitle" dir="rtl" lang="ar" {...register("heroTitleAr")} />
+              ) : contentLang === "en" ? (
+                <Input id="heroTitle" lang="en" {...register("heroTitleEn")} />
+              ) : (
+                <Input id="heroTitle" {...register("heroTitle")} />
+              )}
+            </div>
 
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="heroTitle">{t("heroTitle")}</Label>
-            {contentLang === "ar" ? (
-              <Input id="heroTitle" dir="rtl" lang="ar" {...register("heroTitleAr")} />
-            ) : contentLang === "en" ? (
-              <Input id="heroTitle" lang="en" {...register("heroTitleEn")} />
-            ) : (
-              <Input id="heroTitle" {...register("heroTitle")} />
-            )}
-          </div>
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
+              {contentLang === "ar" ? (
+                <Input id="heroSubtitle" dir="rtl" lang="ar" {...register("heroSubtitleAr")} />
+              ) : contentLang === "en" ? (
+                <Input id="heroSubtitle" lang="en" {...register("heroSubtitleEn")} />
+              ) : (
+                <Input id="heroSubtitle" {...register("heroSubtitle")} />
+              )}
+            </div>
 
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="heroSubtitle">{t("heroSubtitle")}</Label>
-            {contentLang === "ar" ? (
-              <Input id="heroSubtitle" dir="rtl" lang="ar" {...register("heroSubtitleAr")} />
-            ) : contentLang === "en" ? (
-              <Input id="heroSubtitle" lang="en" {...register("heroSubtitleEn")} />
-            ) : (
-              <Input id="heroSubtitle" {...register("heroSubtitle")} />
-            )}
-          </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="heroCtaLabel">{t("heroCtaLabel")}</Label>
+              <Input
+                id="heroCtaLabel"
+                placeholder={t("heroCtaLabelPlaceholder")}
+                {...register("heroCtaLabel")}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="heroCtaLabel">{t("heroCtaLabel")}</Label>
-            <Input
-              id="heroCtaLabel"
-              placeholder={t("heroCtaLabelPlaceholder")}
-              {...register("heroCtaLabel")}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {canEditSuperadminFields && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("seoSection")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="seoTitle">{t("seoTitle")}</Label>
+              {contentLang === "ar" ? (
+                <Input id="seoTitle" dir="rtl" lang="ar" {...register("seoTitleAr")} />
+              ) : contentLang === "en" ? (
+                <Input id="seoTitle" lang="en" {...register("seoTitleEn")} />
+              ) : (
+                <Input id="seoTitle" {...register("seoTitle")} />
+              )}
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("seoSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="seoTitle">{t("seoTitle")}</Label>
-            {contentLang === "ar" ? (
-              <Input id="seoTitle" dir="rtl" lang="ar" {...register("seoTitleAr")} />
-            ) : contentLang === "en" ? (
-              <Input id="seoTitle" lang="en" {...register("seoTitleEn")} />
-            ) : (
-              <Input id="seoTitle" {...register("seoTitle")} />
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="seoDescription">{t("seoDescription")}</Label>
-            {contentLang === "ar" ? (
-              <Input id="seoDescription" dir="rtl" lang="ar" {...register("seoDescriptionAr")} />
-            ) : contentLang === "en" ? (
-              <Input id="seoDescription" lang="en" {...register("seoDescriptionEn")} />
-            ) : (
-              <Input id="seoDescription" {...register("seoDescription")} />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="seoDescription">{t("seoDescription")}</Label>
+              {contentLang === "ar" ? (
+                <Input id="seoDescription" dir="rtl" lang="ar" {...register("seoDescriptionAr")} />
+              ) : contentLang === "en" ? (
+                <Input id="seoDescription" lang="en" {...register("seoDescriptionEn")} />
+              ) : (
+                <Input id="seoDescription" {...register("seoDescription")} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex justify-end gap-2">
         <Button type="submit" loading={submitting}>
