@@ -4,7 +4,7 @@ import { registerPushToken, removePushToken } from "@/lib/push/register";
 
 // POST   /api/v1/boutiques/{key}/orders/push
 // DELETE /api/v1/boutiques/{key}/orders/push
-//   { "phone": "37737353", "reference": "CMD-20261005-0001",
+//   { "phone": "37737353", "reference": "CMD-7KQ4M9XP",
 //     "token": "ExponentPushToken[xxxxxxxx]" }
 // POST asks to be notified when this order is confirmed, rejected, shipped,
 // delivered or cancelled; DELETE stops it. The phone + reference are the

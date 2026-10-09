@@ -995,7 +995,7 @@
     "subtitle": "Entrez votre numéro de téléphone et la référence reçue à la commande pour voir son statut.",
     "phoneLabel": "Numéro de téléphone",
     "referenceLabel": "Référence de commande",
-    "referencePlaceholder": "CMD-20260815-1234",
+    "referencePlaceholder": "CMD-7KQ4M9XP",
     "submit": "Vérifier",
     "notFoundError": "Aucune commande ne correspond à ces informations.",
     "rateLimitedError": "Trop de tentatives. Merci de réessayer dans quelques minutes.",

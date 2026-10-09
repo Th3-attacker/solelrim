@@ -102,6 +102,15 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
   -F screenshot=@proof.png
 ```
 
+### Order references
+New orders get `CMD-` followed by 8 random characters from
+`23456789ABCDEFGHJKLMNPQRSTUVWXYZ` (no 0/O, no 1/I), e.g. `CMD-7KQ4M9XP`.
+Older references (`CMD-20261005-1234`) stay valid everywhere. Lookups are
+case-insensitive.
+
+**Mobile side:** don't validate the reference format; accept anything non-empty
+and upper-case it for display.
+
 ### Payment checks
 - `paymentTransactionId` (optional, ≤ 64 characters): the transaction id the
   wallet (Bankily, Masrivi…) shows after the transfer. Stored trimmed and

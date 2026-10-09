@@ -995,7 +995,7 @@
     "subtitle": "Enter your phone number and the reference you received when you ordered to see its status.",
     "phoneLabel": "Phone number",
     "referenceLabel": "Order reference",
-    "referencePlaceholder": "CMD-20260815-1234",
+    "referencePlaceholder": "CMD-7KQ4M9XP",
     "submit": "Check",
     "notFoundError": "No order matches these details.",
     "rateLimitedError": "Too many attempts. Please try again in a few minutes.",
