@@ -126,8 +126,8 @@ describe("serializeBoutique", () => {
     licenseStatus: "ACTIVE",
     domain: "secret-domain.example",
     walletAccounts: [
-      { provider: "Bankily", number: "11111111", logoStoragePath: null },
-      { provider: "Ma banque", number: "22222222", logoStoragePath: "w/x.png" },
+      { id: "w1", provider: "Bankily", number: "11111111", logoStoragePath: null },
+      { id: "w2", provider: "Ma banque", number: "22222222", logoStoragePath: "w/x.png" },
     ],
     socialLinks: [{ platform: "instagram", url: "https://instagram.com/x" }],
   };
@@ -141,12 +141,14 @@ describe("serializeBoutique", () => {
   it("lists wallets with the bundled logo of a known provider, the uploaded one otherwise", () => {
     expect(out.payment.wallets).toEqual([
       {
+        id: "w1",
         provider: "Bankily",
         providerKey: "bankily",
         number: "11111111",
         logoUrl: "https://shop.example/wallets/bankily.svg",
       },
       {
+        id: "w2",
         provider: "Ma banque",
         providerKey: null,
         number: "22222222",

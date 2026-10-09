@@ -36,6 +36,9 @@ export function serializeBoutique(boutique: OpenBoutique, locale: string, origin
         const bundled = walletLogoSrc(wallet.provider, null);
         const uploaded = wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null;
         return {
+          // Stable across edits: the app keys its list by it, so a wallet the
+          // admin renames or re-orders stays the same row.
+          id: wallet.id,
           provider: wallet.provider,
           // The app can ship its own logo for a known provider; logoUrl is
           // for the others (and a fallback).

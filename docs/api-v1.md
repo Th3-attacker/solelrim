@@ -80,6 +80,22 @@ and don't retry automatically before it.
 | `POST /boutiques/{key}/orders/track` `{ phone, reference }` | `{ reference, status, total, createdAt, statusSince }` |
 | `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below) |
 
+### Wallets
+`payment.wallets` is `[{ id, provider, providerKey, number, logoUrl }]`, in the
+order the admin set. The admin can add, edit (name, number, logo), re-order and
+delete wallets at any time, so the app shows the list as received on each
+boutique refresh and keys it by `id` (stable across edits).
+
+- `providerKey`: `bankily`, `masrivi`, `sedad`, `bimbank` for a provider the
+  site knows (more may be added later), `null` for any other.
+- `logoUrl`: for a known provider, the site's bundled logo
+  (`https://<host>/wallets/<key>.svg`); otherwise the logo the admin uploaded
+  (Supabase, public PNG/JPEG/WebP), or `null` when there is none.
+
+**Mobile side:** draw the logo of a `providerKey` the app knows itself; else load
+`logoUrl` (an SVG for the site's bundled logos); else, or if loading fails, show
+the provider's initials.
+
 ### Products
 Every product (catalogue, search and product page) carries:
 - `colors`: the distinct variant colors, in the order the admin entered them.

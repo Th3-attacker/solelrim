@@ -839,8 +839,13 @@
       },
       "Wallet": {
         "type": "object",
-        "required": ["provider", "providerKey", "number", "logoUrl"],
+        "required": ["id", "provider", "providerKey", "number", "logoUrl"],
+        "description": "The boutique's admin can add, edit, re-order and delete wallets at any time: show the list as received.",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable across edits (rename, new number, new logo, re-order)."
+          },
           "provider": {
             "type": "string",
             "example": "Bankily"
