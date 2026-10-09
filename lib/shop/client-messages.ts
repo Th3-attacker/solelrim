@@ -36,6 +36,8 @@ export const REASON_LABEL_KEY: Record<string, keyof typeof MESSAGE_BUNDLES["fr"]
   invalid_payment: "reasonInvalidPayment",
   out_of_stock: "reasonOutOfStock",
   undeliverable_location: "reasonUndeliverableLocation",
+  // Set by the timer, not an admin (lib/shop/pending-expiry.ts).
+  payment_timeout: "reasonPaymentTimeout",
 };
 
 // Preset reasons are translated into the customer's locale; free-typed

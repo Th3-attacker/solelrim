@@ -166,7 +166,10 @@ export default async function OrderDetailPage({
             )}
             {order.cancelReason && (
               <p className="text-sm text-muted-foreground">
-                {t("cancelReasonLabel")}: {order.cancelReason}
+                {t("cancelReasonLabel")}:{" "}
+                {REASON_LABEL_KEY[order.cancelReason]
+                  ? t(REASON_LABEL_KEY[order.cancelReason])
+                  : order.cancelReason}
               </p>
             )}
           </div>

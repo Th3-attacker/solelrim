@@ -41,6 +41,7 @@ import {
   updateBoutiqueLicense,
   updateLicenseClientName,
   setCouponsEnabled,
+  setPendingAutoCancelHours,
   updateSolalContact,
   deleteStoreType,
 } from "@/lib/actions/settings";
@@ -635,6 +636,38 @@ describe("setCouponsEnabled (superadmin only)", () => {
       where: { key: "sport" },
       data: { couponsEnabled: false },
     });
+  });
+});
+
+describe("setPendingAutoCancelHours (superadmin only)", () => {
+  it("rejects a BOUTIQUE_ADMIN", async () => {
+    asBoutiqueAdmin();
+
+    await expect(setPendingAutoCancelHours("sport", 48)).rejects.toThrow("forbidden");
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
+  });
+
+  it("sets one of the preset delays, or turns it off", async () => {
+    asSuperAdmin();
+    prismaMock.storeType.update.mockResolvedValue({} as never);
+
+    expect(await setPendingAutoCancelHours("sport", 48)).toEqual({});
+    expect(await setPendingAutoCancelHours("sport", null)).toEqual({});
+    expect(prismaMock.storeType.update).toHaveBeenNthCalledWith(1, {
+      where: { key: "sport" },
+      data: { pendingAutoCancelHours: 48 },
+    });
+    expect(prismaMock.storeType.update).toHaveBeenNthCalledWith(2, {
+      where: { key: "sport" },
+      data: { pendingAutoCancelHours: null },
+    });
+  });
+
+  it("refuses a delay that isn't one of the presets", async () => {
+    asSuperAdmin();
+
+    expect(await setPendingAutoCancelHours("sport", 2)).toEqual({ error: "invalid" });
+    expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 });
 

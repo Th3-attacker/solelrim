@@ -122,6 +122,21 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
   -F screenshot=@proof.png
 ```
 
+### Pending orders
+- **Stock is reserved as soon as the order is placed** (status `PENDING`), not
+  at confirmation. It is given back when the order is rejected or cancelled,
+  and so is the promo code redemption.
+- A boutique can have unvalidated orders cancelled on their own after 24, 48,
+  72 or 168 hours (superadmin setting; **off by default**). The check runs once
+  a day (Vercel Cron, 06:00 UTC), so an order can stay up to a day past the
+  delay. The order becomes `CANCELLED` with the reason `payment_timeout`, stock
+  and promo code are given back, and registered phones get the usual
+  "cancelled" push. Tracking then answers `status: "CANCELLED"`.
+
+**Mobile side:** nothing new to send. Treat `CANCELLED` on a never-confirmed
+order as "not validated in time": invite the customer to order again or
+contact the boutique.
+
 ### Order references
 New orders get `CMD-` followed by 8 random characters from
 `23456789ABCDEFGHJKLMNPQRSTUVWXYZ` (no 0/O, no 1/I), e.g. `CMD-7KQ4M9XP`.

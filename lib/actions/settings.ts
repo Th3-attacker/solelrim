@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseISO, isValid } from "date-fns";
@@ -653,6 +654,28 @@ export async function setCouponsEnabled(
 
   revalidatePath("/admin/settings/global");
   revalidatePath("/admin/promo-codes");
+  return {};
+}
+
+// Hours before an unvalidated PENDING order is cancelled on its own (null =
+// never). Superadmin-only like the coupons flag; one of the preset choices,
+// so a typo can't set "2 hours" and wipe a day's orders.
+export async function setPendingAutoCancelHours(
+  productType: string,
+  hours: number | null,
+): Promise<{ error?: string }> {
+  await requireSuperAdmin();
+
+  if (hours !== null && !(PENDING_AUTO_CANCEL_CHOICES as readonly number[]).includes(hours)) {
+    return { error: "invalid" };
+  }
+
+  await prisma.storeType.update({
+    where: { key: productType },
+    data: { pendingAutoCancelHours: hours },
+  });
+
+  revalidatePath("/admin/settings/global");
   return {};
 }
 

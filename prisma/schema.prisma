@@ -149,6 +149,11 @@ model StoreType {
   // re-check this, not merely the UI that shows/hides the "Code promo"
   // field.
   couponsEnabled       Boolean       @default(true)
+  // Hours after which a PENDING order nobody validated is cancelled on its
+  // own (stock and promo code given back, customer notified) — see
+  // lib/shop/pending-expiry.ts. Null = never, the default: an admin who
+  // takes days to check payments keeps every order.
+  pendingAutoCancelHours Int?
   // Max SELLER accounts this boutique's admin can create themselves —
   // only a superadmin can raise it (lib/actions/sellers.ts).
   sellerQuota          Int           @default(2)

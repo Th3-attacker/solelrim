@@ -47,9 +47,11 @@ import {
   updateBoutiqueLicense,
   updateLicenseClientName,
   setCouponsEnabled,
+  setPendingAutoCancelHours,
   updateStoreTypeLabel,
   deleteStoreType,
 } from "@/lib/actions/settings";
+import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 
 const CALENDAR_LOCALES: Record<string, typeof fr> = { fr, en: enUS, ar: arMA };
 
@@ -75,6 +77,7 @@ type StoreTypeRow = {
   licenseExpiresAt: Date | null;
   licenseClientName: string | null;
   couponsEnabled: boolean;
+  pendingAutoCancelHours: number | null;
 };
 
 export function BoutiqueLicenseManager({ storeTypes }: { storeTypes: StoreTypeRow[] }) {
@@ -212,6 +215,17 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setClientNameOpen(false);
+      router.refresh();
+    });
+  }
+
+  function handlePendingAutoCancelChange(value: string) {
+    startCouponsTransition(async () => {
+      const result = await setPendingAutoCancelHours(storeType.key, value === "off" ? null : Number(value));
+      if (result.error) {
+        toast.error(tCommon("error"));
+        return;
+      }
       router.refresh();
     });
   }
@@ -427,6 +441,24 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         >
           {storeType.couponsEnabled ? t("couponsFeatureOn") : t("couponsFeatureOff")}
         </Toggle>
+
+        <Select
+          value={storeType.pendingAutoCancelHours === null ? "off" : String(storeType.pendingAutoCancelHours)}
+          disabled={couponsPending}
+          onValueChange={handlePendingAutoCancelChange}
+        >
+          <SelectTrigger size="sm" className="w-auto">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="off">{t("pendingAutoCancelOff")}</SelectItem>
+            {PENDING_AUTO_CANCEL_CHOICES.map((hours) => (
+              <SelectItem key={hours} value={String(hours)}>
+                {t("pendingAutoCancelAfter", { hours })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <ResponsiveFormDialog
           open={clientNameOpen}
