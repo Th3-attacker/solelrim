@@ -18,6 +18,7 @@ fields and routes may appear, existing ones never change meaning or disappear.
 A breaking change means `/api/v2`, with v1 kept while old app versions circulate.
 
 ## Conventions
+
 - `?locale=fr|en|ar` on boutique routes picks the language of boutique texts
   (default `fr`). Product and category names have a single language.
 - Errors are `{ "error": "<code>" }`. Codes and statuses: `invalid` 400,
@@ -30,13 +31,14 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
 - Money amounts are numbers in the boutique's currency (MRU).
 
 ## Request headers (all routes)
+
 Optional, sent by the app on every call:
 
-| Header | Example | Use |
-|---|---|---|
-| `X-Request-Id` | a UUID per call | Echoed back in the response's `X-Request-Id` and logged; one is generated when missing (or not 1–128 of `A-Z a-z 0-9 _ . : -`) |
-| `X-App-Version` | `1.4.0` | Logged; compared with the minimum version below |
-| `X-App-Platform` | `ios` / `android` | Logged |
+| Header           | Example           | Use                                                                                                                            |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `X-Request-Id`   | a UUID per call   | Echoed back in the response's `X-Request-Id` and logged; one is generated when missing (or not 1–128 of `A-Z a-z 0-9 _ . : -`) |
+| `X-App-Version`  | `1.4.0`           | Logged; compared with the minimum version below                                                                                |
+| `X-App-Platform` | `ios` / `android` | Logged                                                                                                                         |
 
 Every response carries `X-Request-Id`.
 
@@ -50,15 +52,16 @@ version is never blocked.
 an "update the app" screen with a link to the store.
 
 ## Rate limits
+
 Counted per IP address and, where the body carries one, per phone number
 (a sliding window; the website shares the same counters).
 
-| Route | Per phone | Per IP |
-|---|---|---|
-| `POST .../orders` | 5 / hour (`customerPhone`) | 20 / hour |
-| `POST .../orders/track` | 10 / 15 min | 30 / 15 min |
-| `POST .../promo` | 10 / 15 min (`customerPhone`) | 20 / 15 min |
-| `POST` / `DELETE .../orders/push` | — | 20 / hour |
+| Route                             | Per phone                     | Per IP      |
+| --------------------------------- | ----------------------------- | ----------- |
+| `POST .../orders`                 | 5 / hour (`customerPhone`)    | 20 / hour   |
+| `POST .../orders/track`           | 10 / 15 min                   | 30 / 15 min |
+| `POST .../promo`                  | 10 / 15 min (`customerPhone`) | 20 / 15 min |
+| `POST` / `DELETE .../orders/push` | —                             | 20 / hour   |
 
 Over a limit: `429 { "error": "rateLimited" }` with a `Retry-After` header
 (seconds). A resend carrying an already-used `Idempotency-Key` is never
@@ -68,25 +71,27 @@ counted.
 and don't retry automatically before it.
 
 ## Routes
-| Route | Purpose |
-|---|---|
-| `GET /boutiques` | Boutiques the customer can pick (closed ones are left out) |
-| `GET /boutiques/{key}` | Branding, theme, payment details and wallets, social links, categories |
-| `GET /boutiques/{key}/products?category=&q=&page=&pageSize=` | Catalogue page (`pageSize` ≤ 50, default 20) or search (`q`, rate-limited, one capped page) |
-| `GET /boutiques/{key}/products/{slug}` | Product with images and variants (id, size, color, price, stock, lowStockThreshold) |
-| `POST /boutiques/{key}/stocks` `{ variantIds }` | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists |
-| `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }` | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
-| `POST /boutiques/{key}/orders` (multipart) | Place an order → `201 { reference, orderId }` |
-| `POST /boutiques/{key}/orders/track` `{ phone, reference }` | `{ reference, status, total, createdAt, statusSince }` |
-| `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below) |
+
+| Route                                                                        | Purpose                                                                                         |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET /boutiques`                                                             | Boutiques the customer can pick (closed ones are left out)                                      |
+| `GET /boutiques/{key}`                                                       | Branding, theme, payment details and wallets, social links, categories                          |
+| `GET /boutiques/{key}/products?category=&q=&page=&pageSize=`                 | Catalogue page (`pageSize` ≤ 50, default 20) or search (`q`, rate-limited, one capped page)     |
+| `GET /boutiques/{key}/products/{slug}`                                       | Product with images and variants (id, size, color, price, stock, lowStockThreshold)             |
+| `POST /boutiques/{key}/stocks` `{ variantIds }`                              | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists            |
+| `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }`            | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
+| `POST /boutiques/{key}/orders` (multipart)                                   | Place an order → `201 { reference, orderId }`                                                   |
+| `POST /boutiques/{key}/orders/track` `{ phone, reference }`                  | `{ reference, status, total, createdAt, statusSince }`                                          |
+| `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below)                                       |
 
 ### Wallets
+
 `payment.wallets` is `[{ id, provider, providerKey, number, logoUrl }]`, in the
 order the admin set. The admin can add, edit (name, number, logo), re-order and
 delete wallets at any time, so the app shows the list as received on each
 boutique refresh and keys it by `id` (stable across edits).
 
-- `providerKey`: `bankily`, `masrivi`, `sedad`, `bimbank` for a provider the
+- `providerKey`: `bankily`, `masrvi`, `sedad`, `bimbank` for a provider the
   site knows (more may be added later), `null` for any other.
 - `logoUrl`: for a known provider, the site's bundled logo
   (`https://<host>/wallets/<key>.svg`); otherwise the logo the admin uploaded
@@ -97,7 +102,9 @@ boutique refresh and keys it by `id` (stable across edits).
 the provider's initials.
 
 ### Products
+
 Every product (catalogue, search and product page) carries:
+
 - `colors`: the distinct variant colors, in the order the admin entered them.
   Exact strings, as on the variants and images (`"Noir"` and `"noir"` are two colors).
 - `colorsInStock`: the subset with at least one variant in stock.
@@ -114,11 +121,15 @@ shows "only n left".
 
 ```json
 {
-  "id": "cm…", "slug": "t-shirt", "name": "T-shirt",
+  "id": "cm…",
+  "slug": "t-shirt",
+  "name": "T-shirt",
   "category": { "id": "cm…", "name": "Vêtements" },
   "imageUrl": "https://…/product-images/p/a.jpg",
-  "price": { "min": 1000, "max": 1200 }, "compareAtPrice": 1500,
-  "isFeatured": true, "inStock": true,
+  "price": { "min": 1000, "max": 1200 },
+  "compareAtPrice": 1500,
+  "isFeatured": true,
+  "inStock": true,
   "colors": ["Noir", "Noir-Blanc"],
   "colorsInStock": ["Noir"],
   "colorSwatches": [
@@ -129,6 +140,7 @@ shows "only n left".
 ```
 
 ### Placing an order
+
 `multipart/form-data` fields: `customerName`, `customerPhone` (8 digits,
 starts with 2, 3 or 4), `customerCity`, `paymentSenderPhone` (same format),
 `locale` (`fr|en|ar`, language of the messages sent about the order), `items`
@@ -146,6 +158,7 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
 ```
 
 ### Pending orders
+
 - **Stock is reserved as soon as the order is placed** (status `PENDING`), not
   at confirmation. It is given back when the order is rejected or cancelled,
   and so is the promo code redemption.
@@ -161,6 +174,7 @@ order as "not validated in time": invite the customer to order again or
 contact the boutique.
 
 ### Order references
+
 New orders get `CMD-` followed by 8 random characters from
 `23456789ABCDEFGHJKLMNPQRSTUVWXYZ` (no 0/O, no 1/I), e.g. `CMD-7KQ4M9XP`.
 Older references (`CMD-20261005-1234`) stay valid everywhere. Lookups are
@@ -170,8 +184,9 @@ case-insensitive.
 and upper-case it for display.
 
 ### Payment checks
+
 - `paymentTransactionId` (optional, ≤ 64 characters): the transaction id the
-  wallet (Bankily, Masrivi…) shows after the transfer. Stored trimmed and
+  wallet (Bankily, Masrvi…) shows after the transfer. Stored trimmed and
   upper-cased (`" bk12ab34 "` → `"BK12AB34"`). If another order of the same
   boutique that isn't rejected or cancelled already carries it →
   `409 { "error": "transactionAlreadyUsed" }`. Blank or missing: no check
@@ -186,6 +201,7 @@ customer this transaction is already attached to an order and let them correct
 the id (keep the rest of the form).
 
 ### Resending an order (Idempotency-Key)
+
 A lost connection or a double tap can send the same order twice. Send an
 `Idempotency-Key` header on `POST .../orders`: any string of 1–64 printable
 ASCII characters (a UUID is fine), generated once per order and **the same on
@@ -207,6 +223,7 @@ attempt), keep it with the pending order until a `201` arrives, and reuse it
 for every retry.
 
 ## Push notifications
+
 There are no accounts, so a device token hangs off an **order**, proven with the
 same phone + reference as tracking.
 
