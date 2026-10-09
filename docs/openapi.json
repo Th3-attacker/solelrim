@@ -1,0 +1,1583 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SOLAL public API",
+    "version": "1.0.0",
+    "description": "Public API of the SOLAL boutiques for the mobile app. No accounts: a customer proves an order with phone + reference. v1 only grows (fields and routes are added, never removed or renamed). Human-readable contract: docs/api-v1.md. Every response carries X-Request-Id."
+  },
+  "servers": [
+    {
+      "url": "{origin}/api/v1",
+      "variables": {
+        "origin": {
+          "default": "https://YOUR-DOMAIN",
+          "description": "The deployed site (production, or a Vercel preview for dev/staging)."
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Catalogue",
+      "description": "Boutiques and products (cached 30 s)."
+    },
+    {
+      "name": "Cart",
+      "description": "Stock refresh and promo preview."
+    },
+    {
+      "name": "Orders",
+      "description": "Placing, tracking and push notifications."
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/boutiques": {
+      "get": {
+        "operationId": "listBoutiques",
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Boutiques the customer can pick (closed ones left out)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Locale"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "boutiques"
+                  ],
+                  "properties": {
+                    "boutiques": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Boutique"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "public, s-maxage=30, stale-while-revalidate=60"
+              }
+            }
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}": {
+      "get": {
+        "operationId": "getBoutique",
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Branding, theme, payment details, social links, categories",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Locale"
+          },
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoutiqueDetail"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "public, s-maxage=30, stale-while-revalidate=60"
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/products": {
+      "get": {
+        "operationId": "listProducts",
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Catalogue page, or search with q (one capped page)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Search (accent-insensitive, rate-limited 40 / 15 min per IP)."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "public, s-maxage=30, stale-while-revalidate=60"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/products/{slug}": {
+      "get": {
+        "operationId": "getProduct",
+        "tags": [
+          "Catalogue"
+        ],
+        "summary": "Product with images and variants",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetail"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "public, s-maxage=30, stale-while-revalidate=60"
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/stocks": {
+      "post": {
+        "operationId": "getStocks",
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Fresh stock for a saved cart",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "variantIds"
+                ],
+                "properties": {
+                  "variantIds": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "stocks"
+                  ],
+                  "properties": {
+                    "stocks": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      },
+                      "description": "variantId → stock. A missing id no longer exists."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/promo": {
+      "post": {
+        "operationId": "previewPromo",
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Preview a promo code (not consumed until the order)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code",
+                  "customerPhone",
+                  "subtotal"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "ETE10"
+                  },
+                  "customerPhone": {
+                    "type": "string",
+                    "pattern": "^[234]\\d{7}$",
+                    "example": "37737353"
+                  },
+                  "subtotal": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "discountType",
+                    "discountValue",
+                    "discount"
+                  ],
+                  "properties": {
+                    "discountType": {
+                      "type": "string",
+                      "enum": [
+                        "PERCENT",
+                        "FIXED"
+                      ]
+                    },
+                    "discountValue": {
+                      "type": "number"
+                    },
+                    "discount": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/BusinessError"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/orders": {
+      "post": {
+        "operationId": "placeOrder",
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Place an order",
+        "description": "Send the same Idempotency-Key on every resend of one order: a resend gets the first 201 back, never a second order.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\x21-\\x7e]{1,64}$"
+            },
+            "description": "Generated once per order (a UUID), reused on every retry."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customerName",
+                  "customerPhone",
+                  "customerCity",
+                  "paymentSenderPhone",
+                  "items",
+                  "screenshot"
+                ],
+                "properties": {
+                  "customerName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "customerPhone": {
+                    "type": "string",
+                    "pattern": "^[234]\\d{7}$",
+                    "example": "37737353"
+                  },
+                  "customerCity": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "paymentSenderPhone": {
+                    "type": "string",
+                    "pattern": "^[234]\\d{7}$",
+                    "example": "37737353"
+                  },
+                  "locale": {
+                    "type": "string",
+                    "enum": [
+                      "fr",
+                      "en",
+                      "ar"
+                    ],
+                    "description": "Language of the messages sent about the order."
+                  },
+                  "items": {
+                    "type": "string",
+                    "description": "JSON: [{\"variantId\":\"…\",\"quantity\":1}] (1–50 lines, quantity 1–10000).",
+                    "example": "[{\"variantId\":\"cm…\",\"quantity\":1}]"
+                  },
+                  "promoCode": {
+                    "type": "string"
+                  },
+                  "paymentTransactionId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "description": "Wallet transaction id; trimmed and upper-cased. Reused on a live order → 409 transactionAlreadyUsed."
+                  },
+                  "screenshot": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Payment proof, PNG/JPEG/WebP, ≤ 5 MB."
+                  }
+                }
+              },
+              "encoding": {
+                "screenshot": {
+                  "contentType": "image/png, image/jpeg, image/webp"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order placed (or the same order, on a resend with the same Idempotency-Key)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/FileTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/BusinessError"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/UploadFailed"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/orders/track": {
+      "post": {
+        "operationId": "trackOrder",
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Order status, proven with phone + reference",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCredentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/boutiques/{key}/orders/push": {
+      "post": {
+        "operationId": "registerPush",
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Notify this device when the order changes status (max 5 devices, oldest dropped)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderCredentials"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "token"
+                    ],
+                    "properties": {
+                      "token": {
+                        "type": "string",
+                        "example": "ExponentPushToken[xxxxxxxx]"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "unregisterPush",
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Stop notifications for this device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BoutiqueKey"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/AppVersion"
+          },
+          {
+            "$ref": "#/components/parameters/AppPlatform"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OrderCredentials"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "token"
+                    ],
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/StorefrontExpired"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "426": {
+            "$ref": "#/components/responses/AppUpdateRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Stable error code: invalid, invalidFile, fileTooLarge, notFound, storefrontExpired, rateLimited, insufficientStock, alreadyUsed, referenceCollision, transactionAlreadyUsed, appUpdateRequired, uploadFailed, or a promo-code code (expired, usageLimitReached, notYours...).",
+            "example": "rateLimited"
+          }
+        }
+      },
+      "ThemeColors": {
+        "type": "object",
+        "required": [
+          "primary",
+          "primaryForeground",
+          "ring"
+        ],
+        "properties": {
+          "primary": {
+            "type": "string",
+            "example": "#252525"
+          },
+          "primaryForeground": {
+            "type": "string"
+          },
+          "ring": {
+            "type": "string"
+          }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "required": [
+          "provider",
+          "providerKey",
+          "number",
+          "logoUrl"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "Bankily"
+          },
+          "providerKey": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Known provider id (the app may ship its own logo), null otherwise.",
+            "example": "bankily"
+          },
+          "number": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        }
+      },
+      "Boutique": {
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "announcement",
+          "logoUrl",
+          "heroImageUrl",
+          "heroTitle",
+          "heroSubtitle",
+          "heroCtaLabel",
+          "theme",
+          "couponsEnabled",
+          "payment",
+          "socialLinks"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "sport"
+          },
+          "name": {
+            "type": "string"
+          },
+          "announcement": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "heroImageUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "heroTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heroSubtitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heroCtaLabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "theme": {
+            "type": "object",
+            "required": [
+              "id",
+              "colorMode",
+              "light",
+              "dark"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "colorMode": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "light",
+                  "dark"
+                ]
+              },
+              "light": {
+                "$ref": "#/components/schemas/ThemeColors"
+              },
+              "dark": {
+                "$ref": "#/components/schemas/ThemeColors"
+              }
+            }
+          },
+          "couponsEnabled": {
+            "type": "boolean"
+          },
+          "payment": {
+            "type": "object",
+            "required": [
+              "instructions",
+              "whatsappNumber",
+              "wallets"
+            ],
+            "properties": {
+              "instructions": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "whatsappNumber": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "wallets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "platform",
+                "url"
+              ],
+              "properties": {
+                "platform": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BoutiqueDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Boutique"
+          },
+          {
+            "type": "object",
+            "required": [
+              "categories"
+            ],
+            "properties": {
+              "categories": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Category": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ColorSwatch": {
+        "type": "object",
+        "required": [
+          "name",
+          "hex",
+          "hexes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Noir-Blanc"
+          },
+          "hex": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "First segment's color; null if unknown.",
+            "example": "#18181b"
+          },
+          "hexes": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": "One per hyphen segment; null where the name is unknown.",
+            "example": [
+              "#18181b",
+              "#ffffff"
+            ]
+          }
+        }
+      },
+      "ProductSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "category",
+          "imageUrl",
+          "price",
+          "compareAtPrice",
+          "isFeatured",
+          "inStock"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "t-shirt"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "price": {
+            "type": "object",
+            "required": [
+              "min",
+              "max"
+            ],
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              }
+            },
+            "description": "MRU"
+          },
+          "compareAtPrice": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Distinct variant colors, entry order. Exact strings."
+          },
+          "colorsInStock": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "colorSwatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColorSwatch"
+            }
+          }
+        }
+      },
+      "Variant": {
+        "type": "object",
+        "required": [
+          "id",
+          "size",
+          "color",
+          "price",
+          "stock"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "lowStockThreshold": {
+            "type": "integer",
+            "description": "At or under this stock, show \"only n left\"."
+          }
+        }
+      },
+      "ProductDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProductSummary"
+          },
+          {
+            "type": "object",
+            "required": [
+              "description",
+              "images",
+              "variants"
+            ],
+            "properties": {
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "images": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "url",
+                    "color"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "color": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Variant"
+                },
+                "description": "Size order: XXS…XXXL, then numeric sizes by value, then the rest in entry order."
+              }
+            }
+          }
+        ]
+      },
+      "ProductPage": {
+        "type": "object",
+        "required": [
+          "products",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSummary"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "OrderCreated": {
+        "type": "object",
+        "required": [
+          "reference",
+          "orderId"
+        ],
+        "properties": {
+          "reference": {
+            "type": "string",
+            "example": "CMD-7KQ4M9XP"
+          },
+          "orderId": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "CONFIRMED",
+          "SHIPPING",
+          "DELIVERED",
+          "REJECTED",
+          "CANCELLED"
+        ]
+      },
+      "TrackedOrder": {
+        "type": "object",
+        "required": [
+          "reference",
+          "status",
+          "total",
+          "createdAt",
+          "statusSince"
+        ],
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "total": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "statusSince": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderCredentials": {
+        "type": "object",
+        "required": [
+          "phone",
+          "reference"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^[234]\\d{7}$",
+            "example": "37737353"
+          },
+          "reference": {
+            "type": "string",
+            "example": "CMD-7KQ4M9XP"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "BoutiqueKey": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "example": "sport"
+      },
+      "Locale": {
+        "name": "locale",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "fr",
+            "en",
+            "ar"
+          ],
+          "default": "fr"
+        },
+        "description": "Language of the boutique texts."
+      },
+      "RequestId": {
+        "name": "X-Request-Id",
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "pattern": "^[\\w.:-]{1,128}$"
+        },
+        "description": "Echoed back in the response; generated when missing."
+      },
+      "AppVersion": {
+        "name": "X-App-Version",
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "example": "1.4.0"
+        },
+        "description": "Below APP_MIN_VERSION (server setting) → 426."
+      },
+      "AppPlatform": {
+        "name": "X-App-Platform",
+        "in": "header",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ios",
+            "android"
+          ]
+        }
+      }
+    },
+    "responses": {
+      "Invalid": {
+        "description": "Malformed input",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "invalid"
+            }
+          }
+        }
+      },
+      "StorefrontExpired": {
+        "description": "The boutique's license is suspended, expired or cancelled",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "storefrontExpired"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Unknown boutique, product or order",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "notFound"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "insufficientStock, alreadyUsed, referenceCollision or transactionAlreadyUsed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "insufficientStock"
+            }
+          }
+        }
+      },
+      "FileTooLarge": {
+        "description": "Screenshot over 5 MB",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "fileTooLarge"
+            }
+          }
+        }
+      },
+      "BusinessError": {
+        "description": "Other business error (promo code: expired, usageLimitReached, notYours...)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "expired"
+            }
+          }
+        }
+      },
+      "AppUpdateRequired": {
+        "description": "The app is older than the server's minimum version",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "appUpdateRequired"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Too many requests",
+        "headers": {
+          "Retry-After": {
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Seconds to wait (not sent by search and stocks)."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "rateLimited"
+            }
+          }
+        }
+      },
+      "UploadFailed": {
+        "description": "The screenshot couldn't be stored",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "uploadFailed"
+            }
+          }
+        }
+      }
+    }
+  }
+}

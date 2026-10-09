@@ -6,6 +6,13 @@ the website's Server Actions already enforce (prices from the database, stock,
 promo codes, payment-proof checks, rate limits, boutique licenses) applies here
 too — the order and tracking routes call those same actions.
 
+**OpenAPI.** The machine-readable description is `docs/openapi.json`
+(OpenAPI 3.1), served by every deployment at `GET /api/v1/openapi.json` with
+the server URL set to that deployment. Generate the app's types from it
+(`npx openapi-typescript https://<host>/api/v1/openapi.json -o src/api/schema.ts`).
+A test fails if a route under `app/api/v1` is missing from it; when a field is
+added, update both this page and the spec.
+
 **Stability.** Installed apps don't update themselves, so v1 only grows: new
 fields and routes may appear, existing ones never change meaning or disappear.
 A breaking change means `/api/v2`, with v1 kept while old app versions circulate.
