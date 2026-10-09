@@ -16,3 +16,5 @@ allowBuilds:
 overrides:
   nanoid: '>=3.3.18'
   deepmerge-ts: '>=8.0.0'
+  # next's image optimiser (libheif advisories, fixed in 0.35.4).
+  sharp: '>=0.35.4'

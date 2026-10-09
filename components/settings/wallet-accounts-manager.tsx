@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash, CaretUp, CaretDown, Pencil, Wallet, X } from "@phosphor-icons/react/dist/ssr";
+import { Plus, Trash, CaretUp, CaretDown, Pencil, Wallet } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { WALLET_PROVIDERS, findWalletProvider } from "@/lib/shop/wallet-providers";
 import {
   createWalletAccount,
   updateWalletAccount,
@@ -25,6 +27,7 @@ type WalletAccount = {
 };
 
 const EMPTY_FORM = { provider: "", number: "" };
+const OTHER = "__other__";
 
 export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] }) {
   const t = useTranslations("settings");
@@ -33,23 +36,21 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<WalletAccount | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [removeLogo, setRemoveLogo] = useState(false);
+  // A provider outside the list: its name is typed, and it has no logo.
+  const [customProvider, setCustomProvider] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function openCreate() {
     setEditing(null);
     setForm(EMPTY_FORM);
-    setLogoFile(null);
-    setRemoveLogo(false);
+    setCustomProvider(false);
     setOpen(true);
   }
 
   function openEdit(wallet: WalletAccount) {
     setEditing(wallet);
     setForm({ provider: wallet.provider, number: wallet.number });
-    setLogoFile(null);
-    setRemoveLogo(false);
+    setCustomProvider(!findWalletProvider(wallet.provider));
     setOpen(true);
   }
 
@@ -57,11 +58,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
     const formData = new FormData();
     formData.set("provider", form.provider);
     formData.set("number", form.number);
-    if (logoFile) {
-      formData.set("logo", logoFile);
-    } else if (removeLogo) {
-      formData.set("removeLogo", "true");
-    }
 
     startTransition(async () => {
       const result = editing
@@ -199,12 +195,38 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="wallet-provider">{t("walletProvider")}</Label>
-            <Input
-              id="wallet-provider"
-              value={form.provider}
-              placeholder={t("walletProviderPlaceholder")}
-              onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
-            />
+            <Select
+              value={customProvider ? OTHER : (findWalletProvider(form.provider)?.label ?? "")}
+              onValueChange={(value) => {
+                if (value === OTHER) {
+                  setCustomProvider(true);
+                  setForm((f) => ({ ...f, provider: "" }));
+                } else {
+                  setCustomProvider(false);
+                  setForm((f) => ({ ...f, provider: value }));
+                }
+              }}
+            >
+              <SelectTrigger id="wallet-provider" className="w-full">
+                <SelectValue placeholder={t("walletProviderChoose")} />
+              </SelectTrigger>
+              <SelectContent>
+                {WALLET_PROVIDERS.map((provider) => (
+                  <SelectItem key={provider.key} value={provider.label}>
+                    {provider.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value={OTHER}>{t("walletProviderOther")}</SelectItem>
+              </SelectContent>
+            </Select>
+            {customProvider && (
+              <Input
+                aria-label={t("walletProvider")}
+                value={form.provider}
+                placeholder={t("walletProviderPlaceholder")}
+                onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+              />
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="wallet-number">{t("walletNumber")}</Label>
@@ -213,38 +235,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
               value={form.number}
               onChange={(e) => setForm((f) => ({ ...f, number: e.target.value }))}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="wallet-logo">{t("walletLogo")}</Label>
-            {editing?.logoUrl && !logoFile && !removeLogo && (
-              <div className="flex items-center gap-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={editing.logoUrl}
-                  alt=""
-                  className="size-10 rounded-md border object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setRemoveLogo(true)}
-                >
-                  <X className="size-4" />
-                  {tCommon("delete")}
-                </Button>
-              </div>
-            )}
-            <Input
-              id="wallet-logo"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              onChange={(e) => {
-                setLogoFile(e.target.files?.[0] ?? null);
-                setRemoveLogo(false);
-              }}
-            />
-            <p className="text-xs text-muted-foreground">{t("walletLogoHint")}</p>
           </div>
         </div>
       </ResponsiveFormDialog>

@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 export default async function AdminCategoriesPage() {
   const [t, tCommon, { admin, productType }] = await Promise.all([
@@ -42,6 +43,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs group="catalog" current="/admin/categories" />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <CreateCategoryButton />

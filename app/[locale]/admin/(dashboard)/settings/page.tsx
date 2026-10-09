@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getBoutiqueSettings } from "@/lib/queries/settings";
 import { getDeliveredOrders } from "@/lib/queries/orders";
 import { getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import { walletLogoSrc } from "@/lib/shop/wallet-providers";
 import { getMfaStatus } from "@/lib/auth/mfa";
 import { TwoFactorSettings } from "@/components/settings/two-factor-settings";
 import { BoutiqueSettingsForm } from "@/components/settings/boutique-settings-form";
@@ -35,7 +36,8 @@ export default async function SettingsPage() {
 
   const [boutique, deliveredOrders, mfaStatus, sellers] = await Promise.all([
     getBoutiqueSettings(productType),
-    getDeliveredOrders(productType),
+    // Only the testimonials panel (superadmin) needs them.
+    admin.role === "SUPERADMIN" ? getDeliveredOrders(productType) : Promise.resolve([]),
     getMfaStatus(),
     listSellers(productType),
   ]);
@@ -80,21 +82,25 @@ export default async function SettingsPage() {
         />
       </SettingsPanel>
 
-      <SettingsPanel>
-        <LogoUpload
-          logoUrl={
-            boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
-          }
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <LogoUpload
+            logoUrl={
+              boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
+            }
+          />
+        </SettingsPanel>
+      )}
 
-      <SettingsPanel>
-        <HeroImageUpload
-          heroImageUrl={
-            boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
-          }
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <HeroImageUpload
+            heroImageUrl={
+              boutique.heroImagePath ? getStoreHeroImageUrl(boutique.heroImagePath) : null
+            }
+          />
+        </SettingsPanel>
+      )}
 
       {(admin.role === "SUPERADMIN" || admin.canManageAppearance) && (
         <>
@@ -121,6 +127,7 @@ export default async function SettingsPage() {
       )}
 
       <BoutiqueSettingsForm
+        canEditSuperadminFields={admin.role === "SUPERADMIN"}
         heroVariant={boutique.heroVariant}
         defaultValues={{
           adminWhatsappNumber: boutique.adminWhatsappNumber ?? "",
@@ -153,7 +160,10 @@ export default async function SettingsPage() {
             id: wallet.id,
             provider: wallet.provider,
             number: wallet.number,
-            logoUrl: wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+            logoUrl: walletLogoSrc(
+              wallet.provider,
+              wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null,
+            ),
           }))}
         />
       </SettingsPanel>
@@ -168,19 +178,21 @@ export default async function SettingsPage() {
         />
       </SettingsPanel>
 
-      <SettingsPanel>
-        <TestimonialsManager
-          enabled={boutique.testimonialsEnabled}
-          testimonials={boutique.testimonials.map((item) => ({
-            id: item.id,
-            customerName: item.customerName,
-            quote: item.quote,
-            rating: item.rating,
-            orderId: item.orderId,
-          }))}
-          deliveredOrders={deliveredOrders}
-        />
-      </SettingsPanel>
+      {admin.role === "SUPERADMIN" && (
+        <SettingsPanel>
+          <TestimonialsManager
+            enabled={boutique.testimonialsEnabled}
+            testimonials={boutique.testimonials.map((item) => ({
+              id: item.id,
+              customerName: item.customerName,
+              quote: item.quote,
+              rating: item.rating,
+              orderId: item.orderId,
+            }))}
+            deliveredOrders={deliveredOrders}
+          />
+        </SettingsPanel>
+      )}
     </div>
   );
 }

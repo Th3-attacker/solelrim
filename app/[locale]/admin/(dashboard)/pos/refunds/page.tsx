@@ -2,12 +2,13 @@ import { ArrowCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
-import { listRefundRequests, REFUNDS_PAGE_SIZE } from "@/lib/queries/refunds";
+import { countPendingRefunds, listRefundRequests, REFUNDS_PAGE_SIZE } from "@/lib/queries/refunds";
 import { toPageNumber } from "@/lib/shop/pagination";
 import { cn } from "@/lib/utils";
 import { ListPagination } from "@/components/ui/list-pagination";
 import { StateMessage } from "@/components/ui/state-message";
 import { RefundRequestList } from "@/components/refunds/refund-request-list";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 const STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 type Status = (typeof STATUSES)[number];
@@ -22,6 +23,7 @@ export default async function RefundsPage({
   const params = await searchParams;
   const { admin, productType } = await requireCheckoutViewScope();
   const isAdmin = admin.role !== "SELLER";
+  const pendingRefunds = isAdmin ? await countPendingRefunds(productType) : 0;
   const status: Status | null =
     params.status === "all"
       ? null
@@ -44,6 +46,9 @@ export default async function RefundsPage({
 
   return (
     <div className="flex flex-col gap-6">
+      {isAdmin && (
+        <SectionTabs group="sales" current="/admin/pos/refunds" pendingRefunds={pendingRefunds} />
+      )}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">

@@ -23,6 +23,8 @@ import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
+import { SOLAL_STORE_TYPE } from "@/lib/brand/solal";
+import { SolalHeaderLogo } from "@/components/shop/solal-logo";
 
 // Meta keywords have had no effect on Google ranking since 2009 — this
 // exists only because a couple of smaller engines/directories still read
@@ -129,7 +131,8 @@ export default async function ShopLayout({
     price: getPriceRange(product.variants, product.basePrice).min,
   }));
 
-  const announcementText = boutique.announcementText?.trim() || t("announcementBar");
+  // No text, no bar: nothing is shown in its place.
+  const announcementText = boutique.announcementText?.trim();
 
   const socialLinks = boutique.socialLinks.map((link) => ({
     id: link.id,
@@ -190,9 +193,11 @@ export default async function ShopLayout({
             />
           )}
           <div className="shop-theme flex min-h-screen flex-col">
-            <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
-              {announcementText}
-            </div>
+            {announcementText && (
+              <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
+                {announcementText}
+              </div>
+            )}
             <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur-md">
               <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 desktop:px-8">
                 <div className="flex min-w-0 items-center gap-1">
@@ -201,16 +206,31 @@ export default async function ShopLayout({
                     href={basePath || "/"}
                     className="flex min-w-0 shrink items-center gap-2 truncate text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:text-lg"
                   >
-                    {logoUrl && (
-                      <Image
-                        src={logoUrl}
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="size-8 shrink-0 object-contain"
-                      />
+                    {storeType === SOLAL_STORE_TYPE ? (
+                      <>
+                        <span className="flex text-primary">
+                          <SolalHeaderLogo />
+                        </span>
+                        <span className="sr-only">{siteName}</span>
+                      </>
+                    ) : (
+                      <>
+                        {logoUrl && (
+                          <Image
+                            src={logoUrl}
+                            alt=""
+                            width={32}
+                            height={32}
+                            className="size-8 shrink-0 object-contain"
+                          />
+                        )}
+                        {/* Logo alone on phones, logo and name from md up. The
+                            name stays for screen readers as the link's label. */}
+                        <span className={logoUrl ? "sr-only md:not-sr-only md:truncate" : "truncate"}>
+                          {siteName}
+                        </span>
+                      </>
                     )}
-                    {siteName}
                   </Link>
                 </div>
                 <nav className="hidden items-center justify-center gap-6 md:flex">

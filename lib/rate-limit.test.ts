@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const headersMock = headers as unknown as Mock;
@@ -68,6 +68,24 @@ describe("checkRateLimit", () => {
 
     expect(allowed).toBe(false);
     expect(prismaMock.rateLimitHit.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("rateLimitRetryAfter", () => {
+  it("is null while the call is allowed", async () => {
+    prismaMock.rateLimitHit.count.mockResolvedValue(0);
+
+    expect(await rateLimitRetryAfter("k", { windowMs: 60_000, max: 5 })).toBeNull();
+  });
+
+  it("gives the seconds until the oldest hit in the window expires", async () => {
+    prismaMock.rateLimitHit.count.mockResolvedValue(5);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 45_000) } as never);
+
+    const wait = await rateLimitRetryAfter("k", { windowMs: 60_000, max: 5 });
+
+    expect(wait).toBeGreaterThanOrEqual(15);
+    expect(wait).toBeLessThanOrEqual(16);
   });
 });
 

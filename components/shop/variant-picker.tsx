@@ -157,6 +157,7 @@ export function VariantPicker({
               type="button"
               variant="outline"
               size="icon-sm"
+              aria-label={tCart("decreaseQuantity")}
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               disabled={quantity <= 1}
             >
@@ -167,6 +168,7 @@ export function VariantPicker({
               type="button"
               variant="outline"
               size="icon-sm"
+              aria-label={tCart("increaseQuantity")}
               onClick={() =>
                 setQuantity((q) => Math.min(resolvedVariant?.stock ?? 1, q + 1))
               }

@@ -12,10 +12,14 @@ function isAdminPath(pathWithoutLocale: string) {
   );
 }
 
-// The only admin area a SELLER may open — the checkout and everything
-// under it (receipts, cash closing).
+// The only admin areas a SELLER may open — the checkout and everything
+// under it (receipts, cash closing), and the help page.
 function isSellerPath(pathWithoutLocale: string) {
-  return pathWithoutLocale === "/admin/pos" || pathWithoutLocale.startsWith("/admin/pos/");
+  return (
+    pathWithoutLocale === "/admin/pos" ||
+    pathWithoutLocale.startsWith("/admin/pos/") ||
+    pathWithoutLocale === "/admin/help"
+  );
 }
 
 function isAdminLoginPath(pathWithoutLocale: string) {

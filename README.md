@@ -42,8 +42,10 @@ SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... pnpm exec tsx scrip
 
 `master` est déployé automatiquement sur Vercel à chaque merge (voir le
 workflow `dev` → `staging` → `master` ci-dessous). Vercel détecte pnpm via
-`pnpm-lock.yaml`. `pnpm run build` applique les migrations Prisma en attente
-(`prisma migrate deploy`) avant de builder — s'assurer que
+`pnpm-lock.yaml`. `pnpm run build` régénère le client Prisma (`prisma generate`
+— Vercel réutilise souvent `node_modules` en cache sans relancer le
+`postinstall`, et `lib/generated/prisma` n'est pas versionné) puis applique les
+migrations en attente (`prisma migrate deploy`) avant de builder — s'assurer que
 `DATABASE_URL`/`DIRECT_URL` pointent vers la bonne base avant de déployer.
 
 ## Workflow de contribution

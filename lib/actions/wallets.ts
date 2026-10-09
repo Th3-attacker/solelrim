@@ -5,34 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
-import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
+import { findWalletProvider } from "@/lib/shop/wallet-providers";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
-async function uploadWalletLogo(
-  file: File,
-): Promise<{ path: string } | { error: "uploadFailed" | "invalidFile" }> {
-  if (file.size > MAX_IMAGE_BYTES) {
-    return { error: "invalidFile" };
-  }
-  const fileBuffer = await file.arrayBuffer();
-  const detected = validateImageBytes(new Uint8Array(fileBuffer));
-  if (!detected) {
-    return { error: "invalidFile" };
-  }
-  const storagePath = `branding/wallet-${crypto.randomUUID()}.${detected.extension}`;
-
-  const supabase = createAdminClient();
-  const { error } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .upload(storagePath, fileBuffer, { contentType: detected.contentType });
-
-  if (error) {
-    return { error: "uploadFailed" };
-  }
-  return { path: storagePath };
-}
-
+// The logo is no longer uploaded: a known provider (lib/shop/wallet-providers)
+// has its own bundled one. Accounts created before that may still carry an
+// uploaded logo; it stays for a provider we don't know, and goes as soon as
+// the account is saved with one we do.
 export async function createWalletAccount(formData: FormData) {
   const { productType } = await requireWritableAdminScope();
   const parsed = walletAccountSchema.safeParse({
@@ -41,16 +21,6 @@ export async function createWalletAccount(formData: FormData) {
   });
   if (!parsed.success) {
     return { error: "invalid" as const };
-  }
-
-  let logoStoragePath: string | null = null;
-  const logo = formData.get("logo");
-  if (logo instanceof File && logo.size > 0) {
-    const uploaded = await uploadWalletLogo(logo);
-    if ("error" in uploaded) {
-      return uploaded;
-    }
-    logoStoragePath = uploaded.path;
   }
 
   const maxPosition = await prisma.walletAccount.aggregate({
@@ -62,7 +32,6 @@ export async function createWalletAccount(formData: FormData) {
     data: {
       ...parsed.data,
       productType,
-      logoStoragePath,
       position: (maxPosition._max.position ?? -1) + 1,
     },
   });
@@ -88,24 +57,8 @@ export async function updateWalletAccount(id: string, formData: FormData) {
   }
 
   let logoStoragePath = existing.logoStoragePath;
-  const logo = formData.get("logo");
-  const removeLogo = formData.get("removeLogo") === "true";
-
-  if (logo instanceof File && logo.size > 0) {
-    const uploaded = await uploadWalletLogo(logo);
-    if ("error" in uploaded) {
-      return uploaded;
-    }
-    if (existing.logoStoragePath) {
-      await createAdminClient()
-        .storage.from(PRODUCT_IMAGES_BUCKET)
-        .remove([existing.logoStoragePath]);
-    }
-    logoStoragePath = uploaded.path;
-  } else if (removeLogo && existing.logoStoragePath) {
-    await createAdminClient()
-      .storage.from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.logoStoragePath]);
+  if (logoStoragePath && findWalletProvider(parsed.data.provider)) {
+    await createAdminClient().storage.from(PRODUCT_IMAGES_BUCKET).remove([logoStoragePath]);
     logoStoragePath = null;
   }
 

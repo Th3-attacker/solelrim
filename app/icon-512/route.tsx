@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOLAL_COLORS, solalSymbolSvg, svgDataUri } from "@/lib/brand/solal";
 
 export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
@@ -16,15 +17,17 @@ export function GET() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#18181b",
+          background: SOLAL_COLORS.marine,
           borderRadius: 112,
-          color: "#ffffff",
-          fontSize: 320,
-          fontWeight: 700,
-          fontFamily: "system-ui, sans-serif",
         }}
       >
-        S
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={svgDataUri(solalSymbolSvg(SOLAL_COLORS.white))}
+          width={341}
+          height={341}
+          alt=""
+        />
       </div>
     ),
     { ...size },

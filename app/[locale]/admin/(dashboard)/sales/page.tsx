@@ -6,6 +6,7 @@ import { Plus, Receipt } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
 import { getAdminScope } from "@/lib/shop/admin-scope";
+import { countPendingRefunds } from "@/lib/queries/refunds";
 import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { Button } from "@/components/ui/button";
 import { StateMessage } from "@/components/ui/state-message";
@@ -19,9 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 export default async function AdminSalesPage() {
   const scope = await getAdminScope();
+  const pendingRefunds = await countPendingRefunds(scope);
   const [t, tCommon, format, sales] = await Promise.all([
     getTranslations("sales"),
     getTranslations("common"),
@@ -46,6 +49,7 @@ export default async function AdminSalesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs group="sales" current="/admin/sales" pendingRefunds={pendingRefunds} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <div className="flex items-center gap-2">

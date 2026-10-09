@@ -135,3 +135,35 @@ export function getOrderById(id: string, productType: string) {
     },
   });
 }
+
+// The order an earlier request with this Idempotency-Key created in this
+// boutique, answered exactly like a fresh submit.
+export async function findOrderByIdempotencyKey(
+  productType: string,
+  idempotencyKey: string,
+): Promise<{ reference: string; orderId: string } | null> {
+  const order = await prisma.order.findUnique({
+    where: { productType_idempotencyKey: { productType, idempotencyKey } },
+    select: { id: true, reference: true },
+  });
+  return order ? { reference: order.reference, orderId: order.id } : null;
+}
+
+// Other orders of this boutique sent with the very same screenshot (same
+// SHA-256) — shown on the admin's order page as a possible fake payment.
+export async function getOrdersSharingPaymentProof(order: {
+  id: string;
+  productType: string;
+  paymentProofHash: string | null;
+}): Promise<{ id: string; reference: string }[]> {
+  if (!order.paymentProofHash) return [];
+  return prisma.order.findMany({
+    where: {
+      productType: order.productType,
+      paymentProofHash: order.paymentProofHash,
+      id: { not: order.id },
+    },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, reference: true },
+  });
+}

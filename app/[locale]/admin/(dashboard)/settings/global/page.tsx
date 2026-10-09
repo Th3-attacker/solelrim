@@ -29,6 +29,7 @@ export default async function GlobalSettingsPage() {
     licenseExpiresAt: type.licenseExpiresAt,
     licenseClientName: type.licenseClientName,
     couponsEnabled: type.couponsEnabled,
+    pendingAutoCancelHours: type.pendingAutoCancelHours,
   }));
 
   return (
