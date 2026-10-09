@@ -17,10 +17,30 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
   `invalidFile` 400, `fileTooLarge` 413, `notFound` 404, `storefrontExpired`
   403 (the boutique's license is suspended, expired or cancelled),
   `rateLimited` 429, `insufficientStock` 409, `alreadyUsed` 409,
-  `referenceCollision` 409, `transactionAlreadyUsed` 409, `uploadFailed` 502;
-  any other business error 422.
+  `referenceCollision` 409, `transactionAlreadyUsed` 409,
+  `appUpdateRequired` 426, `uploadFailed` 502; any other business error 422.
 - Catalogue `GET`s may be cached for 30 s; everything else is `no-store`.
 - Money amounts are numbers in the boutique's currency (MRU).
+
+## Request headers (all routes)
+Optional, sent by the app on every call:
+
+| Header | Example | Use |
+|---|---|---|
+| `X-Request-Id` | a UUID per call | Echoed back in the response's `X-Request-Id` and logged; one is generated when missing (or not 1–128 of `A-Z a-z 0-9 _ . : -`) |
+| `X-App-Version` | `1.4.0` | Logged; compared with the minimum version below |
+| `X-App-Platform` | `ios` / `android` | Logged |
+
+Every response carries `X-Request-Id`.
+
+**Minimum app version.** When the server sets `APP_MIN_VERSION` (unset by
+default), an app sending an older `X-App-Version` gets
+`426 { "error": "appUpdateRequired" }` on every route. An app that sends no
+version is never blocked.
+
+**Mobile side:** send the three headers on every call; show the response's
+`X-Request-Id` in error screens / bug reports; on `426 appUpdateRequired`, show
+an "update the app" screen with a link to the store.
 
 ## Rate limits
 Counted per IP address and, where the body carries one, per phone number

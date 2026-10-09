@@ -1,3 +1,4 @@
+import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, ok, pageOf } from "@/lib/api/http";
 import { serializeProductSummary } from "@/lib/api/serializers";
@@ -9,7 +10,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 const SEARCH_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 40 };
 
 // GET /api/v1/boutiques/{key}/products?category=&q=&page=&pageSize=
-export async function GET(request: Request, ctx: { params: Promise<{ key: string }> }) {
+async function get(request: Request, ctx: { params: Promise<{ key: string }> }) {
   const { key } = await ctx.params;
   const { boutique, response } = await loadOpenBoutique(key);
   if (!boutique) return response;
@@ -37,3 +38,5 @@ export async function GET(request: Request, ctx: { params: Promise<{ key: string
   const { items, total } = await getActiveProductsPage(boutique.key, { categoryId, page, pageSize });
   return ok({ products: items.map(serializeProductSummary), page, pageSize, total }, { cache: true });
 }
+
+export const GET = withApi(get);

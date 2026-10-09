@@ -1,3 +1,4 @@
+import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { failFromCode, ok, readJson } from "@/lib/api/http";
 import { trackOrder } from "@/lib/actions/orders";
@@ -6,7 +7,7 @@ import { trackOrder } from "@/lib/actions/orders";
 //   { "phone": "37737353", "reference": "CMD-7KQ4M9XP" }
 // → { reference, status, total, createdAt, statusSince }. The reference plus
 // the phone number are the customer's only credentials: there are no accounts.
-export async function POST(request: Request, ctx: { params: Promise<{ key: string }> }) {
+async function post(request: Request, ctx: { params: Promise<{ key: string }> }) {
   const { key } = await ctx.params;
   const { boutique, response } = await loadOpenBoutique(key);
   if (!boutique) return response;
@@ -16,3 +17,5 @@ export async function POST(request: Request, ctx: { params: Promise<{ key: strin
   if ("error" in result && result.error) return failFromCode(result.error, result.retryAfter);
   return ok(result);
 }
+
+export const POST = withApi(post);

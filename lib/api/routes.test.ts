@@ -41,6 +41,8 @@ function post(path: string, body: BodyInit, headers?: HeadersInit) {
 }
 
 beforeEach(() => {
+  // withApi's per-request log line.
+  vi.spyOn(console, "info").mockImplementation(() => {});
   mockReset(prismaMock);
   submitOrderMock.mockReset();
   trackOrderMock.mockReset();

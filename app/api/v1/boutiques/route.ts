@@ -1,10 +1,11 @@
+import { withApi } from "@/lib/api/trace";
 import { listOpenBoutiques } from "@/lib/api/boutique";
 import { localeOf, ok } from "@/lib/api/http";
 import { serializeBoutique } from "@/lib/api/serializers";
 
 // GET /api/v1/boutiques?locale=fr — the boutiques the app lets the customer
 // choose from.
-export async function GET(request: Request) {
+async function get(request: Request) {
   const url = new URL(request.url);
   const locale = localeOf(url);
   const boutiques = await listOpenBoutiques();
@@ -13,3 +14,5 @@ export async function GET(request: Request) {
     { cache: true },
   );
 }
+
+export const GET = withApi(get);

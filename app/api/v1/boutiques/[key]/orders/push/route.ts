@@ -1,3 +1,4 @@
+import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { failFromCode, ok, readJson } from "@/lib/api/http";
 import { registerPushToken, removePushToken } from "@/lib/push/register";
@@ -23,10 +24,13 @@ async function handle(
   return ok({ ok: true });
 }
 
-export function POST(request: Request, ctx: { params: Promise<{ key: string }> }) {
+function post(request: Request, ctx: { params: Promise<{ key: string }> }) {
   return handle(request, ctx, registerPushToken);
 }
 
-export function DELETE(request: Request, ctx: { params: Promise<{ key: string }> }) {
+function remove(request: Request, ctx: { params: Promise<{ key: string }> }) {
   return handle(request, ctx, removePushToken);
 }
+
+export const POST = withApi(post);
+export const DELETE = withApi(remove);

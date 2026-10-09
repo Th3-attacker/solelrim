@@ -1,10 +1,11 @@
+import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, ok } from "@/lib/api/http";
 import { serializeProductDetail } from "@/lib/api/serializers";
 import { getActiveProductBySlug } from "@/lib/queries/shop";
 
 // GET /api/v1/boutiques/{key}/products/{slug}
-export async function GET(
+async function get(
   _request: Request,
   ctx: { params: Promise<{ key: string; slug: string }> },
 ) {
@@ -16,3 +17,5 @@ export async function GET(
   if (!product) return fail("notFound", 404);
   return ok(serializeProductDetail(product), { cache: true });
 }
+
+export const GET = withApi(get);

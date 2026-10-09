@@ -1,3 +1,4 @@
+import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, failFromCode } from "@/lib/api/http";
 import { submitOrder } from "@/lib/actions/orders";
@@ -25,7 +26,7 @@ function created(order: { reference: string; orderId?: string }) {
   );
 }
 
-export async function POST(request: Request, ctx: { params: Promise<{ key: string }> }) {
+async function post(request: Request, ctx: { params: Promise<{ key: string }> }) {
   const { key } = await ctx.params;
   const { boutique, response } = await loadOpenBoutique(key);
   if (!boutique) return response;
@@ -61,3 +62,5 @@ export async function POST(request: Request, ctx: { params: Promise<{ key: strin
   }
   return created({ reference: result.reference, orderId: result.orderId });
 }
+
+export const POST = withApi(post);
