@@ -4,22 +4,22 @@ import type { PrismaClient } from "@/lib/generated/prisma/client";
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
 vi.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: vi.fn(),
+  rateLimitRetryAfter: vi.fn(),
   getClientIp: vi.fn().mockResolvedValue("1.2.3.4"),
 }));
 
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { rateLimitRetryAfter } from "@/lib/rate-limit";
 import { registerPushToken, removePushToken } from "@/lib/push/register";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-const rateLimitMock = checkRateLimit as unknown as Mock;
+const rateLimitMock = rateLimitRetryAfter as unknown as Mock;
 
 const valid = { phone: "37737353", reference: "cmd-1", token: "ExponentPushToken[abc123]" };
 
 beforeEach(() => {
   mockReset(prismaMock);
-  rateLimitMock.mockReset().mockResolvedValue(true);
+  rateLimitMock.mockReset().mockResolvedValue(null);
   prismaMock.order.findFirst.mockResolvedValue({ id: "o1" } as never);
   prismaMock.pushToken.findMany.mockResolvedValue([{ id: "t1" }] as never);
 });
@@ -51,10 +51,11 @@ describe("registerPushToken", () => {
     expect(prismaMock.pushToken.upsert).not.toHaveBeenCalled();
   });
 
-  it("is rate-limited", async () => {
-    rateLimitMock.mockResolvedValue(false);
+  it("is rate-limited per IP, 20 an hour, and says how long to wait", async () => {
+    rateLimitMock.mockResolvedValue(120);
 
-    expect(await registerPushToken("sport", valid)).toEqual({ error: "rateLimited" });
+    expect(await registerPushToken("sport", valid)).toEqual({ error: "rateLimited", retryAfter: 120 });
+    expect(rateLimitMock).toHaveBeenCalledWith("push:1.2.3.4", { windowMs: 3_600_000, max: 20 });
   });
 
   it("keeps at most 5 tokens per order, dropping the oldest", async () => {

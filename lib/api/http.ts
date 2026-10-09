@@ -15,8 +15,8 @@ export function ok(data: unknown, options?: { cache?: boolean }): Response {
   });
 }
 
-export function fail(error: string, status: number): Response {
-  return Response.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
+export function fail(error: string, status: number, extraHeaders?: Record<string, string>): Response {
+  return Response.json({ error }, { status, headers: { "Cache-Control": "no-store", ...extraHeaders } });
 }
 
 // The HTTP status of an error code coming back from a Server Action.
@@ -33,8 +33,10 @@ const STATUS_BY_ERROR: Record<string, number> = {
   referenceCollision: 409,
 };
 
-export function failFromCode(error: string): Response {
-  return fail(error, STATUS_BY_ERROR[error] ?? 422);
+// retryAfter (seconds) comes with "rateLimited" and becomes Retry-After.
+export function failFromCode(error: string, retryAfter?: number): Response {
+  const headers = retryAfter !== undefined ? { "Retry-After": String(retryAfter) } : undefined;
+  return fail(error, STATUS_BY_ERROR[error] ?? 422, headers);
 }
 
 export async function readJson(request: Request): Promise<unknown> {

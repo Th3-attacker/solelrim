@@ -13,6 +13,6 @@ export async function POST(request: Request, ctx: { params: Promise<{ key: strin
 
   const body = await readJson(request);
   const result = await previewPromoCode({ ...(body as object), productType: boutique.key });
-  if ("error" in result) return failFromCode(result.error);
+  if ("error" in result) return failFromCode(result.error, result.retryAfter);
   return ok(result);
 }

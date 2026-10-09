@@ -21,6 +21,24 @@ A breaking change means `/api/v2`, with v1 kept while old app versions circulate
 - Catalogue `GET`s may be cached for 30 s; everything else is `no-store`.
 - Money amounts are numbers in the boutique's currency (MRU).
 
+## Rate limits
+Counted per IP address and, where the body carries one, per phone number
+(a sliding window; the website shares the same counters).
+
+| Route | Per phone | Per IP |
+|---|---|---|
+| `POST .../orders` | 5 / hour (`customerPhone`) | 20 / hour |
+| `POST .../orders/track` | 10 / 15 min | 30 / 15 min |
+| `POST .../promo` | 10 / 15 min (`customerPhone`) | 20 / 15 min |
+| `POST` / `DELETE .../orders/push` | — | 20 / hour |
+
+Over a limit: `429 { "error": "rateLimited" }` with a `Retry-After` header
+(seconds). A resend carrying an already-used `Idempotency-Key` is never
+counted.
+
+**Mobile side:** on a 429, show "try again in n minutes" from `Retry-After`
+and don't retry automatically before it.
+
 ## Routes
 | Route | Purpose |
 |---|---|

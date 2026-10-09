@@ -19,7 +19,7 @@ async function handle(
   if (!boutique) return response;
 
   const result = await action(boutique.key, await readJson(request));
-  if (result.error) return failFromCode(result.error);
+  if (result.error) return failFromCode(result.error, result.retryAfter);
   return ok({ ok: true });
 }
 

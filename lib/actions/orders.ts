@@ -15,7 +15,7 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
@@ -28,7 +28,10 @@ const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
 // Public, unauthenticated action that accepts a file upload — capped per IP
 // so it can't be used to spam Storage or flood the admin with fake orders.
-const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 5 };
+// Per IP, loose enough for customers sharing a carrier's address; the real
+// cap is per phone number, checked once the form is parsed.
+const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 20 };
+const SUBMIT_ORDER_PHONE_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 5 };
 
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
@@ -40,6 +43,8 @@ function resolveOrderLocale(value: FormDataEntryValue | null): string {
 
 export type SubmitOrderResult = {
   error?: string;
+  // With "rateLimited": seconds until the caller may try again.
+  retryAfter?: number;
   reference?: string;
   orderId?: string;
 };
@@ -50,9 +55,9 @@ export async function submitOrder(
 ): Promise<SubmitOrderResult> {
   const idempotencyKey = options?.idempotencyKey ?? null;
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
-  if (!allowed) {
-    return { error: "rateLimited" };
+  const ipWait = await rateLimitRetryAfter(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
+  if (ipWait !== null) {
+    return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const customerParsed = checkoutCustomerSchema.safeParse({
@@ -62,6 +67,13 @@ export async function submitOrder(
   });
   if (!customerParsed.success) {
     return { error: "invalid" };
+  }
+  const phoneWait = await rateLimitRetryAfter(
+    `order-phone:${customerParsed.data.customerPhone}`,
+    SUBMIT_ORDER_PHONE_RATE_LIMIT,
+  );
+  if (phoneWait !== null) {
+    return { error: "rateLimited", retryAfter: phoneWait };
   }
 
   const senderPhoneParsed = paymentSenderPhoneSchema.safeParse(
@@ -329,10 +341,13 @@ export async function submitOrder(
 // attempts. Requires the exact reference alongside the phone number (not
 // just the phone) precisely so knowing/guessing someone's number alone
 // isn't enough to see their order history.
-const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
+const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 30 };
+// Per phone number: guessing references for one customer stops here even
+// from many addresses.
+const TRACK_ORDER_PHONE_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
 
 export type TrackOrderResult =
-  | { error: string }
+  | { error: string; retryAfter?: number }
   | {
       reference: string;
       status: OrderStatus;
@@ -372,14 +387,21 @@ function getStatusSince(order: {
 
 export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
-  if (!allowed) {
-    return { error: "rateLimited" };
+  const ipWait = await rateLimitRetryAfter(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
+  if (ipWait !== null) {
+    return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const parsed = trackOrderSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "invalid" };
+  }
+  const phoneWait = await rateLimitRetryAfter(
+    `track-order-phone:${parsed.data.phone}`,
+    TRACK_ORDER_PHONE_RATE_LIMIT,
+  );
+  if (phoneWait !== null) {
+    return { error: "rateLimited", retryAfter: phoneWait };
   }
 
   const order = await prisma.order.findFirst({

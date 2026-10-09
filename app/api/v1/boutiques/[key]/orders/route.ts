@@ -57,7 +57,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ key: strin
       const existing = await findOrderByIdempotencyKey(boutique.key, idempotencyKey);
       if (existing) return created(existing);
     }
-    return failFromCode(result.error ?? "invalid");
+    return failFromCode(result.error ?? "invalid", result.retryAfter);
   }
   return created({ reference: result.reference, orderId: result.orderId });
 }

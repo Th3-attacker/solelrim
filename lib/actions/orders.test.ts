@@ -674,14 +674,25 @@ describe("submitOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(5);
+    prismaMock.rateLimitHit.count.mockResolvedValue(20);
 
     const result = await submitOrder(buildOrderForm());
 
-    expect(result).toEqual({ error: "rateLimited" });
+    // No hit found in the mock, so the wait is the whole one-hour window.
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 3600 });
     expect(prismaMock.rateLimitHit.create).not.toHaveBeenCalled();
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
     expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("caps orders per phone number, 5 an hour, whatever the IP", async () => {
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
+      Promise.resolve(args.where.key === "order-phone:22345678" ? 5 : 0)) as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 3600 });
+    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
   it("counts a rate-limit hit against the first IP in x-forwarded-for", async () => {
@@ -1096,7 +1107,7 @@ describe("trackOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(10);
+    prismaMock.rateLimitHit.count.mockResolvedValue(30);
 
     const result = await trackOrder({
       phone: "37737353",
@@ -1104,7 +1115,21 @@ describe("trackOrder", () => {
       productType: "sport",
     });
 
-    expect(result).toEqual({ error: "rateLimited" });
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("caps lookups per phone number, 10 per 15 minutes, against guessing references", async () => {
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
+      Promise.resolve(args.where.key === "track-order-phone:37737353" ? 10 : 0)) as never);
+
+    const result = await trackOrder({
+      phone: "37737353",
+      reference: "CMD-20260815-1234",
+      productType: "sport",
+    });
+
+    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
     expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
   });
 

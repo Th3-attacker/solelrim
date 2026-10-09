@@ -93,6 +93,16 @@ describe("POST orders", () => {
     expect((await postOrder(post("/x", new FormData()), ctx("sport"))).status).toBe(409);
   });
 
+  it("sends Retry-After with a 429", async () => {
+    submitOrderMock.mockResolvedValue({ error: "rateLimited", retryAfter: 120 });
+
+    const response = await postOrder(post("/x", new FormData()), ctx("sport"));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("120");
+    expect(await response.json()).toEqual({ error: "rateLimited" });
+  });
+
   it("refuses a body that isn't a form", async () => {
     const response = await postOrder(post("/x", "not a form", { "content-type": "text/plain" }), ctx("sport"));
 

@@ -42,8 +42,18 @@ export async function getClientIp(): Promise<string> {
 // storefront — not meant to hold up under a distributed attack.
 export async function checkRateLimit(
   key: string,
-  { windowMs, max }: { windowMs: number; max: number },
+  limit: { windowMs: number; max: number },
 ): Promise<boolean> {
+  return (await rateLimitRetryAfter(key, limit)) === null;
+}
+
+// Same check, but tells a blocked caller how long to wait: null when the call
+// is allowed, otherwise the seconds until the oldest hit leaves the window
+// (what the mobile API sends back as Retry-After).
+export async function rateLimitRetryAfter(
+  key: string,
+  { windowMs, max }: { windowMs: number; max: number },
+): Promise<number | null> {
   const windowStart = new Date(Date.now() - windowMs);
 
   return prisma.$transaction(async (tx) => {
@@ -62,20 +72,29 @@ export async function checkRateLimit(
     const count = await tx.rateLimitHit.count({
       where: { key, createdAt: { gte: windowStart } },
     });
-    if (count >= max) return false;
+    if (count >= max) {
+      const oldest = await tx.rateLimitHit.findFirst({
+        where: { key, createdAt: { gte: windowStart } },
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      });
+      const freeAt = (oldest?.createdAt.getTime() ?? Date.now()) + windowMs;
+      return Math.max(1, Math.ceil((freeAt - Date.now()) / 1000));
+    }
 
     await tx.rateLimitHit.create({ data: { key } });
 
     // Opportunistic global GC: the per-key prune above never revisits a key
     // that stopped being hit (a rotated IP, a one-off user-agent bucket), so
     // the table would only grow. ~2% of allowed calls sweep everything older
-    // than an hour — comfortably past the longest window any caller uses.
+    // than two hours — comfortably past the longest window any caller uses
+    // (one hour).
     if (Math.random() < 0.02) {
       await tx.rateLimitHit.deleteMany({
-        where: { createdAt: { lt: new Date(Date.now() - 3_600_000) } },
+        where: { createdAt: { lt: new Date(Date.now() - 2 * 3_600_000) } },
       });
     }
 
-    return true;
+    return null;
   });
 }
