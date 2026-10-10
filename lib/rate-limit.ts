@@ -73,13 +73,7 @@ export async function rateLimitRetryAfter(
       where: { key, createdAt: { gte: windowStart } },
     });
     if (count >= max) {
-      const oldest = await tx.rateLimitHit.findFirst({
-        where: { key, createdAt: { gte: windowStart } },
-        orderBy: { createdAt: "asc" },
-        select: { createdAt: true },
-      });
-      const freeAt = (oldest?.createdAt.getTime() ?? Date.now()) + windowMs;
-      return Math.max(1, Math.ceil((freeAt - Date.now()) / 1000));
+      return secondsUntilFree(tx, key, { windowMs, max }, count);
     }
 
     await tx.rateLimitHit.create({ data: { key } });
@@ -97,4 +91,43 @@ export async function rateLimitRetryAfter(
 
     return null;
   });
+}
+
+type HitStore = Pick<typeof prisma, "rateLimitHit">;
+
+// Seconds until `key` is back under `max`. The hit that has to leave the
+// window is the (count - max + 1)-th oldest: the oldest alone when the count
+// sits at the limit, a later one when concurrent calls went past it.
+async function secondsUntilFree(
+  db: HitStore,
+  key: string,
+  { windowMs, max }: { windowMs: number; max: number },
+  count: number,
+): Promise<number> {
+  const blocking = await db.rateLimitHit.findFirst({
+    where: { key, createdAt: { gte: new Date(Date.now() - windowMs) } },
+    orderBy: { createdAt: "asc" },
+    skip: count - max,
+    select: { createdAt: true },
+  });
+  const freeAt = (blocking?.createdAt.getTime() ?? Date.now()) + windowMs;
+  return Math.max(1, Math.ceil((freeAt - Date.now()) / 1000));
+}
+
+// For limits that only count some outcomes (failed lookups): check first
+// without recording anything, and record with recordRateLimitHit once the
+// outcome is known. No lock: calls running side by side may go a few hits
+// past `max`, as many as run at once — fine for a deterrent.
+export async function peekRateLimit(
+  key: string,
+  limit: { windowMs: number; max: number },
+): Promise<number | null> {
+  const count = await prisma.rateLimitHit.count({
+    where: { key, createdAt: { gte: new Date(Date.now() - limit.windowMs) } },
+  });
+  return count >= limit.max ? secondsUntilFree(prisma, key, limit, count) : null;
+}
+
+export async function recordRateLimitHit(key: string): Promise<void> {
+  await prisma.rateLimitHit.create({ data: { key } });
 }

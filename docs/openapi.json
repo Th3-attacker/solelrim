@@ -603,6 +603,7 @@
         "operationId": "trackOrder",
         "tags": ["Orders"],
         "summary": "Order status, proven with phone + reference",
+        "description": "Failed lookups (notFound, malformed phone or empty reference) are limited to 10 per 15 min per phone and 60 per 15 min per IP. Successes don't count against those: they are limited to 30 per minute per order, and every lookup to 300 per minute per IP (many customers share one IP behind CGNAT). Over a failure limit, every lookup from that phone or IP gets 429 until Retry-After, the right pair included. Retry-After is the time really left, the longest one when several limits apply.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BoutiqueKey"

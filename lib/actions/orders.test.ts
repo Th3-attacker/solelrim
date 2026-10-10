@@ -1179,6 +1179,148 @@ describe("cancelOrder", () => {
   });
 });
 
+describe("trackOrder rate limits", () => {
+  // An in-memory RateLimitHit table, so the limits count for real across calls.
+  let hits: { key: string; createdAt: Date }[];
+  const countFor = (prefix: string) => hits.filter((hit) => hit.key.startsWith(prefix)).length;
+  const inWindow = (where: { key: string; createdAt?: { gte?: Date } }) =>
+    hits
+      .filter((hit) => hit.key === where.key && (!where.createdAt?.gte || hit.createdAt >= where.createdAt.gte))
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+  const found = {
+    reference: "CMD-7KQ4M9XP",
+    status: "PENDING",
+    total: { toNumber: () => 1000 },
+    subtotal: { toNumber: () => 1000 },
+    discount: { toNumber: () => 0 },
+    createdAt: new Date(),
+    confirmedAt: null,
+    shippedAt: null,
+    deliveredAt: null,
+    rejectedAt: null,
+    cancelledAt: null,
+    items: [],
+  };
+  const track = (phone: string, reference = "CMD-7KQ4M9XP") =>
+    trackOrder({ phone, reference, productType: "sport" });
+  const fromIp = (ip: string) =>
+    headersMock.mockResolvedValue({ get: (name: string) => (name === "x-real-ip" ? ip : null) });
+
+  beforeEach(() => {
+    hits = [];
+    fromIp("41.188.0.1");
+    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string; createdAt?: { gte?: Date } } }) =>
+      Promise.resolve(inWindow(args.where).length)) as never);
+    prismaMock.rateLimitHit.create.mockImplementation(((args: { data: { key: string } }) => {
+      hits.push({ key: args.data.key, createdAt: new Date() });
+      return Promise.resolve({});
+    }) as never);
+    prismaMock.rateLimitHit.findFirst.mockImplementation(((args: {
+      where: { key: string; createdAt?: { gte?: Date } };
+      skip?: number;
+    }) => Promise.resolve(inWindow(args.where)[args.skip ?? 0] ?? null)) as never);
+  });
+
+  it("counts a failed lookup against the IP and the phone", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+
+    expect(await track("37737353")).toEqual({ error: "notFound" });
+
+    expect(countFor("track-fail-ip:41.188.0.1")).toBe(1);
+    expect(countFor("track-fail-phone:37737353")).toBe(1);
+  });
+
+  it("counts a malformed request as a failure too", async () => {
+    expect(await track("37737353", "")).toEqual({ error: "invalid" });
+
+    expect(countFor("track-fail-phone:37737353")).toBe(1);
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("never blocks a customer following their order: successes don't touch the failure counters", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+
+    // Over ten times the failure limit, as an open order screen polling
+    // every minute and the order list would do.
+    for (let i = 0; i < 25; i++) {
+      expect(await track("37737353")).toMatchObject({ reference: "CMD-7KQ4M9XP" });
+    }
+
+    expect(countFor("track-fail-")).toBe(0);
+    expect(countFor("track-ok:sport:CMD-7KQ4M9XP")).toBe(25);
+  });
+
+  it("blocks a phone after 10 failures, the right pair included", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 10; i++) await track("37737353", `CMD-GUESS${i}`);
+
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+  });
+
+  it("doesn't let one phone's failures block another phone behind the same IP", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 10; i++) await track("37737353", `CMD-GUESS${i}`);
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    expect(await track("22345678")).toMatchObject({ reference: "CMD-7KQ4M9XP" });
+  });
+
+  it("blocks an IP after 60 failures, whatever the phone", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 60; i++) await track(`2${String(i).padStart(7, "0")}`);
+
+    expect(await track("44556677")).toMatchObject({ error: "rateLimited" });
+    fromIp("41.188.0.2");
+    expect(await track("44556677")).toEqual({ error: "notFound" });
+  });
+
+  it("caps successes per order at 30 a minute", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    for (let i = 0; i < 30; i++) await track("37737353");
+
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+  });
+
+  it("caps every lookup from one IP at 300 a minute", async () => {
+    hits = Array.from({ length: 300 }, () => ({ key: "track-ip:41.188.0.1", createdAt: new Date() }));
+
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("says how long is really left in Retry-After", async () => {
+    // 10 failures, the oldest 10 minutes ago: 5 minutes left in the window.
+    hits = Array.from({ length: 10 }, (_, i) => ({
+      key: "track-fail-phone:37737353",
+      createdAt: new Date(Date.now() - (10 - i) * 60_000),
+    }));
+
+    const result = await track("37737353");
+
+    expect(result).toMatchObject({ error: "rateLimited" });
+    const { retryAfter } = result as { retryAfter: number };
+    expect(retryAfter).toBeGreaterThanOrEqual(299);
+    expect(retryAfter).toBeLessThanOrEqual(300);
+  });
+
+  it("announces the longest wait when the IP and the phone are both blocked", async () => {
+    hits = [
+      ...Array.from({ length: 10 }, () => ({
+        key: "track-fail-phone:37737353",
+        createdAt: new Date(Date.now() - 14 * 60_000),
+      })),
+      ...Array.from({ length: 60 }, () => ({ key: "track-fail-ip:41.188.0.1", createdAt: new Date() })),
+    ];
+
+    const { retryAfter } = (await track("37737353")) as { retryAfter: number };
+
+    expect(retryAfter).toBeGreaterThanOrEqual(899);
+  });
+});
+
 describe("trackOrder", () => {
   it("returns invalid for a malformed phone or a blank reference", async () => {
     const result = await trackOrder({
@@ -1188,36 +1330,6 @@ describe("trackOrder", () => {
     });
 
     expect(result).toEqual({ error: "invalid" });
-    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
-  });
-
-  it("rejects with rateLimited and does no lookup when the caller's IP is over the limit", async () => {
-    headersMock.mockResolvedValue({
-      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9" : null),
-    });
-    prismaMock.rateLimitHit.count.mockResolvedValue(30);
-
-    const result = await trackOrder({
-      phone: "37737353",
-      reference: "CMD-20260815-1234",
-      productType: "sport",
-    });
-
-    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
-    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
-  });
-
-  it("caps lookups per phone number, 10 per 15 minutes, against guessing references", async () => {
-    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
-      Promise.resolve(args.where.key === "track-order-phone:37737353" ? 10 : 0)) as never);
-
-    const result = await trackOrder({
-      phone: "37737353",
-      reference: "CMD-20260815-1234",
-      productType: "sport",
-    });
-
-    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
     expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
   });
 

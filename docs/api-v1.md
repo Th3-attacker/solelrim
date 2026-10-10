@@ -62,15 +62,32 @@ Counted per IP address and, where the body carries one, per phone number
 | Route                             | Per phone                     | Per IP      |
 | --------------------------------- | ----------------------------- | ----------- |
 | `POST .../orders`                 | 5 / hour (`customerPhone`)    | 20 / hour   |
-| `POST .../orders/track`           | 10 / 15 min                   | 30 / 15 min |
+| `POST .../orders/track`           | see below                     | see below   |
 | `POST .../promo`                  | 10 / 15 min (`customerPhone`) | 20 / 15 min |
 | `POST` / `DELETE .../orders/push` | —                             | 20 / hour   |
+
+**Tracking** tells guessing from following an order. Many customers share one
+IP address (Mauritanian carriers use CGNAT), so a customer following their own
+order is never counted per IP alone:
+
+| What is counted                                                 | Key                              | Limit       |
+| --------------------------------------------------------------- | -------------------------------- | ----------- |
+| Failed lookups (`notFound`, malformed phone or empty reference) | per phone                        | 10 / 15 min |
+| Failed lookups                                                  | per IP                           | 60 / 15 min |
+| Successful lookups                                              | per order (boutique + reference) | 30 / min    |
+| Every lookup (safety net)                                       | per IP                           | 300 / min   |
+
+A success never uses up the failure budget. Once a phone or an IP is over its
+failure limit, every lookup from it gets a 429 until `Retry-After`, the right
+phone + reference included (otherwise a 429 / 200 difference would tell a
+guesser when they found it). The website's tracking page follows the same
+rules and shares the counters.
 
 Over a limit: `429 { "error": "rateLimited" }` with a `Retry-After` header
 (seconds), on every route — the search (`q`, 40 / 15 min per IP) and
 `POST .../stocks` (60 / 15 min per IP) included. A malformed `stocks` list
-(over 50 ids, a non-string id) is a `400 invalid`, not a 429. A resend carrying an already-used `Idempotency-Key` is never
-counted.
+(over 50 ids, a non-string id) is a `400 invalid`, not a 429. A resend carrying
+an already-used `Idempotency-Key` is never counted.
 
 **Mobile side:** on a 429, show "try again in n minutes" from `Retry-After`
 and don't retry automatically before it.

@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { checkRateLimit, getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, peekRateLimit, rateLimitRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const headersMock = headers as unknown as Mock;
@@ -86,6 +86,46 @@ describe("rateLimitRetryAfter", () => {
 
     expect(wait).toBeGreaterThanOrEqual(15);
     expect(wait).toBeLessThanOrEqual(16);
+  });
+});
+
+describe("rateLimitRetryAfter past the limit", () => {
+  it("waits for enough hits to leave the window, not just the oldest", async () => {
+    // 7 hits for a limit of 5 (concurrent calls overshot): the 3rd oldest
+    // has to leave before a call is allowed again.
+    prismaMock.rateLimitHit.count.mockResolvedValue(7);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 30_000) } as never);
+
+    const wait = await rateLimitRetryAfter("k", { windowMs: 60_000, max: 5 });
+
+    expect(prismaMock.rateLimitHit.findFirst).toHaveBeenCalledWith(expect.objectContaining({ skip: 2 }));
+    expect(wait).toBeGreaterThanOrEqual(30);
+    expect(wait).toBeLessThanOrEqual(31);
+  });
+});
+
+describe("peekRateLimit / recordRateLimitHit", () => {
+  it("checks without recording anything", async () => {
+    prismaMock.rateLimitHit.count.mockResolvedValue(3);
+
+    expect(await peekRateLimit("k", { windowMs: 60_000, max: 5 })).toBeNull();
+    expect(prismaMock.rateLimitHit.create).not.toHaveBeenCalled();
+  });
+
+  it("gives the wait once the limit is reached", async () => {
+    prismaMock.rateLimitHit.count.mockResolvedValue(5);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 50_000) } as never);
+
+    const wait = await peekRateLimit("k", { windowMs: 60_000, max: 5 });
+
+    expect(wait).toBeGreaterThanOrEqual(10);
+    expect(wait).toBeLessThanOrEqual(11);
+  });
+
+  it("records one hit", async () => {
+    await recordRateLimitHit("k");
+
+    expect(prismaMock.rateLimitHit.create).toHaveBeenCalledWith({ data: { key: "k" } });
   });
 });
 

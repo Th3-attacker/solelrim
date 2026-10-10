@@ -16,7 +16,7 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
-import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { getClientIp, peekRateLimit, rateLimitRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
@@ -375,14 +375,23 @@ export async function submitOrder(
   return { error: "referenceCollision" };
 }
 
-// Public, unauthenticated lookup — capped per IP against enumeration
-// attempts. Requires the exact reference alongside the phone number (not
-// just the phone) precisely so knowing/guessing someone's number alone
-// isn't enough to see their order history.
-const TRACK_ORDER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 30 };
-// Per phone number: guessing references for one customer stops here even
-// from many addresses.
-const TRACK_ORDER_PHONE_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
+// Public, unauthenticated lookup: the exact reference is needed alongside
+// the phone number, so knowing someone's number alone shows nothing. The
+// limits tell guessing (failed lookups, held tight) from a customer
+// following their order (the app refreshes an open order every minute, so
+// successes are counted per order, generously, and never per IP alone:
+// Mauritanian carriers put thousands of phones behind one address, CGNAT).
+const TRACK_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+// Failed lookups (notFound, malformed phone or reference) per phone number:
+// guessing one customer's references stops here even from many addresses.
+const TRACK_FAILURE_PHONE_LIMIT = { windowMs: TRACK_FAILURE_WINDOW_MS, max: 10 };
+// Failed lookups per IP: higher than per phone, the typos of every customer
+// behind a carrier's shared address add up here.
+const TRACK_FAILURE_IP_LIMIT = { windowMs: TRACK_FAILURE_WINDOW_MS, max: 60 };
+// Successful lookups per order: only a runaway loop reaches it.
+const TRACK_SUCCESS_ORDER_LIMIT = { windowMs: 60 * 1000, max: 30 };
+// Every lookup per IP: a safety net against bursts, high enough for CGNAT.
+const TRACK_IP_LIMIT = { windowMs: 60 * 1000, max: 300 };
 
 export type TrackOrderResult =
   | { error: string; retryAfter?: number }
@@ -416,6 +425,12 @@ export type TrackedOrderItem = {
   imageUrl: string | null;
 };
 
+// The wait to announce when several limits block at once: the longest.
+function longestWait(waits: (number | null)[]): number | null {
+  const blocking = waits.filter((wait): wait is number => wait !== null);
+  return blocking.length > 0 ? Math.max(...blocking) : null;
+}
+
 function getStatusSince(order: {
   status: OrderStatus;
   createdAt: Date;
@@ -443,21 +458,37 @@ function getStatusSince(order: {
 
 export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const ip = await getClientIp();
-  const ipWait = await rateLimitRetryAfter(`track-order:${ip}`, TRACK_ORDER_RATE_LIMIT);
+  const ipWait = await rateLimitRetryAfter(`track-ip:${ip}`, TRACK_IP_LIMIT);
   if (ipWait !== null) {
     return { error: "rateLimited", retryAfter: ipWait };
   }
 
   const parsed = trackOrderSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: "invalid" };
+  // The phone alone, when well-formed, so a blank reference still counts
+  // against that number.
+  const phoneOnly = trackOrderSchema.shape.phone.safeParse((input as { phone?: unknown } | null)?.phone);
+  const phone = phoneOnly.success ? phoneOnly.data : null;
+
+  // Checked before the lookup, the right pair included: letting it through
+  // would turn "429 vs 200" into an unlimited oracle for guessing.
+  const failureWaits = await Promise.all([
+    peekRateLimit(`track-fail-ip:${ip}`, TRACK_FAILURE_IP_LIMIT),
+    phone ? peekRateLimit(`track-fail-phone:${phone}`, TRACK_FAILURE_PHONE_LIMIT) : null,
+  ]);
+  const failureWait = longestWait(failureWaits);
+  if (failureWait !== null) {
+    return { error: "rateLimited", retryAfter: failureWait };
   }
-  const phoneWait = await rateLimitRetryAfter(
-    `track-order-phone:${parsed.data.phone}`,
-    TRACK_ORDER_PHONE_RATE_LIMIT,
-  );
-  if (phoneWait !== null) {
-    return { error: "rateLimited", retryAfter: phoneWait };
+
+  const recordFailure = () =>
+    Promise.all([
+      recordRateLimitHit(`track-fail-ip:${ip}`),
+      phone ? recordRateLimitHit(`track-fail-phone:${phone}`) : null,
+    ]);
+
+  if (!parsed.success) {
+    await recordFailure();
+    return { error: "invalid" };
   }
 
   const order = await prisma.order.findFirst({
@@ -503,7 +534,16 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
     },
   });
   if (!order) {
+    await recordFailure();
     return { error: "notFound" };
+  }
+
+  const successWait = await rateLimitRetryAfter(
+    `track-ok:${parsed.data.productType}:${order.reference}`,
+    TRACK_SUCCESS_ORDER_LIMIT,
+  );
+  if (successWait !== null) {
+    return { error: "rateLimited", retryAfter: successWait };
   }
 
   return {
