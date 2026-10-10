@@ -67,7 +67,9 @@ Counted per IP address and, where the body carries one, per phone number
 | `POST` / `DELETE .../orders/push` | —                             | 20 / hour   |
 
 Over a limit: `429 { "error": "rateLimited" }` with a `Retry-After` header
-(seconds). A resend carrying an already-used `Idempotency-Key` is never
+(seconds), on every route — the search (`q`, 40 / 15 min per IP) and
+`POST .../stocks` (60 / 15 min per IP) included. A malformed `stocks` list
+(over 50 ids, a non-string id) is a `400 invalid`, not a 429. A resend carrying an already-used `Idempotency-Key` is never
 counted.
 
 **Mobile side:** on a 429, show "try again in n minutes" from `Retry-After`
@@ -81,10 +83,10 @@ and don't retry automatically before it.
 | `GET /boutiques/{key}`                                                       | Branding, theme, payment details and wallets, social links, categories                          |
 | `GET /boutiques/{key}/products?category=&q=&page=&pageSize=`                 | Catalogue page (`pageSize` ≤ 50, default 20) or search (`q`, rate-limited, one capped page)     |
 | `GET /boutiques/{key}/products/{slug}`                                       | Product with images and variants (id, size, color, price, stock, lowStockThreshold)             |
-| `POST /boutiques/{key}/stocks` `{ variantIds }`                              | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists            |
+| `POST /boutiques/{key}/stocks` `{ variantIds }`                              | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists (≤ 50 ids) |
 | `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }`            | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
 | `POST /boutiques/{key}/orders` (multipart)                                   | Place an order → `201 { reference, orderId }`                                                   |
-| `POST /boutiques/{key}/orders/track` `{ phone, reference }`                  | `{ reference, status, total, createdAt, statusSince }`                                          |
+| `POST /boutiques/{key}/orders/track` `{ phone, reference }`                  | `{ reference, status, total, subtotal, discount, createdAt, statusSince, items }` (see below)   |
 | `POST` / `DELETE /boutiques/{key}/orders/push` `{ phone, reference, token }` | Start / stop push notifications for one order (see below)                                       |
 
 ### Wallets
@@ -176,6 +178,41 @@ curl -X POST https://<host>/api/v1/boutiques/sport/orders \
 order as "not validated in time": invite the customer to order again or
 contact the boutique.
 
+### Tracking an order
+
+`POST .../orders/track` answers the status and the order's content:
+
+```json
+{
+  "reference": "CMD-7KQ4M9XP",
+  "status": "CONFIRMED",
+  "subtotal": 4000,
+  "discount": 400,
+  "total": 3600,
+  "createdAt": "2026-10-10T09:12:00.000Z",
+  "statusSince": "2026-10-10T11:40:00.000Z",
+  "items": [
+    {
+      "variantId": "cm…",
+      "productName": "T-shirt",
+      "productSlug": "t-shirt",
+      "size": "M",
+      "color": "Blanc",
+      "quantity": 2,
+      "unitPrice": 2000,
+      "lineTotal": 4000,
+      "imageUrl": "https://…/product-images/p/blanc.jpg"
+    }
+  ]
+}
+```
+
+Prices are the ones paid, not today's. `imageUrl` is the product photo of that
+color, else its first photo, `null` when it has none.
+
+**Mobile side:** an app reinstalled on another phone only needs phone +
+reference to show the whole order again, no local copy required.
+
 ### Order references
 
 New orders get `CMD-` followed by 8 random characters from
@@ -242,8 +279,18 @@ same phone + reference as tracking.
 
 A device that uninstalled the app is forgotten automatically. A failed push never
 blocks the admin's action. The WhatsApp messages the admin can send are
-unchanged: push is an addition. Server side, `EXPO_ACCESS_TOKEN` (optional) is
+unchanged: push is an addition. Pushes go out with `priority: "high"`, so a
+phone in standby gets them right away. Server side, `EXPO_ACCESS_TOKEN` (optional) is
 the Expo "enhanced push security" token.
+
+**Android channel.** `EXPO_ANDROID_CHANNEL_ID` (server, unset by default) names
+the notification channel pushes are sent to, e.g. `orders`. Android drops a
+notification sent to a channel the phone doesn't have, so set it only once the
+app version creating that channel is the minimum (`APP_MIN_VERSION`).
+
+**Mobile side:** at startup, create the channel
+(`Notifications.setNotificationChannelAsync("orders", { name: "Commandes", importance: HIGH })`),
+then ask for the variable to be set on the server.
 
 If a customer reinstalls the app, they get their order back by tracking it with
 the phone and reference; notifications then need a new `POST .../orders/push`.

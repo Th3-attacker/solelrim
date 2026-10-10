@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { getVariantPrice } from "@/lib/shop/price";
 
 // A real cart never has more than a handful of distinct line items — caps
@@ -34,20 +34,33 @@ export async function getVariantStocks(
   productType: string,
   variantIds: string[],
 ): Promise<Record<string, number> | null> {
+  const result = await checkVariantStocks(productType, variantIds);
+  return "stocks" in result ? result.stocks : null;
+}
+
+// The same lookup, telling the mobile API why it gave nothing: a malformed
+// list (400, the app should fix its request) is not a rate limit (429, wait
+// retryAfter seconds).
+export async function checkVariantStocks(
+  productType: string,
+  variantIds: string[],
+): Promise<
+  { stocks: Record<string, number> } | { error: "invalid" } | { error: "rateLimited"; retryAfter: number }
+> {
   const parsed = inputSchema.safeParse({ productType, variantIds });
-  if (!parsed.success) return null;
-  if (parsed.data.variantIds.length === 0) return {};
+  if (!parsed.success) return { error: "invalid" };
+  if (parsed.data.variantIds.length === 0) return { stocks: {} };
 
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`variant-stocks:${ip}`, GET_VARIANT_STOCKS_RATE_LIMIT);
-  if (!allowed) return null;
+  const wait = await rateLimitRetryAfter(`variant-stocks:${ip}`, GET_VARIANT_STOCKS_RATE_LIMIT);
+  if (wait !== null) return { error: "rateLimited", retryAfter: wait };
 
   const variants = await prisma.productVariant.findMany({
     where: { id: { in: parsed.data.variantIds }, product: { productType: parsed.data.productType } },
     select: { id: true, stock: true },
   });
 
-  return Object.fromEntries(variants.map((v) => [v.id, v.stock]));
+  return { stocks: Object.fromEntries(variants.map((v) => [v.id, v.stock])) };
 }
 
 export type SharedCartLine = {

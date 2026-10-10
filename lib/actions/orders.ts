@@ -24,6 +24,7 @@ import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code"
 import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
+import { getProductImageUrl } from "@/lib/supabase/storage";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -395,7 +396,25 @@ export type TrackOrderResult =
       // in N days" instead of just "ordered N days ago", which would
       // misfire on an order that's already progressing normally.
       statusSince: Date;
+      subtotal: number;
+      discount: number;
+      // What was ordered, at the price paid — so an app reinstalled on a new
+      // phone (it only kept phone + reference) can show the order again.
+      items: TrackedOrderItem[];
     };
+
+export type TrackedOrderItem = {
+  variantId: string;
+  productName: string;
+  productSlug: string;
+  size: string;
+  color: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  // The product photo of that color, else its first photo.
+  imageUrl: string | null;
+};
 
 function getStatusSince(order: {
   status: OrderStatus;
@@ -457,6 +476,30 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
       deliveredAt: true,
       rejectedAt: true,
       cancelledAt: true,
+      subtotal: true,
+      discount: true,
+      items: {
+        orderBy: { id: "asc" },
+        select: {
+          variantId: true,
+          quantity: true,
+          unitPrice: true,
+          lineTotal: true,
+          variant: {
+            select: {
+              size: true,
+              color: true,
+              product: {
+                select: {
+                  name: true,
+                  slug: true,
+                  images: { orderBy: { position: "asc" }, select: { storagePath: true, color: true } },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
   if (!order) {
@@ -469,6 +512,23 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
     total: order.total.toNumber(),
     createdAt: order.createdAt,
     statusSince: getStatusSince(order),
+    subtotal: order.subtotal.toNumber(),
+    discount: order.discount.toNumber(),
+    items: order.items.map(({ variant, ...item }) => {
+      const { images } = variant.product;
+      const image = images.find((candidate) => candidate.color === variant.color) ?? images[0];
+      return {
+        variantId: item.variantId,
+        productName: variant.product.name,
+        productSlug: variant.product.slug,
+        size: variant.size,
+        color: variant.color,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toNumber(),
+        lineTotal: item.lineTotal.toNumber(),
+        imageUrl: image ? getProductImageUrl(image.storagePath) : null,
+      };
+    }),
   };
 }
 

@@ -1244,6 +1244,28 @@ describe("trackOrder", () => {
       deliveredAt: null,
       rejectedAt: null,
       cancelledAt: null,
+      subtotal: { toNumber: () => 4000 },
+      discount: { toNumber: () => 400 },
+      items: [
+        {
+          variantId: "v1",
+          quantity: 2,
+          unitPrice: { toNumber: () => 2000 },
+          lineTotal: { toNumber: () => 4000 },
+          variant: {
+            size: "M",
+            color: "Blanc",
+            product: {
+              name: "T-shirt",
+              slug: "t-shirt",
+              images: [
+                { storagePath: "p/noir.jpg", color: "Noir" },
+                { storagePath: "p/blanc.jpg", color: "Blanc" },
+              ],
+            },
+          },
+        },
+      ],
     } as never);
 
     const result = await trackOrder({
@@ -1267,6 +1289,21 @@ describe("trackOrder", () => {
       total: 3600,
       createdAt: new Date("2026-08-15T10:00:00Z"),
       statusSince: new Date("2026-08-15T12:00:00Z"),
+      subtotal: 4000,
+      discount: 400,
+      items: [
+        {
+          variantId: "v1",
+          productName: "T-shirt",
+          productSlug: "t-shirt",
+          size: "M",
+          color: "Blanc",
+          quantity: 2,
+          unitPrice: 2000,
+          lineTotal: 4000,
+          imageUrl: expect.stringMatching(/\/p\/blanc\.jpg$/),
+        },
+      ],
     });
   });
 
@@ -1281,6 +1318,9 @@ describe("trackOrder", () => {
       deliveredAt: null,
       rejectedAt: null,
       cancelledAt: null,
+      subtotal: { toNumber: () => 3600 },
+      discount: { toNumber: () => 0 },
+      items: [],
     } as never);
 
     const result = await trackOrder({

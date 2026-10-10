@@ -7,8 +7,10 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/actions/orders", () => ({ submitOrder: vi.fn(), trackOrder: vi.fn() }));
 vi.mock("@/lib/actions/promo-codes", () => ({ previewPromoCode: vi.fn() }));
 vi.mock("@/lib/queries/orders", () => ({ findOrderByIdempotencyKey: vi.fn() }));
+vi.mock("@/lib/actions/cart", () => ({ checkVariantStocks: vi.fn() }));
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: vi.fn(),
+  rateLimitRetryAfter: vi.fn(),
   getClientIp: vi.fn().mockResolvedValue("1.2.3.4"),
 }));
 vi.mock("@/lib/queries/shop", () => ({
@@ -20,17 +22,21 @@ vi.mock("@/lib/queries/shop", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { submitOrder, trackOrder } from "@/lib/actions/orders";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { checkVariantStocks } from "@/lib/actions/cart";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import { getActiveProductsPage, searchActiveProducts } from "@/lib/queries/shop";
 import { POST as postOrder } from "@/app/api/v1/boutiques/[key]/orders/route";
 import { POST as postTrack } from "@/app/api/v1/boutiques/[key]/orders/track/route";
 import { GET as getProducts } from "@/app/api/v1/boutiques/[key]/products/route";
+import { POST as postStocks } from "@/app/api/v1/boutiques/[key]/stocks/route";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const submitOrderMock = submitOrder as unknown as Mock;
 const trackOrderMock = trackOrder as unknown as Mock;
 const rateLimitMock = checkRateLimit as unknown as Mock;
+const retryAfterMock = rateLimitRetryAfter as unknown as Mock;
+const stocksMock = checkVariantStocks as unknown as Mock;
 const findByKeyMock = findOrderByIdempotencyKey as unknown as Mock;
 
 const ctx = (key: string) => ({ params: Promise.resolve({ key }) });
@@ -47,6 +53,8 @@ beforeEach(() => {
   submitOrderMock.mockReset();
   trackOrderMock.mockReset();
   rateLimitMock.mockReset().mockResolvedValue(true);
+  retryAfterMock.mockReset().mockResolvedValue(null);
+  stocksMock.mockReset();
   findByKeyMock.mockReset().mockResolvedValue(null);
   prismaMock.storeType.findUnique.mockResolvedValue(open as never);
 });
@@ -218,12 +226,42 @@ describe("GET products", () => {
     expect(getActiveProductsPage).toHaveBeenCalledWith("sport", { categoryId: undefined, page: 2, pageSize: 10 });
   });
 
-  it("rate-limits the search", async () => {
-    rateLimitMock.mockResolvedValue(false);
+  it("rate-limits the search, saying when to retry", async () => {
+    retryAfterMock.mockResolvedValue(120);
 
     const response = await getProducts(new Request("https://shop.example/x?q=tshirt"), ctx("sport"));
 
     expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("120");
     expect(searchActiveProducts).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST stocks", () => {
+  const body = (variantIds: unknown) => post("/x", JSON.stringify({ variantIds }));
+
+  it("returns the stock map", async () => {
+    stocksMock.mockResolvedValue({ stocks: { v1: 3 } });
+
+    const response = await postStocks(body(["v1"]), ctx("sport"));
+
+    expect(await response.json()).toEqual({ stocks: { v1: 3 } });
+  });
+
+  it("is a 400, not a 429, for a malformed list", async () => {
+    stocksMock.mockResolvedValue({ error: "invalid" });
+
+    const response = await postStocks(body(Array(51).fill("v1")), ctx("sport"));
+
+    expect(response.status).toBe(400);
+  });
+
+  it("is a 429 with Retry-After when rate-limited", async () => {
+    stocksMock.mockResolvedValue({ error: "rateLimited", retryAfter: 300 });
+
+    const response = await postStocks(body(["v1"]), ctx("sport"));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("300");
   });
 });

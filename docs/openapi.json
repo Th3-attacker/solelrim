@@ -1210,7 +1210,10 @@
           "status",
           "total",
           "createdAt",
-          "statusSince"
+          "statusSince",
+          "subtotal",
+          "discount",
+          "items"
         ],
         "properties": {
           "reference": {
@@ -1228,7 +1231,59 @@
           },
           "statusSince": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the order reached its current status."
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "Before the promo code."
+          },
+          "discount": {
+            "type": "number",
+            "description": "Promo code discount (0 without one). total = subtotal - discount."
+          },
+          "items": {
+            "type": "array",
+            "description": "What was ordered, at the price paid.",
+            "items": {
+              "$ref": "#/components/schemas/TrackedOrderItem"
+            }
+          }
+        }
+      },
+      "TrackedOrderItem": {
+        "type": "object",
+        "required": ["variantId", "productName", "productSlug", "size", "color", "quantity", "unitPrice", "lineTotal", "imageUrl"],
+        "properties": {
+          "variantId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productSlug": {
+            "type": "string",
+            "description": "For GET /boutiques/{key}/products/{slug} (the product may since be hidden: 404)."
+          },
+          "size": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "lineTotal": {
+            "type": "number"
+          },
+          "imageUrl": {
+            "type": ["string", "null"],
+            "format": "uri",
+            "description": "The product photo of that color, else its first photo."
           }
         }
       },
@@ -1394,7 +1449,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Seconds to wait (not sent by search and stocks)."
+            "description": "Seconds to wait before retrying."
           }
         },
         "content": {

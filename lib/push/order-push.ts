@@ -28,11 +28,21 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       locale: order.locale,
       reference: order.reference,
     });
+    const androidChannelId = process.env.EXPO_ANDROID_CHANNEL_ID?.trim();
     const messages = order.pushTokens.map(({ token }) => ({
       to: token,
       title,
       body,
       sound: "default",
+      // Delivered right away even when the phone is idle (Android Doze, iOS
+      // low-power): a status change is what the customer is waiting for.
+      priority: "high",
+      // EXPO_ANDROID_CHANNEL_ID (e.g. "orders", unset by default): the
+      // Android notification channel the app creates at startup, so the
+      // customer can tune order notifications on their own. Left out until
+      // the app ships that channel — Android drops a notification sent to a
+      // channel the device doesn't have.
+      ...(androidChannelId ? { channelId: androidChannelId } : {}),
       // What the app needs to open the right tracking screen when tapped.
       data: { reference: order.reference, status: order.status, boutique: order.productType },
     }));
