@@ -852,8 +852,8 @@
           },
           "providerKey": {
             "type": ["string", "null"],
-            "description": "Known provider id (the app may ship its own logo), null otherwise.",
-            "example": "bankily"
+            "description": "Known provider id, for the app to draw its own logo: bankily, masrvi, sedad or bimbank (the full list today). null for any other provider. More ids may be added later: treat an id the app doesn't know like null (use logoUrl).",
+            "examples": ["bankily", "masrvi", "sedad", "bimbank"]
           },
           "number": {
             "type": "string"

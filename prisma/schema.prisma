@@ -549,7 +549,7 @@ model Order {
   // second one. Null for website orders and older app versions — Postgres
   // lets any number of rows share a null in the unique index below.
   idempotencyKey     String?
-  // The transaction id the customer's wallet showed (Bankily, Masrivi...),
+  // The transaction id the customer's wallet showed (Bankily, Masrvi...),
   // trimmed and upper-cased. Optional: the website doesn't ask for it, older
   // app versions don't send it. At most one per boutique among orders that
   // aren't REJECTED/CANCELLED — a partial unique index in the migration SQL

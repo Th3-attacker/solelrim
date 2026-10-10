@@ -11,7 +11,8 @@ type WalletProvider = { key: string; label: string; aliases?: readonly string[] 
 
 export const WALLET_PROVIDERS: readonly WalletProvider[] = [
   { key: "bankily", label: "Bankily" },
-  { key: "masrivi", label: "Masrivi", aliases: ["masrvi"] },
+  // "Masrvi" is the real name; Masrivi / Masrivy are spellings used before.
+  { key: "masrvi", label: "Masrvi", aliases: ["masrivi", "masrivy"] },
   { key: "sedad", label: "Sedad" },
   { key: "bimbank", label: "BimBank", aliases: ["bim bank", "bim"] },
 ];

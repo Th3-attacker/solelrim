@@ -96,8 +96,10 @@ order the admin set. The admin can add, edit (name, number, logo), re-order and
 delete wallets at any time, so the app shows the list as received on each
 boutique refresh and keys it by `id` (stable across edits).
 
-- `providerKey`: `bankily`, `masrvi`, `sedad`, `bimbank` for a provider the
-  site knows (more may be added later), `null` for any other.
+- `providerKey`: one of `bankily`, `masrvi`, `sedad`, `bimbank` (the full list
+  today) for a provider the site knows, `null` for any other. Exact spellings:
+  the provider is `masrvi`, never `masrivi`. More may be added later: an id the
+  app doesn't know is handled like `null`.
 - `logoUrl`: for a known provider, the site's bundled logo
   (`https://<host>/wallets/<key>.svg`); otherwise the logo the admin uploaded
   (Supabase, public PNG/JPEG/WebP), or `null` when there is none.
@@ -294,3 +296,6 @@ then ask for the variable to be set on the server.
 
 If a customer reinstalls the app, they get their order back by tracking it with
 the phone and reference; notifications then need a new `POST .../orders/push`.
+A push's `data` carries no phone number, on purpose (it goes through Expo,
+Apple and Google). When the app has no phone stored for that reference, the
+tap opens "track by reference" with the reference filled in.

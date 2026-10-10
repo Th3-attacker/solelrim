@@ -274,7 +274,7 @@
     "announcementBar": "Paiement mobile sécurisé · Confirmation instantanée par WhatsApp",
     "trustSectionTitle": "Pourquoi nous faire confiance",
     "trustPaymentTitle": "Paiement mobile",
-    "trustPaymentDesc": "Réglez facilement via Bankily ou Masrivi.",
+    "trustPaymentDesc": "Réglez facilement via Bankily ou Masrvi.",
     "trustWhatsappTitle": "Confirmation WhatsApp",
     "trustWhatsappDesc": "Recevez une confirmation rapide de votre commande.",
     "trustReviewTitle": "Commande vérifiée",
@@ -766,7 +766,7 @@
     "step2Title": "Renseignez vos informations",
     "step2Description": "Indiquez votre nom, votre numéro et votre ville de livraison.",
     "step3Title": "Effectuez le paiement",
-    "step3Description": "Payez via Bankily ou Masrivi puis envoyez la capture d'écran du paiement.",
+    "step3Description": "Payez via Bankily ou Masrvi puis envoyez la capture d'écran du paiement.",
     "step4Title": "Recevez la confirmation",
     "step4Description": "Notre équipe vérifie votre commande et vous confirme par WhatsApp."
   },
