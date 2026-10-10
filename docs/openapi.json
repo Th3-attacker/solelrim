@@ -3,7 +3,7 @@
   "info": {
     "title": "SOLAL public API",
     "version": "1.0.0",
-    "description": "Public API of the SOLAL boutiques for the mobile app. No accounts: a customer proves an order with phone + reference. v1 only grows (fields and routes are added, never removed or renamed). Human-readable contract: docs/api-v1.md. Every response carries X-Request-Id."
+    "description": "Public API of the SOLAL boutiques for the mobile app. JSON in and out.\n\n**No accounts, no token.** A customer proves an order with the phone number and order reference they give.\n\n**Stability.** v1 only grows: fields and routes are added, never removed, renamed or changed in meaning. A breaking change means `/api/v2`.\n\n**Headers.** Send `X-Request-Id` (a UUID per call), `X-App-Version` and `X-App-Platform` on every call. Every response carries `X-Request-Id`: show it on error screens. `426 appUpdateRequired` means the app is older than the server's minimum version.\n\n**Errors** are `{ \"error\": \"<code>\" }`: `invalid` / `invalidFile` 400, `storefrontExpired` 403, `notFound` 404, `insufficientStock` / `alreadyUsed` / `referenceCollision` / `transactionAlreadyUsed` 409, `fileTooLarge` 413, `appUpdateRequired` 426, `rateLimited` 429 (with `Retry-After`, in seconds), `uploadFailed` 502, any other business error 422.\n\n**Caching.** Catalogue `GET`s may be cached 30 s; everything else is `no-store`. Amounts are in MRU.\n\nInteractive reference: `GET /api/v1/docs`. Full contract with the mobile-side notes: `docs/api-v1.md`."
   },
   "servers": [
     {

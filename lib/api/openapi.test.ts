@@ -34,7 +34,7 @@ describe("docs/openapi.json", () => {
           .slice(0, -1)
           .join("/")
           .replace(/\[(\w+)\]/g, "{$1}");
-      if (route === "/openapi.json") continue;
+      if (route === "/openapi.json" || route === "/docs") continue;
       expect(paths, `missing ${route}`).toHaveProperty([route]);
       for (const method of await exportedMethods(file)) {
         expect(paths[route], `missing ${method.toUpperCase()} ${route}`).toHaveProperty([method]);

@@ -8,7 +8,10 @@ too — the order and tracking routes call those same actions.
 
 **OpenAPI.** The machine-readable description is `docs/openapi.json`
 (OpenAPI 3.1), served by every deployment at `GET /api/v1/openapi.json` with
-the server URL set to that deployment. Generate the app's types from it
+the server URL set to that deployment. Each deployment also serves an
+interactive reference at `GET /api/v1/docs` (Scalar): every route, schema and
+error, with curl / JS / Swift / Kotlin snippets and a "Test request" button
+that calls that deployment. Generate the app's types from it
 (`npx openapi-typescript https://<host>/api/v1/openapi.json -o src/api/schema.ts`).
 A test fails if a route under `app/api/v1` is missing from it; when a field is
 added, update both this page and the spec.
