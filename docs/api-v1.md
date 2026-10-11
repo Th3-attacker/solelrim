@@ -99,6 +99,7 @@ and don't retry automatically before it.
 | `GET /boutiques`                                                             | Boutiques the customer can pick (closed ones are left out)                                      |
 | `GET /boutiques/{key}`                                                       | Branding, theme, payment details and wallets, social links, categories                          |
 | `GET /boutiques/{key}/products?category=&q=&page=&pageSize=`                 | Catalogue page (`pageSize` ≤ 50, default 20) or search (`q`, rate-limited, one capped page)     |
+| `GET /boutiques/{key}/products?…&sort=&sizes=&colors=&priceMin=&priceMax=&facets=1` | Sorted / filtered catalogue with its real total, and the filter sheet's options (see below) |
 | `GET /boutiques/{key}/products/{slug}`                                       | Product with images and variants (id, size, color, price, stock, lowStockThreshold)             |
 | `POST /boutiques/{key}/stocks` `{ variantIds }`                              | Fresh stock for a saved cart: `{ stocks: { id: n } }`. A missing id no longer exists (≤ 50 ids) |
 | `POST /boutiques/{key}/promo` `{ code, customerPhone, subtotal }`            | Preview a promo code: `{ discountType, discountValue, discount }`. Not consumed until the order |
@@ -161,6 +162,62 @@ shows "only n left".
     { "name": "Noir-Blanc", "hex": "#18181b", "hexes": ["#18181b", "#ffffff"] }
   ]
 }
+```
+
+### Sorting and filtering the catalogue
+
+`GET .../products` also takes, all optional:
+
+| Parameter              | Values                                                       | Keeps / does                                                                       |
+| ---------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `sort`                 | `popular` (default) · `price_asc` · `price_desc` · `newest` | `popular`: featured products first, then newest. Prices: `price.min` up, `price.max` down |
+| `sizes`                | `M,L` (exact, ≤ 20)                                          | a product with a variant **in stock** in one of these sizes                        |
+| `colors`               | `Noir,Noir-Blanc` (exact, URL-encoded, ≤ 20)                 | a product with a variant **in stock** in one of these colors                       |
+| `priceMin`, `priceMax` | whole MRU ≥ 0                                                | a product with a variant **in stock** at that price (its own, else the base price) |
+| `facets`               | `1`                                                          | adds `facets` to the answer                                                        |
+
+- AND between filters, OR within one. Size, color and price apply to **the same
+  variant**: `sizes=M&colors=Noir&priceMax=2000` needs a black M in stock at
+  2 000 MRU at most.
+- `category` and `q` combine with all of them. Ties are broken by newest, then
+  id, so pages never repeat or skip a product.
+- `total` counts the filtered products: call with `pageSize=1` to get the
+  "See N items" number quickly.
+- The app's price ranges: "Under 1 000" = `priceMax=999` · "1 000 – 2 000" =
+  `priceMin=1000&priceMax=2000` · "Over 2 000" = `priceMin=2001`.
+- `400 invalid`: unknown `sort`, a price that isn't a whole number ≥ 0,
+  `priceMin > priceMax`, over 20 values, `facets` other than `1`. An unknown
+  size or color isn't an error: it gives no result.
+- **Without any of these parameters, the answer is exactly the one from before**
+  (newest first; a search is one capped page). With any of them, a search is
+  paginated too and its `total` is the real count.
+- Cached 30 s like the rest of the catalogue, searches excepted. The CDN caches
+  by exact URL: **sort the values** of `sizes` and `colors` in the app (for
+  example alphabetically) so the same filters hit the same cache entry. The
+  search rate limit still applies only to `q`.
+
+With `facets=1`:
+
+```jsonc
+"facets": {
+  "sizes":  [{ "value": "S", "count": 4 }, { "value": "M", "count": 6 }, { "value": "XL", "count": 0 }],
+  "colors": [{ "name": "Noir", "hex": "#18181b", "hexes": ["#18181b"], "count": 5 },
+             { "name": "Noir-Blanc", "hex": "#18181b", "hexes": ["#18181b", "#ffffff"], "count": 2 }],
+  "price":  { "min": 150, "max": 2850 }
+}
+```
+
+- Scope: the boutique, category and search asked for, not the whole boutique.
+- A value's `count` is the number of products adding it would give, with the
+  **other** filters active (a filter doesn't change its own counts). `0` means
+  nothing in stock: grey the chip out.
+- `sizes`: every size of the scope, 0 included, in size order (like variants).
+  `colors`: every color, in entry order, with the `ColorSwatch` fields.
+  `price`: lowest and highest price in stock, with the size and color filters
+  but not the price one; `null` when nothing is in stock.
+
+```sh
+curl 'https://<host>/api/v1/boutiques/sport/products?category=<id>&sort=price_asc&sizes=L,M&colors=Noir&priceMin=1000&priceMax=2000&facets=1'
 ```
 
 ### Placing an order

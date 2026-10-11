@@ -177,6 +177,44 @@
             "description": "Search (accent-insensitive, rate-limited 40 / 15 min per IP)."
           },
           {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["popular", "price_asc", "price_desc", "newest"], "default": "popular" },
+            "description": "popular: featured products first, then newest. price_asc: by price.min. price_desc: by price.max. newest: by creation date. Ties: newest, then id, so pages never repeat or skip a product. Without any of sort / sizes / colors / priceMin / priceMax / facets, the answer is exactly the one from before they existed (newest first; a search is one capped page). With any of them, a search is paginated too and total is the real count."
+          },
+          {
+            "name": "sizes",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "M,L",
+            "description": "Comma-separated exact sizes, 20 at most: keeps a product with a variant in stock in one of them. Size, color and price apply to the same variant. An unknown size gives no result, not an error."
+          },
+          {
+            "name": "colors",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "Noir,Noir-Blanc",
+            "description": "Comma-separated exact color names, URL-encoded, 20 at most: keeps a product with a variant in stock in one of them. Sort the values of sizes and colors: the CDN caches by exact URL."
+          },
+          {
+            "name": "priceMin",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0 },
+            "description": "MRU. Keeps a product with a variant in stock at this price or more (\"Plus de 2 000\" = 2001)."
+          },
+          {
+            "name": "priceMax",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0 },
+            "description": "MRU, not under priceMin. Keeps a product with a variant in stock at this price or less (\"Moins de 1 000\" = 999)."
+          },
+          {
+            "name": "facets",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "1 adds `facets` to the answer: the filter sheet's sizes, colors and price range."
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -1176,7 +1214,68 @@
             "type": "integer"
           },
           "total": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Products matching, all pages together."
+          },
+          "facets": {
+            "$ref": "#/components/schemas/ProductFacets"
+          }
+        }
+      },
+      "ProductFacets": {
+        "type": "object",
+        "description": "Only with facets=1. Scope: the boutique, category and search asked for. A value's count is the number of products adding it would give with the other filters active (a filter doesn't change its own counts); 0 means nothing in stock, to grey out.",
+        "required": ["sizes", "colors", "price"],
+        "properties": {
+          "sizes": {
+            "type": "array",
+            "description": "Every size of the scope, 0 included, in size order (XXS…XXXL, then numeric, then the rest).",
+            "items": {
+              "type": "object",
+              "required": ["value", "count"],
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "example": "M"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "colors": {
+            "type": "array",
+            "description": "Every color of the scope, in entry order, with the same swatch as ProductSummary.colorSwatches.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ColorSwatch"
+                },
+                {
+                  "type": "object",
+                  "required": ["count"],
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "price": {
+            "type": ["object", "null"],
+            "description": "Lowest and highest price in stock in the scope, with the size and color filters but not the price one. null when nothing is in stock.",
+            "required": ["min", "max"],
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              }
+            }
           }
         }
       },

@@ -15,6 +15,8 @@ vi.mock("@/lib/rate-limit", () => ({
 }));
 vi.mock("@/lib/queries/shop", () => ({
   getActiveProductsPage: vi.fn(),
+  getFilteredProductsPage: vi.fn(),
+  getCatalogueFacets: vi.fn(),
   searchActiveProducts: vi.fn(),
   getActiveProductBySlug: vi.fn(),
   getAllShopCategories: vi.fn(),
@@ -25,7 +27,12 @@ import { submitOrder, trackOrder } from "@/lib/actions/orders";
 import { checkRateLimit, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { checkVariantStocks } from "@/lib/actions/cart";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
-import { getActiveProductsPage, searchActiveProducts } from "@/lib/queries/shop";
+import {
+  getActiveProductsPage,
+  getCatalogueFacets,
+  getFilteredProductsPage,
+  searchActiveProducts,
+} from "@/lib/queries/shop";
 import { POST as postOrder } from "@/app/api/v1/boutiques/[key]/orders/route";
 import { POST as postTrack } from "@/app/api/v1/boutiques/[key]/orders/track/route";
 import { GET as getProducts } from "@/app/api/v1/boutiques/[key]/products/route";
@@ -263,5 +270,106 @@ describe("POST stocks", () => {
 
     expect(response.status).toBe(429);
     expect(response.headers.get("Retry-After")).toBe("300");
+  });
+});
+
+describe("GET products with sort and filters", () => {
+  const filteredMock = getFilteredProductsPage as unknown as Mock;
+  const facetsMock = getCatalogueFacets as unknown as Mock;
+  const list = (query: string) => getProducts(new Request(`https://shop.example/x?${query}`), ctx("sport"));
+
+  beforeEach(() => {
+    filteredMock.mockReset().mockResolvedValue({ items: [], total: 6 });
+    facetsMock.mockReset();
+    (getActiveProductsPage as unknown as Mock).mockReset().mockResolvedValue({ items: [], total: 42 });
+    (searchActiveProducts as unknown as Mock).mockReset().mockResolvedValue([]);
+  });
+
+  it("answers exactly as before without any of the new parameters", async () => {
+    const response = await list("category=c1&page=2&pageSize=10");
+
+    expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 10, total: 42 });
+    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(filteredMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps the search as one capped page without the new parameters", async () => {
+    await list("q=tshirt");
+
+    expect(searchActiveProducts).toHaveBeenCalled();
+    expect(filteredMock).not.toHaveBeenCalled();
+  });
+
+  it("passes every parameter to the filtered query, with the real total", async () => {
+    const response = await list(
+      "category=c1&sort=price_asc&sizes=M,L&colors=Noir,Noir-Blanc&priceMin=1000&priceMax=2000&page=2&pageSize=5",
+    );
+
+    expect(filteredMock).toHaveBeenCalledWith(
+      {
+        productType: "sport",
+        categoryId: "c1",
+        query: undefined,
+        sort: "price_asc",
+        sizes: ["M", "L"],
+        colors: ["Noir", "Noir-Blanc"],
+        priceMin: 1000,
+        priceMax: 2000,
+      },
+      { page: 2, pageSize: 5 },
+    );
+    expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 5, total: 6 });
+    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(facetsMock).not.toHaveBeenCalled();
+  });
+
+  it("defaults the sort to popular and decodes color names", async () => {
+    await list("colors=Noir%2CBleu%20marine");
+
+    expect(filteredMock).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "popular", colors: ["Noir", "Bleu marine"] }),
+      expect.anything(),
+    );
+  });
+
+  it("paginates a filtered search, still rate-limited and not cached", async () => {
+    const response = await list("q=tshirt&sizes=M&page=2");
+
+    expect(filteredMock).toHaveBeenCalledWith(expect.objectContaining({ query: "tshirt" }), { page: 2, pageSize: 20 });
+    expect(retryAfterMock).toHaveBeenCalled();
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("adds the facets with facets=1, with the colors' swatches", async () => {
+    facetsMock.mockResolvedValue({
+      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      colors: [{ value: "Noir-Blanc", count: 2 }],
+      price: { min: 150, max: 2850 },
+    });
+
+    const body = await (await list("facets=1")).json();
+
+    expect(body.facets).toEqual({
+      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      colors: [{ name: "Noir-Blanc", hex: "#18181b", hexes: ["#18181b", "#ffffff"], count: 2 }],
+      price: { min: 150, max: 2850 },
+    });
+  });
+
+  it.each([
+    "sort=cheapest",
+    "priceMin=-1",
+    "priceMin=10.5",
+    "priceMax=abc",
+    "priceMin=2000&priceMax=1000",
+    `sizes=${Array.from({ length: 21 }, (_, i) => `S${i}`).join(",")}`,
+    `colors=${Array.from({ length: 21 }, (_, i) => `C${i}`).join(",")}`,
+    "facets=true",
+  ])("refuses %s with 400 invalid", async (query) => {
+    const response = await list(query);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid" });
+    expect(filteredMock).not.toHaveBeenCalled();
   });
 });
