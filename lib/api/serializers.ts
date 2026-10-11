@@ -65,7 +65,7 @@ function distinctColors(variants: ProductRow["variants"]) {
 // The website's swatch lookup (lib/shop/color-swatch.ts), so the app shows the
 // same dots. One hex per hyphen segment ("Noir-Blanc"); null where the name
 // isn't known, for the app to pick its own fallback.
-function serializeColorSwatch(name: string) {
+export function serializeColorSwatch(name: string) {
   const hexes = lookupSwatchHexes(name);
   return { name, hex: hexes[0] ?? null, hexes };
 }
@@ -105,5 +105,19 @@ export function serializeProductDetail(product: ProductRow) {
       stock: variant.stock,
       lowStockThreshold: variant.lowStockThreshold,
     })),
+  };
+}
+
+// The filter sheet's options (getCatalogueFacets): color names come with the
+// same swatch as ProductSummary.colorSwatches.
+export function serializeFacets(facets: {
+  sizes: { value: string; count: number }[];
+  colors: { value: string; count: number }[];
+  price: { min: number; max: number } | null;
+}) {
+  return {
+    sizes: facets.sizes,
+    colors: facets.colors.map(({ value, count }) => ({ ...serializeColorSwatch(value), count })),
+    price: facets.price,
   };
 }

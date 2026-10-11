@@ -2,6 +2,16 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { sortBySize } from "@/lib/shop/size-order";
+import {
+  catalogueCountSql,
+  catalogueIdsSql,
+  colorFacetSql,
+  priceFacetSql,
+  sizeFacetSql,
+  type CatalogueFilters,
+  type FacetRow,
+  type PriceFacetRow,
+} from "@/lib/queries/catalogue-filters";
 
 // Variants in the order the admin entered them (one product's variants are
 // often created in the same instant, so the cuid breaks the tie). Without an
@@ -53,6 +63,47 @@ export async function getActiveProductsPage(
     prisma.product.count({ where }),
   ]);
   return { items, total };
+}
+
+// The mobile catalogue with sort and filters (lib/queries/catalogue-filters.ts):
+// one page of ids in order, the filtered total, then the same rows as
+// getActiveProductsPage for those ids.
+export async function getFilteredProductsPage(
+  filters: CatalogueFilters,
+  { page, pageSize }: { page: number; pageSize: number },
+) {
+  const [ids, [{ total }]] = await Promise.all([
+    prisma.$queryRaw<{ id: string }[]>(catalogueIdsSql(filters, page, pageSize)),
+    prisma.$queryRaw<{ total: number }[]>(catalogueCountSql(filters)),
+  ]);
+  if (ids.length === 0) return { items: [], total };
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: ids.map((row) => row.id) } },
+    include: {
+      category: true,
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: { orderBy: VARIANT_ENTRY_ORDER },
+    },
+  });
+  const byId = new Map(products.map((product) => [product.id, product]));
+  return { items: ids.map((row) => byId.get(row.id)).filter((p) => p !== undefined), total };
+}
+
+// What the filter sheet offers: sizes (in size order) and colors (in entry
+// order) of the scope, each with the products it would give, and the price
+// range of what is in stock.
+export async function getCatalogueFacets(filters: CatalogueFilters) {
+  const [sizes, colors, [price]] = await Promise.all([
+    prisma.$queryRaw<FacetRow[]>(sizeFacetSql(filters)),
+    prisma.$queryRaw<FacetRow[]>(colorFacetSql(filters)),
+    prisma.$queryRaw<PriceFacetRow[]>(priceFacetSql(filters)),
+  ]);
+  return {
+    sizes: sortBySize(sizes, (row) => row.value).map(({ value, count }) => ({ value, count })),
+    colors: colors.map(({ value, count }) => ({ value, count })),
+    price: price && price.min !== null && price.max !== null ? { min: price.min, max: price.max } : null,
+  };
 }
 
 // Accent-insensitive product name search, done in the database via the
