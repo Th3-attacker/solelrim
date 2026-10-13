@@ -108,6 +108,15 @@ export async function getCatalogueFacets(filters: CatalogueFilters) {
   };
 }
 
+// Every color of a boutique's catalogue, for the filter sheet's swatches:
+// what the color facet lists, alphabetically.
+export async function getCatalogueColors(productType: string): Promise<string[]> {
+  const rows = await prisma.$queryRaw<FacetRow[]>(
+    colorFacetSql({ productType, sort: "newest", sizes: [], colors: [] }),
+  );
+  return rows.map((row) => row.value).sort((a, b) => a.localeCompare(b));
+}
+
 // Accent-insensitive product name search, done in the database via the
 // unaccent extension (prisma/migrations/20260820110000_enable_unaccent)
 // instead of fetching the whole active catalog and filtering it in JS —

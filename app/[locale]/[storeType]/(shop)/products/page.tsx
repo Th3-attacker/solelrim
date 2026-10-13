@@ -4,15 +4,12 @@ import { CategoryFilters } from "@/components/shop/category-filters";
 import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
 import { Package, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
-import { getActiveProducts, getAllShopCategories, searchActiveProducts } from "@/lib/queries/shop";
+import { ListPagination } from "@/components/ui/list-pagination";
+import { getAllShopCategories, getCatalogueColors, getFilteredProductsPage } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
-import {
-  filterByColor,
-  filterByPriceBucket,
-  getAllCatalogColors,
-  sortProducts,
-} from "@/lib/shop/filters";
+import { catalogueFiltersFromSearch } from "@/lib/shop/filters";
+import { toPageNumber } from "@/lib/shop/pagination";
 import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
@@ -60,7 +57,7 @@ export async function generateMetadata({
   };
 }
 
-
+const CATALOGUE_PAGE_SIZE = 24;
 
 export default async function ProductsPage({
   params,
@@ -73,12 +70,11 @@ export default async function ProductsPage({
     price?: string;
     color?: string;
     q?: string;
+    page?: string;
   }>;
 }) {
-  const [{ storeType }, { category, sort, price, color, q }] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const [{ storeType }, search] = await Promise.all([params, searchParams]);
+  const { category, color, price, q } = search;
   const [t, tCommon, basePath, boutique] = await Promise.all([
     getTranslations("shop"),
     getTranslations("common"),
@@ -86,31 +82,19 @@ export default async function ProductsPage({
     getPublicBoutiqueSettings(storeType),
   ]);
   const hasFilters = Boolean(category || color || price || q?.trim());
-  const [allProducts, categories] = await Promise.all([
-    getActiveProducts(storeType),
+  const page = toPageNumber(search.page ? Number(search.page) : undefined);
+
+  // Filtered, sorted and paginated in the database, with the same SQL as the
+  // app's catalogue (lib/queries/catalogue-filters.ts). The color list stays
+  // the whole catalogue's, whatever is filtered.
+  const [{ items: displayedProducts, total }, categories, catalogColors] = await Promise.all([
+    getFilteredProductsPage(catalogueFiltersFromSearch(storeType, search), {
+      page,
+      pageSize: CATALOGUE_PAGE_SIZE,
+    }),
     getAllShopCategories(storeType),
+    getCatalogueColors(storeType),
   ]);
-
-  // A text query is answered by the database (accent-insensitive ILIKE,
-  // bounded by LIMIT) instead of scanning allProducts in JS — that scan
-  // would otherwise re-run, unbounded, on every search as the catalog
-  // grows. allProducts itself still gets fetched unconditionally for
-  // catalogColors below, which intentionally reflects the whole catalog
-  // regardless of the current filters.
-  let displayedProducts = q?.trim()
-    ? await searchActiveProducts(storeType, q, { categoryId: category })
-    : category
-      ? allProducts.filter((p) => p.categoryId === category)
-      : allProducts;
-  if (color) {
-    displayedProducts = filterByColor(displayedProducts, color);
-  }
-  if (price) {
-    displayedProducts = filterByPriceBucket(displayedProducts, price);
-  }
-  displayedProducts = sortProducts(displayedProducts, sort);
-
-  const catalogColors = getAllCatalogColors(allProducts);
 
   return (
     <div className="flex flex-col gap-6">
@@ -150,6 +134,14 @@ export default async function ProductsPage({
           </div>
         )}
       </div>
+
+      <ListPagination
+        page={page}
+        pageSize={CATALOGUE_PAGE_SIZE}
+        total={total}
+        basePath={`${basePath}/products`}
+        searchParams={{ category, sort: search.sort, price, color, q }}
+      />
     </div>
   );
 }
