@@ -177,7 +177,7 @@ const baseVariant = {
   id: "variant-1",
   stock: 10,
   price: null,
-  product: { basePrice: decimal(1500), productType: "cosmetique" },
+  product: { basePrice: decimal(1500), productType: "cosmetique", isActive: true },
 };
 
 describe("submitOrder", () => {
@@ -236,6 +236,19 @@ describe("submitOrder", () => {
     const result = await submitOrder(buildOrderForm());
 
     expect(result).toEqual({ error: "storefrontExpired" });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses a product that was taken off sale, before uploading anything", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([
+      { ...baseVariant, product: { ...baseVariant.product, isActive: false } },
+    ] as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "insufficientStock" });
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.updateMany).not.toHaveBeenCalled();
     expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 

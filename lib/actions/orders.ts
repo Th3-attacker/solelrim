@@ -135,6 +135,13 @@ export async function submitOrder(
     return { error: "invalid" };
   }
 
+  // A product the admin took off sale can still sit in a cart saved before
+  // that (or be sent by a crafted request). Answered like a sold-out item: the
+  // checkout goes back to the cart, whose stock check shows it unavailable.
+  if (variants.some((v) => !v.product.isActive)) {
+    return { error: "insufficientStock" };
+  }
+
   const orderItems = itemsParsed.data.map((item) => {
     const variant = variantById.get(item.variantId)!;
     const unitPrice = (variant.price ?? variant.product.basePrice).toNumber();
