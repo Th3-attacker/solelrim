@@ -19,7 +19,9 @@ import {
 // `colors` list is meant to follow entry order.
 const VARIANT_ENTRY_ORDER = [{ createdAt: "asc" }, { id: "asc" }] satisfies Prisma.ProductVariantOrderByWithRelationInput[];
 
-export function getActiveProducts(
+// Once per request for the same arguments: the shop layout and the home and
+// catalogue pages all want a boutique's whole catalogue.
+export const getActiveProducts = cache(function getActiveProducts(
   productType: string,
   categoryId?: string,
   options?: { excludeId?: string; take?: number },
@@ -39,7 +41,7 @@ export function getActiveProducts(
     orderBy: { createdAt: "desc" },
     ...(options?.take ? { take: options.take } : {}),
   });
-}
+});
 
 // One page of a boutique's active catalogue, newest first, with the total the
 // app needs to know when to stop scrolling (the website's grid loads it all).

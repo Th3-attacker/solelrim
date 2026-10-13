@@ -5,12 +5,18 @@ import { prisma } from "@/lib/prisma";
 // Every visible storefront concern now lives on StoreType (one row per
 // boutique, each with its own public route) — this singleton keeps a
 // single job left: which boutique "/" redirects to.
-export const getStoreSettings = cache(function getStoreSettings() {
-  return prisma.storeSettings.upsert({
-    where: { id: "singleton" },
-    update: {},
-    create: { id: "singleton" },
-  });
+//
+// Read on many requests, so a plain read: the upsert (a write, with its row
+// lock) only runs the one time the row doesn't exist yet.
+export const getStoreSettings = cache(async function getStoreSettings() {
+  return (
+    (await prisma.storeSettings.findUnique({ where: { id: "singleton" } })) ??
+    prisma.storeSettings.upsert({
+      where: { id: "singleton" },
+      update: {},
+      create: { id: "singleton" },
+    })
+  );
 });
 
 // SOLAL's own contact info for the license contract (section 34 — see

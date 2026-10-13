@@ -8,8 +8,9 @@ import type { AdminUser } from "@/lib/generated/prisma/client";
 // Every admin-gated Server Action and page ultimately calls this. Throws
 // "unauthorized" for anyone without a Supabase session AND a matching
 // AdminUser row — there are no customer accounts in this app, so any
-// Supabase user without one is not a recognized admin.
-export async function getCurrentAdmin(): Promise<AdminUser> {
+// Supabase user without one is not a recognized admin. Once per request: a
+// page's layout, its gates and getAdminScope all ask.
+export const getCurrentAdmin = cache(async (): Promise<AdminUser> => {
   const user = await getSessionUser();
   if (!user) throw new ExpectedError("unauthorized");
 
@@ -19,7 +20,7 @@ export async function getCurrentAdmin(): Promise<AdminUser> {
   if (!admin) throw new ExpectedError("unauthorized");
 
   return admin;
-}
+});
 
 // Per request: the audit log needs the same user's email right after the
 // gate resolved them, and getUser() is a round trip to Supabase Auth.

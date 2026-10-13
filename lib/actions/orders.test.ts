@@ -13,6 +13,8 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
 vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
+// after() runs its task once the response is sent; here, right away.
+vi.mock("next/server", () => ({ after: (task: () => unknown) => void task() }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));

@@ -15,8 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getPendingOrderCount } from "@/lib/queries/orders";
-import { getCurrentAdmin } from "@/lib/auth/admin";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdmin, getSessionUser } from "@/lib/auth/admin";
 
 // robots.ts already disallows /{locale}/admin for crawling, but that alone
 // doesn't stop a URL from getting indexed if it's linked from elsewhere —
@@ -30,18 +29,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [storeTypes, admin, supabase] = await Promise.all([
-    getStoreTypes(),
-    getCurrentAdmin(),
-    createClient(),
-  ]);
+  const [storeTypes, admin] = await Promise.all([getStoreTypes(), getCurrentAdmin()]);
   // getAdminScope() refuses a SELLER (it guards every admin data page), but
   // this layout also wraps the checkout a seller does use — a seller's
   // scope is simply their own locked boutique.
   const currentScope =
     admin.role === "SELLER" ? admin.productType! : await getAdminScope();
-  const [{ data: { user } }, pendingOrderCount, pendingRefundCount] = await Promise.all([
-    supabase.auth.getUser(),
+  // getSessionUser is the request's cached getUser(): getCurrentAdmin above
+  // already made that round trip to Supabase Auth.
+  const [user, pendingOrderCount, pendingRefundCount] = await Promise.all([
+    getSessionUser(),
     getPendingOrderCount(currentScope),
     // Only an admin decides refunds, so only they get the badge.
     admin.role === "SELLER" ? Promise.resolve(0) : countPendingRefunds(currentScope),

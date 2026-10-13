@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStoreTypes } from "@/lib/queries/settings";
@@ -651,7 +652,9 @@ export async function confirmOrder(
     targetId: orderId,
   });
 
-  await sendOrderPush(orderId, "confirmed");
+  // After the response: the admin doesn't wait on Expo (up to 4 s), and a
+  // push that fails never touches the action (sendOrderPush never throws).
+  after(() => sendOrderPush(orderId, "confirmed"));
   revalidateSite();
   return {};
 }
@@ -731,7 +734,7 @@ export async function rejectOrder(
     reason,
   });
 
-  await sendOrderPush(orderId, "rejected");
+  after(() => sendOrderPush(orderId, "rejected"));
   revalidateSite();
   return {};
 }
@@ -761,7 +764,7 @@ export async function shipOrder(
     targetId: orderId,
   });
 
-  await sendOrderPush(orderId, "shipped");
+  after(() => sendOrderPush(orderId, "shipped"));
   revalidateAdmin();
   return {};
 }
@@ -888,7 +891,7 @@ export async function deliverOrder(
     targetId: orderId,
   });
 
-  await sendOrderPush(orderId, "delivered");
+  after(() => sendOrderPush(orderId, "delivered"));
   revalidateSite();
   return {};
 }
@@ -968,7 +971,7 @@ export async function cancelOrder(
     reason,
   });
 
-  await sendOrderPush(orderId, "cancelled");
+  after(() => sendOrderPush(orderId, "cancelled"));
   revalidateSite();
   return {};
 }
