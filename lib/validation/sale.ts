@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-const emptyToNull = (val: unknown) =>
-  val === "" || val === undefined ? null : val;
+const emptyToNull = (val: unknown) => (val === "" || val === undefined ? null : val);
 
 export const saleItemSchema = z.object({
   variantId: z.string().min(1),

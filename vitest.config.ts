@@ -19,6 +19,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),
+      // The marker throws outside the react-server condition; tests run server
+      // modules in plain Node, like Next.js does on the server.
+      "server-only": path.resolve(__dirname, "node_modules/server-only/empty.js"),
     },
   },
 });

@@ -1,14 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { logAdminAction } from "@/lib/audit";
+import { revalidateSite } from "@/lib/revalidate";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -27,9 +27,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
   return slug;
 }
 
-export async function createProduct(
-  input: ProductInput,
-): Promise<ProductActionResult> {
+export async function createProduct(input: ProductInput): Promise<ProductActionResult> {
   const { productType } = await requireWritableAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
@@ -62,14 +60,10 @@ export async function createProduct(
         },
       },
     });
-    revalidatePath("/admin/products");
-    revalidatePath("/");
+    revalidateSite();
     return { productId: created.id };
   } catch (err) {
-    if (
-      err instanceof PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: "duplicateSku" };
     }
     throw err;
@@ -129,8 +123,8 @@ export async function updateProduct(
   }
 
   try {
-    const slug = await prisma.$transaction(async (tx) => {
-      const updated = await tx.product.update({ where: { id: productId }, data: product });
+    await prisma.$transaction(async (tx) => {
+      await tx.product.update({ where: { id: productId }, data: product });
 
       if (toDelete.length > 0) {
         await tx.productVariant.deleteMany({
@@ -157,8 +151,6 @@ export async function updateProduct(
         where: { productId, color: { not: null, notIn: remainingColors } },
         data: { color: null },
       });
-
-      return updated.slug;
     });
 
     await logAdminAction({
@@ -169,25 +161,17 @@ export async function updateProduct(
       targetId: productId,
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${productId}`);
-    revalidatePath("/");
-    revalidatePath(`/products/${slug}`);
+    revalidateSite();
     return { productId };
   } catch (err) {
-    if (
-      err instanceof PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: "duplicateSku" };
     }
     throw err;
   }
 }
 
-export async function deleteProduct(
-  productId: string,
-): Promise<{ error?: string }> {
+export async function deleteProduct(productId: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
 
   const owned = await prisma.product.findFirst({
@@ -218,9 +202,7 @@ export async function deleteProduct(
 
   if (images.length > 0) {
     const supabase = createAdminClient();
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove(images.map((i) => i.storagePath));
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(images.map((i) => i.storagePath));
   }
 
   await logAdminAction({
@@ -231,8 +213,7 @@ export async function deleteProduct(
     targetId: productId,
   });
 
-  revalidatePath("/admin/products");
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -248,8 +229,7 @@ export async function bulkSetProductsActive(
     where: { id: { in: productIds }, productType },
     data: { isActive },
   });
-  revalidatePath("/admin/products");
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -326,14 +306,11 @@ export async function uploadProductImage(
     },
   });
 
-  revalidatePath(`/admin/products/${productId}`);
-  revalidatePath(`/products/${owned.slug}`);
+  revalidateSite();
   return {};
 }
 
-export async function deleteProductImage(
-  imageId: string,
-): Promise<{ error?: string }> {
+export async function deleteProductImage(imageId: string): Promise<{ error?: string }> {
   const { productType } = await requireWritableAdminScope();
 
   const image = await prisma.productImage.findUnique({
@@ -345,13 +322,10 @@ export async function deleteProductImage(
   }
 
   const supabase = createAdminClient();
-  await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .remove([image.storagePath]);
+  await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([image.storagePath]);
   await prisma.productImage.delete({ where: { id: imageId } });
 
-  revalidatePath(`/admin/products/${image.productId}`);
-  revalidatePath(`/products/${image.product.slug}`);
+  revalidateSite();
   return {};
 }
 
@@ -374,7 +348,6 @@ export async function updateProductImageColor(
     data: { color },
   });
 
-  revalidatePath(`/admin/products/${image.productId}`);
-  revalidatePath(`/products/${image.product.slug}`);
+  revalidateSite();
   return {};
 }

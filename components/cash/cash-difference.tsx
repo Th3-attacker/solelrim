@@ -10,7 +10,10 @@ export function CashDifference({
 }) {
   if (value === null) return <span className="text-muted-foreground">—</span>;
   return (
-    <span dir="ltr" className={value < 0 ? "font-medium text-destructive tabular-nums" : "tabular-nums"}>
+    <span
+      dir="ltr"
+      className={value < 0 ? "font-medium text-destructive tabular-nums" : "tabular-nums"}
+    >
       {value > 0 ? "+" : value < 0 ? "-" : ""}
       {format(Math.abs(value))}
     </span>

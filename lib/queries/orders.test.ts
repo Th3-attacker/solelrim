@@ -15,7 +15,11 @@ describe("getOrdersSharingPaymentProof", () => {
   it("finds the boutique's other orders sent with the same screenshot", async () => {
     prismaMock.order.findMany.mockResolvedValue([{ id: "o0", reference: "CMD-A" }] as never);
 
-    const others = await getOrdersSharingPaymentProof({ id: "o1", productType: "sport", paymentProofHash: "abc" });
+    const others = await getOrdersSharingPaymentProof({
+      id: "o1",
+      productType: "sport",
+      paymentProofHash: "abc",
+    });
 
     expect(others).toEqual([{ id: "o0", reference: "CMD-A" }]);
     expect(prismaMock.order.findMany).toHaveBeenCalledWith(
@@ -26,7 +30,13 @@ describe("getOrdersSharingPaymentProof", () => {
   });
 
   it("looks nothing up for an order placed before screenshots were hashed", async () => {
-    expect(await getOrdersSharingPaymentProof({ id: "o1", productType: "sport", paymentProofHash: null })).toEqual([]);
+    expect(
+      await getOrdersSharingPaymentProof({
+        id: "o1",
+        productType: "sport",
+        paymentProofHash: null,
+      }),
+    ).toEqual([]);
     expect(prismaMock.order.findMany).not.toHaveBeenCalled();
   });
 });

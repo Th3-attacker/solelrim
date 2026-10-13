@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { findWalletProvider } from "@/lib/shop/wallet-providers";
+import { revalidateSite } from "@/lib/revalidate";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -36,8 +36,7 @@ export async function createWalletAccount(formData: FormData) {
     },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return { wallet };
 }
 
@@ -67,8 +66,7 @@ export async function updateWalletAccount(id: string, formData: FormData) {
     data: { ...parsed.data, logoStoragePath },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -88,8 +86,7 @@ export async function deleteWalletAccount(id: string) {
 
   await prisma.walletAccount.deleteMany({ where: { id, productType } });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -117,7 +114,6 @@ export async function moveWalletAccount(id: string, direction: "up" | "down") {
     prisma.walletAccount.update({ where: { id: b.id }, data: { position: a.position } }),
   ]);
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }

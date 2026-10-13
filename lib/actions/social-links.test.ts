@@ -10,15 +10,12 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import {
-  createSocialLink,
-  deleteSocialLink,
-  moveSocialLink,
-} from "@/lib/actions/social-links";
+import { createSocialLink, deleteSocialLink, moveSocialLink } from "@/lib/actions/social-links";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;

@@ -11,15 +11,12 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import {
-  enrollLoyaltyCard,
-  lookupLoyaltyCard,
-  updateLoyaltySettings,
-} from "@/lib/actions/loyalty";
+import { enrollLoyaltyCard, lookupLoyaltyCard, updateLoyaltySettings } from "@/lib/actions/loyalty";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -210,8 +207,12 @@ describe("updateLoyaltySettings", () => {
     signedInAs("BOUTIQUE_ADMIN");
     boutique();
 
-    expect(await updateLoyaltySettings({ ...RULE, spendPerPoint: 0 })).toEqual({ error: "invalid" });
-    expect(await updateLoyaltySettings({ ...RULE, rewardPoints: 1.5 })).toEqual({ error: "invalid" });
+    expect(await updateLoyaltySettings({ ...RULE, spendPerPoint: 0 })).toEqual({
+      error: "invalid",
+    });
+    expect(await updateLoyaltySettings({ ...RULE, rewardPoints: 1.5 })).toEqual({
+      error: "invalid",
+    });
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 

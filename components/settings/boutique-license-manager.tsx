@@ -5,7 +5,7 @@ import { CalendarBlank, FileText, Pencil, Trash } from "@phosphor-icons/react/di
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ import {
   setPendingAutoCancelHours,
   updateStoreTypeLabel,
   deleteStoreType,
-} from "@/lib/actions/settings";
+} from "@/lib/actions/boutiques";
 import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 
 const CALENDAR_LOCALES: Record<string, typeof fr> = { fr, en: enUS, ar: arMA };
@@ -100,7 +100,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const format = useFormatter();
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [couponsPending, startCouponsTransition] = useTransition();
@@ -134,7 +133,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDomainOpen(false);
-      router.refresh();
     });
   }
 
@@ -146,7 +144,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setRenameOpen(false);
-      router.refresh();
     });
   }
 
@@ -160,22 +157,17 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDeleteOpen(false);
-      router.refresh();
     });
   }
 
   function handleSelectDate(date: Date | undefined) {
     startTransition(async () => {
-      const result = await updateLicenseExpiresAt(
-        storeType.key,
-        date ? toDateParam(date) : null,
-      );
+      const result = await updateLicenseExpiresAt(storeType.key, date ? toDateParam(date) : null);
       if (result.error) {
         toast.error(tCommon("error"));
         return;
       }
       setDateOpen(false);
-      router.refresh();
     });
   }
 
@@ -189,7 +181,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -204,7 +195,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleSaveClientName() {
@@ -215,18 +205,19 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setClientNameOpen(false);
-      router.refresh();
     });
   }
 
   function handlePendingAutoCancelChange(value: string) {
     startCouponsTransition(async () => {
-      const result = await setPendingAutoCancelHours(storeType.key, value === "off" ? null : Number(value));
+      const result = await setPendingAutoCancelHours(
+        storeType.key,
+        value === "off" ? null : Number(value),
+      );
       if (result.error) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -237,7 +228,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -443,7 +433,11 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         </Toggle>
 
         <Select
-          value={storeType.pendingAutoCancelHours === null ? "off" : String(storeType.pendingAutoCancelHours)}
+          value={
+            storeType.pendingAutoCancelHours === null
+              ? "off"
+              : String(storeType.pendingAutoCancelHours)
+          }
           disabled={couponsPending}
           onValueChange={handlePendingAutoCancelChange}
         >

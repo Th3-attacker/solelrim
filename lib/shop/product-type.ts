@@ -25,7 +25,4 @@ const NOT_FOUND_STORE_TYPE_KEY = "__not-found__";
 //   always prefers a static folder over the [storeType] dynamic segment, so
 //   a boutique keyed "admin" would silently never be reachable.
 // - NOT_FOUND_STORE_TYPE_KEY, see above.
-export const RESERVED_STORE_TYPE_KEYS = new Set([
-  "admin",
-  NOT_FOUND_STORE_TYPE_KEY,
-]);
+export const RESERVED_STORE_TYPE_KEYS = new Set(["admin", NOT_FOUND_STORE_TYPE_KEY]);

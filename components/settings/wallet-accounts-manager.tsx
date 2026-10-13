@@ -4,13 +4,18 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Trash, CaretUp, CaretDown, Pencil, Wallet } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { WALLET_PROVIDERS, findWalletProvider } from "@/lib/shop/wallet-providers";
 import {
   createWalletAccount,
@@ -32,7 +37,6 @@ const OTHER = "__other__";
 export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<WalletAccount | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -68,7 +72,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
         return;
       }
       setOpen(false);
-      router.refresh();
     });
   }
 
@@ -78,7 +81,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleMove(id: string, direction: "up" | "down") {
@@ -88,7 +90,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

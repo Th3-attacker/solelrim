@@ -15,8 +15,15 @@ export function ok(data: unknown, options?: { cache?: boolean }): Response {
   });
 }
 
-export function fail(error: string, status: number, extraHeaders?: Record<string, string>): Response {
-  return Response.json({ error }, { status, headers: { "Cache-Control": "no-store", ...extraHeaders } });
+export function fail(
+  error: string,
+  status: number,
+  extraHeaders?: Record<string, string>,
+): Response {
+  return Response.json(
+    { error },
+    { status, headers: { "Cache-Control": "no-store", ...extraHeaders } },
+  );
 }
 
 // The HTTP status of an error code coming back from a Server Action.
@@ -86,7 +93,8 @@ export function catalogueParamsOf(url: URL): CatalogueParams | "invalid" | null 
   if (!SORTS.includes(sort)) return "invalid";
 
   // Comma-separated exact values; empty ones are ignored.
-  const list = (name: string) => (params.get(name) ?? "").split(",").filter((value) => value !== "");
+  const list = (name: string) =>
+    (params.get(name) ?? "").split(",").filter((value) => value !== "");
   const sizes = list("sizes");
   const colors = list("colors");
   if (sizes.length > MAX_LIST_VALUES || colors.length > MAX_LIST_VALUES) return "invalid";

@@ -39,7 +39,10 @@ afterEach(() => {
 describe("sendOrderPush", () => {
   it("sends one message per registered phone, in the language of the order", async () => {
     prismaMock.order.findUnique.mockResolvedValue(order());
-    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ data: [{ status: "ok" }, { status: "ok" }] }) });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [{ status: "ok" }, { status: "ok" }] }),
+    });
 
     await sendOrderPush("o1", "shipped");
 
@@ -81,7 +84,9 @@ describe("sendOrderPush", () => {
     prismaMock.order.findUnique.mockResolvedValue(order());
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ data: [{ status: "ok" }, { status: "error", details: { error: "DeviceNotRegistered" } }] }),
+      json: async () => ({
+        data: [{ status: "ok" }, { status: "error", details: { error: "DeviceNotRegistered" } }],
+      }),
     });
 
     await sendOrderPush("o1", "delivered");

@@ -1,7 +1,4 @@
-import { getPriceRange } from "@/lib/shop/price";
-import type { getActiveProducts } from "@/lib/queries/shop";
-
-type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
+import type { CatalogueFilters, CatalogueSort } from "@/lib/queries/catalogue-filters";
 
 export const SORT_OPTIONS = [
   { value: "default", labelKey: "sortDefault" },
@@ -20,40 +17,42 @@ export const PRICE_BUCKETS = [
   { value: "2000+", min: 2000, max: Infinity },
 ] as const;
 
-function productPrice(product: Product): number {
-  return getPriceRange(product.variants, product.basePrice).min;
-}
+// The website's ?sort= values in the catalogue's own vocabulary, the one the
+// app's API speaks (lib/queries/catalogue-filters.ts). "default" keeps the
+// catalogue's order, newest first.
+const SORT_BY_OPTION: Record<string, CatalogueSort> = {
+  default: "newest",
+  newest: "newest",
+  "price-asc": "price_asc",
+  "price-desc": "price_desc",
+};
 
-export function filterByPriceBucket(
-  products: Product[],
-  bucketValue: string,
-): Product[] {
-  const bucket = PRICE_BUCKETS.find((b) => b.value === bucketValue);
-  if (!bucket) return products;
-  return products.filter((p) => {
-    const price = productPrice(p);
-    return price >= bucket.min && price < bucket.max;
-  });
-}
+export type CatalogueSearch = {
+  category?: string;
+  sort?: string;
+  price?: string;
+  color?: string;
+  q?: string;
+};
 
-export function filterByColor(products: Product[], color: string): Product[] {
-  return products.filter((p) => p.variants.some((v) => v.color === color));
-}
-
-export function sortProducts(products: Product[], sort?: string): Product[] {
-  const sorted = [...products];
-  switch (sort) {
-    case "newest":
-      return sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    case "price-asc":
-      return sorted.sort((a, b) => productPrice(a) - productPrice(b));
-    case "price-desc":
-      return sorted.sort((a, b) => productPrice(b) - productPrice(a));
-    default:
-      return sorted;
-  }
-}
-
-export function getAllCatalogColors(products: Product[]): string[] {
-  return [...new Set(products.flatMap((p) => p.variants.map((v) => v.color)))].sort();
+// The /products page's search params as the SQL filters the app's catalogue
+// uses too: one implementation of sorting and filtering, done in the
+// database, paginated. Like the app's, a color or price filter keeps the
+// products with a matching variant in stock.
+export function catalogueFiltersFromSearch(
+  productType: string,
+  { category, sort, price, color, q }: CatalogueSearch,
+): CatalogueFilters {
+  const bucket = PRICE_BUCKETS.find((candidate) => candidate.value === price);
+  return {
+    productType,
+    categoryId: category || undefined,
+    query: q?.trim() || undefined,
+    sort: SORT_BY_OPTION[sort ?? "default"] ?? "newest",
+    sizes: [],
+    colors: color ? [color] : [],
+    priceMin: bucket?.min,
+    // A bucket's upper bound belongs to the next one: 50 is in "50-100".
+    priceMax: bucket && Number.isFinite(bucket.max) ? bucket.max - 0.01 : undefined,
+  };
 }

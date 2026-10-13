@@ -110,11 +110,7 @@ const COLOR_MAP: Record<string, string> = {
 const FALLBACK_COLOR = "#a1a1aa";
 
 function normalize(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+  return name.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
 function resolveOne(part: string): string {
@@ -153,8 +149,6 @@ export function getSwatchStyle(colorName: string): CSSProperties {
     return { backgroundColor: colors[0] };
   }
   const step = 100 / colors.length;
-  const stops = colors
-    .map((color, i) => `${color} ${i * step}% ${(i + 1) * step}%`)
-    .join(", ");
+  const stops = colors.map((color, i) => `${color} ${i * step}% ${(i + 1) * step}%`).join(", ");
   return { background: `conic-gradient(${stops})` };
 }

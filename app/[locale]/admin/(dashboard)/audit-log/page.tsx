@@ -6,7 +6,7 @@ import { getAuditLog, getAuditLogActors, AUDIT_LOG_PAGE_SIZE } from "@/lib/queri
 import { getStoreTypes } from "@/lib/queries/settings";
 import { AUDIT_ACTION_LABEL_KEY, isAuditAction } from "@/lib/audit-actions";
 import { auditChangeRows } from "@/lib/shop/audit-diff";
-import { requireAuditLogScope } from "@/lib/shop/admin-scope";
+import { requireAuditLogScope } from "@/lib/auth/scope";
 import type { JsonValue } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { StateMessage } from "@/components/ui/state-message";
 import { ListPagination } from "@/components/ui/list-pagination";
@@ -175,8 +175,7 @@ export default async function AdminAuditLogPage({
                     )}
                     {entry.reason && (
                       <p className="mt-1">
-                        <span className="text-muted-foreground">{t("reason")}:</span>{" "}
-                        {entry.reason}
+                        <span className="text-muted-foreground">{t("reason")}:</span> {entry.reason}
                       </p>
                     )}
                   </TableCell>

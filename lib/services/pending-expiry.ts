@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendOrderPush } from "@/lib/push/order-push";
+import { notifyOrdersChanged } from "@/lib/realtime";
 
 // The cancelReason recorded on an order cancelled by the timer — a preset
 // key (REASON_LABEL_KEY in lib/shop/client-messages.ts), translated where
@@ -22,6 +23,7 @@ export async function cancelExpiredPendingOrders(now = new Date()): Promise<stri
   });
 
   const cancelled: { id: string; reference: string }[] = [];
+  const changedBoutiques = new Set<string>();
   for (const boutique of boutiques) {
     const hours = boutique.pendingAutoCancelHours!;
     if (hours <= 0) continue;
@@ -62,12 +64,18 @@ export async function cancelExpiredPendingOrders(now = new Date()): Promise<stri
         }
         return { id, reference: row.reference };
       });
-      if (order) cancelled.push(order);
+      if (order) {
+        cancelled.push(order);
+        changedBoutiques.add(boutique.key);
+      }
     }
   }
 
   for (const order of cancelled) {
     await sendOrderPush(order.id, "cancelled");
+  }
+  for (const productType of changedBoutiques) {
+    await notifyOrdersChanged(productType);
   }
   return cancelled.map((order) => order.reference);
 }

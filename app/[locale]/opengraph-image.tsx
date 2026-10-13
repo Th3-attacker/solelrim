@@ -17,40 +17,32 @@ const LOGO_HEIGHT = 150;
 // boutique logo or product photo to show instead (see lib/shop/metadata.ts).
 // Lives under [locale] (rather than app root) so it can render the tagline
 // in the visitor's language.
-export default async function OpengraphImage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function OpengraphImage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "dashboard" });
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 40,
-          background: SOLAL_COLORS.marine,
-          fontFamily: "system-ui, sans-serif",
-        }}
-      >
-        <img
-          src={svgDataUri(solalLogoSvg(SOLAL_COLORS.white))}
-          width={Math.round(LOGO_HEIGHT * SOLAL_LOGO_RATIO)}
-          height={LOGO_HEIGHT}
-          alt="SOLAL"
-        />
-        <div style={{ fontSize: 32, color: "#D6E2F0" }}>
-          {t("ogTagline")}
-        </div>
-      </div>
-    ),
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 40,
+        background: SOLAL_COLORS.marine,
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
+      <img
+        src={svgDataUri(solalLogoSvg(SOLAL_COLORS.white))}
+        width={Math.round(LOGO_HEIGHT * SOLAL_LOGO_RATIO)}
+        height={LOGO_HEIGHT}
+        alt="SOLAL"
+      />
+      <div style={{ fontSize: 32, color: "#D6E2F0" }}>{t("ogTagline")}</div>
+    </div>,
     { ...size },
   );
 }

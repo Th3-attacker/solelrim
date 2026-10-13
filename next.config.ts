@@ -1,49 +1,21 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
+import { contentSecurityPolicy } from "./lib/csp";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
-const isDev = process.env.NODE_ENV === "development";
-
-// Sentry's browser SDK posts error events straight to the DSN's ingest
-// host — CSP's connect-src would silently swallow every one of them
-// otherwise. Derived from the DSN itself (not hardcoded) so a DSN
-// rotation doesn't also require remembering to update this.
-const sentryIngestHost = process.env.NEXT_PUBLIC_SENTRY_DSN
-  ? new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).host
-  : null;
-
-// No nonce/strict-dynamic here on purpose: several components set inline
-// `style` (color swatches whose color comes from admin-entered variant
-// data, the checkout sheet's keyboard-avoidance offset) which CSP's
-// style-src-attr can't allow via nonce — only 'unsafe-inline' or
-// per-attribute hashes, and hashing every dynamic value isn't practical.
-// Next's own bootstrap/hydration script is inline too, same story for
-// script-src. Still meaningfully tightens everything else (frame-ancestors,
-// object-src, connect/img-src scoped to Supabase, no other third party).
-const cspHeader = `
-  default-src 'self';
-  script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data: https://*.supabase.co;
-  font-src 'self';
-  connect-src 'self' https://*.supabase.co${sentryIngestHost ? ` https://${sentryIngestHost}` : ""};
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  ${isDev ? "" : "upgrade-insecure-requests;"}
-`
-  .replace(/\s{2,}/g, " ")
-  .trim();
+// Pages get their Content-Security-Policy, with a nonce, from proxy.ts
+// (lib/csp.ts). This one is for the API, which the proxy's matcher skips:
+// the same policy, without a nonce.
+const cspHeader = contentSecurityPolicy({});
 
 // /api/v1/docs (app/api/v1/docs/route.ts) loads the Scalar API reference
 // from jsDelivr, pinned and SRI-checked. Same policy otherwise: it only
 // talks to its own deployment.
-const apiDocsCspHeader = cspHeader.replace(
-  "script-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-);
+const apiDocsCspHeader = contentSecurityPolicy({
+  extraScriptSources: ["https://cdn.jsdelivr.net"],
+});
 
 const nextConfig: NextConfig = {
   // Pin the project root explicitly — Turbopack otherwise walks up looking
@@ -81,7 +53,6 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          { key: "Content-Security-Policy", value: cspHeader },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -95,6 +66,11 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Pages get theirs from proxy.ts; the API, which the proxy skips, here.
+      {
+        source: "/api/:path*",
+        headers: [{ key: "Content-Security-Policy", value: cspHeader }],
+      },
       // Listed last so its CSP overrides the one above.
       {
         source: "/api/v1/docs",
@@ -104,10 +80,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Deliberately not wrapped in withSentryConfig: that plugin's only jobs
-// beyond what instrumentation.ts/instrumentation-client.ts already do are
-// source-map upload (needs a SENTRY_AUTH_TOKEN we don't have yet) and
-// build-time webpack/turbopack tree-shaking — neither is required for
-// error capture to work, and skipping it keeps the build pipeline
-// untouched. Revisit if source-mapped stack traces become worth the setup.
-export default withNextIntl(nextConfig);
+// Error capture itself lives in instrumentation.ts/instrumentation-client.ts.
+// withSentryConfig only adds the source-map upload after `next build`, so
+// browser stack traces in Sentry point at our code instead of minified
+// chunks. It needs SENTRY_AUTH_TOKEN, SENTRY_ORG and SENTRY_PROJECT (Vercel
+// env); without the token the build is exactly what it was.
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(withNextIntl(nextConfig), {
+      silent: !process.env.CI,
+      // The maps are uploaded, then removed from the deployment: Sentry has
+      // them, the public doesn't.
+      sourcemaps: { deleteSourcemapsAfterUpload: true },
+    })
+  : withNextIntl(nextConfig);

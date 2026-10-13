@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildOrderPushMessage, type OrderPushEvent } from "@/lib/shop/client-messages";
+import { reportError } from "@/lib/report-error";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const SEND_TIMEOUT_MS = 4000;
@@ -60,7 +61,10 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     });
     if (!response.ok) {
-      console.error("sendOrderPush: Expo answered", response.status);
+      reportError("sendOrderPush", new Error(`Expo answered ${response.status}`), {
+        orderId,
+        event,
+      });
       return;
     }
 
@@ -75,6 +79,6 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       await prisma.pushToken.deleteMany({ where: { id: { in: gone } } });
     }
   } catch (error) {
-    console.error("sendOrderPush failed", error);
+    reportError("sendOrderPush", error, { orderId, event });
   }
 }

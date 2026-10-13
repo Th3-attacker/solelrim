@@ -26,7 +26,7 @@ import {
   requireCheckoutViewScope,
   requireSuperAdminScope,
   requireWritableAdminScope,
-} from "@/lib/shop/admin-scope";
+} from "@/lib/auth/scope";
 
 const getCurrentAdminMock = getCurrentAdmin as unknown as Mock;
 const getStoreSettingsMock = getStoreSettings as unknown as Mock;

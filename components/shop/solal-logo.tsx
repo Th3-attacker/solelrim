@@ -1,5 +1,11 @@
 import { useId } from "react";
-import { DUNE_CUT, DUNE_PATH, DUNE_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from "@/lib/brand/solal";
+import {
+  DUNE_CUT,
+  DUNE_PATH,
+  DUNE_VIEWBOX,
+  WORDMARK_PATH,
+  WORDMARK_VIEWBOX,
+} from "@/lib/brand/solal";
 
 // The SOLAL boutique's header logo, drawn in currentColor so it follows the
 // theme (marine, light blue in dark mode): the dune S alone on phones, the
@@ -24,7 +30,11 @@ export function SolalHeaderLogo() {
           mask={`url(#${maskId})`}
         />
       </svg>
-      <svg viewBox={WORDMARK_VIEWBOX} className="hidden h-5 w-auto shrink-0 md:block" aria-hidden="true">
+      <svg
+        viewBox={WORDMARK_VIEWBOX}
+        className="hidden h-5 w-auto shrink-0 md:block"
+        aria-hidden="true"
+      >
         <path d={WORDMARK_PATH} fill="currentColor" />
       </svg>
     </>

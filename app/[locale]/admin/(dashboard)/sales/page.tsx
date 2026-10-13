@@ -1,11 +1,10 @@
-
 import { getTranslations, getFormatter } from "next-intl/server";
 
 import { Plus, Receipt } from "@phosphor-icons/react/dist/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { countPendingRefunds } from "@/lib/queries/refunds";
 import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { Button } from "@/components/ui/button";
@@ -85,10 +84,7 @@ export default async function AdminSalesPage() {
             {sales.map((sale) => (
               <TableRow key={sale.id}>
                 <TableCell>
-                  <Link
-                    href={`/admin/sales/${sale.id}`}
-                    className="font-medium hover:underline"
-                  >
+                  <Link href={`/admin/sales/${sale.id}`} className="font-medium hover:underline">
                     {sale.reference}
                   </Link>
                 </TableCell>

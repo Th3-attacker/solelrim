@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -24,7 +23,6 @@ type NumericField = (typeof FIELDS)[number];
 export function LoyaltySettingsForm({ rule }: { rule: LoyaltyRule }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [enabled, setEnabled] = useState(rule.enabled);
   const [values, setValues] = useState<Record<NumericField, string>>({
@@ -49,7 +47,6 @@ export function LoyaltySettingsForm({ rule }: { rule: LoyaltyRule }) {
         return;
       }
       toast.success(tCommon("save"));
-      router.refresh();
     });
   }
 

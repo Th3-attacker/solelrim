@@ -51,9 +51,7 @@ export async function FeaturedShowcase({
         <h3 className="text-base font-semibold text-balance sm:text-xl">{product.name}</h3>
       </div>
       <Button asChild size="lg" className="w-full">
-        <Link href={`${basePath}/products/${product.slug}`}>
-          {t("heroShopProduct")}
-        </Link>
+        <Link href={`${basePath}/products/${product.slug}`}>{t("heroShopProduct")}</Link>
       </Button>
     </div>
   ));

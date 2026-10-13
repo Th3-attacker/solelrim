@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/admin";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { sellerInputSchema, sellerQuotaSchema } from "@/lib/validation/seller";
+import { reportError } from "@/lib/report-error";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 // A boutique admin (or a superadmin scoped to that boutique) creates a
 // SELLER in their own boutique — the boutique always comes from the
@@ -63,7 +64,9 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
     // supabase-js reports failure through `error`, it doesn't throw.
     const { error: rollbackError } = await supabase.auth.admin.deleteUser(data.user.id);
     if (rollbackError) {
-      console.error("[createSeller] orphaned auth user", data.user.id, rollbackError);
+      reportError("createSeller: orphaned auth user", rollbackError, {
+        supabaseUserId: data.user.id,
+      });
     }
     if (err instanceof Error && err.message === "quotaReached") {
       return { error: "quotaReached" };
@@ -71,7 +74,7 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
     throw err;
   }
 
-  revalidatePath("/admin/settings");
+  revalidateAdmin();
   return {};
 }
 
@@ -106,7 +109,7 @@ export async function deleteSeller(adminUserId: string): Promise<{ error?: strin
   }
   await prisma.adminUser.delete({ where: { id: seller.id } });
 
-  revalidatePath("/admin/settings");
+  revalidateAdmin();
   return {};
 }
 
@@ -128,6 +131,6 @@ export async function setSellerQuota(
     return { error: "notFound" };
   }
 
-  revalidatePath("/admin/settings");
+  revalidateAdmin();
   return {};
 }

@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
+vi.mock("@/lib/realtime", () => ({ notifyOrdersChanged: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
 vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
 import { sendOrderPush } from "@/lib/push/order-push";
-import { cancelExpiredPendingOrders } from "@/lib/shop/pending-expiry";
+import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const pushMock = sendOrderPush as unknown as Mock;
@@ -19,7 +20,9 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
-  prismaMock.storeType.findMany.mockResolvedValue([{ key: "sport", pendingAutoCancelHours: 48 }] as never);
+  prismaMock.storeType.findMany.mockResolvedValue([
+    { key: "sport", pendingAutoCancelHours: 48 },
+  ] as never);
   prismaMock.order.findMany.mockResolvedValue([{ id: "o1" }] as never);
   prismaMock.order.updateMany.mockResolvedValue({ count: 1 } as never);
   prismaMock.order.findUniqueOrThrow.mockResolvedValue({

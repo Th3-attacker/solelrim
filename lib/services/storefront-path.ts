@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
+import { getStoreTypeRouting } from "@/lib/services/domain-cache";
 
 // "" when this request arrived on the boutique's own bound custom domain —
 // proxy.ts already injects the [storeType] segment server-side for those,

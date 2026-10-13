@@ -92,9 +92,7 @@ export function FilterPanel({
         >
           <span dir="ltr">
             {formatPrice(bucket.min, tCommon("currency"))}
-            {bucket.max === Infinity
-              ? "+"
-              : ` - ${formatPrice(bucket.max, tCommon("currency"))}`}
+            {bucket.max === Infinity ? "+" : ` - ${formatPrice(bucket.max, tCommon("currency"))}`}
           </span>
         </OptionButton>
       ))}

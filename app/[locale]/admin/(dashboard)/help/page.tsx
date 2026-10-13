@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentAdmin, getSessionUser } from "@/lib/auth/admin";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { getSolalContact } from "@/lib/queries/settings";
 import { HELP_GROUPS, topicsFor } from "@/lib/help/topics";
 import { mailtoLink, whatsappLink } from "@/lib/help/support-links";

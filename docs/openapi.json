@@ -174,7 +174,7 @@
               "type": "string",
               "maxLength": 100
             },
-            "description": "Search (accent-insensitive, rate-limited 40 / 15 min per IP)."
+            "description": "Search (accent-insensitive, rate-limited 120 / min per IP)."
           },
           {
             "name": "sort",

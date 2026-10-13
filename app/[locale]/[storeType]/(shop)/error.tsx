@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { Warning } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { StateMessage } from "@/components/ui/state-message";
+import { useReportedError } from "@/hooks/use-reported-error";
 
 export default function ShopError({
   error,
@@ -14,16 +14,15 @@ export default function ShopError({
   retry: () => void;
 }) {
   const t = useTranslations("errors");
-
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+  const reference = useReportedError(error);
 
   return (
     <StateMessage
+      heading="h1"
       icon={Warning}
       title={t("errorTitle")}
       message={t("errorMessage")}
+      detail={reference && t("reference", { code: reference })}
       action={
         <Button size="lg" onClick={() => retry()}>
           {t("retry")}

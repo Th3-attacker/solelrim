@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +26,6 @@ export function RefundDecision({
 }) {
   const t = useTranslations("refunds");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const showError = useRefundError();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -37,7 +35,6 @@ export function RefundDecision({
     const result = await approveRefund({ requestId });
     if (result.error) return showError(result.error);
     toast.success(t("approved"));
-    router.refresh();
   }
 
   function handleReject() {
@@ -47,12 +44,10 @@ export function RefundDecision({
       toast.success(t("rejected"));
       setRejectOpen(false);
       setReason("");
-      router.refresh();
     });
   }
 
-  const money =
-    amount === null ? "—" : formatPrice(amount, tCommon("currency"));
+  const money = amount === null ? "—" : formatPrice(amount, tCommon("currency"));
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -84,11 +79,7 @@ export function RefundDecision({
         title={t("rejectTitle")}
         footer={
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRejectOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setRejectOpen(false)}>
               {tCommon("cancel")}
             </Button>
             <Button
@@ -104,9 +95,7 @@ export function RefundDecision({
         }
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`refund-reject-${requestId}`}>
-            {t("rejectReason")}
-          </Label>
+          <Label htmlFor={`refund-reject-${requestId}`}>{t("rejectReason")}</Label>
           <Textarea
             id={`refund-reject-${requestId}`}
             maxLength={500}

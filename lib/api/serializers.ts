@@ -1,4 +1,9 @@
-import { getProductImageUrl, getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import {
+  getProductImageUrl,
+  getStoreHeroImageUrl,
+  getStoreLogoUrl,
+  getWalletLogoUrl,
+} from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { resolveStoreTheme } from "@/lib/theme/presets";
@@ -57,7 +62,8 @@ export function serializeBoutique(boutique: OpenBoutique, locale: string, origin
 // "Noir" and "noir" are two colors, as they are for the variants themselves.
 function distinctColors(variants: ProductRow["variants"]) {
   const entryOrder = [...variants].sort(
-    (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+    (a, b) =>
+      a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
   return [...new Set(entryOrder.map((variant) => variant.color))];
 }

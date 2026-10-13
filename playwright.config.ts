@@ -13,9 +13,7 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   // Reuses whatever's already on :3000 locally (the dev server most of this
   // project's manual verification already runs against) — only spawns its
   // own in CI, where nothing is running yet.

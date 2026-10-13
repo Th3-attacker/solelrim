@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { expectedErrorCode } from "@/lib/errors";
 
 // Runs before hydration on every page load (see Next.js's
 // instrumentation-client.{js,ts} convention) — catches browser-side
@@ -7,8 +8,12 @@ import * as Sentry from "@sentry/nextjs";
 // person hits it tells us on WhatsApp.
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NODE_ENV,
+  // Vercel's own environment (production / preview / development), like the
+  // server side: NODE_ENV is "production" on preview deployments too, which
+  // mixed staging's errors in with production's.
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV,
   // Mirrors instrumentation.ts's server-side rate — same low, fixed sample
   // for browser-side performance tracing.
   tracesSampleRate: 0.1,
+  beforeSend: (event, hint) => (expectedErrorCode(hint.originalException) ? null : event),
 });

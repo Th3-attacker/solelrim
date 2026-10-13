@@ -52,11 +52,7 @@ function getStuckWhatsAppHref(
   );
 }
 
-export function TrackOrderForm({
-  adminWhatsappNumber,
-}: {
-  adminWhatsappNumber: string | null;
-}) {
+export function TrackOrderForm({ adminWhatsappNumber }: { adminWhatsappNumber: string | null }) {
   const t = useTranslations("trackOrder");
   const tCommon = useTranslations("common");
   const format = useFormatter();
@@ -110,25 +106,29 @@ export function TrackOrderForm({
               <Label htmlFor="phone">{t("phoneLabel")}</Label>
               <Input
                 id="phone"
+                type="tel"
                 inputMode="numeric"
+                autoComplete="tel-national"
                 maxLength={8}
                 aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
                 {...register("phone")}
               />
-              {errors.phone && (
-                <FieldError>{tCommon("invalidPhone")}</FieldError>
-              )}
+              {errors.phone && <FieldError id="phone-error">{tCommon("invalidPhone")}</FieldError>}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reference">{t("referenceLabel")}</Label>
               <Input
                 id="reference"
                 placeholder={t("referencePlaceholder")}
+                autoComplete="off"
+                autoCapitalize="characters"
                 aria-invalid={!!errors.reference}
+                aria-describedby={errors.reference ? "reference-error" : undefined}
                 {...register("reference")}
               />
               {errors.reference && (
-                <FieldError>{tCommon("requiredField")}</FieldError>
+                <FieldError id="reference-error">{tCommon("requiredField")}</FieldError>
               )}
             </div>
             <Button type="submit" loading={submitting} className="w-full">
@@ -138,9 +138,7 @@ export function TrackOrderForm({
         </CardContent>
       </Card>
 
-      {errorMessage && (
-        <p className="text-center text-sm text-destructive">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-center text-sm text-destructive">{errorMessage}</p>}
 
       {result && !("error" in result) && (
         <Card>

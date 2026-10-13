@@ -14,11 +14,7 @@ type Testimonial = {
 // Optional, admin-toggled (StoreType.testimonialsEnabled) — the caller
 // already gates on that flag; this only additionally hides itself when
 // there's nothing to show yet (enabled but zero entries added).
-export async function TestimonialsSection({
-  testimonials,
-}: {
-  testimonials: Testimonial[];
-}) {
+export async function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) {
   if (testimonials.length === 0) return null;
   const t = await getTranslations("shop");
 
@@ -27,10 +23,7 @@ export async function TestimonialsSection({
       <SectionTitle>{t("testimonialsTitle")}</SectionTitle>
       <div className="grid gap-4 sm:grid-cols-2 desktop:grid-cols-3">
         {testimonials.map((item) => (
-          <div
-            key={item.id}
-            className="flex flex-col gap-3 rounded-2xl border bg-card p-6"
-          >
+          <div key={item.id} className="flex flex-col gap-3 rounded-2xl border bg-card p-6">
             {item.rating && (
               <div className="flex items-center gap-0.5" aria-hidden>
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -39,17 +32,13 @@ export async function TestimonialsSection({
                     weight={i < item.rating! ? "fill" : "regular"}
                     className={cn(
                       "size-4",
-                      i < item.rating!
-                        ? "fill-primary text-primary"
-                        : "text-muted-foreground/30",
+                      i < item.rating! ? "fill-primary text-primary" : "text-muted-foreground/30",
                     )}
                   />
                 ))}
               </div>
             )}
-            <p className="text-paragraph-md text-foreground">
-              &ldquo;{item.quote}&rdquo;
-            </p>
+            <p className="text-paragraph-md text-foreground">&ldquo;{item.quote}&rdquo;</p>
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-muted-foreground">
                 — {item.customerName}

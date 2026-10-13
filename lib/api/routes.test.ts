@@ -3,12 +3,16 @@ import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("@/lib/actions/orders", () => ({ submitOrder: vi.fn(), trackOrder: vi.fn() }));
-vi.mock("@/lib/actions/promo-codes", () => ({ previewPromoCode: vi.fn() }));
-vi.mock("@/lib/queries/orders", () => ({ findOrderByIdempotencyKey: vi.fn() }));
-vi.mock("@/lib/actions/cart", () => ({ checkVariantStocks: vi.fn() }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
+vi.mock("@/lib/services/orders", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/services/orders")>()),
+  placeOrder: vi.fn(),
+  trackOrder: vi.fn(),
+}));
+vi.mock("@/lib/services/promo-codes", () => ({ previewPromoCode: vi.fn() }));
+vi.mock("@/lib/services/cart", () => ({ checkVariantStocks: vi.fn() }));
+vi.mock("@/lib/rate-limit", async (importOriginal) => ({
+  RATE_LIMITS: (await importOriginal<typeof import("@/lib/rate-limit")>()).RATE_LIMITS,
   checkRateLimit: vi.fn(),
   rateLimitRetryAfter: vi.fn(),
   getClientIp: vi.fn().mockResolvedValue("1.2.3.4"),
@@ -23,10 +27,9 @@ vi.mock("@/lib/queries/shop", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
-import { submitOrder, trackOrder } from "@/lib/actions/orders";
+import { placeOrder, trackOrder } from "@/lib/services/orders";
 import { checkRateLimit, rateLimitRetryAfter } from "@/lib/rate-limit";
-import { checkVariantStocks } from "@/lib/actions/cart";
-import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
+import { checkVariantStocks } from "@/lib/services/cart";
 import {
   getActiveProductsPage,
   getCatalogueFacets,
@@ -39,15 +42,19 @@ import { GET as getProducts } from "@/app/api/v1/boutiques/[key]/products/route"
 import { POST as postStocks } from "@/app/api/v1/boutiques/[key]/stocks/route";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-const submitOrderMock = submitOrder as unknown as Mock;
+const submitOrderMock = placeOrder as unknown as Mock;
 const trackOrderMock = trackOrder as unknown as Mock;
 const rateLimitMock = checkRateLimit as unknown as Mock;
 const retryAfterMock = rateLimitRetryAfter as unknown as Mock;
 const stocksMock = checkVariantStocks as unknown as Mock;
-const findByKeyMock = findOrderByIdempotencyKey as unknown as Mock;
 
 const ctx = (key: string) => ({ params: Promise.resolve({ key }) });
-const open = { key: "sport", licenseStatus: "ACTIVE", licenseType: "MONTHLY", licenseExpiresAt: null };
+const open = {
+  key: "sport",
+  licenseStatus: "ACTIVE",
+  licenseType: "MONTHLY",
+  licenseExpiresAt: null,
+};
 
 function post(path: string, body: BodyInit, headers?: HeadersInit) {
   return new Request(`https://shop.example${path}`, { method: "POST", body, headers });
@@ -62,7 +69,6 @@ beforeEach(() => {
   rateLimitMock.mockReset().mockResolvedValue(true);
   retryAfterMock.mockReset().mockResolvedValue(null);
   stocksMock.mockReset();
-  findByKeyMock.mockReset().mockResolvedValue(null);
   prismaMock.storeType.findUnique.mockResolvedValue(open as never);
 });
 
@@ -77,7 +83,10 @@ describe("a closed or unknown boutique", () => {
   });
 
   it("is a 403 once its license is suspended", async () => {
-    prismaMock.storeType.findUnique.mockResolvedValue({ ...open, licenseStatus: "SUSPENDED" } as never);
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      ...open,
+      licenseStatus: "SUSPENDED",
+    } as never);
 
     const response = await postOrder(post("/x", new FormData()), ctx("sport"));
 
@@ -97,9 +106,9 @@ describe("POST orders", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-    const sent = submitOrderMock.mock.calls[0][0] as FormData;
-    expect(sent.get("productType")).toBe("sport");
-    expect(sent.get("customerName")).toBe("Aïcha");
+    const sent = submitOrderMock.mock.calls[0][0];
+    expect(sent.productType).toBe("sport");
+    expect(sent.customerName).toBe("Aïcha");
   });
 
   it("turns the action's error codes into HTTP statuses", async () => {
@@ -126,7 +135,10 @@ describe("POST orders", () => {
   });
 
   it("refuses a body that isn't a form", async () => {
-    const response = await postOrder(post("/x", "not a form", { "content-type": "text/plain" }), ctx("sport"));
+    const response = await postOrder(
+      post("/x", "not a form", { "content-type": "text/plain" }),
+      ctx("sport"),
+    );
 
     expect(response.status).toBe(400);
   });
@@ -144,38 +156,15 @@ describe("POST orders with an Idempotency-Key", () => {
     expect(submitOrderMock.mock.calls[0][1]).toEqual({ idempotencyKey: "k-1" });
   });
 
-  it("answers a resend after success with the same order, without placing another", async () => {
-    findByKeyMock.mockResolvedValue({ reference: "CMD-1", orderId: "o1" });
+  it("answers a resend with the order submitOrder found for the key", async () => {
+    // The lookup itself is submitOrder's (lib/actions/orders.test.ts).
+    submitOrderMock.mockResolvedValue({ reference: "CMD-1", orderId: "o1" });
 
     const response = await postOrder(withKey("k-1"), ctx("sport"));
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-    expect(findByKeyMock).toHaveBeenCalledWith("sport", "k-1");
-    expect(submitOrderMock).not.toHaveBeenCalled();
-  });
-
-  it("gives the losing one of two concurrent sends the winner's order", async () => {
-    // The winner took the last unit while this one was on its way.
-    findByKeyMock.mockResolvedValueOnce(null).mockResolvedValueOnce({ reference: "CMD-1", orderId: "o1" });
-    submitOrderMock.mockResolvedValue({ error: "insufficientStock" });
-
-    const response = await postOrder(withKey("k-1"), ctx("sport"));
-
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-  });
-
-  it("looks the key up only in the boutique of the URL", async () => {
-    // The same key was already used in "sport"; here it's a new order.
-    prismaMock.storeType.findUnique.mockResolvedValue({ ...open, key: "cosmetique" } as never);
-    submitOrderMock.mockResolvedValue({ reference: "CMD-2", orderId: "o2" });
-
-    const response = await postOrder(withKey("k-1"), ctx("cosmetique"));
-
-    expect(response.status).toBe(201);
-    expect(findByKeyMock).toHaveBeenCalledWith("cosmetique", "k-1");
-    expect(submitOrderMock).toHaveBeenCalled();
+    expect(submitOrderMock.mock.calls[0][0].productType).toBe("sport");
   });
 
   it("refuses a key longer than 64 characters", async () => {
@@ -191,7 +180,6 @@ describe("POST orders with an Idempotency-Key", () => {
     const response = await postOrder(post("/x", new FormData()), ctx("sport"));
 
     expect(response.status).toBe(409);
-    expect(findByKeyMock).not.toHaveBeenCalled();
     expect(submitOrderMock.mock.calls[0][1]).toEqual({ idempotencyKey: undefined });
   });
 });
@@ -201,9 +189,13 @@ describe("POST orders/track", () => {
     trackOrderMock.mockResolvedValue({ reference: "CMD-1", status: "PENDING" });
 
     const response = await postTrack(
-      post("/x", JSON.stringify({ phone: "37737353", reference: "CMD-1", productType: "cosmetique" }), {
-        "content-type": "application/json",
-      }),
+      post(
+        "/x",
+        JSON.stringify({ phone: "37737353", reference: "CMD-1", productType: "cosmetique" }),
+        {
+          "content-type": "application/json",
+        },
+      ),
       ctx("sport"),
     );
 
@@ -230,13 +222,20 @@ describe("GET products", () => {
     );
 
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 10, total: 42 });
-    expect(getActiveProductsPage).toHaveBeenCalledWith("sport", { categoryId: undefined, page: 2, pageSize: 10 });
+    expect(getActiveProductsPage).toHaveBeenCalledWith("sport", {
+      categoryId: undefined,
+      page: 2,
+      pageSize: 10,
+    });
   });
 
   it("rate-limits the search, saying when to retry", async () => {
     retryAfterMock.mockResolvedValue(120);
 
-    const response = await getProducts(new Request("https://shop.example/x?q=tshirt"), ctx("sport"));
+    const response = await getProducts(
+      new Request("https://shop.example/x?q=tshirt"),
+      ctx("sport"),
+    );
 
     expect(response.status).toBe(429);
     expect(response.headers.get("Retry-After")).toBe("120");
@@ -276,12 +275,15 @@ describe("POST stocks", () => {
 describe("GET products with sort and filters", () => {
   const filteredMock = getFilteredProductsPage as unknown as Mock;
   const facetsMock = getCatalogueFacets as unknown as Mock;
-  const list = (query: string) => getProducts(new Request(`https://shop.example/x?${query}`), ctx("sport"));
+  const list = (query: string) =>
+    getProducts(new Request(`https://shop.example/x?${query}`), ctx("sport"));
 
   beforeEach(() => {
     filteredMock.mockReset().mockResolvedValue({ items: [], total: 6 });
     facetsMock.mockReset();
-    (getActiveProductsPage as unknown as Mock).mockReset().mockResolvedValue({ items: [], total: 42 });
+    (getActiveProductsPage as unknown as Mock)
+      .mockReset()
+      .mockResolvedValue({ items: [], total: 42 });
     (searchActiveProducts as unknown as Mock).mockReset().mockResolvedValue([]);
   });
 
@@ -289,7 +291,9 @@ describe("GET products with sort and filters", () => {
     const response = await list("category=c1&page=2&pageSize=10");
 
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 10, total: 42 });
-    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=30, stale-while-revalidate=60",
+    );
     expect(filteredMock).not.toHaveBeenCalled();
   });
 
@@ -319,7 +323,9 @@ describe("GET products with sort and filters", () => {
       { page: 2, pageSize: 5 },
     );
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 5, total: 6 });
-    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=30, stale-while-revalidate=60",
+    );
     expect(facetsMock).not.toHaveBeenCalled();
   });
 
@@ -335,14 +341,20 @@ describe("GET products with sort and filters", () => {
   it("paginates a filtered search, still rate-limited and not cached", async () => {
     const response = await list("q=tshirt&sizes=M&page=2");
 
-    expect(filteredMock).toHaveBeenCalledWith(expect.objectContaining({ query: "tshirt" }), { page: 2, pageSize: 20 });
+    expect(filteredMock).toHaveBeenCalledWith(expect.objectContaining({ query: "tshirt" }), {
+      page: 2,
+      pageSize: 20,
+    });
     expect(retryAfterMock).toHaveBeenCalled();
     expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("adds the facets with facets=1, with the colors' swatches", async () => {
     facetsMock.mockResolvedValue({
-      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      sizes: [
+        { value: "M", count: 6 },
+        { value: "XL", count: 0 },
+      ],
       colors: [{ value: "Noir-Blanc", count: 2 }],
       price: { min: 150, max: 2850 },
     });
@@ -350,7 +362,10 @@ describe("GET products with sort and filters", () => {
     const body = await (await list("facets=1")).json();
 
     expect(body.facets).toEqual({
-      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      sizes: [
+        { value: "M", count: 6 },
+        { value: "XL", count: 0 },
+      ],
       colors: [{ name: "Noir-Blanc", hex: "#18181b", hexes: ["#18181b", "#ffffff"], count: 2 }],
       price: { min: 150, max: 2850 },
     });

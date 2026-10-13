@@ -315,7 +315,13 @@
     "menu": "القائمة",
     "footerShopTitle": "المتجر",
     "footerHelpTitle": "المساعدة",
-    "footerFollowTitle": "تابعنا"
+    "footerFollowTitle": "تابعنا",
+    "mainNavLabel": "التنقل الرئيسي",
+    "footerNavLabel": "روابط تذييل الصفحة",
+    "breadcrumbLabel": "مسار التنقل",
+    "skipToContent": "الانتقال إلى المحتوى",
+    "colorSwatchLabel": "اللون: {color}",
+    "searchRateLimited": "عمليات بحث كثيرة في وقت واحد. أعد المحاولة بعد دقيقة."
   },
   "contact": {
     "metaTitle": "تواصل معنا",
@@ -441,7 +447,10 @@
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم.",
-    "promoCodeAlreadyUsedError": "تم استخدام كود الخصم هذا من قبل مع هذا الرقم."
+    "promoCodeAlreadyUsedError": "تم استخدام كود الخصم هذا من قبل مع هذا الرقم.",
+    "submitFailedError": "تعذّر إرسال طلبك. تحقّق من اتصالك ثم أعد المحاولة، ولن يُسجَّل الطلب مرتين.",
+    "uploadFailedError": "تعذّر رفع لقطة الشاشة. يرجى إعادة المحاولة.",
+    "invalidFileError": "هذا الملف ليس صورة صالحة (JPG أو PNG أو WebP)."
   },
   "orders": {
     "title": "الطلبات",
@@ -903,7 +912,13 @@
     "errorMessage": "حدثت مشكلة من جانبنا. حاول مرة أخرى، أو عد لاحقًا.",
     "retry": "إعادة المحاولة",
     "licenseBlockedTitle": "الإجراء محظور",
-    "licenseBlockedMessage": "هذا المتجر معلّق أو منتهي الصلاحية أو ملغى: إجراءات الإدارة محظورة. تواصل مع الدعم لإعادة التفعيل."
+    "licenseBlockedMessage": "هذا المتجر معلّق أو منتهي الصلاحية أو ملغى: إجراءات الإدارة محظورة. تواصل مع الدعم لإعادة التفعيل.",
+    "reference": "المرجع: {code}",
+    "sessionExpiredTitle": "انتهت الجلسة",
+    "sessionExpiredMessage": "انتهت صلاحية جلستك. سجّل الدخول من جديد للمتابعة.",
+    "signIn": "تسجيل الدخول",
+    "forbiddenTitle": "تم رفض الوصول",
+    "forbiddenMessage": "لا يملك حسابك صلاحية القيام بهذا الإجراء."
   },
   "auditLog": {
     "title": "سجل الإجراءات",

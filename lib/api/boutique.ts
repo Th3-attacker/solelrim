@@ -31,7 +31,5 @@ export async function listOpenBoutiques() {
     orderBy: { createdAt: "asc" },
     include: BOUTIQUE_INCLUDE,
   });
-  return boutiques.filter(
-    (boutique) => !isLicenseBlocking(getEffectiveLicenseState(boutique)),
-  );
+  return boutiques.filter((boutique) => !isLicenseBlocking(getEffectiveLicenseState(boutique)));
 }

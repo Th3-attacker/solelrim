@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { getSaleById } from "@/lib/queries/sales";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
@@ -20,11 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function SaleDetailPage({
-  params,
-}: {
-  params: Promise<{ saleId: string }>;
-}) {
+export default async function SaleDetailPage({ params }: { params: Promise<{ saleId: string }> }) {
   const { saleId } = await params;
   const scope = await getAdminScope();
   const [t, tProducts, tCommon, format, sale, refunds, wallets, clients] = await Promise.all([
@@ -46,9 +42,7 @@ export default async function SaleDetailPage({
     <div className="mx-auto flex max-w-2xl flex-col gap-6 print:max-w-full">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {sale.reference}
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{sale.reference}</h1>
           <SaleStatusBadge status={sale.status} />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -66,7 +60,9 @@ export default async function SaleDetailPage({
               clientLocked={sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0}
             />
           )}
-          {sale.status === "COMPLETED" && <CancelSaleButton saleId={sale.id} tillClosed={sale.cashSession?.status === "CLOSED"} />}
+          {sale.status === "COMPLETED" && (
+            <CancelSaleButton saleId={sale.id} tillClosed={sale.cashSession?.status === "CLOSED"} />
+          )}
         </div>
       </div>
 

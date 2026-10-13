@@ -19,7 +19,9 @@ function routeFiles(dir: string): string[] {
 async function exportedMethods(file: string): Promise<string[]> {
   const { readFile } = await import("node:fs/promises");
   const source = await readFile(file, "utf8");
-  return [...source.matchAll(/^export const (GET|POST|DELETE|PUT|PATCH) =/gm)].map((m) => m[1].toLowerCase());
+  return [...source.matchAll(/^export const (GET|POST|DELETE|PUT|PATCH) =/gm)].map((m) =>
+    m[1].toLowerCase(),
+  );
 }
 
 describe("docs/openapi.json", () => {

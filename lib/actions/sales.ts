@@ -1,13 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
-import { recordSale } from "@/lib/shop/record-sale";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
+import { recordSale } from "@/lib/services/record-sale";
 import { saleEditSchema } from "@/lib/validation/sale-edit";
 import { saleCancelSchema } from "@/lib/validation/sale-cancel";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";
+import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
 
 export type SaleActionResult = { error?: string; saleId?: string };
 
@@ -28,9 +28,7 @@ export async function createSale(input: SaleInput): Promise<SaleActionResult> {
     return { error: result.error };
   }
 
-  revalidatePath("/admin/sales");
-  revalidatePath("/admin/products");
-  revalidatePath("/");
+  revalidateSite();
   return { saleId: result.saleId };
 }
 
@@ -57,7 +55,11 @@ export async function cancelSale(input: unknown): Promise<{ error?: string }> {
           select: { status: true },
         });
         throw new Error(
-          !existing ? "notFound" : existing.status === "CANCELLED" ? "alreadyCancelled" : "refunded",
+          !existing
+            ? "notFound"
+            : existing.status === "CANCELLED"
+              ? "alreadyCancelled"
+              : "refunded",
         );
       }
       // A pending refund would be approved against a voided sale: it has to
@@ -125,10 +127,7 @@ export async function cancelSale(input: unknown): Promise<{ error?: string }> {
     throw err;
   }
 
-  revalidatePath("/admin/sales");
-  revalidatePath(`/admin/sales/${saleId}`);
-  revalidatePath("/admin/products");
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -157,7 +156,10 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
         include: {
           client: { select: { fullName: true } },
           cashSession: { select: { status: true } },
-          refundRequests: { where: { status: { in: ["PENDING", "APPROVED"] } }, select: { id: true } },
+          refundRequests: {
+            where: { status: { in: ["PENDING", "APPROVED"] } },
+            select: { id: true },
+          },
         },
       });
       if (sale.status === "CANCELLED") throw new SaleEditError("notEditable");
@@ -198,10 +200,7 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
       if (paymentChanged && sale.refundRequests.length > 0) {
         throw new SaleEditError("paymentLocked");
       }
-      if (
-        clientChanged &&
-        (sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0)
-      ) {
+      if (clientChanged && (sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0)) {
         throw new SaleEditError("clientLocked");
       }
 
@@ -251,9 +250,6 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
     throw err;
   }
 
-  revalidatePath("/admin/sales");
-  revalidatePath(`/admin/sales/${parsed.data.saleId}`);
-  revalidatePath(`/admin/pos/receipt/${parsed.data.saleId}`);
-  revalidatePath("/admin/pos/my-sales");
+  revalidateAdmin();
   return {};
 }

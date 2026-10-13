@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -23,7 +22,6 @@ import { useCashError } from "@/components/cash/use-cash-error";
 export function CloseDayButton({ date, disabled }: { date: string; disabled: boolean }) {
   const t = useTranslations("cash");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const showError = useCashError();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -38,7 +36,6 @@ export function CloseDayButton({ date, disabled }: { date: string; disabled: boo
       }
       setOpen(false);
       toast.success(t("dayClosedToast"));
-      router.refresh();
     });
   }
 

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getAllClients } from "@/lib/queries/clients";
 import { getAllVariantsForSale } from "@/lib/queries/sales";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { SaleForm } from "@/components/sales/sale-form";
 
 export default async function NewSalePage() {

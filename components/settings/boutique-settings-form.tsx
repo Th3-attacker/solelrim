@@ -18,10 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  boutiqueSettingsSchema,
-  type BoutiqueSettingsInput,
-} from "@/lib/validation/settings";
+import { boutiqueSettingsSchema, type BoutiqueSettingsInput } from "@/lib/validation/settings";
 import { updateBoutiqueSettings } from "@/lib/actions/settings";
 import { FieldError } from "@/components/ui/status-alert";
 
@@ -121,29 +118,18 @@ export function BoutiqueSettingsForm({
         </CardHeader>
         <CardContent className="grid gap-4 pt-0 sm:grid-cols-2">
           <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="adminWhatsappNumber">
-              {t("adminWhatsappNumber")}
-            </Label>
+            <Label htmlFor="adminWhatsappNumber">{t("adminWhatsappNumber")}</Label>
             <Input
               id="adminWhatsappNumber"
               aria-invalid={!!errors.adminWhatsappNumber}
               {...register("adminWhatsappNumber")}
             />
-            {errors.adminWhatsappNumber && (
-              <FieldError>
-                {tCommon("requiredField")}
-              </FieldError>
-            )}
+            {errors.adminWhatsappNumber && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="paymentInstructions">
-              {t("paymentInstructions")}
-            </Label>
-            <Textarea
-              id="paymentInstructions"
-              {...register("paymentInstructions")}
-            />
+            <Label htmlFor="paymentInstructions">{t("paymentInstructions")}</Label>
+            <Textarea id="paymentInstructions" {...register("paymentInstructions")} />
           </div>
         </CardContent>
       </Card>
@@ -167,12 +153,8 @@ export function BoutiqueSettingsForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="right">
-                      {t("heroImagePositionRight")}
-                    </SelectItem>
-                    <SelectItem value="left">
-                      {t("heroImagePositionLeft")}
-                    </SelectItem>
+                    <SelectItem value="right">{t("heroImagePositionRight")}</SelectItem>
+                    <SelectItem value="left">{t("heroImagePositionLeft")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

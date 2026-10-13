@@ -33,7 +33,10 @@ function toDateParam(date: Date): string {
 }
 
 const DATE_PRESETS: { labelKey: string; range: () => DateRange }[] = [
-  { labelKey: "presetToday", range: () => ({ from: startOfDay(new Date()), to: startOfDay(new Date()) }) },
+  {
+    labelKey: "presetToday",
+    range: () => ({ from: startOfDay(new Date()), to: startOfDay(new Date()) }),
+  },
   {
     labelKey: "presetYesterday",
     range: () => {
@@ -95,11 +98,13 @@ export function AuditLogFilters({
   const [isSyncing, startSyncTransition] = useTransition();
   const isFirstRender = useRef(true);
 
-
   const [dateOpen, setDateOpen] = useState(false);
   const [pendingRange, setPendingRange] = useState<DateRange | undefined>(
     filters.fromDate
-      ? { from: new Date(filters.fromDate), to: filters.toDate ? new Date(filters.toDate) : undefined }
+      ? {
+          from: new Date(filters.fromDate),
+          to: filters.toDate ? new Date(filters.toDate) : undefined,
+        }
       : undefined,
   );
 
@@ -128,7 +133,10 @@ export function AuditLogFilters({
     if (open) {
       setPendingRange(
         filters.fromDate
-          ? { from: new Date(filters.fromDate), to: filters.toDate ? new Date(filters.toDate) : undefined }
+          ? {
+              from: new Date(filters.fromDate),
+              to: filters.toDate ? new Date(filters.toDate) : undefined,
+            }
           : undefined,
       );
     }
@@ -157,11 +165,11 @@ export function AuditLogFilters({
 
   const hasActiveFilters = Boolean(
     filters.action ||
-      filters.user ||
-      filters.boutique ||
-      filters.search ||
-      filters.fromDate ||
-      filters.toDate,
+    filters.user ||
+    filters.boutique ||
+    filters.search ||
+    filters.fromDate ||
+    filters.toDate,
   );
 
   const today = startOfDay(new Date());

@@ -37,4 +37,3 @@ export const posSaleSchema = z.discriminatedUnion("paymentMethod", [
     walletAccountId: z.string().min(1),
   }),
 ]);
-

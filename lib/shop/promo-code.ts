@@ -5,12 +5,21 @@ import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 
 type Db = PrismaClient | TransactionClient;
 
-export type PromoCodeValidationError =
-  | "notFound"
-  | "expired"
-  | "usageLimitReached"
-  | "notYours"
-  | "alreadyUsed";
+// Why a code was refused — shared by the server (submitOrder tells these
+// apart from its own errors) and the checkout, which drops the code on them.
+export const PROMO_CODE_ERRORS = [
+  "notFound",
+  "expired",
+  "usageLimitReached",
+  "notYours",
+  "alreadyUsed",
+] as const;
+
+export type PromoCodeValidationError = (typeof PROMO_CODE_ERRORS)[number];
+
+export function isPromoCodeError(code: string | undefined): code is PromoCodeValidationError {
+  return (PROMO_CODE_ERRORS as readonly (string | undefined)[]).includes(code);
+}
 
 type ValidatedPromoCode = {
   id: string;

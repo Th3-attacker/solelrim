@@ -13,7 +13,7 @@ import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct } from "@/lib/shop/badges";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { ProductDetailView } from "@/components/shop/product-detail-view";
 import { ProductCard } from "@/components/shop/product-card";
@@ -42,9 +42,7 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${product.name} — ${siteName}`;
   const description = product.description?.trim() || tShop("heroSubtitle");
-  const imageUrl = product.images[0]
-    ? getProductImageUrl(product.images[0].storagePath)
-    : null;
+  const imageUrl = product.images[0] ? getProductImageUrl(product.images[0].storagePath) : null;
   const keywords = [
     ...new Set([
       product.name,
@@ -129,9 +127,8 @@ export default async function ProductDetailPage({
     locale,
   });
   const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
-  const startingPrice = variants.length > 0
-    ? Math.min(...variants.map((v) => v.price))
-    : product.basePrice.toNumber();
+  const startingPrice =
+    variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : product.basePrice.toNumber();
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -162,7 +159,12 @@ export default async function ProductDetailPage({
         "@type": "ListItem",
         position: 2,
         name: product.category.name,
-        item: buildStoreUrl({ domain: boutique.domain, storeKey: storeType, path: "/products", locale }),
+        item: buildStoreUrl({
+          domain: boutique.domain,
+          storeKey: storeType,
+          path: "/products",
+          locale,
+        }),
       },
       { "@type": "ListItem", position: 3, name: product.name, item: canonicalUrl },
     ],
@@ -174,7 +176,10 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLdScriptProps([productJsonLd, breadcrumbJsonLd])}
       />
-      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm">
+      <nav
+        aria-label={t("breadcrumbLabel")}
+        className="flex flex-wrap items-center justify-between gap-2 text-sm"
+      >
         <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
           <Link href={basePath || "/"} className="hover:text-foreground">
             {t("siteName")}
@@ -196,10 +201,7 @@ export default async function ProductDetailPage({
         <div className="flex items-center gap-1">
           {prevSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link
-                href={`${basePath}/products/${prevSlug}`}
-                aria-label={t("previousProduct")}
-              >
+              <Link href={`${basePath}/products/${prevSlug}`} aria-label={t("previousProduct")}>
                 <CaretLeft className="rtl:rotate-180" />
               </Link>
             </Button>
@@ -210,10 +212,7 @@ export default async function ProductDetailPage({
           )}
           {nextSlug ? (
             <Button asChild variant="outline" size="icon-sm">
-              <Link
-                href={`${basePath}/products/${nextSlug}`}
-                aria-label={t("nextProduct")}
-              >
+              <Link href={`${basePath}/products/${nextSlug}`} aria-label={t("nextProduct")}>
                 <CaretRight className="rtl:rotate-180" />
               </Link>
             </Button>
@@ -245,16 +244,20 @@ export default async function ProductDetailPage({
       {relatedProducts.length > 0 && (
         <div className="flex flex-col gap-4">
           <h2 className="text-heading-xs">{t("relatedProducts")}</h2>
-          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
+          <ul
+            role="list"
+            className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4"
+          >
             {relatedProducts.map((related) => (
-              <ProductCard
-                key={related.id}
-                product={related}
-                basePath={basePath}
-                cardVariant={boutique.cardVariant}
-              />
+              <li key={related.id}>
+                <ProductCard
+                  product={related}
+                  basePath={basePath}
+                  cardVariant={boutique.cardVariant}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
     </div>

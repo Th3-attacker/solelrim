@@ -16,7 +16,7 @@ import { sortBySize } from "@/lib/shop/size-order";
 // the columns they read, not on mocks.
 let db: PGlite;
 
-const run = async <T,>(sql: Prisma.Sql) => (await db.query<T>(sql.text, sql.values)).rows;
+const run = async <T>(sql: Prisma.Sql) => (await db.query<T>(sql.text, sql.values)).rows;
 
 // p1 T-shirt     base 1000, Jan 1, cat c1: S Noir 1000 (2) · M Noir 1200 (0) · M Blanc base (3)
 // p2 Pantalon    base 2500, Jan 2, cat c1, featured: M Noir base (1) · L Noir 3000 (1)
@@ -74,7 +74,9 @@ const filters = (overrides: Partial<CatalogueFilters> = {}): CatalogueFilters =>
 });
 
 async function ids(overrides: Partial<CatalogueFilters> = {}, page = 1, pageSize = 50) {
-  return (await run<{ id: string }>(catalogueIdsSql(filters(overrides), page, pageSize))).map((row) => row.id);
+  return (await run<{ id: string }>(catalogueIdsSql(filters(overrides), page, pageSize))).map(
+    (row) => row.id,
+  );
 }
 
 async function total(overrides: Partial<CatalogueFilters> = {}) {
@@ -104,7 +106,11 @@ describe("sort", () => {
     "%s: pages of 2 neither repeat nor skip a product",
     async (sort) => {
       const all = await ids({ sort });
-      const paged = [...(await ids({ sort }, 1, 2)), ...(await ids({ sort }, 2, 2)), ...(await ids({ sort }, 3, 2))];
+      const paged = [
+        ...(await ids({ sort }, 1, 2)),
+        ...(await ids({ sort }, 2, 2)),
+        ...(await ids({ sort }, 3, 2)),
+      ];
       expect(paged).toEqual(all);
     },
   );
@@ -174,7 +180,9 @@ describe("facets", () => {
     return rows.map((row) => `${row.value}:${row.count}`);
   }
   async function price(overrides: Partial<CatalogueFilters> = {}) {
-    return (await run<{ min: number | null; max: number | null }>(priceFacetSql(filters(overrides))))[0];
+    return (
+      await run<{ min: number | null; max: number | null }>(priceFacetSql(filters(overrides)))
+    )[0];
   }
 
   it("lists every size of the scope, sold out at 0, in size order", async () => {
@@ -184,13 +192,25 @@ describe("facets", () => {
   it("a filter doesn't change its own counts, the others do", async () => {
     expect(await sizes({ sizes: ["S"] })).toEqual(await sizes());
     // Black only: p1's M is sold out in black, p3 is Noir-Blanc.
-    expect(await sizes({ colors: ["Noir"] })).toEqual(["S:1", "M:1", "L:1", "40,5:0", "42:0", "TU:0"]);
+    expect(await sizes({ colors: ["Noir"] })).toEqual([
+      "S:1",
+      "M:1",
+      "L:1",
+      "40,5:0",
+      "42:0",
+      "TU:0",
+    ]);
   });
 
   it("lists the colors in entry order with their counts", async () => {
     expect(await colors()).toEqual(["Noir:2", "Blanc:1", "Noir-Blanc:1", "Rouge:0"]);
     expect(await colors({ colors: ["Rouge"] })).toEqual(await colors());
-    expect(await colors({ sizes: ["M"] })).toEqual(["Noir:1", "Blanc:1", "Noir-Blanc:0", "Rouge:0"]);
+    expect(await colors({ sizes: ["M"] })).toEqual([
+      "Noir:1",
+      "Blanc:1",
+      "Noir-Blanc:0",
+      "Rouge:0",
+    ]);
   });
 
   it("stays within the category and the search", async () => {

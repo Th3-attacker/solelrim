@@ -2,66 +2,9 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+import { MAX_CART_LINES } from "@/lib/services/cart";
 import { getVariantPrice } from "@/lib/shop/price";
-
-// A real cart never has more than a handful of distinct line items — caps
-// the query size regardless of what a caller sends.
-const MAX_VARIANT_IDS = 50;
-const inputSchema = z.object({
-  productType: z.string().min(1),
-  variantIds: z.array(z.string().min(1)).max(MAX_VARIANT_IDS),
-});
-
-// Fires on every cart-open, not just a rare action like login/checkout —
-// generous limit sized for normal browsing (opening/closing the cart
-// repeatedly while shopping), not the abuse-deterrent windows used elsewhere.
-const GET_VARIANT_STOCKS_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 60 };
-
-// The cart persists in localStorage with a stock snapshot taken at
-// add-to-cart time, which can go stale (another sale, an admin adjusting
-// stock, or the visitor just coming back days later). Public and
-// unauthenticated by design — this only ever reveals a stock count for
-// variants the caller already knows the id of, same as the storefront
-// itself already shows.
-//
-// Returns null (not `{}`) on invalid input or when rate-limited — the
-// caller's cart-sync reducer treats any variant absent from the returned
-// map as 0 in stock and drops it, so an empty object here would read as
-// "everything in the cart just sold out" and wipe it. null tells the
-// caller to skip syncing this time instead.
-export async function getVariantStocks(
-  productType: string,
-  variantIds: string[],
-): Promise<Record<string, number> | null> {
-  const result = await checkVariantStocks(productType, variantIds);
-  return "stocks" in result ? result.stocks : null;
-}
-
-// The same lookup, telling the mobile API why it gave nothing: a malformed
-// list (400, the app should fix its request) is not a rate limit (429, wait
-// retryAfter seconds).
-export async function checkVariantStocks(
-  productType: string,
-  variantIds: string[],
-): Promise<
-  { stocks: Record<string, number> } | { error: "invalid" } | { error: "rateLimited"; retryAfter: number }
-> {
-  const parsed = inputSchema.safeParse({ productType, variantIds });
-  if (!parsed.success) return { error: "invalid" };
-  if (parsed.data.variantIds.length === 0) return { stocks: {} };
-
-  const ip = await getClientIp();
-  const wait = await rateLimitRetryAfter(`variant-stocks:${ip}`, GET_VARIANT_STOCKS_RATE_LIMIT);
-  if (wait !== null) return { error: "rateLimited", retryAfter: wait };
-
-  const variants = await prisma.productVariant.findMany({
-    where: { id: { in: parsed.data.variantIds }, product: { productType: parsed.data.productType } },
-    select: { id: true, stock: true },
-  });
-
-  return { stocks: Object.fromEntries(variants.map((v) => [v.id, v.stock])) };
-}
 
 export type SharedCartLine = {
   variantId: string;
@@ -81,12 +24,8 @@ const sharedCartEntrySchema = z.object({
 });
 const sharedCartInputSchema = z.object({
   productType: z.string().min(1),
-  entries: z.array(sharedCartEntrySchema).max(MAX_VARIANT_IDS),
+  entries: z.array(sharedCartEntrySchema).max(MAX_CART_LINES),
 });
-
-// Same rate-limit shape as getVariantStocks above — this fires once per
-// visit to a shared-cart link, not per keystroke, but still worth capping.
-const RESOLVE_SHARED_CART_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 30 };
 
 // The cart itself only ever lives in the recipient's own localStorage —
 // there's no server-side cart to fetch by id. A "share cart" link instead
@@ -104,15 +43,10 @@ export async function resolveSharedCartLines(
   if (!parsed.success || parsed.data.entries.length === 0) return [];
 
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(
-    `resolve-shared-cart:${ip}`,
-    RESOLVE_SHARED_CART_RATE_LIMIT,
-  );
+  const allowed = await checkRateLimit(`resolve-shared-cart:${ip}`, RATE_LIMITS.sharedCartPerIp);
   if (!allowed) return [];
 
-  const quantityByVariantId = new Map(
-    parsed.data.entries.map((e) => [e.variantId, e.quantity]),
-  );
+  const quantityByVariantId = new Map(parsed.data.entries.map((e) => [e.variantId, e.quantity]));
 
   const variants = await prisma.productVariant.findMany({
     where: {

@@ -1,7 +1,7 @@
 import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, failFromCode, ok, readJson } from "@/lib/api/http";
-import { checkVariantStocks } from "@/lib/actions/cart";
+import { checkVariantStocks } from "@/lib/services/cart";
 
 // POST /api/v1/boutiques/{key}/stocks  { "variantIds": ["..."] }
 // → { "stocks": { "<variantId>": 12 } } — refreshes a cart that may be days
@@ -18,7 +18,8 @@ async function post(request: Request, ctx: { params: Promise<{ key: string }> })
   // "everything sold out": 400 for a malformed list (over 50 ids, a non-string
   // id), 429 with Retry-After when rate-limited.
   const result = await checkVariantStocks(boutique.key, body.variantIds as string[]);
-  if ("error" in result) return failFromCode(result.error, "retryAfter" in result ? result.retryAfter : undefined);
+  if ("error" in result)
+    return failFromCode(result.error, "retryAfter" in result ? result.retryAfter : undefined);
   return ok(result);
 }
 

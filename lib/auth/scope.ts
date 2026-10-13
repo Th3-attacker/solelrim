@@ -1,8 +1,10 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { getCurrentAdmin } from "@/lib/auth/admin";
+import { ExpectedError, expectedErrorCode } from "@/lib/errors";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
@@ -19,7 +21,7 @@ export async function getAdminScope(): Promise<string> {
   // server-side guard behind proxy.ts's redirect — a request that skips
   // the proxy still can't read those pages.
   if (admin?.role === "SELLER") {
-    throw new Error("forbidden");
+    throw new ExpectedError("forbidden");
   }
   // A boutique admin is permanently locked to their assigned boutique —
   // the free-choice cookie is never consulted for this role, so nothing
@@ -60,7 +62,7 @@ export async function requireAdminScope(): Promise<{
 }> {
   const admin = await getCurrentAdmin();
   if (admin.role === "SELLER") {
-    throw new Error("forbidden");
+    throw new ExpectedError("forbidden");
   }
   return { admin, productType: await resolveProductType(admin) };
 }
@@ -74,7 +76,7 @@ export async function requireAuditLogScope(): Promise<{
 }> {
   const admin = await getCurrentAdmin();
   if (admin.role === "SELLER") {
-    throw new Error("forbidden");
+    throw new ExpectedError("forbidden");
   }
   return { admin, productType: admin.role === "SUPERADMIN" ? null : admin.productType! };
 }
@@ -97,7 +99,7 @@ export async function requireSuperAdminScope(): Promise<{
 }> {
   const { admin, productType } = await requireAdminScope();
   if (admin.role !== "SUPERADMIN") {
-    throw new Error("forbidden");
+    throw new ExpectedError("forbidden");
   }
   return { admin, productType };
 }
@@ -123,21 +125,10 @@ export async function requireAppearanceScope(): Promise<{
 }> {
   const { admin, productType } = await requireAdminScope();
   if (admin.role !== "SUPERADMIN" && !admin.canManageAppearance) {
-    throw new Error("forbidden");
+    throw new ExpectedError("forbidden");
   }
   await assertLicenseWritable(admin, productType);
   return { admin, productType };
-}
-
-// Thrown by assertLicenseWritable/requireWritableAdminScope so callers (the
-// dashboard's error.tsx) can tell "your boutique is suspended/expired" apart
-// from an unexpected bug, instead of showing the same generic error for
-// both.
-class LicenseBlockedError extends Error {
-  constructor() {
-    super("licenseBlocked");
-    this.name = "LicenseBlockedError";
-  }
 }
 
 // A SUPERADMIN always bypasses — they're the ones who suspend/reactivate a
@@ -156,7 +147,9 @@ async function assertLicenseWritable(admin: AdminUser, productType: string): Pro
   if (!storeType) return;
 
   if (isLicenseBlocking(getEffectiveLicenseState(storeType))) {
-    throw new LicenseBlockedError();
+    // The dashboard's error.tsx tells "your boutique is suspended/expired"
+    // apart from a bug by this code (lib/errors.ts).
+    throw new ExpectedError("licenseBlocked");
   }
 }
 
@@ -203,8 +196,9 @@ export async function tryCheckoutScope(): Promise<
   try {
     return await requireCheckoutScope();
   } catch (err) {
-    if (err instanceof Error && (err.message === "unauthorized" || err.message === "licenseBlocked")) {
-      return { error: err.message };
+    const code = expectedErrorCode(err);
+    if (code === "unauthorized" || code === "licenseBlocked") {
+      return { error: code };
     }
     throw err;
   }

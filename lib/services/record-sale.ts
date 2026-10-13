@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { buildSaleReference } from "@/lib/shop/reference";
 import { writeAuditLog, type AuditActor } from "@/lib/audit";
-import { closeStaleSessions } from "@/lib/shop/cash-session";
+import { closeStaleSessions } from "@/lib/services/cash-session";
 
 // Deliberately NOT a "use server" module: every export of one becomes a
 // Server Action callable from the browser, and this takes productType as a
