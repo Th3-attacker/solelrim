@@ -1,0 +1,6 @@
+lib/generated
+.next
+coverage
+playwright-report
+test-results
+.tmp-*
