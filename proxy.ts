@@ -4,6 +4,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/services/domain-cache";
 import { serverEnv } from "@/lib/env";
+import { contentSecurityPolicy, newNonce } from "@/lib/csp";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -40,7 +41,23 @@ function isLocaleMetadataRoute(pathWithoutLocale: string) {
   return /^\/(opengraph-image|twitter-image)(\/|$)/.test(pathWithoutLocale);
 }
 
+// Every page gets a Content-Security-Policy with a fresh nonce (lib/csp.ts).
+// Set on the request too: Next.js reads the nonce from there to put it on
+// its own scripts, and the layouts read x-nonce for theirs.
 export async function proxy(request: NextRequest) {
+  const nonce = newNonce();
+  const policy = contentSecurityPolicy({ nonce });
+  const headers = new Headers(request.headers);
+  headers.set("x-nonce", nonce);
+  headers.set("content-security-policy", policy);
+
+  const response = await route(new NextRequest(request, { headers }));
+  response.headers.set("Content-Security-Policy", policy);
+  return response;
+}
+
+async function route(request: NextRequest) {
+  // next-intl forwards this request's headers (the nonce included).
   const response = handleI18nRouting(request);
 
   const segments = request.nextUrl.pathname.split("/");
@@ -85,7 +102,7 @@ export async function proxy(request: NextRequest) {
       const rest = first && keySet.has(first) ? segs.slice(1) : segs;
       const url = request.nextUrl.clone();
       url.pathname = `/${locale}/${boutiqueKey}${rest.length ? "/" + rest.join("/") : ""}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: request.headers } });
     }
     // Already correct (normal internal navigation) — fall through.
   }

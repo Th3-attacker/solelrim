@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -90,13 +91,16 @@ export default async function ShopLayout({
   params: Promise<{ storeType: string }>;
 }) {
   const { storeType } = await params;
-  const [t, tNav, boutique, basePath, locale] = await Promise.all([
+  const [t, tNav, boutique, basePath, locale, requestHeaders] = await Promise.all([
     getTranslations("shop"),
     getTranslations("nav"),
     getPublicBoutiqueSettings(storeType),
     getStorefrontBasePath(storeType),
     getLocale(),
+    headers(),
   ]);
+  // The page's CSP nonce (proxy.ts), for the forced color mode script below.
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
 
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
   const logoUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
@@ -175,6 +179,7 @@ export default async function ShopLayout({
             // so a returning visitor's opposite preference can't win and
             // React's own hydration doesn't fight this back afterward.
             <script
+              nonce={nonce}
               dangerouslySetInnerHTML={{
                 __html: `(function(){try{var m=${JSON.stringify(forcedColorMode)};localStorage.setItem("theme",m);var c=document.documentElement.classList;c.remove("light","dark");c.add(m);document.documentElement.style.colorScheme=m;}catch(e){}})();`,
               }}

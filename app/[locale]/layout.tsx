@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { DirectionProvider } from "@radix-ui/react-direction";
 import "../globals.css";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,8 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const direction = getDirection(locale);
+  // The page's CSP nonce (proxy.ts), for next-themes' inline script.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -77,6 +80,7 @@ export default async function LocaleLayout({
               defaultTheme="system"
               enableSystem
               disableTransitionOnChange
+              nonce={nonce}
             >
               <ServiceWorkerCleanup />
               {children}
