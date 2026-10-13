@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getProductImageUrl } from "@/lib/supabase/storage";
+import { compressImage, PRODUCT_PHOTO } from "@/lib/shop/compress-image";
 import {
   uploadProductImage,
   deleteProductImage,
@@ -45,10 +46,13 @@ export function ProductImageManager({
 
   function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
-    const formData = new FormData();
-    formData.set("file", files[0]);
+    const picked = files[0];
 
     startTransition(async () => {
+      // Resized and re-encoded first (lib/shop/compress-image.ts): the shop
+      // never shows a photo wider than 1600px.
+      const formData = new FormData();
+      formData.set("file", await compressImage(picked, PRODUCT_PHOTO));
       const result = await uploadProductImage(productId, formData);
       if (result.error) {
         toast.error(tCommon("error"));
