@@ -35,7 +35,7 @@ Pour créer les buckets Supabase Storage (`product-images`, `payment-proofs`)
 et, optionnellement, un premier compte admin :
 
 ```bash
-SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... pnpm exec tsx scripts/setup-supabase.ts
+SETUP_ADMIN_EMAIL=admin@example.com SETUP_ADMIN_PASSWORD=... pnpm run setup:supabase
 ```
 
 ## Déploiement

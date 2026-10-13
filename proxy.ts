@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
+import { serverEnv } from "@/lib/env";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -96,9 +97,10 @@ export async function proxy(request: NextRequest) {
 
   const isLoginRoute = isAdminLoginPath(pathWithoutLocale);
 
+  const env = serverEnv();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {

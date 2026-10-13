@@ -1,3 +1,4 @@
+import "server-only";
 import { revalidatePath } from "next/cache";
 
 // Every page sits under a locale segment (localePrefix "always" in

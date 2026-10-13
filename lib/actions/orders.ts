@@ -32,10 +32,8 @@ import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import { getProductImageUrl } from "@/lib/supabase/storage";
+import { PAYMENT_PROOFS_BUCKET } from "@/lib/supabase/payment-proofs";
 import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
-
-const PAYMENT_PROOFS_BUCKET = "payment-proofs";
-
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
   const locales: readonly string[] = routing.locales;

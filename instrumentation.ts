@@ -5,6 +5,11 @@ import { expectedErrorCode } from "@/lib/errors";
 // different runtimes with different transports, and Next.js loads this
 // file once per runtime, gated by NEXT_RUNTIME.
 export async function register() {
+  // Fail at startup, with the names, rather than on the first request that
+  // needs a missing variable (lib/env.ts).
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    (await import("@/lib/env")).serverEnv();
+  }
   if (process.env.NEXT_RUNTIME === "nodejs" || process.env.NEXT_RUNTIME === "edge") {
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,

@@ -3,7 +3,7 @@ import { getTranslations, getFormatter } from "next-intl/server";
 import { differenceInHours } from "date-fns";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { getOrderById, getOrdersSharingPaymentProof } from "@/lib/queries/orders";
-import { getSignedPaymentProofUrl } from "@/lib/supabase/storage";
+import { getSignedPaymentProofUrl } from "@/lib/supabase/payment-proofs";
 import { getAdminScope } from "@/lib/shop/admin-scope";
 import { REASON_LABEL_KEY } from "@/lib/shop/client-messages";
 import { STALE_PENDING_HOURS } from "@/lib/shop/order-status";
