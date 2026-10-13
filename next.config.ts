@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+    // The image optimizer refuses a host that resolves to a non-public
+    // address (SSRF guard). On a network with DNS64 (IPv6 with NAT64, common
+    // with Mauritanian carriers and some ISPs), Supabase also resolves to
+    // 64:ff9b::/96 addresses, which it counts as such, so every product photo
+    // fails in `pnpm dev`. Allowed in development only: production (Vercel)
+    // resolves normally, and remotePatterns above still limit the optimizer
+    // to Supabase's public storage.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
   },
   experimental: {
     serverActions: {
