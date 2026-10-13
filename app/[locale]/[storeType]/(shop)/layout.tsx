@@ -14,13 +14,12 @@ import { SearchTrigger } from "@/components/shop/search-trigger";
 import { ExpiredStorefront } from "@/components/shop/expired-storefront";
 import { ComingSoonStorefront } from "@/components/shop/coming-soon-storefront";
 import { Link } from "@/i18n/navigation";
-import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
+import { getAllShopCategories, hasActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
-import { getPriceRange } from "@/lib/shop/price";
 import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import { DEFAULT_THEME_ID, resolveStoreTheme } from "@/lib/theme/presets";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
 import { SOLAL_STORE_TYPE } from "@/lib/brand/solal";
@@ -109,27 +108,16 @@ export default async function ShopLayout({
     return <ExpiredStorefront siteName={siteName} logoUrl={logoUrl} />;
   }
 
-  const [allProducts, categories] = await Promise.all([
-    getActiveProducts(storeType),
+  const [hasProducts, categories] = await Promise.all([
+    hasActiveProducts(storeType),
     getAllShopCategories(storeType),
   ]);
 
-  if (allProducts.length === 0) {
+  if (!hasProducts) {
     return (
       <ComingSoonStorefront siteName={siteName} logoUrl={logoUrl} whatsappHref={whatsappHref} />
     );
   }
-
-  // Also used for search suggestions (thumbnail + price), not just favorites.
-  const favoriteCandidates = allProducts.map((product) => ({
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
-    imageUrl: product.images[0]
-      ? getProductImageUrl(product.images[0].storagePath)
-      : null,
-    price: getPriceRange(product.variants, product.basePrice).min,
-  }));
 
   // No text, no bar: nothing is shown in its place.
   const announcementText = boutique.announcementText?.trim();
@@ -269,7 +257,7 @@ export default async function ShopLayout({
                   <div className="hidden md:block">
                     <SearchTrigger categories={categories} productType={storeType} basePath={basePath} />
                   </div>
-                  <FavoritesTrigger products={favoriteCandidates} basePath={basePath} />
+                  <FavoritesTrigger productType={storeType} basePath={basePath} />
                   <CartTrigger basePath={basePath} />
                   <div className="hidden md:block">
                     <LanguageSwitcher />

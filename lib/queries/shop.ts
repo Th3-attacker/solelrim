@@ -108,6 +108,23 @@ export async function getCatalogueFacets(filters: CatalogueFilters) {
   };
 }
 
+// Whether a boutique has anything on sale, without loading it.
+export const hasActiveProducts = cache(async function hasActiveProducts(productType: string) {
+  return (await prisma.product.count({ where: { productType, isActive: true }, take: 1 })) > 0;
+});
+
+// The products of a customer's favorites list, on sale only.
+export function getActiveProductsByIds(productType: string, ids: string[]) {
+  return prisma.product.findMany({
+    where: { id: { in: ids }, productType, isActive: true },
+    include: {
+      category: true,
+      images: { orderBy: { position: "asc" }, take: 1 },
+      variants: { orderBy: VARIANT_ENTRY_ORDER },
+    },
+  });
+}
+
 // Every color of a boutique's catalogue, for the filter sheet's swatches:
 // what the color facet lists, alphabetically.
 export async function getCatalogueColors(productType: string): Promise<string[]> {
