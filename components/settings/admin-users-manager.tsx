@@ -236,9 +236,7 @@ export function AdminUsersManager({
               showLabel={tCommon("showPassword")}
               hideLabel={tCommon("hidePassword")}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("adminUserPasswordHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("adminUserPasswordHint")}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="admin-user-boutique">{t("adminUserBoutique")}</Label>

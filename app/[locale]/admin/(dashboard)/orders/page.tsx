@@ -33,9 +33,8 @@ export default async function AdminOrdersPage({
 }) {
   const params = await searchParams;
   const rawStatus = typeof params.status === "string" ? params.status : undefined;
-  const status = rawStatus && ORDER_STATUSES.includes(rawStatus)
-    ? (rawStatus as OrderStatus)
-    : undefined;
+  const status =
+    rawStatus && ORDER_STATUSES.includes(rawStatus) ? (rawStatus as OrderStatus) : undefined;
   const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
   const rawFrom = typeof params.from === "string" ? params.from : undefined;
   const rawTo = typeof params.to === "string" ? params.to : undefined;
@@ -136,9 +135,7 @@ export default async function AdminOrdersPage({
                     </Link>
                   </TableCell>
                   <TableCell>{order.customerName}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {order.customerPhone}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{order.customerPhone}</TableCell>
                   <TableCell>{formatPrice(order.total, tCommon("currency"))}</TableCell>
                   <TableCell>
                     <OrderStatusBadge status={order.status} />

@@ -242,9 +242,7 @@ describe("updateProduct", () => {
   it("untags product images whose color no longer matches any submitted variant", async () => {
     prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
     prismaMock.category.findFirst.mockResolvedValue({ id: "category-1" } as never);
-    prismaMock.productVariant.findMany.mockResolvedValue([
-      { id: "variant-1" },
-    ] as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ id: "variant-1" }] as never);
     prismaMock.$transaction.mockImplementation(async (fn) =>
       (fn as (tx: typeof prismaMock) => unknown)(prismaMock),
     );

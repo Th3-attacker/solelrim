@@ -32,65 +32,65 @@ export function CustomerStep({
   }
 
   return (
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-heading-xs">{t("step1Title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("step1Hint")}</p>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <div>
+        <h1 className="text-heading-xs">{t("step1Title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("step1Hint")}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <Label htmlFor="customerName">{t("customerName")}</Label>
+          <Input
+            id="customerName"
+            autoComplete="name"
+            aria-invalid={!!errors.customerName}
+            aria-describedby={errors.customerName ? "customerName-error" : undefined}
+            {...register("customerName")}
+          />
+          {errors.customerName && (
+            <FieldError id="customerName-error">
+              {fieldErrorMessage(errors.customerName.message)}
+            </FieldError>
+          )}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="customerName">{t("customerName")}</Label>
-            <Input
-              id="customerName"
-              autoComplete="name"
-              aria-invalid={!!errors.customerName}
-              aria-describedby={errors.customerName ? "customerName-error" : undefined}
-              {...register("customerName")}
-            />
-            {errors.customerName && (
-              <FieldError id="customerName-error">
-                {fieldErrorMessage(errors.customerName.message)}
-              </FieldError>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
-            <Input
-              id="customerPhone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              maxLength={8}
-              aria-invalid={!!errors.customerPhone}
-              aria-describedby={errors.customerPhone ? "customerPhone-error" : undefined}
-              {...register("customerPhone")}
-            />
-            {errors.customerPhone && (
-              <FieldError id="customerPhone-error">
-                {fieldErrorMessage(errors.customerPhone.message)}
-              </FieldError>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="customerCity">{t("customerCity")}</Label>
-            <Input
-              id="customerCity"
-              autoComplete="address-level2"
-              aria-invalid={!!errors.customerCity}
-              aria-describedby={errors.customerCity ? "customerCity-error" : undefined}
-              {...register("customerCity")}
-            />
-            {errors.customerCity && (
-              <FieldError id="customerCity-error">
-                {fieldErrorMessage(errors.customerCity.message)}
-              </FieldError>
-            )}
-          </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
+          <Input
+            id="customerPhone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            maxLength={8}
+            aria-invalid={!!errors.customerPhone}
+            aria-describedby={errors.customerPhone ? "customerPhone-error" : undefined}
+            {...register("customerPhone")}
+          />
+          {errors.customerPhone && (
+            <FieldError id="customerPhone-error">
+              {fieldErrorMessage(errors.customerPhone.message)}
+            </FieldError>
+          )}
         </div>
-        <Button type="submit" size="lg" className="self-start">
-          {t("next")}
-          <ArrowRight className="size-4 rtl:rotate-180" />
-        </Button>
-      </form>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="customerCity">{t("customerCity")}</Label>
+          <Input
+            id="customerCity"
+            autoComplete="address-level2"
+            aria-invalid={!!errors.customerCity}
+            aria-describedby={errors.customerCity ? "customerCity-error" : undefined}
+            {...register("customerCity")}
+          />
+          {errors.customerCity && (
+            <FieldError id="customerCity-error">
+              {fieldErrorMessage(errors.customerCity.message)}
+            </FieldError>
+          )}
+        </div>
+      </div>
+      <Button type="submit" size="lg" className="self-start">
+        {t("next")}
+        <ArrowRight className="size-4 rtl:rotate-180" />
+      </Button>
+    </form>
   );
 }

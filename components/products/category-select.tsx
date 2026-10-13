@@ -70,23 +70,14 @@ export function CategorySelect({
         }
         title={t("category")}
         footer={
-          <Button
-            type="button"
-            disabled={!name}
-            loading={pending}
-            onClick={handleCreate}
-          >
+          <Button type="button" disabled={!name} loading={pending} onClick={handleCreate}>
             {tCommon("create")}
           </Button>
         }
       >
         <div className="flex flex-col gap-2">
           <Label htmlFor="new-category-name">{t("name")}</Label>
-          <Input
-            id="new-category-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <Input id="new-category-name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
       </ResponsiveFormDialog>
     </div>

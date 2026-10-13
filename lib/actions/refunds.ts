@@ -2,10 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import {
-  requireWritableAdminScope,
-  tryCheckoutScope,
-} from "@/lib/auth/scope";
+import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/auth/scope";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";
 import { computeRefund } from "@/lib/shop/refund";
 import { loadSessionTotals } from "@/lib/services/cash-session";
@@ -27,9 +24,7 @@ export type RefundActionResult = { error?: string; requestId?: string };
 // A seller (or admin) asks for a refund of some units of a sale of their
 // boutique, with a reason. Only checks what can be checked now; approval
 // re-checks everything under lock.
-export async function requestRefund(
-  input: unknown,
-): Promise<RefundActionResult> {
+export async function requestRefund(input: unknown): Promise<RefundActionResult> {
   const scope = await tryCheckoutScope();
   if (scope.error) return { error: scope.error };
   const { admin, productType } = scope;
@@ -45,9 +40,7 @@ export async function requestRefund(
   if (!(REFUNDABLE_STATUSES as readonly string[]).includes(sale.status)) {
     return { error: "notRefundable" };
   }
-  const requested = new Map(
-    items.map((item) => [item.saleItemId, item.quantity]),
-  );
+  const requested = new Map(items.map((item) => [item.saleItemId, item.quantity]));
   if (requested.size !== items.length) return { error: "invalid" };
   const refund = computeRefund({
     subtotal: sale.subtotal.toNumber(),
@@ -66,10 +59,7 @@ export async function requestRefund(
     })),
   });
   // Also catches a saleItemId that isn't a line of this sale.
-  if (
-    !refund ||
-    [...requested.keys()].some((id) => !sale.items.some((l) => l.id === id))
-  ) {
+  if (!refund || [...requested.keys()].some((id) => !sale.items.some((l) => l.id === id))) {
     return { error: "invalidQuantity" };
   }
 
@@ -129,9 +119,7 @@ export async function requestRefund(
 // go back to stock, the money leaves the approver's till (cash) or is
 // recorded as a wallet refund, loyalty points are prorated back, and the
 // sale's status and refunded amount move on.
-export async function approveRefund(
-  input: unknown,
-): Promise<RefundActionResult> {
+export async function approveRefund(input: unknown): Promise<RefundActionResult> {
   const { admin, productType } = await requireWritableAdminScope();
   const parsed = refundDecisionSchema.safeParse(input);
   if (!parsed.success) return { error: "invalid" };
@@ -180,9 +168,7 @@ export async function approveRefund(
         where: { saleId: sale.id, status: "APPROVED", id: { not: request.id } },
         _sum: { loyaltyPointsTakenBack: true, loyaltyPointsReturned: true },
       });
-      const requested = new Map(
-        request.items.map((item) => [item.saleItemId, item.quantity]),
-      );
+      const requested = new Map(request.items.map((item) => [item.saleItemId, item.quantity]));
       const refund = computeRefund({
         subtotal: sale.subtotal.toNumber(),
         total: sale.total.toNumber(),
@@ -223,9 +209,7 @@ export async function approveRefund(
       // Cash comes out of the approver's own open till, which must hold it.
       let cashSessionId: string | null = null;
       if (sale.paymentMethod === "cash" && refund.amount > 0) {
-        const [session] = await tx.$queryRaw<
-          { id: string; openingFloat: string }[]
-        >`
+        const [session] = await tx.$queryRaw<{ id: string; openingFloat: string }[]>`
           SELECT "id", "openingFloat"::text FROM "CashSession"
           WHERE "sellerId" = ${admin.id} AND "productType" = ${productType} AND "status" = 'OPEN'
           FOR UPDATE
@@ -236,13 +220,11 @@ export async function approveRefund(
           productType,
           openingFloat: Number(session.openingFloat),
         });
-        if (refund.amount > totals.expectedCash)
-          throw new RefundError("insufficientCash");
+        if (refund.amount > totals.expectedCash) throw new RefundError("insufficientCash");
         cashSessionId = session.id;
       }
 
-      const pointsChange =
-        refund.loyaltyPointsReturned - refund.loyaltyPointsTakenBack;
+      const pointsChange = refund.loyaltyPointsReturned - refund.loyaltyPointsTakenBack;
       if (sale.clientId && pointsChange !== 0) {
         const [client] = await tx.$queryRaw<{ loyaltyPoints: number }[]>`
           SELECT "loyaltyPoints" FROM "Client" WHERE "id" = ${sale.clientId} FOR UPDATE
@@ -305,9 +287,7 @@ export async function approveRefund(
   }
 }
 
-export async function rejectRefund(
-  input: unknown,
-): Promise<RefundActionResult> {
+export async function rejectRefund(input: unknown): Promise<RefundActionResult> {
   const { admin, productType } = await requireWritableAdminScope();
   const parsed = refundRejectionSchema.safeParse(input);
   if (!parsed.success) return { error: "invalid" };

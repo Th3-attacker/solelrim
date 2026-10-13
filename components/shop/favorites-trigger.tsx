@@ -33,11 +33,7 @@ export function FavoritesTrigger({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const isMobile = useIsMobile();
-  const side = isMobile
-    ? "bottom"
-    : getDirection(locale) === "rtl"
-      ? "left"
-      : "right";
+  const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
 
   // Resolved when the drawer is opened (and kept in step with the list), not
@@ -64,12 +60,7 @@ export function FavoritesTrigger({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label={t("favoritesTitle")}
-        >
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("favoritesTitle")}>
           <Heart className="size-4" />
           {count > 0 && (
             <span className="absolute -top-1 -end-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
@@ -129,10 +120,7 @@ export function FavoritesTrigger({
                     aria-label={t("removeFromFavorites")}
                     onClick={() => toggleFavorite(product.id)}
                   >
-                    <Heart
-                      weight="fill"
-                      className="size-3 fill-destructive text-destructive"
-                    />
+                    <Heart weight="fill" className="size-3 fill-destructive text-destructive" />
                   </Button>
                 </div>
               ))}

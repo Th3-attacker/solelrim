@@ -18,32 +18,40 @@ import {
 // often created in the same instant, so the cuid breaks the tie). Without an
 // orderBy Postgres returns them in no guaranteed order, and the API's
 // `colors` list is meant to follow entry order.
-const VARIANT_ENTRY_ORDER = [{ createdAt: "asc" }, { id: "asc" }] satisfies Prisma.ProductVariantOrderByWithRelationInput[];
+const VARIANT_ENTRY_ORDER = [
+  { createdAt: "asc" },
+  { id: "asc" },
+] satisfies Prisma.ProductVariantOrderByWithRelationInput[];
 
 // Once per request for the same arguments: the shop layout and the home and
 // catalogue pages all want a boutique's whole catalogue.
 // Cached across requests too (lib/data-cache.ts).
-export const getActiveProducts = cache(cachedShopQuery("getActiveProducts", function getActiveProducts(
-  productType: string,
-  categoryId?: string,
-  options?: { excludeId?: string; take?: number },
-) {
-  return prisma.product.findMany({
-    where: {
-      isActive: true,
-      productType,
-      ...(categoryId ? { categoryId } : {}),
-      ...(options?.excludeId ? { id: { not: options.excludeId } } : {}),
+export const getActiveProducts = cache(
+  cachedShopQuery(
+    "getActiveProducts",
+    function getActiveProducts(
+      productType: string,
+      categoryId?: string,
+      options?: { excludeId?: string; take?: number },
+    ) {
+      return prisma.product.findMany({
+        where: {
+          isActive: true,
+          productType,
+          ...(categoryId ? { categoryId } : {}),
+          ...(options?.excludeId ? { id: { not: options.excludeId } } : {}),
+        },
+        include: {
+          category: true,
+          images: { orderBy: { position: "asc" }, take: 1 },
+          variants: { orderBy: VARIANT_ENTRY_ORDER },
+        },
+        orderBy: { createdAt: "desc" },
+        ...(options?.take ? { take: options.take } : {}),
+      });
     },
-    include: {
-      category: true,
-      images: { orderBy: { position: "asc" }, take: 1 },
-      variants: { orderBy: VARIANT_ENTRY_ORDER },
-    },
-    orderBy: { createdAt: "desc" },
-    ...(options?.take ? { take: options.take } : {}),
-  });
-}));
+  ),
+);
 
 // One page of a boutique's active catalogue, newest first, with the total the
 // app needs to know when to stop scrolling (the website's grid loads it all).
@@ -72,7 +80,10 @@ export async function getActiveProductsPage(
 // The mobile catalogue with sort and filters (lib/queries/catalogue-filters.ts):
 // one page of ids in order, the filtered total, then the same rows as
 // getActiveProductsPage for those ids.
-export const getFilteredProductsPage = cachedShopQuery("getFilteredProductsPage", filteredProductsPage);
+export const getFilteredProductsPage = cachedShopQuery(
+  "getFilteredProductsPage",
+  filteredProductsPage,
+);
 
 async function filteredProductsPage(
   filters: CatalogueFilters,
@@ -108,7 +119,8 @@ export async function getCatalogueFacets(filters: CatalogueFilters) {
   return {
     sizes: sortBySize(sizes, (row) => row.value).map(({ value, count }) => ({ value, count })),
     colors: colors.map(({ value, count }) => ({ value, count })),
-    price: price && price.min !== null && price.max !== null ? { min: price.min, max: price.max } : null,
+    price:
+      price && price.min !== null && price.max !== null ? { min: price.min, max: price.max } : null,
   };
 }
 
@@ -201,21 +213,23 @@ export const getAllShopCategories = cache(
 // that's two round trips to the DB instead of one.
 // Variants come back sorted by size (S, M, L, XL — see sortBySize), then in
 // entry order within a size, for both the product page and the mobile API.
-export const getActiveProductBySlug = cache(cachedShopQuery("getActiveProductBySlug", async function getActiveProductBySlug(
-  slug: string,
-  productType: string,
-) {
-  const product = await prisma.product.findFirst({
-    where: { slug, isActive: true, productType },
-    include: {
-      category: true,
-      images: { orderBy: { position: "asc" } },
-      variants: { orderBy: VARIANT_ENTRY_ORDER },
+export const getActiveProductBySlug = cache(
+  cachedShopQuery(
+    "getActiveProductBySlug",
+    async function getActiveProductBySlug(slug: string, productType: string) {
+      const product = await prisma.product.findFirst({
+        where: { slug, isActive: true, productType },
+        include: {
+          category: true,
+          images: { orderBy: { position: "asc" } },
+          variants: { orderBy: VARIANT_ENTRY_ORDER },
+        },
+      });
+      if (!product) return null;
+      return { ...product, variants: sortBySize(product.variants, (variant) => variant.size) };
     },
-  });
-  if (!product) return null;
-  return { ...product, variants: sortBySize(product.variants, (variant) => variant.size) };
-}));
+  ),
+);
 
 // Legacy links shared before the slug migration still use the raw id —
 // looked up regardless of isActive so an old link to a product that's since

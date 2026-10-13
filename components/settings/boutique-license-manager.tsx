@@ -162,10 +162,7 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
 
   function handleSelectDate(date: Date | undefined) {
     startTransition(async () => {
-      const result = await updateLicenseExpiresAt(
-        storeType.key,
-        date ? toDateParam(date) : null,
-      );
+      const result = await updateLicenseExpiresAt(storeType.key, date ? toDateParam(date) : null);
       if (result.error) {
         toast.error(tCommon("error"));
         return;
@@ -213,7 +210,10 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
 
   function handlePendingAutoCancelChange(value: string) {
     startCouponsTransition(async () => {
-      const result = await setPendingAutoCancelHours(storeType.key, value === "off" ? null : Number(value));
+      const result = await setPendingAutoCancelHours(
+        storeType.key,
+        value === "off" ? null : Number(value),
+      );
       if (result.error) {
         toast.error(tCommon("error"));
         return;
@@ -433,7 +433,11 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         </Toggle>
 
         <Select
-          value={storeType.pendingAutoCancelHours === null ? "off" : String(storeType.pendingAutoCancelHours)}
+          value={
+            storeType.pendingAutoCancelHours === null
+              ? "off"
+              : String(storeType.pendingAutoCancelHours)
+          }
           disabled={couponsPending}
           onValueChange={handlePendingAutoCancelChange}
         >

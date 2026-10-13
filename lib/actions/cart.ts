@@ -27,7 +27,6 @@ const sharedCartInputSchema = z.object({
   entries: z.array(sharedCartEntrySchema).max(MAX_CART_LINES),
 });
 
-
 // The cart itself only ever lives in the recipient's own localStorage —
 // there's no server-side cart to fetch by id. A "share cart" link instead
 // carries {variantId, quantity} pairs in its query string, and this
@@ -47,9 +46,7 @@ export async function resolveSharedCartLines(
   const allowed = await checkRateLimit(`resolve-shared-cart:${ip}`, RATE_LIMITS.sharedCartPerIp);
   if (!allowed) return [];
 
-  const quantityByVariantId = new Map(
-    parsed.data.entries.map((e) => [e.variantId, e.quantity]),
-  );
+  const quantityByVariantId = new Map(parsed.data.entries.map((e) => [e.variantId, e.quantity]));
 
   const variants = await prisma.productVariant.findMany({
     where: {

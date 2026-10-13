@@ -27,9 +27,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
   return slug;
 }
 
-export async function createProduct(
-  input: ProductInput,
-): Promise<ProductActionResult> {
+export async function createProduct(input: ProductInput): Promise<ProductActionResult> {
   const { productType } = await requireWritableAdminScope();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
@@ -65,10 +63,7 @@ export async function createProduct(
     revalidateSite();
     return { productId: created.id };
   } catch (err) {
-    if (
-      err instanceof PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: "duplicateSku" };
     }
     throw err;
@@ -169,19 +164,14 @@ export async function updateProduct(
     revalidateSite();
     return { productId };
   } catch (err) {
-    if (
-      err instanceof PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: "duplicateSku" };
     }
     throw err;
   }
 }
 
-export async function deleteProduct(
-  productId: string,
-): Promise<{ error?: string }> {
+export async function deleteProduct(productId: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
 
   const owned = await prisma.product.findFirst({
@@ -212,9 +202,7 @@ export async function deleteProduct(
 
   if (images.length > 0) {
     const supabase = createAdminClient();
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove(images.map((i) => i.storagePath));
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove(images.map((i) => i.storagePath));
   }
 
   await logAdminAction({
@@ -322,9 +310,7 @@ export async function uploadProductImage(
   return {};
 }
 
-export async function deleteProductImage(
-  imageId: string,
-): Promise<{ error?: string }> {
+export async function deleteProductImage(imageId: string): Promise<{ error?: string }> {
   const { productType } = await requireWritableAdminScope();
 
   const image = await prisma.productImage.findUnique({
@@ -336,9 +322,7 @@ export async function deleteProductImage(
   }
 
   const supabase = createAdminClient();
-  await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .remove([image.storagePath]);
+  await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([image.storagePath]);
   await prisma.productImage.delete({ where: { id: imageId } });
 
   revalidateSite();

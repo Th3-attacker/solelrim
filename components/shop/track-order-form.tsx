@@ -52,11 +52,7 @@ function getStuckWhatsAppHref(
   );
 }
 
-export function TrackOrderForm({
-  adminWhatsappNumber,
-}: {
-  adminWhatsappNumber: string | null;
-}) {
+export function TrackOrderForm({ adminWhatsappNumber }: { adminWhatsappNumber: string | null }) {
   const t = useTranslations("trackOrder");
   const tCommon = useTranslations("common");
   const format = useFormatter();
@@ -118,9 +114,7 @@ export function TrackOrderForm({
                 aria-describedby={errors.phone ? "phone-error" : undefined}
                 {...register("phone")}
               />
-              {errors.phone && (
-                <FieldError id="phone-error">{tCommon("invalidPhone")}</FieldError>
-              )}
+              {errors.phone && <FieldError id="phone-error">{tCommon("invalidPhone")}</FieldError>}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reference">{t("referenceLabel")}</Label>
@@ -144,9 +138,7 @@ export function TrackOrderForm({
         </CardContent>
       </Card>
 
-      {errorMessage && (
-        <p className="text-center text-sm text-destructive">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-center text-sm text-destructive">{errorMessage}</p>}
 
       {result && !("error" in result) && (
         <Card>

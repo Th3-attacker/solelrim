@@ -175,8 +175,7 @@ export default async function AdminAuditLogPage({
                     )}
                     {entry.reason && (
                       <p className="mt-1">
-                        <span className="text-muted-foreground">{t("reason")}:</span>{" "}
-                        {entry.reason}
+                        <span className="text-muted-foreground">{t("reason")}:</span> {entry.reason}
                       </p>
                     )}
                   </TableCell>

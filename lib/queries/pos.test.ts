@@ -77,7 +77,9 @@ describe("getReceipt", () => {
 
     expect(receipt).toBeNull();
     expect(prismaMock.sale.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "sale-from-another-boutique", productType: "sport" } }),
+      expect.objectContaining({
+        where: { id: "sale-from-another-boutique", productType: "sport" },
+      }),
     );
   });
 

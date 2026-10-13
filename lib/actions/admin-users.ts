@@ -6,9 +6,7 @@ import { requireSuperAdmin } from "@/lib/auth/admin";
 import { adminUserInputSchema } from "@/lib/validation/admin-user";
 import { revalidateAdmin } from "@/lib/revalidate";
 
-export async function createBoutiqueAdmin(
-  input: unknown,
-): Promise<{ error?: string }> {
+export async function createBoutiqueAdmin(input: unknown): Promise<{ error?: string }> {
   await requireSuperAdmin();
   const parsed = adminUserInputSchema.safeParse(input);
   if (!parsed.success) {
@@ -57,9 +55,7 @@ export async function createBoutiqueAdmin(
   return {};
 }
 
-export async function deleteBoutiqueAdmin(
-  adminUserId: string,
-): Promise<{ error?: string }> {
+export async function deleteBoutiqueAdmin(adminUserId: string): Promise<{ error?: string }> {
   await requireSuperAdmin();
 
   const admin = await prisma.adminUser.findUnique({ where: { id: adminUserId } });

@@ -5,7 +5,11 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 // One look per status, from the theme's tokens (components/ui/badge.tsx).
 const STATUS_BADGE: Record<
   OrderStatus,
-  { variant: "warning" | "success" | "info" | "destructive" | "outline" | "default"; label: string; className?: string }
+  {
+    variant: "warning" | "success" | "info" | "destructive" | "outline" | "default";
+    label: string;
+    className?: string;
+  }
 > = {
   PENDING: { variant: "warning", label: "pending" },
   CONFIRMED: { variant: "success", label: "confirmed" },

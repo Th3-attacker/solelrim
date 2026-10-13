@@ -106,9 +106,7 @@ export default async function PromoCodesPage() {
                       </Button>
                     }
                   />
-                  {promoCode.isActive && (
-                    <DeactivatePromoCodeButton promoCodeId={promoCode.id} />
-                  )}
+                  {promoCode.isActive && <DeactivatePromoCodeButton promoCodeId={promoCode.id} />}
                 </TableCell>
               </TableRow>
             ))}

@@ -171,9 +171,7 @@ describe("createSale", () => {
   });
 
   it("rejects when a variant has insufficient stock", async () => {
-    prismaMock.productVariant.findMany.mockResolvedValue([
-      baseVariant({ stock: 1 }),
-    ] as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant({ stock: 1 })] as never);
 
     const result = await createSale({
       clientId: null,
@@ -191,9 +189,7 @@ describe("createSale", () => {
     // above sees enough stock, but by the time this transaction's UPDATE
     // runs, someone else's already claimed it — the WHERE guard (stock >=
     // quantity) matches no row instead of driving stock negative.
-    prismaMock.productVariant.findMany.mockResolvedValue([
-      baseVariant({ stock: 5 }),
-    ] as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([baseVariant({ stock: 5 })] as never);
     prismaMock.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
 
     const result = await createSale({
@@ -310,7 +306,10 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue(null);
 
-    const result = await cancelSale({ saleId: "sale-from-another-boutique", reason: "Erreur de caisse" });
+    const result = await cancelSale({
+      saleId: "sale-from-another-boutique",
+      reason: "Erreur de caisse",
+    });
 
     expect(result.error).toBe("notFound");
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
@@ -331,7 +330,9 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 0 });
     prismaMock.sale.findFirst.mockResolvedValue({ status: "PARTIALLY_REFUNDED" } as never);
 
-    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("refunded");
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe(
+      "refunded",
+    );
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
@@ -339,14 +340,20 @@ describe("cancelSale", () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
     prismaMock.refundRequest.findFirst.mockResolvedValue({ id: "request-1" } as never);
 
-    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe("pendingRefund");
+    expect((await cancelSale({ saleId: "sale-1", reason: "Erreur de caisse" })).error).toBe(
+      "pendingRefund",
+    );
     expect(prismaMock.productVariant.update).not.toHaveBeenCalled();
   });
 
   it("takes back earned points and gives back redeemed ones", async () => {
     prismaMock.sale.updateMany.mockResolvedValue({ count: 1 });
     prismaMock.sale.findUniqueOrThrow.mockResolvedValue(
-      completedSale({ clientId: "client-1", loyaltyPointsEarned: 5, loyaltyPointsRedeemed: 100 }) as never,
+      completedSale({
+        clientId: "client-1",
+        loyaltyPointsEarned: 5,
+        loyaltyPointsRedeemed: 100,
+      }) as never,
     );
     prismaMock.productVariant.update.mockResolvedValue({} as never);
     prismaMock.$queryRaw.mockResolvedValue([{ loyaltyPoints: 12 }] as never);
@@ -527,14 +534,27 @@ describe("updateSale", () => {
     recordedSale({ paymentMethod: "card" });
 
     expect(
-      await updateSale({ saleId: "sale-1", clientId: null, notes: "Payé par carte", reason: "Note" }),
+      await updateSale({
+        saleId: "sale-1",
+        clientId: null,
+        notes: "Payé par carte",
+        reason: "Note",
+      }),
     ).toEqual({});
     expect(prismaMock.sale.update).toHaveBeenCalledWith({
       where: { id: "sale-1" },
-      data: { paymentMethod: "card", walletProvider: null, clientId: null, notes: "Payé par carte" },
+      data: {
+        paymentMethod: "card",
+        walletProvider: null,
+        clientId: null,
+        notes: "Payé par carte",
+      },
     });
     expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ oldValue: { notes: null }, newValue: { notes: "Payé par carte" } }),
+      data: expect.objectContaining({
+        oldValue: { notes: null },
+        newValue: { notes: "Payé par carte" },
+      }),
     });
   });
 

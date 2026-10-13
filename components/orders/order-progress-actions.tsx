@@ -79,11 +79,7 @@ export function OrderProgressActions({
         description={t("cancelReasonHint")}
         footer={
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCancelOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setCancelOpen(false)}>
               {tCommon("cancel")}
             </Button>
             <Button

@@ -79,9 +79,7 @@ export function CheckoutFlow({
   const cart = useCart();
 
   const [step, setStep] = useState<Step>(1);
-  const [customerInfo, setCustomerInfo] = useState<CheckoutCustomerInput | null>(
-    null,
-  );
+  const [customerInfo, setCustomerInfo] = useState<CheckoutCustomerInput | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
   const [senderPhone, setSenderPhone] = useState("");
@@ -128,9 +126,7 @@ export function CheckoutFlow({
   useEffect(() => {
     if (!cart.hydrated) return;
     const currentIds = new Set(cart.items.map((line) => line.variantId));
-    const hadRemoval = Array.from(previousVariantIdsRef.current).some(
-      (id) => !currentIds.has(id),
-    );
+    const hadRemoval = Array.from(previousVariantIdsRef.current).some((id) => !currentIds.has(id));
     previousVariantIdsRef.current = currentIds;
 
     if (cart.items.length === 0) {
@@ -295,7 +291,11 @@ export function CheckoutFlow({
   if (step === "success") {
     // reference is set together with the step.
     return reference ? (
-      <CheckoutSuccess reference={reference} basePath={basePath} onSendWhatsApp={handleSendWhatsApp} />
+      <CheckoutSuccess
+        reference={reference}
+        basePath={basePath}
+        onSendWhatsApp={handleSendWhatsApp}
+      />
     ) : null;
   }
 
@@ -336,9 +336,7 @@ export function CheckoutFlow({
           key={step}
           className="flex flex-col gap-6 rounded-2xl border bg-card p-4 duration-200 animate-in fade-in-0 slide-in-from-bottom-2 sm:p-6"
         >
-          {step === 1 && (
-            <CustomerStep form={customerForm} onSubmit={onSubmitStep1} />
-          )}
+          {step === 1 && <CustomerStep form={customerForm} onSubmit={onSubmitStep1} />}
 
           {step === 2 && customerInfo && (
             <div className="flex flex-col gap-4">
@@ -391,17 +389,13 @@ export function CheckoutFlow({
               <div>
                 <h1 className="text-heading-xs">{t("step3Title")}</h1>
                 {settings.paymentInstructions && (
-                  <p className="text-sm text-muted-foreground">
-                    {settings.paymentInstructions}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{settings.paymentInstructions}</p>
                 )}
               </div>
 
               {!paymentDetailsVisible ? (
                 <>
-                  <p className="text-sm text-muted-foreground">
-                    {t("paymentStepIntroHint")}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t("paymentStepIntroHint")}</p>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)}>
                       <ArrowLeft className="size-4 rtl:rotate-180" />

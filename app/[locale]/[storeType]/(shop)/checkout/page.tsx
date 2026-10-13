@@ -31,11 +31,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function CheckoutPage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function CheckoutPage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [boutique, basePath] = await Promise.all([
     getPublicBoutiqueSettings(storeType),

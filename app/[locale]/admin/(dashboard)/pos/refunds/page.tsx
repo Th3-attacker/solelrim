@@ -40,7 +40,11 @@ export default async function RefundsPage({
   ]);
 
   const tabs: { key: string; label: string; active: boolean }[] = [
-    ...STATUSES.map((value) => ({ key: value, label: t(`status.${value}`), active: status === value })),
+    ...STATUSES.map((value) => ({
+      key: value,
+      label: t(`status.${value}`),
+      active: status === value,
+    })),
     { key: "all", label: t("all"), active: status === null },
   ];
 

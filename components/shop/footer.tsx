@@ -195,9 +195,18 @@ function MinimalFooter({
   return (
     <footer className="border-t bg-footer text-footer-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 desktop:px-8 sm:flex-row sm:justify-between">
-        <BrandMark siteName={siteName} logoUrl={logoUrl} basePath={basePath} size={24} className="text-sm" />
+        <BrandMark
+          siteName={siteName}
+          logoUrl={logoUrl}
+          basePath={basePath}
+          size={24}
+          className="text-sm"
+        />
 
-        <nav aria-label={t("footerNavLabel")} className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        <nav
+          aria-label={t("footerNavLabel")}
+          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm"
+        >
           <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
             {t("allProductsTitle")}
           </Link>
@@ -229,7 +238,9 @@ function MinimalFooter({
               ))}
             </div>
           )}
-          <span>© {new Date().getFullYear()} {siteName}</span>
+          <span>
+            © {new Date().getFullYear()} {siteName}
+          </span>
         </div>
       </div>
     </footer>
@@ -250,10 +261,19 @@ function CenteredFooter({
   return (
     <footer className="border-t bg-footer text-footer-foreground">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-16 text-center desktop:px-8">
-        <BrandMark siteName={siteName} logoUrl={logoUrl} basePath={basePath} size={32} className="text-lg" />
+        <BrandMark
+          siteName={siteName}
+          logoUrl={logoUrl}
+          basePath={basePath}
+          size={32}
+          className="text-lg"
+        />
         <p className="max-w-sm text-sm text-footer-foreground">{t("heroSubtitle")}</p>
 
-        <nav aria-label={t("footerNavLabel")} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+        <nav
+          aria-label={t("footerNavLabel")}
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm"
+        >
           <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
             {t("allProductsTitle")}
           </Link>
@@ -273,7 +293,10 @@ function CenteredFooter({
         </nav>
 
         {socialLinks.length > 0 && (
-          <nav aria-label={t("footerFollowTitle")} className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+          <nav
+            aria-label={t("footerFollowTitle")}
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm"
+          >
             {socialLinks.map((social) => (
               <a
                 key={social.id}

@@ -111,9 +111,7 @@ export function TwoFactorSettings({
 
           {factorId ? (
             required ? (
-              <span className="text-xs text-muted-foreground">
-                {t("twoFactorRequiredLocked")}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("twoFactorRequiredLocked")}</span>
             ) : (
               <Button
                 type="button"
@@ -188,9 +186,7 @@ export function TwoFactorSettings({
                 }}
                 aria-invalid={verifyError}
               />
-              {verifyError && (
-                <FieldError>{t("twoFactorInvalidCode")}</FieldError>
-              )}
+              {verifyError && <FieldError>{t("twoFactorInvalidCode")}</FieldError>}
             </div>
           </div>
         )}

@@ -3,12 +3,7 @@
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SearchTrigger } from "@/components/shop/search-trigger";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import { List, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";

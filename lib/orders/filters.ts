@@ -12,10 +12,10 @@ function parseOrderDateParam(value?: string): Date | undefined {
 // no separate exact-date param. The span is capped to
 // MAX_ORDER_DATE_RANGE_DAYS even if the URL is edited by hand past what the
 // calendar itself allows.
-export function parseOrderDateFilters(params: {
-  from?: string;
-  to?: string;
-}): { dateFrom?: Date; dateTo?: Date } {
+export function parseOrderDateFilters(params: { from?: string; to?: string }): {
+  dateFrom?: Date;
+  dateTo?: Date;
+} {
   const from = parseOrderDateParam(params.from);
   const to = parseOrderDateParam(params.to);
   if (!from && !to) return {};

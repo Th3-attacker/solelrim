@@ -139,11 +139,7 @@ export function PromoCodeFormDialog({
             aria-invalid={!!errors.code}
             {...register("code")}
           />
-          {errors.code && (
-            <FieldError>
-              {fieldErrorMessage(errors.code.message)}
-            </FieldError>
-          )}
+          {errors.code && <FieldError>{fieldErrorMessage(errors.code.message)}</FieldError>}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -151,9 +147,7 @@ export function PromoCodeFormDialog({
             <Label htmlFor="discountType">{t("discountType")}</Label>
             <Select
               value={discountType}
-              onValueChange={(value) =>
-                setValue("discountType", value as "PERCENT" | "FIXED")
-              }
+              onValueChange={(value) => setValue("discountType", value as "PERCENT" | "FIXED")}
             >
               <SelectTrigger id="discountType" className="w-full">
                 <SelectValue />
@@ -174,9 +168,7 @@ export function PromoCodeFormDialog({
               {...register("discountValue")}
             />
             {errors.discountValue && (
-              <FieldError>
-                {fieldErrorMessage(errors.discountValue.message)}
-              </FieldError>
+              <FieldError>{fieldErrorMessage(errors.discountValue.message)}</FieldError>
             )}
           </div>
         </div>
@@ -225,9 +217,7 @@ export function PromoCodeFormDialog({
               min="1"
               placeholder={t("unlimited")}
               value={(maxUses as number | null) ?? ""}
-              onChange={(e) =>
-                setValue("maxUses", e.target.value ? Number(e.target.value) : null)
-              }
+              onChange={(e) => setValue("maxUses", e.target.value ? Number(e.target.value) : null)}
             />
           </div>
         </div>

@@ -54,9 +54,7 @@ export default async function OrderDetailPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {order.reference}
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{order.reference}</h1>
           <OrderStatusBadge status={order.status} />
         </div>
         {order.status === "PENDING" && (
@@ -228,12 +226,16 @@ export default async function OrderDetailPage({
         <h2 className="mb-2 text-sm font-medium">{t("paymentProof")}</h2>
         {order.paymentSenderPhone && (
           <p className="mb-2 text-sm text-muted-foreground">
-            {t("paymentSenderPhone")}: <span className="font-medium text-foreground">{order.paymentSenderPhone}</span>
+            {t("paymentSenderPhone")}:{" "}
+            <span className="font-medium text-foreground">{order.paymentSenderPhone}</span>
           </p>
         )}
         {order.paymentTransactionId && (
           <p className="mb-2 text-sm text-muted-foreground">
-            {t("paymentTransactionId")}: <span className="font-mono font-medium text-foreground">{order.paymentTransactionId}</span>
+            {t("paymentTransactionId")}:{" "}
+            <span className="font-mono font-medium text-foreground">
+              {order.paymentTransactionId}
+            </span>
           </p>
         )}
         {proofSharedWith.length > 0 && (

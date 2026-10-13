@@ -11,7 +11,13 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { checkRateLimit, getClientIp, peekRateLimit, rateLimitRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
+import {
+  checkRateLimit,
+  getClientIp,
+  peekRateLimit,
+  rateLimitRetryAfter,
+  recordRateLimitHit,
+} from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const headersMock = headers as unknown as Mock;
@@ -80,7 +86,9 @@ describe("rateLimitRetryAfter", () => {
 
   it("gives the seconds until the oldest hit in the window expires", async () => {
     prismaMock.rateLimitHit.count.mockResolvedValue(5);
-    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 45_000) } as never);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({
+      createdAt: new Date(Date.now() - 45_000),
+    } as never);
 
     const wait = await rateLimitRetryAfter("k", { windowMs: 60_000, max: 5 });
 
@@ -94,11 +102,15 @@ describe("rateLimitRetryAfter past the limit", () => {
     // 7 hits for a limit of 5 (concurrent calls overshot): the 3rd oldest
     // has to leave before a call is allowed again.
     prismaMock.rateLimitHit.count.mockResolvedValue(7);
-    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 30_000) } as never);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({
+      createdAt: new Date(Date.now() - 30_000),
+    } as never);
 
     const wait = await rateLimitRetryAfter("k", { windowMs: 60_000, max: 5 });
 
-    expect(prismaMock.rateLimitHit.findFirst).toHaveBeenCalledWith(expect.objectContaining({ skip: 2 }));
+    expect(prismaMock.rateLimitHit.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 2 }),
+    );
     expect(wait).toBeGreaterThanOrEqual(30);
     expect(wait).toBeLessThanOrEqual(31);
   });
@@ -114,7 +126,9 @@ describe("peekRateLimit / recordRateLimitHit", () => {
 
   it("gives the wait once the limit is reached", async () => {
     prismaMock.rateLimitHit.count.mockResolvedValue(5);
-    prismaMock.rateLimitHit.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 50_000) } as never);
+    prismaMock.rateLimitHit.findFirst.mockResolvedValue({
+      createdAt: new Date(Date.now() - 50_000),
+    } as never);
 
     const wait = await peekRateLimit("k", { windowMs: 60_000, max: 5 });
 
@@ -132,8 +146,7 @@ describe("peekRateLimit / recordRateLimitHit", () => {
 describe("getClientIp", () => {
   it("takes the first address from a comma-separated x-forwarded-for", async () => {
     headersMock.mockResolvedValue({
-      get: (name: string) =>
-        name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null,
+      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
     });
 
     await expect(getClientIp()).resolves.toBe("203.0.113.9");
@@ -173,7 +186,7 @@ describe("getClientIp", () => {
     expect(a).not.toBe(b);
   });
 
-  it("falls back to the literal \"unknown\" only when every signal is missing", async () => {
+  it('falls back to the literal "unknown" only when every signal is missing', async () => {
     headersMock.mockResolvedValue({ get: () => null });
 
     await expect(getClientIp()).resolves.toBe("unknown");

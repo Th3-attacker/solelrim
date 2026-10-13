@@ -6,13 +6,7 @@ import { toast } from "@/components/ui/toast";
 import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
 import { cn } from "@/lib/utils";
 
-export function ShareButton({
-  title,
-  className,
-}: {
-  title: string;
-  className?: string;
-}) {
+export function ShareButton({ title, className }: { title: string; className?: string }) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
 

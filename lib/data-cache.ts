@@ -47,10 +47,14 @@ export function cachedShopQuery<Args extends unknown[], Result>(
   return async (...args: Args) => {
     // Unit tests run outside Next.js, where there is no cache to read.
     if (process.env.VITEST) return query(...args);
-    cached ??= unstable_cache(async (...inner: Args) => encodeCached(await query(...inner)), [name], {
-      tags: [SHOP_DATA_TAG],
-      revalidate: SAFETY_NET_SECONDS,
-    });
+    cached ??= unstable_cache(
+      async (...inner: Args) => encodeCached(await query(...inner)),
+      [name],
+      {
+        tags: [SHOP_DATA_TAG],
+        revalidate: SAFETY_NET_SECONDS,
+      },
+    );
     return decodeCached<Result>(await cached(...args));
   };
 }

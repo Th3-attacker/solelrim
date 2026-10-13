@@ -64,7 +64,9 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
     // supabase-js reports failure through `error`, it doesn't throw.
     const { error: rollbackError } = await supabase.auth.admin.deleteUser(data.user.id);
     if (rollbackError) {
-      reportError("createSeller: orphaned auth user", rollbackError, { supabaseUserId: data.user.id });
+      reportError("createSeller: orphaned auth user", rollbackError, {
+        supabaseUserId: data.user.id,
+      });
     }
     if (err instanceof Error && err.message === "quotaReached") {
       return { error: "quotaReached" };

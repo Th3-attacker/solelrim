@@ -6,11 +6,7 @@ import { PrintLabelButton } from "@/components/orders/print-label-button";
 import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { formatPrice } from "@/lib/format/currency";
 
-export default async function OrderLabelPage({
-  params,
-}: {
-  params: Promise<{ orderId: string }>;
-}) {
+export default async function OrderLabelPage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
   const scope = await getAdminScope();
   const [t, tSales, tCommon, format, order] = await Promise.all([
@@ -39,8 +35,7 @@ export default async function OrderLabelPage({
 
         {order.confirmedAt && (
           <p className="text-[9px] text-muted-foreground">
-            {t("labelConfirmedOn")}{" "}
-            {format.dateTime(order.confirmedAt, { dateStyle: "medium" })}
+            {t("labelConfirmedOn")} {format.dateTime(order.confirmedAt, { dateStyle: "medium" })}
           </p>
         )}
 

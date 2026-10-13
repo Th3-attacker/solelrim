@@ -9,9 +9,7 @@ import { contentSecurityPolicy, newNonce } from "@/lib/csp";
 const handleI18nRouting = createIntlMiddleware(routing);
 
 function isAdminPath(pathWithoutLocale: string) {
-  return (
-    pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/")
-  );
+  return pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/");
 }
 
 // The only admin areas a SELLER may open — the checkout and everything
@@ -25,10 +23,7 @@ function isSellerPath(pathWithoutLocale: string) {
 }
 
 function isAdminLoginPath(pathWithoutLocale: string) {
-  return (
-    pathWithoutLocale === "/admin/login" ||
-    pathWithoutLocale.startsWith("/admin/login/")
-  );
+  return pathWithoutLocale === "/admin/login" || pathWithoutLocale.startsWith("/admin/login/");
 }
 
 // app/[locale]/opengraph-image.tsx (and any future twitter-image) is a
@@ -62,9 +57,7 @@ async function route(request: NextRequest) {
 
   const segments = request.nextUrl.pathname.split("/");
   const maybeLocale = segments[1];
-  const hasLocalePrefix = routing.locales.includes(
-    maybeLocale as (typeof routing.locales)[number],
-  );
+  const hasLocalePrefix = routing.locales.includes(maybeLocale as (typeof routing.locales)[number]);
   const locale = hasLocalePrefix ? maybeLocale : routing.defaultLocale;
   const pathWithoutLocale = "/" + segments.slice(2).join("/");
 
@@ -87,11 +80,7 @@ async function route(request: NextRequest) {
   // main domain or a boutique's own branded domain. Login sets the
   // Supabase session cookie scoped to whichever host was used, so it works
   // as long as the admin stays on that same domain for the whole session.
-  if (
-    boutiqueKey &&
-    !isAdminPath(pathWithoutLocale) &&
-    !isLocaleMetadataRoute(pathWithoutLocale)
-  ) {
+  if (boutiqueKey && !isAdminPath(pathWithoutLocale) && !isLocaleMetadataRoute(pathWithoutLocale)) {
     const segs = pathWithoutLocale.split("/").filter(Boolean);
     const first = segs[0];
 
@@ -124,9 +113,7 @@ async function route(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );

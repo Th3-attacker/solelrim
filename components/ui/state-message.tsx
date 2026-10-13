@@ -25,9 +25,7 @@ export function StateMessage({
       </div>
       <div className="flex flex-col gap-1.5">
         <Heading className="text-heading-xs">{title}</Heading>
-        {message && (
-          <p className="max-w-sm text-paragraph-sm text-muted-foreground">{message}</p>
-        )}
+        {message && <p className="max-w-sm text-paragraph-sm text-muted-foreground">{message}</p>}
         {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
       </div>
       {action}

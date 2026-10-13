@@ -49,7 +49,12 @@ const retryAfterMock = rateLimitRetryAfter as unknown as Mock;
 const stocksMock = checkVariantStocks as unknown as Mock;
 
 const ctx = (key: string) => ({ params: Promise.resolve({ key }) });
-const open = { key: "sport", licenseStatus: "ACTIVE", licenseType: "MONTHLY", licenseExpiresAt: null };
+const open = {
+  key: "sport",
+  licenseStatus: "ACTIVE",
+  licenseType: "MONTHLY",
+  licenseExpiresAt: null,
+};
 
 function post(path: string, body: BodyInit, headers?: HeadersInit) {
   return new Request(`https://shop.example${path}`, { method: "POST", body, headers });
@@ -78,7 +83,10 @@ describe("a closed or unknown boutique", () => {
   });
 
   it("is a 403 once its license is suspended", async () => {
-    prismaMock.storeType.findUnique.mockResolvedValue({ ...open, licenseStatus: "SUSPENDED" } as never);
+    prismaMock.storeType.findUnique.mockResolvedValue({
+      ...open,
+      licenseStatus: "SUSPENDED",
+    } as never);
 
     const response = await postOrder(post("/x", new FormData()), ctx("sport"));
 
@@ -127,7 +135,10 @@ describe("POST orders", () => {
   });
 
   it("refuses a body that isn't a form", async () => {
-    const response = await postOrder(post("/x", "not a form", { "content-type": "text/plain" }), ctx("sport"));
+    const response = await postOrder(
+      post("/x", "not a form", { "content-type": "text/plain" }),
+      ctx("sport"),
+    );
 
     expect(response.status).toBe(400);
   });
@@ -178,9 +189,13 @@ describe("POST orders/track", () => {
     trackOrderMock.mockResolvedValue({ reference: "CMD-1", status: "PENDING" });
 
     const response = await postTrack(
-      post("/x", JSON.stringify({ phone: "37737353", reference: "CMD-1", productType: "cosmetique" }), {
-        "content-type": "application/json",
-      }),
+      post(
+        "/x",
+        JSON.stringify({ phone: "37737353", reference: "CMD-1", productType: "cosmetique" }),
+        {
+          "content-type": "application/json",
+        },
+      ),
       ctx("sport"),
     );
 
@@ -207,13 +222,20 @@ describe("GET products", () => {
     );
 
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 10, total: 42 });
-    expect(getActiveProductsPage).toHaveBeenCalledWith("sport", { categoryId: undefined, page: 2, pageSize: 10 });
+    expect(getActiveProductsPage).toHaveBeenCalledWith("sport", {
+      categoryId: undefined,
+      page: 2,
+      pageSize: 10,
+    });
   });
 
   it("rate-limits the search, saying when to retry", async () => {
     retryAfterMock.mockResolvedValue(120);
 
-    const response = await getProducts(new Request("https://shop.example/x?q=tshirt"), ctx("sport"));
+    const response = await getProducts(
+      new Request("https://shop.example/x?q=tshirt"),
+      ctx("sport"),
+    );
 
     expect(response.status).toBe(429);
     expect(response.headers.get("Retry-After")).toBe("120");
@@ -253,12 +275,15 @@ describe("POST stocks", () => {
 describe("GET products with sort and filters", () => {
   const filteredMock = getFilteredProductsPage as unknown as Mock;
   const facetsMock = getCatalogueFacets as unknown as Mock;
-  const list = (query: string) => getProducts(new Request(`https://shop.example/x?${query}`), ctx("sport"));
+  const list = (query: string) =>
+    getProducts(new Request(`https://shop.example/x?${query}`), ctx("sport"));
 
   beforeEach(() => {
     filteredMock.mockReset().mockResolvedValue({ items: [], total: 6 });
     facetsMock.mockReset();
-    (getActiveProductsPage as unknown as Mock).mockReset().mockResolvedValue({ items: [], total: 42 });
+    (getActiveProductsPage as unknown as Mock)
+      .mockReset()
+      .mockResolvedValue({ items: [], total: 42 });
     (searchActiveProducts as unknown as Mock).mockReset().mockResolvedValue([]);
   });
 
@@ -266,7 +291,9 @@ describe("GET products with sort and filters", () => {
     const response = await list("category=c1&page=2&pageSize=10");
 
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 10, total: 42 });
-    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=30, stale-while-revalidate=60",
+    );
     expect(filteredMock).not.toHaveBeenCalled();
   });
 
@@ -296,7 +323,9 @@ describe("GET products with sort and filters", () => {
       { page: 2, pageSize: 5 },
     );
     expect(await response.json()).toEqual({ products: [], page: 2, pageSize: 5, total: 6 });
-    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30, stale-while-revalidate=60");
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, s-maxage=30, stale-while-revalidate=60",
+    );
     expect(facetsMock).not.toHaveBeenCalled();
   });
 
@@ -312,14 +341,20 @@ describe("GET products with sort and filters", () => {
   it("paginates a filtered search, still rate-limited and not cached", async () => {
     const response = await list("q=tshirt&sizes=M&page=2");
 
-    expect(filteredMock).toHaveBeenCalledWith(expect.objectContaining({ query: "tshirt" }), { page: 2, pageSize: 20 });
+    expect(filteredMock).toHaveBeenCalledWith(expect.objectContaining({ query: "tshirt" }), {
+      page: 2,
+      pageSize: 20,
+    });
     expect(retryAfterMock).toHaveBeenCalled();
     expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("adds the facets with facets=1, with the colors' swatches", async () => {
     facetsMock.mockResolvedValue({
-      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      sizes: [
+        { value: "M", count: 6 },
+        { value: "XL", count: 0 },
+      ],
       colors: [{ value: "Noir-Blanc", count: 2 }],
       price: { min: 150, max: 2850 },
     });
@@ -327,7 +362,10 @@ describe("GET products with sort and filters", () => {
     const body = await (await list("facets=1")).json();
 
     expect(body.facets).toEqual({
-      sizes: [{ value: "M", count: 6 }, { value: "XL", count: 0 }],
+      sizes: [
+        { value: "M", count: 6 },
+        { value: "XL", count: 0 },
+      ],
       colors: [{ name: "Noir-Blanc", hex: "#18181b", hexes: ["#18181b", "#ffffff"], count: 2 }],
       price: { min: 150, max: 2850 },
     });

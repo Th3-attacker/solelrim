@@ -20,10 +20,7 @@ function resolveLoginLocale(locale: string) {
     : routing.defaultLocale;
 }
 
-export async function login(
-  _prevState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
+export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -77,10 +74,7 @@ export type MfaState = { error?: string };
 // The second step of login, submitted from the same page once `login`
 // above returns mfaRequired — relies on the aal1 session signInWithPassword
 // already created (via the request's cookies), not on email/password again.
-export async function verifyLoginMfa(
-  _prevState: MfaState,
-  formData: FormData,
-): Promise<MfaState> {
+export async function verifyLoginMfa(_prevState: MfaState, formData: FormData): Promise<MfaState> {
   const parsed = mfaSchema.safeParse({
     code: formData.get("code"),
     locale: formData.get("locale"),

@@ -33,14 +33,17 @@ const createAdminClientMock = createAdminClient as unknown as Mock;
 // Mirrors admin-users.test.ts: getCurrentAdmin()/requireSuperAdmin() resolve
 // straight from this AdminUser row via the mocked Prisma client.
 function asAdmin(
-  overrides: Partial<{ role: "SUPERADMIN" | "BOUTIQUE_ADMIN"; appMetadata: Record<string, unknown> }> = {},
+  overrides: Partial<{
+    role: "SUPERADMIN" | "BOUTIQUE_ADMIN";
+    appMetadata: Record<string, unknown>;
+  }> = {},
   auth: Record<string, unknown> = {},
 ) {
   createClientMock.mockResolvedValue({
     auth: {
-      getUser: vi
-        .fn()
-        .mockResolvedValue({ data: { user: { id: "admin-1", app_metadata: overrides.appMetadata ?? {} } } }),
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: "admin-1", app_metadata: overrides.appMetadata ?? {} } },
+      }),
       ...auth,
     },
   });
@@ -129,10 +132,7 @@ describe("verifyTotpEnrollment", () => {
   });
 
   it("succeeds when the challenge passes", async () => {
-    asAdmin(
-      {},
-      { mfa: { challengeAndVerify: vi.fn().mockResolvedValue({ error: null }) } },
-    );
+    asAdmin({}, { mfa: { challengeAndVerify: vi.fn().mockResolvedValue({ error: null }) } });
 
     const result = await verifyTotpEnrollment("factor-1", "123456");
 

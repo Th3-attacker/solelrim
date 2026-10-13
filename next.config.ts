@@ -13,7 +13,9 @@ const cspHeader = contentSecurityPolicy({});
 // /api/v1/docs (app/api/v1/docs/route.ts) loads the Scalar API reference
 // from jsDelivr, pinned and SRI-checked. Same policy otherwise: it only
 // talks to its own deployment.
-const apiDocsCspHeader = contentSecurityPolicy({ extraScriptSources: ["https://cdn.jsdelivr.net"] });
+const apiDocsCspHeader = contentSecurityPolicy({
+  extraScriptSources: ["https://cdn.jsdelivr.net"],
+});
 
 const nextConfig: NextConfig = {
   // Pin the project root explicitly — Turbopack otherwise walks up looking

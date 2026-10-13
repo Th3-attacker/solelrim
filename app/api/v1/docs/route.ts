@@ -5,7 +5,8 @@
 // that script in. Scalar's fonts, telemetry and request proxy are turned off,
 // and connect-src stays 'self'.
 
-const SCALAR_SRC = "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.2/dist/browser/standalone.js";
+const SCALAR_SRC =
+  "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.2/dist/browser/standalone.js";
 const SCALAR_SRI = "sha384-WIChsUVC1uJ+G1lFA6lPYzOUgXAe8dVxUFIZ7lcENNtV34Esuo81NIxsj8EAQeHB";
 
 // The site's look: system UI font, neutral greys, 0.625rem radius.
@@ -76,6 +77,9 @@ const HTML = `<!doctype html>
 
 export function GET() {
   return new Response(HTML, {
-    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, s-maxage=300" },
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, s-maxage=300",
+    },
   });
 }

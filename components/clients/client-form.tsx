@@ -69,11 +69,7 @@ export function ClientForm({
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="fullName">{t("fullName")}</Label>
             <Input id="fullName" {...register("fullName")} />
-            {errors.fullName && (
-              <FieldError>
-                {tCommon("requiredField")}
-              </FieldError>
-            )}
+            {errors.fullName && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -85,27 +81,16 @@ export function ClientForm({
               maxLength={8}
               {...register("phone")}
               onInput={(e) => {
-                e.currentTarget.value = e.currentTarget.value.replace(
-                  /\D/g,
-                  "",
-                );
+                e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "");
               }}
             />
-            {errors.phone && (
-              <FieldError>
-                {tCommon("invalidPhone")}
-              </FieldError>
-            )}
+            {errors.phone && <FieldError>{tCommon("invalidPhone")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" {...register("email")} />
-            {errors.email && (
-              <FieldError>
-                {tCommon("requiredField")}
-              </FieldError>
-            )}
+            {errors.email && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">

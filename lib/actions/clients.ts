@@ -8,9 +8,7 @@ import { revalidateAdmin } from "@/lib/revalidate";
 
 export type ClientActionResult = { error?: string; clientId?: string };
 
-export async function createClientRecord(
-  input: ClientInput,
-): Promise<ClientActionResult> {
+export async function createClientRecord(input: ClientInput): Promise<ClientActionResult> {
   const { productType } = await requireWritableAdminScope();
   const parsed = clientSchema.safeParse(input);
   if (!parsed.success) {
@@ -67,9 +65,7 @@ export async function updateClientRecord(
   return { clientId };
 }
 
-export async function deleteClient(
-  clientId: string,
-): Promise<{ error?: string }> {
+export async function deleteClient(clientId: string): Promise<{ error?: string }> {
   const { productType } = await requireWritableAdminScope();
 
   const client = await prisma.client.findFirst({

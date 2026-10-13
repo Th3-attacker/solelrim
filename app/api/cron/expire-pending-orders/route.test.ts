@@ -8,9 +8,11 @@ import { GET } from "@/app/api/cron/expire-pending-orders/route";
 
 const cancelMock = cancelExpiredPendingOrders as unknown as Mock;
 const call = (authorization?: string) =>
-  GET(new Request("https://shop.example/api/cron/expire-pending-orders", {
-    headers: authorization ? { authorization } : {},
-  }));
+  GET(
+    new Request("https://shop.example/api/cron/expire-pending-orders", {
+      headers: authorization ? { authorization } : {},
+    }),
+  );
 
 beforeEach(() => {
   cancelMock.mockReset().mockResolvedValue([]);

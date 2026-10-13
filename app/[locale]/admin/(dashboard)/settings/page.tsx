@@ -85,9 +85,7 @@ export default async function SettingsPage() {
       {admin.role === "SUPERADMIN" && (
         <SettingsPanel>
           <LogoUpload
-            logoUrl={
-              boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null
-            }
+            logoUrl={boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null}
           />
         </SettingsPanel>
       )}
@@ -112,7 +110,6 @@ export default async function SettingsPage() {
             />
           </SettingsPanel>
           <SettingsPanel>
-
             <ColorModePicker currentMode={boutique.colorMode} />
           </SettingsPanel>
 

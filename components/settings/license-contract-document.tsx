@@ -72,46 +72,43 @@ export function LicenseContractDocument({
         </h1>
         <p className="text-base font-semibold">SOLAL — Solution e-commerce</p>
         <p className="text-xs text-muted-foreground">
-          Version : {LICENSE_TERMS_VERSION} · Date de mise à jour :{" "}
-          {LICENSE_TERMS_UPDATED_AT}
+          Version : {LICENSE_TERMS_VERSION} · Date de mise à jour : {LICENSE_TERMS_UPDATED_AT}
         </p>
       </header>
 
       <Section n={1} title="Objet">
         <p>
           Les présentes Conditions de Licence définissent les conditions dans lesquelles{" "}
-          <strong>SOLAL</strong>, ci-après dénommé « le Concédant », accorde à un client,
-          ci-après dénommé « le Client », le droit d&apos;utiliser la solution e-commerce
-          SOLAL.
+          <strong>SOLAL</strong>, ci-après dénommé « le Concédant », accorde à un client, ci-après
+          dénommé « le Client », le droit d&apos;utiliser la solution e-commerce SOLAL.
         </p>
         <p>
-          SOLAL est une solution permettant au Client d&apos;exploiter sa propre boutique
-          e-commerce sous son identité commerciale.
+          SOLAL est une solution permettant au Client d&apos;exploiter sa propre boutique e-commerce
+          sous son identité commerciale.
         </p>
         <p>
-          La licence porte sur le droit d&apos;utilisation de la solution et ne constitue
-          pas une vente ou une cession du logiciel, de son code source ou de sa propriété
-          intellectuelle.
+          La licence porte sur le droit d&apos;utilisation de la solution et ne constitue pas une
+          vente ou une cession du logiciel, de son code source ou de sa propriété intellectuelle.
         </p>
       </Section>
 
       <Section n={2} title="Définitions">
         <dl className="flex flex-col gap-2">
           <Definition term="« SOLAL »">
-            Désigne la solution logicielle e-commerce, son interface, son administration,
-            ses fonctionnalités, ses composants techniques et les évolutions développées
-            par le Concédant.
+            Désigne la solution logicielle e-commerce, son interface, son administration, ses
+            fonctionnalités, ses composants techniques et les évolutions développées par le
+            Concédant.
           </Definition>
           <Definition term="« Boutique »">
-            Désigne l&apos;espace e-commerce configuré pour le Client et exploité sous son
-            identité commerciale.
+            Désigne l&apos;espace e-commerce configuré pour le Client et exploité sous son identité
+            commerciale.
           </Definition>
           <Definition term="« Client »">
             Désigne la personne physique ou morale ayant souscrit une licence SOLAL.
           </Definition>
           <Definition term="« Licence »">
-            Désigne le droit accordé au Client d&apos;utiliser SOLAL conformément à la
-            formule souscrite.
+            Désigne le droit accordé au Client d&apos;utiliser SOLAL conformément à la formule
+            souscrite.
           </Definition>
           <Definition term="« Domaine »">
             Désigne le nom de domaine utilisé par le Client pour accéder à sa boutique.
@@ -133,21 +130,20 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          La licence permet au Client d&apos;utiliser SOLAL pour exploiter son activité
-          commerciale en ligne.
+          La licence permet au Client d&apos;utiliser SOLAL pour exploiter son activité commerciale
+          en ligne.
         </p>
         <p>
-          La licence n&apos;autorise pas le Client à copier, distribuer, revendre ou
-          commercialiser SOLAL lui-même.
+          La licence n&apos;autorise pas le Client à copier, distribuer, revendre ou commercialiser
+          SOLAL lui-même.
         </p>
       </Section>
 
       <Section n={4} title="Propriété intellectuelle">
         <p>
-          SOLAL, son code source, son architecture, ses composants logiciels, ses
-          interfaces, ses méthodes techniques, ses systèmes de gestion, ses
-          fonctionnalités et ses développements restent la propriété du Concédant, sauf
-          disposition écrite contraire.
+          SOLAL, son code source, son architecture, ses composants logiciels, ses interfaces, ses
+          méthodes techniques, ses systèmes de gestion, ses fonctionnalités et ses développements
+          restent la propriété du Concédant, sauf disposition écrite contraire.
         </p>
         <p>La souscription d&apos;une licence ne constitue pas :</p>
         <List
@@ -160,8 +156,7 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          Le Client conserve toutefois la propriété de ses propres éléments commerciaux,
-          notamment :
+          Le Client conserve toutefois la propriété de ses propres éléments commerciaux, notamment :
         </p>
         <List
           items={[
@@ -192,8 +187,8 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          Le Client est responsable de l&apos;utilisation commerciale de sa boutique et du
-          respect des lois et réglementations qui lui sont applicables.
+          Le Client est responsable de l&apos;utilisation commerciale de sa boutique et du respect
+          des lois et réglementations qui lui sont applicables.
         </p>
       </Section>
 
@@ -225,30 +220,35 @@ export function LicenseContractDocument({
           <strong>une boutique e-commerce</strong>.
         </p>
         <p>
-          Le Client ne peut pas utiliser une licence pour créer ou exploiter plusieurs
-          boutiques indépendantes.
+          Le Client ne peut pas utiliser une licence pour créer ou exploiter plusieurs boutiques
+          indépendantes.
         </p>
-        <p>Exemple : une licence attribuée à Boutique A ne peut pas être utilisée pour créer simultanément Boutique A, Boutique B et Boutique C.</p>
-        <p>Chaque boutique supplémentaire nécessite une licence distincte ou une offre spécifique.</p>
+        <p>
+          Exemple : une licence attribuée à Boutique A ne peut pas être utilisée pour créer
+          simultanément Boutique A, Boutique B et Boutique C.
+        </p>
+        <p>
+          Chaque boutique supplémentaire nécessite une licence distincte ou une offre spécifique.
+        </p>
       </Section>
 
       <Section n={8} title="Domaine">
         <p>
-          Le Client est propriétaire de son nom de domaine et en assume les frais
-          d&apos;achat et de renouvellement.
+          Le Client est propriétaire de son nom de domaine et en assume les frais d&apos;achat et de
+          renouvellement.
         </p>
         <p>
           Le Client peut utiliser son propre domaine, par exemple :{" "}
           <span className="font-mono">www.maboutique.com</span>
         </p>
         <p>
-          Le Concédant peut effectuer la configuration technique nécessaire afin de
-          connecter le domaine à la boutique.
+          Le Concédant peut effectuer la configuration technique nécessaire afin de connecter le
+          domaine à la boutique.
         </p>
         <p>Le Concédant n&apos;acquiert aucun droit de propriété sur le domaine du Client.</p>
         <p>
-          Le renouvellement du domaine relève de la responsabilité du Client, sauf accord
-          contraire écrit.
+          Le renouvellement du domaine relève de la responsabilité du Client, sauf accord contraire
+          écrit.
         </p>
       </Section>
 
@@ -270,8 +270,8 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          Certaines personnalisations ou modifications spécifiques peuvent être
-          considérées comme des prestations supplémentaires.
+          Certaines personnalisations ou modifications spécifiques peuvent être considérées comme
+          des prestations supplémentaires.
         </p>
       </Section>
 
@@ -290,13 +290,12 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          Le délai annoncé de mise en ligne est de <strong>24 heures maximum</strong>, à
-          compter de la réception de toutes les informations nécessaires fournies par le
-          Client.
+          Le délai annoncé de mise en ligne est de <strong>24 heures maximum</strong>, à compter de
+          la réception de toutes les informations nécessaires fournies par le Client.
         </p>
         <p>
-          Le délai peut être prolongé lorsque le Client ne fournit pas les informations,
-          contenus, accès ou éléments nécessaires.
+          Le délai peut être prolongé lorsque le Client ne fournit pas les informations, contenus,
+          accès ou éléments nécessaires.
         </p>
       </Section>
 
@@ -306,7 +305,11 @@ export function LicenseContractDocument({
         applicable={boutique.licenseType === "MONTHLY"}
       >
         <p>La formule mensuelle est souscrite pour une période d&apos;un mois renouvelable.</p>
-        <p>Le Client règle : frais d&apos;installation {money(LICENSE_PRICING.MONTHLY.installationFee)}, puis licence {money(LICENSE_PRICING.MONTHLY.recurringFee)} par mois.</p>
+        <p>
+          Le Client règle : frais d&apos;installation{" "}
+          {money(LICENSE_PRICING.MONTHLY.installationFee)}, puis licence{" "}
+          {money(LICENSE_PRICING.MONTHLY.recurringFee)} par mois.
+        </p>
         <p>La licence reste active tant que les paiements requis sont effectués.</p>
       </PricingSection>
 
@@ -316,7 +319,11 @@ export function LicenseContractDocument({
         applicable={boutique.licenseType === "YEARLY"}
       >
         <p>La formule annuelle est souscrite pour une période de douze mois.</p>
-        <p>Le Client règle : frais d&apos;installation {money(LICENSE_PRICING.YEARLY.installationFee)}, puis licence {money(LICENSE_PRICING.YEARLY.recurringFee)} par an.</p>
+        <p>
+          Le Client règle : frais d&apos;installation{" "}
+          {money(LICENSE_PRICING.YEARLY.installationFee)}, puis licence{" "}
+          {money(LICENSE_PRICING.YEARLY.recurringFee)} par an.
+        </p>
         <p>La licence est valable pendant la période annuelle souscrite.</p>
       </PricingSection>
 
@@ -326,26 +333,29 @@ export function LicenseContractDocument({
         applicable={boutique.licenseType === "PERPETUAL"}
       >
         <p>
-          Frais d&apos;installation {money(LICENSE_PRICING.PERPETUAL.installationFee)},
-          licence {money(LICENSE_PRICING.PERPETUAL.recurringFee)}, total initial{" "}
+          Frais d&apos;installation {money(LICENSE_PRICING.PERPETUAL.installationFee)}, licence{" "}
+          {money(LICENSE_PRICING.PERPETUAL.recurringFee)}, total initial{" "}
           {money(
             LICENSE_PRICING.PERPETUAL.installationFee + LICENSE_PRICING.PERPETUAL.recurringFee,
           )}
           .
         </p>
         <p>
-          Cette licence accorde au Client un droit d&apos;utilisation permanent de la
-          Boutique concernée.
+          Cette licence accorde au Client un droit d&apos;utilisation permanent de la Boutique
+          concernée.
         </p>
         <p>La licence définitive ne constitue pas une cession du logiciel SOLAL.</p>
-        <p>Le code source et les droits de propriété intellectuelle restent la propriété du Concédant.</p>
+        <p>
+          Le code source et les droits de propriété intellectuelle restent la propriété du
+          Concédant.
+        </p>
       </PricingSection>
 
       <Section n={14} title="Mises à jour">
         <p>Les mises à jour courantes peuvent être incluses dans les formules d&apos;abonnement.</p>
         <p>
-          Les mises à jour majeures ou nouvelles versions importantes peuvent être
-          facturées séparément pour les licences définitives.
+          Les mises à jour majeures ou nouvelles versions importantes peuvent être facturées
+          séparément pour les licences définitives.
         </p>
         <p>Une mise à jour majeure peut notamment correspondre à :</p>
         <List
@@ -356,7 +366,9 @@ export function LicenseContractDocument({
             "une modification substantielle de la plateforme.",
           ]}
         />
-        <p>Le Concédant peut définir les modalités et tarifs applicables aux mises à jour majeures.</p>
+        <p>
+          Le Concédant peut définir les modalités et tarifs applicables aux mises à jour majeures.
+        </p>
       </Section>
 
       <Section n={15} title="Fonctionnalités et options">
@@ -370,7 +382,10 @@ export function LicenseContractDocument({
             "les conditions commerciales.",
           ]}
         />
-        <p>Le Concédant peut proposer de nouvelles fonctionnalités sous forme d&apos;options payantes.</p>
+        <p>
+          Le Concédant peut proposer de nouvelles fonctionnalités sous forme d&apos;options
+          payantes.
+        </p>
       </Section>
 
       <Section n={16} title="Services supplémentaires">
@@ -387,7 +402,10 @@ export function LicenseContractDocument({
           ]}
         />
         <p>Ces services peuvent faire l&apos;objet d&apos;un devis séparé.</p>
-        <p>Aucun développement spécifique n&apos;est considéré comme inclus dans la licence sans accord écrit.</p>
+        <p>
+          Aucun développement spécifique n&apos;est considéré comme inclus dans la licence sans
+          accord écrit.
+        </p>
       </Section>
 
       <Section n={17} title="Support">
@@ -430,30 +448,28 @@ export function LicenseContractDocument({
           ]}
         />
         <p>
-          Le Concédant doit mettre en œuvre des mesures raisonnables destinées à protéger
-          les données contre les accès non autorisés.
+          Le Concédant doit mettre en œuvre des mesures raisonnables destinées à protéger les
+          données contre les accès non autorisés.
         </p>
         <p>
-          Le Client reste responsable de la légalité et de l&apos;exactitude des données
-          qu&apos;il introduit dans la plateforme.
+          Le Client reste responsable de la légalité et de l&apos;exactitude des données qu&apos;il
+          introduit dans la plateforme.
         </p>
       </Section>
 
       <Section n={19} title="Données personnelles">
         <p>
-          Lorsque la boutique permet de collecter des données personnelles de clients
-          finaux, le Client est responsable de l&apos;utilisation de ces données dans le
-          cadre de son activité.
+          Lorsque la boutique permet de collecter des données personnelles de clients finaux, le
+          Client est responsable de l&apos;utilisation de ces données dans le cadre de son activité.
         </p>
         <p>
-          Le Client doit notamment veiller à respecter les obligations légales
-          applicables à la collecte, au traitement, à la conservation et à
-          l&apos;utilisation des données personnelles.
+          Le Client doit notamment veiller à respecter les obligations légales applicables à la
+          collecte, au traitement, à la conservation et à l&apos;utilisation des données
+          personnelles.
         </p>
         <p>
-          Les responsabilités respectives du Client et du Concédant peuvent être
-          précisées dans une politique de confidentialité ou un accord spécifique
-          lorsque cela est nécessaire.
+          Les responsabilités respectives du Client et du Concédant peuvent être précisées dans une
+          politique de confidentialité ou un accord spécifique lorsque cela est nécessaire.
         </p>
       </Section>
 
@@ -470,15 +486,15 @@ export function LicenseContractDocument({
         />
         <p>Le Client ne doit pas tenter de contourner les mécanismes de sécurité de SOLAL.</p>
         <p>
-          Toute tentative d&apos;accès non autorisé à une autre boutique ou aux systèmes
-          internes peut entraîner la suspension de la licence.
+          Toute tentative d&apos;accès non autorisé à une autre boutique ou aux systèmes internes
+          peut entraîner la suspension de la licence.
         </p>
       </Section>
 
       <Section n={21} title="Suspension">
         <p>
-          Pour les licences mensuelles et annuelles, le Concédant peut suspendre la
-          boutique lorsque :
+          Pour les licences mensuelles et annuelles, le Concédant peut suspendre la boutique lorsque
+          :
         </p>
         <List
           items={[
@@ -489,27 +505,44 @@ export function LicenseContractDocument({
             "une utilisation présente un risque important pour la sécurité de la plateforme.",
           ]}
         />
-        <p>Lorsque cela est raisonnablement possible, le Client peut être informé avant la suspension.</p>
+        <p>
+          Lorsque cela est raisonnablement possible, le Client peut être informé avant la
+          suspension.
+        </p>
       </Section>
 
       <Section n={22} title="Période de grâce">
-        <p>Le Concédant peut prévoir une période de grâce après l&apos;échéance d&apos;un paiement.</p>
+        <p>
+          Le Concédant peut prévoir une période de grâce après l&apos;échéance d&apos;un paiement.
+        </p>
         <p>Pendant cette période, la boutique peut rester temporairement accessible.</p>
-        <p>À l&apos;issue de la période de grâce, la boutique peut être suspendue jusqu&apos;à régularisation.</p>
-        <p>La durée de la période de grâce peut être précisée dans l&apos;offre commerciale ou le contrat.</p>
+        <p>
+          À l&apos;issue de la période de grâce, la boutique peut être suspendue jusqu&apos;à
+          régularisation.
+        </p>
+        <p>
+          La durée de la période de grâce peut être précisée dans l&apos;offre commerciale ou le
+          contrat.
+        </p>
       </Section>
 
       <Section n={23} title="Réactivation">
         <p>
-          Une boutique suspendue pour défaut de paiement peut être réactivée après
-          régularisation des sommes dues.
+          Une boutique suspendue pour défaut de paiement peut être réactivée après régularisation
+          des sommes dues.
         </p>
         <p>Les conditions de réactivation peuvent dépendre de la durée de suspension.</p>
       </Section>
 
       <Section n={24} title="Résiliation par le Client">
-        <p>Pour une licence mensuelle, le Client peut demander la résiliation avant le prochain renouvellement.</p>
-        <p>Pour une licence annuelle, les conditions de résiliation sont celles prévues dans le contrat ou l&apos;offre souscrite.</p>
+        <p>
+          Pour une licence mensuelle, le Client peut demander la résiliation avant le prochain
+          renouvellement.
+        </p>
+        <p>
+          Pour une licence annuelle, les conditions de résiliation sont celles prévues dans le
+          contrat ou l&apos;offre souscrite.
+        </p>
         <p>
           La licence définitive ne peut pas être résiliée comme un abonnement récurrent
           puisqu&apos;elle correspond à un droit d&apos;utilisation permanent.
@@ -519,8 +552,8 @@ export function LicenseContractDocument({
 
       <Section n={25} title="Résiliation pour violation">
         <p>
-          Le Concédant peut mettre fin au droit d&apos;utilisation du Client en cas de
-          violation grave des présentes conditions.
+          Le Concédant peut mettre fin au droit d&apos;utilisation du Client en cas de violation
+          grave des présentes conditions.
         </p>
         <p>Sont notamment considérées comme graves :</p>
         <List
@@ -552,7 +585,9 @@ export function LicenseContractDocument({
       </Section>
 
       <Section n={27} title="Disponibilité du service">
-        <p>Le Concédant met en œuvre des moyens raisonnables pour maintenir le service disponible.</p>
+        <p>
+          Le Concédant met en œuvre des moyens raisonnables pour maintenir le service disponible.
+        </p>
         <p>Toutefois, une disponibilité permanente et sans interruption ne peut être garantie.</p>
         <p>Des interruptions peuvent notamment résulter :</p>
         <List
@@ -600,7 +635,10 @@ export function LicenseContractDocument({
             "de son activité commerciale.",
           ]}
         />
-        <p>SOLAL fournit l&apos;infrastructure technique et ne devient pas vendeur des produits proposés par le Client.</p>
+        <p>
+          SOLAL fournit l&apos;infrastructure technique et ne devient pas vendeur des produits
+          proposés par le Client.
+        </p>
       </Section>
 
       <Section n={30} title="Activités interdites">
@@ -630,27 +668,33 @@ export function LicenseContractDocument({
             "de nouvelles offres commerciales.",
           ]}
         />
-        <p>Les modifications importantes doivent être communiquées au Client dans des conditions raisonnables.</p>
+        <p>
+          Les modifications importantes doivent être communiquées au Client dans des conditions
+          raisonnables.
+        </p>
       </Section>
 
       <Section n={32} title="Droit applicable">
         <p>
-          Les présentes conditions sont soumises au droit applicable convenu entre les
-          parties dans le contrat de licence.
+          Les présentes conditions sont soumises au droit applicable convenu entre les parties dans
+          le contrat de licence.
         </p>
         <p>
-          Pour une commercialisation en Mauritanie, les parties peuvent prévoir
-          expressément le droit mauritanien et la juridiction compétente, sous réserve
-          des règles impératives applicables.
+          Pour une commercialisation en Mauritanie, les parties peuvent prévoir expressément le
+          droit mauritanien et la juridiction compétente, sous réserve des règles impératives
+          applicables.
         </p>
       </Section>
 
       <Section n={33} title="Acceptation">
         <p>
-          La souscription d&apos;une licence SOLAL implique que le Client reconnaît avoir
-          pris connaissance des présentes Conditions de Licence et les accepter.
+          La souscription d&apos;une licence SOLAL implique que le Client reconnaît avoir pris
+          connaissance des présentes Conditions de Licence et les accepter.
         </p>
-        <p>Le contrat ou bon de commande signé par les parties peut compléter ou préciser les présentes conditions.</p>
+        <p>
+          Le contrat ou bon de commande signé par les parties peut compléter ou préciser les
+          présentes conditions.
+        </p>
       </Section>
 
       <Section n={34} title="Informations contractuelles">
@@ -692,15 +736,7 @@ export function LicenseContractDocument({
   );
 }
 
-function Section({
-  n,
-  title,
-  children,
-}: {
-  n: number;
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2 print:break-inside-avoid">
       <h2 className="text-sm font-bold">

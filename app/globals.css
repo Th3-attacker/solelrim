@@ -127,8 +127,8 @@
      platform's native UI font as the fallback rather than a single
      generic web font for everyone. */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
   /* Pages sit on the muted tone and their panels (--card, --popover) are
      white — the checkout's look, now the whole app's. Components that need
      a surface of their own use bg-card, not bg-background. */

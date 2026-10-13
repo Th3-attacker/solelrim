@@ -36,9 +36,7 @@ export async function getRevenueByDay(productType: string, daysBack?: number) {
 // Ranked by units actually kept: a cancelled sale never counts, and units
 // already refunded are taken off, like the revenue figures above.
 export async function getBestSellers(productType: string, limit = 5) {
-  const rows = await prisma.$queryRaw<
-    { variantId: string; quantity: number; revenue: number }[]
-  >`
+  const rows = await prisma.$queryRaw<{ variantId: string; quantity: number; revenue: number }[]>`
     SELECT i."variantId",
            SUM(i."quantity" - i."refundedQuantity")::int AS quantity,
            SUM(i."lineTotal" * (i."quantity" - i."refundedQuantity") / i."quantity")::float AS revenue

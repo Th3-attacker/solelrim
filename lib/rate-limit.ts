@@ -72,9 +72,7 @@ export async function getClientIp(): Promise<string> {
   const forwardedFor = h.get("x-forwarded-for");
   if (forwardedFor) return forwardedFor.split(",")[0].trim();
 
-  const fingerprint = [h.get("user-agent"), h.get("accept-language")]
-    .filter(Boolean)
-    .join("|");
+  const fingerprint = [h.get("user-agent"), h.get("accept-language")].filter(Boolean).join("|");
   if (!fingerprint) return "unknown";
   return `unknown:${createHash("sha256").update(fingerprint).digest("hex").slice(0, 16)}`;
 }

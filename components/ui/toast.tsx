@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Toast as ToastPrimitive } from "@base-ui/react/toast"
-import { useTranslations } from "next-intl"
+import * as React from "react";
+import { Toast as ToastPrimitive } from "@base-ui/react/toast";
+import { useTranslations } from "next-intl";
 import {
   CheckCircle,
   InfoIcon,
@@ -10,19 +10,19 @@ import {
   XCircle,
   CircleNotch,
   X,
-} from "@phosphor-icons/react/dist/ssr"
+} from "@phosphor-icons/react/dist/ssr";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-const rawToastManager = ToastPrimitive.createToastManager()
+const rawToastManager = ToastPrimitive.createToastManager();
 
 function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
-  return <ToastPrimitive.Provider {...props} />
+  return <ToastPrimitive.Provider {...props} />;
 }
 
 function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
-  return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
+  return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />;
 }
 
 function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
@@ -37,11 +37,11 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
       // inside the cart sheet itself).
       className={cn(
         "pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto w-auto max-w-sm outline-none sm:end-4 sm:start-auto sm:mx-0 sm:w-full",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
@@ -64,11 +64,11 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
         "data-expanded:data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
         "data-expanded:data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
         "data-expanded:data-ending-style:data-[swipe-direction=up]:[transform:translateY(calc(var(--toast-swipe-movement-y)-150%))]",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
@@ -77,11 +77,11 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
       data-slot="toast-content"
       className={cn(
         "flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
@@ -91,20 +91,17 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
       className={cn("text-sm font-medium", className)}
       {...props}
     />
-  )
+  );
 }
 
-function ToastDescription({
-  className,
-  ...props
-}: ToastPrimitive.Description.Props) {
+function ToastDescription({ className, ...props }: ToastPrimitive.Description.Props) {
   return (
     <ToastPrimitive.Description
       data-slot="toast-description"
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
-  )
+  );
 }
 
 function ToastAction({
@@ -119,7 +116,7 @@ function ToastAction({
       className={cn("shrink-0", className)}
       {...props}
     />
-  )
+  );
 }
 
 function ToastClose({
@@ -128,7 +125,7 @@ function ToastClose({
   render = <Button variant="ghost" size="icon-sm" />,
   ...props
 }: ToastPrimitive.Close.Props) {
-  const t = useTranslations("common")
+  const t = useTranslations("common");
   return (
     <ToastPrimitive.Close
       data-slot="toast-close"
@@ -136,13 +133,13 @@ function ToastClose({
       render={render}
       className={cn(
         "relative shrink-0 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:text-foreground",
-        className
+        className,
       )}
       {...props}
     >
       {children ?? <X aria-hidden="true" />}
     </ToastPrimitive.Close>
-  )
+  );
 }
 
 const TOAST_ICONS: Record<string, React.ReactNode> = {
@@ -151,11 +148,11 @@ const TOAST_ICONS: Record<string, React.ReactNode> = {
   warning: <Warning className="size-4 text-warning" aria-hidden="true" />,
   error: <XCircle className="size-4 text-destructive" aria-hidden="true" />,
   loading: <CircleNotch className="size-4 animate-spin" aria-hidden="true" />,
-}
+};
 
 function ToastIcon({ type }: { type: string | undefined }) {
-  const icon = type ? TOAST_ICONS[type] : null
-  if (!icon) return null
+  const icon = type ? TOAST_ICONS[type] : null;
+  if (!icon) return null;
 
   return (
     <span
@@ -164,11 +161,11 @@ function ToastIcon({ type }: { type: string | undefined }) {
     >
       {icon}
     </span>
-  )
+  );
 }
 
 function ToastList() {
-  const { toasts } = ToastPrimitive.useToastManager()
+  const { toasts } = ToastPrimitive.useToastManager();
 
   return toasts.map((toastItem) => (
     <Toast key={toastItem.id} toast={toastItem}>
@@ -182,7 +179,7 @@ function ToastList() {
         <ToastClose />
       </ToastContent>
     </Toast>
-  ))
+  ));
 }
 
 function Toaster({
@@ -199,11 +196,11 @@ function Toaster({
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>
-  )
+  );
 }
 
-const createToastManager = ToastPrimitive.createToastManager
-const useToastManager = ToastPrimitive.useToastManager
+const createToastManager = ToastPrimitive.createToastManager;
+const useToastManager = ToastPrimitive.useToastManager;
 
 // Thin convenience layer over the raw manager (`toast.add`, `toast.close`,
 // `toast.update`, `toast.promise` are all still available) so call sites
@@ -215,7 +212,7 @@ const toast = Object.assign(rawToastManager, {
   warning: (description: string) => rawToastManager.add({ description, type: "warning" }),
   info: (description: string) => rawToastManager.add({ description, type: "info" }),
   loading: (description: string) => rawToastManager.add({ description, type: "loading" }),
-})
+});
 
 export {
   Toaster,
@@ -231,4 +228,4 @@ export {
   createToastManager,
   toast,
   useToastManager,
-}
+};

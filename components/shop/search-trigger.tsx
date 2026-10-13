@@ -7,12 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFocusWithin } from "@/hooks/use-focus-within";
 import {
@@ -59,8 +54,13 @@ export function SearchTrigger({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
-    useFocusWithin<HTMLDivElement>();
+  const {
+    ref,
+    focusWithin: keyboardOpen,
+    onFocus,
+    onBlur,
+    reset,
+  } = useFocusWithin<HTMLDivElement>();
   const viewportRect = useVisualViewport(keyboardOpen);
 
   const hasQuery = query.trim().length > 0;
@@ -97,7 +97,12 @@ export function SearchTrigger({
       startSearchTransition(async () => {
         let result;
         try {
-          result = await fetchProductSuggestions(productType, trimmed, MAX_PRODUCT_SUGGESTIONS, controller.signal);
+          result = await fetchProductSuggestions(
+            productType,
+            trimmed,
+            MAX_PRODUCT_SUGGESTIONS,
+            controller.signal,
+          );
         } catch {
           return; // superseded by a newer query
         }
@@ -207,13 +212,7 @@ export function SearchTrigger({
             {item.type === "product" ? (
               <div className="relative size-10 shrink-0 overflow-hidden rounded-md border bg-card">
                 {item.imageUrl && (
-                  <Image
-                    src={item.imageUrl}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
+                  <Image src={item.imageUrl} alt="" fill className="object-cover" sizes="40px" />
                 )}
               </div>
             ) : (
@@ -280,11 +279,7 @@ export function SearchTrigger({
             side="bottom"
             showHandle
             overlayClassName="bg-popover/50 supports-backdrop-filter:backdrop-blur-lg"
-            style={
-              keyboardOpen
-                ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
-                : undefined
-            }
+            style={keyboardOpen ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET) : undefined}
             className={cn(
               "flex flex-col gap-0 rounded-t-2xl transition-all duration-150 ease-out",
               !keyboardOpen && "max-h-[88svh]",

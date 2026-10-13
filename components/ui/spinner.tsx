@@ -1,12 +1,18 @@
-import { useTranslations } from "next-intl"
-import { cn } from "@/lib/utils"
-import { CircleNotch } from "@phosphor-icons/react/dist/ssr"
+import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
+import { CircleNotch } from "@phosphor-icons/react/dist/ssr";
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
-  const t = useTranslations("common")
+  const t = useTranslations("common");
   return (
-    <CircleNotch data-slot="spinner" role="status" aria-label={t("loading")} className={cn("size-4 animate-spin", className)} {...props} />
-  )
+    <CircleNotch
+      data-slot="spinner"
+      role="status"
+      aria-label={t("loading")}
+      className={cn("size-4 animate-spin", className)}
+      {...props}
+    />
+  );
 }
 
-export { Spinner }
+export { Spinner };

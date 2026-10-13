@@ -27,17 +27,14 @@ const statusAlertVariants = cva(
           "border-warning/35 bg-warning/10 text-[color-mix(in_oklch,var(--warning),black_45%)] dark:border-warning/40 dark:bg-warning/15 dark:text-[color-mix(in_oklch,var(--warning),white_20%)]",
         error:
           "border-destructive/30 bg-destructive/10 text-[color-mix(in_oklch,var(--destructive),black_35%)] dark:border-destructive/40 dark:bg-destructive/15 dark:text-[color-mix(in_oklch,var(--destructive),white_20%)]",
-        info:
-          "border-info/30 bg-info/10 text-[color-mix(in_oklch,var(--info),black_35%)] dark:border-info/40 dark:bg-info/15 dark:text-[color-mix(in_oklch,var(--info),white_20%)]",
+        info: "border-info/30 bg-info/10 text-[color-mix(in_oklch,var(--info),black_35%)] dark:border-info/40 dark:bg-info/15 dark:text-[color-mix(in_oklch,var(--info),white_20%)]",
       },
     },
     defaultVariants: { variant: "info" },
   },
 );
 
-type StatusAlertVariant = NonNullable<
-  VariantProps<typeof statusAlertVariants>["variant"]
->;
+type StatusAlertVariant = NonNullable<VariantProps<typeof statusAlertVariants>["variant"]>;
 
 const ICONS: Record<StatusAlertVariant, React.ElementType> = {
   success: CheckCircle,

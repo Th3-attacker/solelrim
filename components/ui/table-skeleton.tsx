@@ -8,13 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export function TableSkeleton({
-  columns,
-  rows = 6,
-}: {
-  columns: number;
-  rows?: number;
-}) {
+export function TableSkeleton({ columns, rows = 6 }: { columns: number; rows?: number }) {
   return (
     <Table>
       <TableHeader>

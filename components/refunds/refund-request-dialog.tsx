@@ -47,8 +47,7 @@ export function RefundRequestDialog({
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [reason, setReason] = useState("");
 
-  const remaining = (line: RefundableLine) =>
-    line.quantity - line.refundedQuantity;
+  const remaining = (line: RefundableLine) => line.quantity - line.refundedQuantity;
   const refundableLines = lines.filter((line) => remaining(line) > 0);
   const qty = (id: string) => {
     const value = Number(quantities[id] ?? "0");
@@ -78,12 +77,7 @@ export function RefundRequestDialog({
 
   function selectAll() {
     setQuantities(
-      Object.fromEntries(
-        refundableLines.map((line) => [
-          line.saleItemId,
-          String(remaining(line)),
-        ]),
-      ),
+      Object.fromEntries(refundableLines.map((line) => [line.saleItemId, String(remaining(line))])),
     );
   }
 
@@ -124,19 +118,10 @@ export function RefundRequestDialog({
       description={t("requestHint")}
       footer={
         <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-          >
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
             {tCommon("cancel")}
           </Button>
-          <Button
-            type="button"
-            loading={pending}
-            disabled={!valid}
-            onClick={handleSubmit}
-          >
+          <Button type="button" loading={pending} disabled={!valid} onClick={handleSubmit}>
             {t("requestSubmit")}
           </Button>
         </>
@@ -154,15 +139,11 @@ export function RefundRequestDialog({
         </Button>
         <ul className="flex flex-col gap-3">
           {refundableLines.map((line) => (
-            <li
-              key={line.saleItemId}
-              className="flex items-center justify-between gap-3"
-            >
+            <li key={line.saleItemId} className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 flex-col text-sm">
                 <span className="truncate font-medium">{line.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {line.size} · {line.color} ·{" "}
-                  {t("refundableOf", { count: remaining(line) })}
+                  {line.size} · {line.color} · {t("refundableOf", { count: remaining(line) })}
                 </span>
               </div>
               <Input

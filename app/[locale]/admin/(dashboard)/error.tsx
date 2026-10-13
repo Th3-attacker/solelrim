@@ -47,12 +47,19 @@ export default function DashboardError({
         />
       );
     case "forbidden":
-      return <StateMessage heading="h1" icon={Warning} title={t("forbiddenTitle")} message={t("forbiddenMessage")} />;
+      return (
+        <StateMessage
+          heading="h1"
+          icon={Warning}
+          title={t("forbiddenTitle")}
+          message={t("forbiddenMessage")}
+        />
+      );
   }
 
   return (
     <StateMessage
-          heading="h1"
+      heading="h1"
       icon={Warning}
       title={t("errorTitle")}
       message={t("errorMessage")}

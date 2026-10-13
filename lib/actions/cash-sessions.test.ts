@@ -31,7 +31,10 @@ function decimal(value: number) {
   return { toNumber: () => value, valueOf: () => value };
 }
 
-function signedInAs(role: "BOUTIQUE_ADMIN" | "SELLER", id = role === "SELLER" ? "seller-1" : "admin-1") {
+function signedInAs(
+  role: "BOUTIQUE_ADMIN" | "SELLER",
+  id = role === "SELLER" ? "seller-1" : "admin-1",
+) {
   createClientMock.mockResolvedValue({
     auth: {
       getUser: vi
@@ -60,8 +63,18 @@ function license(status: "ACTIVE" | "SUSPENDED") {
 // A till holding 1 000 float + 1 500 cash sales + 200 in − 100 out = 2 600.
 function tillFigures() {
   (prismaMock.sale.groupBy as unknown as Mock).mockResolvedValue([
-    { paymentMethod: "cash", walletProvider: null, _sum: { total: decimal(1500) }, _count: { _all: 2 } },
-    { paymentMethod: "wallet", walletProvider: "Bankily", _sum: { total: decimal(800) }, _count: { _all: 1 } },
+    {
+      paymentMethod: "cash",
+      walletProvider: null,
+      _sum: { total: decimal(1500) },
+      _count: { _all: 2 },
+    },
+    {
+      paymentMethod: "wallet",
+      walletProvider: "Bankily",
+      _sum: { total: decimal(800) },
+      _count: { _all: 1 },
+    },
   ]);
   (prismaMock.cashMovement.groupBy as unknown as Mock).mockResolvedValue([
     { type: "IN", _sum: { amount: decimal(200) } },

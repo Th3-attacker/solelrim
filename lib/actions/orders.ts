@@ -22,7 +22,11 @@ import {
 // lib/services/orders.ts, shared with the app's API routes; these are the
 // website's entry points to it.
 
-export type { PlaceOrderResult as SubmitOrderResult, TrackOrderResult, TrackedOrderItem } from "@/lib/services/orders";
+export type {
+  PlaceOrderResult as SubmitOrderResult,
+  TrackOrderResult,
+  TrackedOrderItem,
+} from "@/lib/services/orders";
 
 export async function submitOrder(
   formData: FormData,
@@ -35,10 +39,7 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   return lookUpOrder(input);
 }
 
-
-export async function confirmOrder(
-  orderId: string,
-): Promise<{ error?: string }> {
+export async function confirmOrder(orderId: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
@@ -59,10 +60,7 @@ export async function confirmOrder(
       });
     });
   } catch (err) {
-    if (
-      err instanceof Error &&
-      ["notFound", "notPending"].includes(err.message)
-    ) {
+    if (err instanceof Error && ["notFound", "notPending"].includes(err.message)) {
       return { error: err.message };
     }
     throw err;
@@ -84,10 +82,7 @@ export async function confirmOrder(
   return {};
 }
 
-export async function rejectOrder(
-  orderId: string,
-  reason: string,
-): Promise<{ error?: string }> {
+export async function rejectOrder(orderId: string, reason: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
@@ -165,9 +160,7 @@ export async function rejectOrder(
   return {};
 }
 
-export async function shipOrder(
-  orderId: string,
-): Promise<{ error?: string }> {
+export async function shipOrder(orderId: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
 
   const updated = await prisma.order.updateMany({
@@ -202,9 +195,7 @@ export async function shipOrder(
 // the featured set, everyone else loses the badge.
 const BEST_SELLER_COUNT = 5;
 
-export async function deliverOrder(
-  orderId: string,
-): Promise<{ error?: string }> {
+export async function deliverOrder(orderId: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
@@ -301,10 +292,7 @@ export async function deliverOrder(
       if (attempt >= 3) throw new Error("referenceCollision");
     });
   } catch (err) {
-    if (
-      err instanceof Error &&
-      ["invalidTransition", "referenceCollision"].includes(err.message)
-    ) {
+    if (err instanceof Error && ["invalidTransition", "referenceCollision"].includes(err.message)) {
       return { error: err.message };
     }
     throw err;
@@ -324,10 +312,7 @@ export async function deliverOrder(
   return {};
 }
 
-export async function cancelOrder(
-  orderId: string,
-  reason: string,
-): Promise<{ error?: string }> {
+export async function cancelOrder(orderId: string, reason: string): Promise<{ error?: string }> {
   const { admin, productType } = await requireWritableAdminScope();
   let orderReference = orderId;
 
@@ -381,10 +366,7 @@ export async function cancelOrder(
       }
     });
   } catch (err) {
-    if (
-      err instanceof Error &&
-      ["notFound", "invalidTransition"].includes(err.message)
-    ) {
+    if (err instanceof Error && ["notFound", "invalidTransition"].includes(err.message)) {
       return { error: err.message };
     }
     throw err;

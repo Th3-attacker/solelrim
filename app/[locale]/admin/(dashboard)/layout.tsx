@@ -7,11 +7,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { LicenseWarningBanner } from "@/components/settings/license-warning-banner";
 import { LiveOrders } from "@/components/dashboard/live-orders";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getAdminScope } from "@/lib/auth/scope";
 import { getStoreTypes } from "@/lib/queries/settings";
@@ -25,17 +21,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [storeTypes, admin] = await Promise.all([getStoreTypes(), getCurrentAdmin()]);
   // getAdminScope() refuses a SELLER (it guards every admin data page), but
   // this layout also wraps the checkout a seller does use — a seller's
   // scope is simply their own locked boutique.
-  const currentScope =
-    admin.role === "SELLER" ? admin.productType! : await getAdminScope();
+  const currentScope = admin.role === "SELLER" ? admin.productType! : await getAdminScope();
   // getSessionUser is the request's cached getUser(): getCurrentAdmin above
   // already made that round trip to Supabase Auth.
   const [user, pendingOrderCount, pendingRefundCount] = await Promise.all([

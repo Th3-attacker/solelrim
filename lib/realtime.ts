@@ -28,7 +28,9 @@ export async function notifyOrdersChanged(productType: string): Promise<void> {
       signal: AbortSignal.timeout(3000),
     });
     if (!response.ok) {
-      reportError("notifyOrdersChanged", new Error(`Realtime answered ${response.status}`), { productType });
+      reportError("notifyOrdersChanged", new Error(`Realtime answered ${response.status}`), {
+        productType,
+      });
     }
   } catch (error) {
     // The dashboards still catch up through their fallback refresh.

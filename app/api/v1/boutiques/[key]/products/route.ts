@@ -30,7 +30,10 @@ async function get(request: Request, ctx: { params: Promise<{ key: string }> }) 
 
   if (query) {
     if (query.length > 100) return fail("invalid", 400);
-    const wait = await rateLimitRetryAfter(`api-search:${await getClientIp()}`, RATE_LIMITS.searchPerIp);
+    const wait = await rateLimitRetryAfter(
+      `api-search:${await getClientIp()}`,
+      RATE_LIMITS.searchPerIp,
+    );
     if (wait !== null) return fail("rateLimited", 429, { "Retry-After": String(wait) });
   }
 
@@ -73,8 +76,15 @@ async function get(request: Request, ctx: { params: Promise<{ key: string }> }) 
     });
   }
 
-  const { items, total } = await getActiveProductsPage(boutique.key, { categoryId, page, pageSize });
-  return ok({ products: items.map(serializeProductSummary), page, pageSize, total }, { cache: true });
+  const { items, total } = await getActiveProductsPage(boutique.key, {
+    categoryId,
+    page,
+    pageSize,
+  });
+  return ok(
+    { products: items.map(serializeProductSummary), page, pageSize, total },
+    { cache: true },
+  );
 }
 
 export const GET = withApi(get);

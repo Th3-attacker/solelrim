@@ -75,9 +75,7 @@ export function ProductImageManager({
         toast.error(tCommon("error"));
         return;
       }
-      setItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, color } : i)),
-      );
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, color } : i)));
     });
   }
 

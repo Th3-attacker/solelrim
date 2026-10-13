@@ -22,7 +22,12 @@ export type LoyaltyCardResult = {
 
 const CARD_SELECT = { id: true, fullName: true, phone: true, loyaltyPoints: true } as const;
 
-function toCard(client: { id: string; fullName: string; phone: string | null; loyaltyPoints: number }) {
+function toCard(client: {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  loyaltyPoints: number;
+}) {
   return {
     clientId: client.id,
     name: client.fullName,

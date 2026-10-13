@@ -454,7 +454,11 @@ describe("createPosSale with a loyalty card", () => {
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.client.findFirst).toHaveBeenCalledWith({
-      where: { id: "client-elsewhere", productType: "cosmetique", loyaltyEnrolledAt: { not: null } },
+      where: {
+        id: "client-elsewhere",
+        productType: "cosmetique",
+        loyaltyEnrolledAt: { not: null },
+      },
       select: { id: true },
     });
     expect(prismaMock.sale.create).not.toHaveBeenCalled();

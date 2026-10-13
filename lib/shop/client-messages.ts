@@ -32,7 +32,7 @@ function resolveLocale(locale: string | null | undefined): SupportedLocale {
 // order detail page (which redisplays a stored reason), and
 // resolveReasonLabel below. A free-typed ("other") reason has no entry here
 // and is shown/sent as whatever text the admin wrote.
-export const REASON_LABEL_KEY: Record<string, keyof typeof MESSAGE_BUNDLES["fr"]["orders"]> = {
+export const REASON_LABEL_KEY: Record<string, keyof (typeof MESSAGE_BUNDLES)["fr"]["orders"]> = {
   invalid_payment: "reasonInvalidPayment",
   out_of_stock: "reasonOutOfStock",
   undeliverable_location: "reasonUndeliverableLocation",

@@ -59,7 +59,10 @@ export default async function SessionDetailPage({
             })}
             {session.closedAt &&
               ` · ${t("closedAt", {
-                date: format.dateTime(session.closedAt, { dateStyle: "medium", timeStyle: "short" }),
+                date: format.dateTime(session.closedAt, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }),
               })}`}
           </p>
         </div>
@@ -82,7 +85,9 @@ export default async function SessionDetailPage({
               <dl className="flex flex-col gap-1 border-t pt-3 text-sm tabular-nums">
                 <div className="flex justify-between gap-2">
                   <dt>{t("countedCash")}</dt>
-                  <dd dir="ltr">{session.countedCash === null ? "—" : money(session.countedCash)}</dd>
+                  <dd dir="ltr">
+                    {session.countedCash === null ? "—" : money(session.countedCash)}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-2 font-semibold">
                   <dt>{t("difference")}</dt>
@@ -92,7 +97,8 @@ export default async function SessionDetailPage({
                 </div>
                 {(session.autoClosed || session.closingNote) && (
                   <p className="mt-1 text-muted-foreground">
-                    {t("closingNote")}: {session.autoClosed ? t("autoClosedNote") : session.closingNote}
+                    {t("closingNote")}:{" "}
+                    {session.autoClosed ? t("autoClosedNote") : session.closingNote}
                   </p>
                 )}
               </dl>

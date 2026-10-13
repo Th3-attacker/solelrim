@@ -79,9 +79,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("confirmActionConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("confirmActionDescription")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("confirmActionDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
@@ -104,11 +102,7 @@ export function OrderActions({ orderId }: { orderId: string }) {
         description={t("rejectReasonLabel")}
         footer={
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRejectOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setRejectOpen(false)}>
               {tCommon("cancel")}
             </Button>
             <Button

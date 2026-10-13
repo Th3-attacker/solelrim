@@ -73,12 +73,8 @@ export default async function AdminClientsPage({
                     {client.fullName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {client.phone}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {client.email}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{client.phone}</TableCell>
+                <TableCell className="text-muted-foreground">{client.email}</TableCell>
               </TableRow>
             ))}
           </TableBody>

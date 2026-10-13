@@ -12,9 +12,7 @@ export type ApplyPromoCodeResult =
 // touches usedCount. submitOrder re-validates the same code from scratch
 // inside its own transaction and is the only place one is actually
 // consumed, so this preview is UX sugar, not a security boundary.
-export async function previewPromoCode(
-  input: unknown,
-): Promise<ApplyPromoCodeResult> {
+export async function previewPromoCode(input: unknown): Promise<ApplyPromoCodeResult> {
   const ip = await getClientIp();
   const ipWait = await rateLimitRetryAfter(`promo:${ip}`, RATE_LIMITS.promoPerIp);
   if (ipWait !== null) {

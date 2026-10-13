@@ -274,9 +274,7 @@ describe("setAdminCanManageAppearance", () => {
   it("rejects a BOUTIQUE_ADMIN caller", async () => {
     asBoutiqueAdmin();
 
-    await expect(setAdminCanManageAppearance("target-id", true)).rejects.toThrow(
-      "forbidden",
-    );
+    await expect(setAdminCanManageAppearance("target-id", true)).rejects.toThrow("forbidden");
     expect(prismaMock.adminUser.update).not.toHaveBeenCalled();
   });
 

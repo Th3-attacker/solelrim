@@ -48,8 +48,18 @@ describe("getMySales", () => {
   it("totals only completed sales, with cash and each wallet apart", async () => {
     prismaMock.sale.count.mockResolvedValue(5);
     groupByMock.mockResolvedValue([
-      { paymentMethod: "cash", walletProvider: null, _sum: { total: decimal(3000) }, _count: { _all: 2 } },
-      { paymentMethod: "wallet", walletProvider: "Masrvi", _sum: { total: decimal(1250.5) }, _count: { _all: 2 } },
+      {
+        paymentMethod: "cash",
+        walletProvider: null,
+        _sum: { total: decimal(3000) },
+        _count: { _all: 2 },
+      },
+      {
+        paymentMethod: "wallet",
+        walletProvider: "Masrvi",
+        _sum: { total: decimal(1250.5) },
+        _count: { _all: 2 },
+      },
     ]);
 
     const { summary } = await getMySales("sport", "seller-1", parseMySalesFilters({}));

@@ -38,13 +38,7 @@ type Variant = {
 
 type SaleFormValues = z.input<typeof saleSchema>;
 
-export function SaleForm({
-  clients,
-  variants,
-}: {
-  clients: Client[];
-  variants: Variant[];
-}) {
+export function SaleForm({ clients, variants }: { clients: Client[]; variants: Variant[] }) {
   const t = useTranslations("sales");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -105,9 +99,7 @@ export function SaleForm({
             <Label>{t("client")}</Label>
             <Select
               value={(clientId as string | null) ?? "__walkin__"}
-              onValueChange={(value) =>
-                setValue("clientId", value === "__walkin__" ? null : value)
-              }
+              onValueChange={(value) => setValue("clientId", value === "__walkin__" ? null : value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -125,12 +117,7 @@ export function SaleForm({
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="discount">{t("discount")}</Label>
-            <Input
-              id="discount"
-              type="number"
-              step="0.01"
-              {...register("discount")}
-            />
+            <Input id="discount" type="number" step="0.01" {...register("discount")} />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -176,17 +163,12 @@ export function SaleForm({
           </div>
 
           {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="grid grid-cols-1 items-end gap-2 sm:grid-cols-6"
-            >
+            <div key={field.id} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-6">
               <div className="flex flex-col gap-1 sm:col-span-4">
                 <Label className="text-xs">{t("selectVariant")}</Label>
                 <Select
                   value={watchedItems[index]?.variantId}
-                  onValueChange={(value) =>
-                    setValue(`items.${index}.variantId`, value)
-                  }
+                  onValueChange={(value) => setValue(`items.${index}.variantId`, value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -194,8 +176,8 @@ export function SaleForm({
                   <SelectContent>
                     {variants.map((variant) => (
                       <SelectItem key={variant.id} value={variant.id}>
-                        {variant.productName} — {variant.size}/{variant.color} (
-                        {variant.stock}) — {formatPrice(variant.price, tCommon("currency"))}
+                        {variant.productName} — {variant.size}/{variant.color} ({variant.stock}) —{" "}
+                        {formatPrice(variant.price, tCommon("currency"))}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -204,11 +186,7 @@ export function SaleForm({
               <div className="flex items-end gap-2 sm:col-span-2">
                 <div className="flex flex-1 flex-col gap-1">
                   <Label className="text-xs">{t("quantity")}</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    {...register(`items.${index}.quantity`)}
-                  />
+                  <Input type="number" min={1} {...register(`items.${index}.quantity`)} />
                 </div>
                 <Button
                   type="button"
@@ -224,9 +202,7 @@ export function SaleForm({
             </div>
           ))}
 
-          {errors.items?.root && (
-            <FieldError>{tCommon("requiredField")}</FieldError>
-          )}
+          {errors.items?.root && <FieldError>{tCommon("requiredField")}</FieldError>}
 
           <div className="flex justify-end text-sm font-medium">
             {t("total")}: {formatPrice(total, tCommon("currency"))}

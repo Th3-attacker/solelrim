@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
-import {
-  createSocialLink,
-  deleteSocialLink,
-  moveSocialLink,
-} from "@/lib/actions/social-links";
+import { createSocialLink, deleteSocialLink, moveSocialLink } from "@/lib/actions/social-links";
 
 type SocialLink = { id: string; platform: string; url: string };
 

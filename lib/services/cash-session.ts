@@ -4,11 +4,7 @@ import type {
   TransactionClient,
 } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { prisma } from "@/lib/prisma";
-import {
-  computeSessionTotals,
-  type PaymentGroup,
-  type SessionTotals,
-} from "@/lib/shop/cash";
+import { computeSessionTotals, type PaymentGroup, type SessionTotals } from "@/lib/shop/cash";
 import { reportError } from "@/lib/report-error";
 
 // Not a "use server" module: these take ids and productType as plain
@@ -26,10 +22,7 @@ async function walletProviders(db: Db, productType: string): Promise<string[]> {
   return wallets.map((wallet) => wallet.provider);
 }
 
-async function paymentGroups(
-  db: Db,
-  where: { cashSessionId: string },
-): Promise<PaymentGroup[]> {
+async function paymentGroups(db: Db, where: { cashSessionId: string }): Promise<PaymentGroup[]> {
   const groups = await db.sale.groupBy({
     by: ["paymentMethod", "walletProvider"],
     // A refunded sale was still sold: its refund leaves the till on its
@@ -46,10 +39,7 @@ async function paymentGroups(
   }));
 }
 
-async function movementSums(
-  db: Db,
-  where: { sessionId: string },
-) {
+async function movementSums(db: Db, where: { sessionId: string }) {
   const rows = await db.cashMovement.groupBy({
     by: ["type"],
     where,

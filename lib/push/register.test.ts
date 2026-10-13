@@ -41,7 +41,9 @@ describe("registerPushToken", () => {
   });
 
   it("refuses something that isn't an Expo token", async () => {
-    expect(await registerPushToken("sport", { ...valid, token: "not-a-token" })).toEqual({ error: "invalid" });
+    expect(await registerPushToken("sport", { ...valid, token: "not-a-token" })).toEqual({
+      error: "invalid",
+    });
     expect(prismaMock.pushToken.upsert).not.toHaveBeenCalled();
   });
 
@@ -55,7 +57,10 @@ describe("registerPushToken", () => {
   it("is rate-limited per IP and says how long to wait", async () => {
     rateLimitMock.mockResolvedValue(120);
 
-    expect(await registerPushToken("sport", valid)).toEqual({ error: "rateLimited", retryAfter: 120 });
+    expect(await registerPushToken("sport", valid)).toEqual({
+      error: "rateLimited",
+      retryAfter: 120,
+    });
     expect(rateLimitMock).toHaveBeenCalledWith("push:1.2.3.4", RATE_LIMITS.pushPerIp);
   });
 
@@ -66,7 +71,9 @@ describe("registerPushToken", () => {
 
     await registerPushToken("sport", valid);
 
-    expect(prismaMock.pushToken.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ["f", "g"] } } });
+    expect(prismaMock.pushToken.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["f", "g"] } },
+    });
   });
 });
 

@@ -61,7 +61,10 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     });
     if (!response.ok) {
-      reportError("sendOrderPush", new Error(`Expo answered ${response.status}`), { orderId, event });
+      reportError("sendOrderPush", new Error(`Expo answered ${response.status}`), {
+        orderId,
+        event,
+      });
       return;
     }
 

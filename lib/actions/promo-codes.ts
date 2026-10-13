@@ -9,9 +9,7 @@ import { previewPromoCode as preview, type ApplyPromoCodeResult } from "@/lib/se
 
 export type PromoCodeActionResult = { error?: string; promoCodeId?: string };
 
-export async function createPromoCode(
-  input: PromoCodeInput,
-): Promise<PromoCodeActionResult> {
+export async function createPromoCode(input: PromoCodeInput): Promise<PromoCodeActionResult> {
   const { productType } = await requireWritableAdminScope();
 
   // Server-side feature-flag check — a BOUTIQUE_ADMIN whose boutique has
@@ -112,9 +110,7 @@ export async function updatePromoCode(
   }
 }
 
-export async function deactivatePromoCode(
-  promoCodeId: string,
-): Promise<{ error?: string }> {
+export async function deactivatePromoCode(promoCodeId: string): Promise<{ error?: string }> {
   const { productType } = await requireWritableAdminScope();
 
   const updated = await prisma.promoCode.updateMany({

@@ -27,9 +27,7 @@ export function RenameCategoryDialog({
     startTransition(async () => {
       const result = await updateCategory(categoryId, name);
       if (result.error) {
-        toast.error(
-          result.error === "duplicateName" ? t("duplicateNameError") : tCommon("error"),
-        );
+        toast.error(result.error === "duplicateName" ? t("duplicateNameError") : tCommon("error"));
         return;
       }
       setOpen(false);
@@ -47,12 +45,7 @@ export function RenameCategoryDialog({
       }
       title={t("renameCategory")}
       footer={
-        <Button
-          type="button"
-          disabled={!name.trim()}
-          loading={pending}
-          onClick={handleRename}
-        >
+        <Button type="button" disabled={!name.trim()} loading={pending} onClick={handleRename}>
           {tCommon("save")}
         </Button>
       }

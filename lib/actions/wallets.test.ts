@@ -43,10 +43,7 @@ function asAdmin(productType = "cosmetique") {
   } as never);
 }
 
-function walletFormData(fields: {
-  provider?: string;
-  number?: string;
-}) {
+function walletFormData(fields: { provider?: string; number?: string }) {
   const fd = new FormData();
   if (fields.provider !== undefined) fd.set("provider", fields.provider);
   if (fields.number !== undefined) fd.set("number", fields.number);
@@ -114,7 +111,7 @@ describe("updateWalletAccount", () => {
       logoStoragePath: "branding/wallet-old.png",
     } as never);
     const remove = vi.fn().mockResolvedValue({});
-    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ remove } as never) } });
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ remove }) as never } });
     prismaMock.walletAccount.update.mockResolvedValue({} as never);
 
     const result = await updateWalletAccount(
@@ -167,7 +164,7 @@ describe("deleteWalletAccount", () => {
       logoStoragePath: "branding/wallet-old.png",
     } as never);
     const remove = vi.fn().mockResolvedValue({});
-    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ remove } as never) } });
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ remove }) as never } });
     prismaMock.walletAccount.deleteMany.mockResolvedValue({ count: 1 } as never);
 
     const result = await deleteWalletAccount("w-1");

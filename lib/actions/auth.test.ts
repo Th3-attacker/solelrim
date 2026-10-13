@@ -105,7 +105,9 @@ describe("login", () => {
   });
 
   it("rate-limits per account too, whatever the IP", async () => {
-    checkRateLimitMock.mockImplementation(async (key: string) => key !== "login-email:admin@example.com");
+    checkRateLimitMock.mockImplementation(
+      async (key: string) => key !== "login-email:admin@example.com",
+    );
 
     const result = await login(
       {},

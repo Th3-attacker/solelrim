@@ -96,9 +96,7 @@ export async function updateBoutiqueSettings(
   return {};
 }
 
-export async function uploadStoreLogo(
-  formData: FormData,
-): Promise<{ error?: string }> {
+export async function uploadStoreLogo(formData: FormData): Promise<{ error?: string }> {
   const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
@@ -131,9 +129,7 @@ export async function uploadStoreLogo(
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.logoStoragePath]);
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([existing.logoStoragePath]);
   }
 
   await prisma.storeType.update({
@@ -151,9 +147,7 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.logoStoragePath) {
     const supabase = createAdminClient();
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.logoStoragePath]);
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([existing.logoStoragePath]);
   }
 
   await prisma.storeType.update({
@@ -169,9 +163,7 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
 // is superadmin-only (like the SEO texts): it is the boutique's main image
 // on search results and shares. Same scope as updateBoutiqueSettings above. ---
 
-export async function uploadStoreHeroImage(
-  formData: FormData,
-): Promise<{ error?: string }> {
+export async function uploadStoreHeroImage(formData: FormData): Promise<{ error?: string }> {
   const { productType } = await requireWritableSuperAdminScope();
 
   const file = formData.get("file");
@@ -202,9 +194,7 @@ export async function uploadStoreHeroImage(
 
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.heroImagePath]);
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([existing.heroImagePath]);
   }
 
   await prisma.storeType.update({
@@ -222,9 +212,7 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
   const existing = await prisma.storeType.findUnique({ where: { key: productType } });
   if (existing?.heroImagePath) {
     const supabase = createAdminClient();
-    await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([existing.heroImagePath]);
+    await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([existing.heroImagePath]);
   }
 
   await prisma.storeType.update({
@@ -382,9 +370,7 @@ export async function setProductType(productType: string): Promise<{ error?: str
 // label (displayed as typed), no theme switch (keeps whatever is active),
 // and only the categories the admin lists here — no SUGGESTED_CATEGORIES
 // entry to draw from.
-export async function createProductType(
-  input: unknown,
-): Promise<{ error?: string }> {
+export async function createProductType(input: unknown): Promise<{ error?: string }> {
   await requireSuperAdmin();
 
   const parsed = productTypeInputSchema.safeParse(input);
@@ -683,9 +669,7 @@ export async function updateLicenseClientName(
 // SOLAL's own contact info for the same contract's section 34 — a single
 // row (SolalContact, "singleton"), so this never targets a boutique.
 // Superadmin-only, same as every other "infrastructure" field above.
-export async function updateSolalContact(
-  input: unknown,
-): Promise<{ error?: string }> {
+export async function updateSolalContact(input: unknown): Promise<{ error?: string }> {
   await requireSuperAdmin();
 
   const parsed = solalContactSchema.safeParse(input);

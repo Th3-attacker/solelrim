@@ -10,11 +10,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 const AUTO_SCROLL_INTERVAL_MS = 3500;
 const AUTO_SCROLL_STEP_PX = 280;
 
-export function FeaturedShowcaseScroller({
-  children,
-}: {
-  children: React.ReactNode[];
-}) {
+export function FeaturedShowcaseScroller({ children }: { children: React.ReactNode[] }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 

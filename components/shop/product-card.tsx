@@ -56,9 +56,7 @@ export function ProductCard({
 
   const badges = (
     [
-      promo && discountPercent
-        ? { key: "promo", label: `-${discountPercent}%` }
-        : null,
+      promo && discountPercent ? { key: "promo", label: `-${discountPercent}%` } : null,
       isNew ? { key: "new", label: t("newBadge") } : null,
       !promo && !isNew && product.isFeatured
         ? { key: "featured", label: t("bestSellerBadge") }
@@ -146,14 +144,8 @@ export function ProductCard({
 
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <span className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 text-sm">
-            {isRange && (
-              <span className="text-muted-foreground">{t("startingFrom")}</span>
-            )}
-            <Price
-              value={min}
-              currency={tCommon("currency")}
-              emphasize={promo}
-            />
+            {isRange && <span className="text-muted-foreground">{t("startingFrom")}</span>}
+            <Price value={min} currency={tCommon("currency")} emphasize={promo} />
             {promo && product.compareAtPrice && (
               <Price value={product.compareAtPrice} strikethrough />
             )}
@@ -174,21 +166,14 @@ export function ProductCard({
               />
             ))}
             {colors.length > MAX_SWATCHES && (
-              <span className="text-xs text-muted-foreground">
-                +{colors.length - MAX_SWATCHES}
-              </span>
+              <span className="text-xs text-muted-foreground">+{colors.length - MAX_SWATCHES}</span>
             )}
           </div>
         )}
 
         {cardVariant === "bordered" && !isOutOfStock && (
           <div className="mt-auto pt-1">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="relative z-10 w-full"
-            >
+            <Button asChild variant="outline" size="sm" className="relative z-10 w-full">
               <Link href={productHref}>{t("viewProduct")}</Link>
             </Button>
           </div>

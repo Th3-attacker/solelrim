@@ -25,10 +25,7 @@ export type LicenseInfo = {
 // derived purely from today's date (GRACE_PERIOD/EXPIRED). There's no cron
 // flipping a row to EXPIRED as its date passes — every caller re-derives
 // this fresh instead, so it can never go stale.
-export function getEffectiveLicenseState(
-  license: LicenseInfo,
-  now = new Date(),
-): LicenseStatus {
+export function getEffectiveLicenseState(license: LicenseInfo, now = new Date()): LicenseStatus {
   if (license.licenseStatus === "CANCELLED") return "CANCELLED";
   if (license.licenseStatus === "SUSPENDED") return "SUSPENDED";
 
@@ -51,11 +48,7 @@ export function getEffectiveLicenseState(
 // lib/auth/scope.ts (requireWritableAdminScope). GRACE_PERIOD is
 // deliberately excluded: it's a warning window before SUSPENDED/EXPIRED,
 // not a block in itself.
-const BLOCKING_STATES: ReadonlySet<LicenseStatus> = new Set([
-  "SUSPENDED",
-  "EXPIRED",
-  "CANCELLED",
-]);
+const BLOCKING_STATES: ReadonlySet<LicenseStatus> = new Set(["SUSPENDED", "EXPIRED", "CANCELLED"]);
 
 export function isLicenseBlocking(state: LicenseStatus): boolean {
   return BLOCKING_STATES.has(state);

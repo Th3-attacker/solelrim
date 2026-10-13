@@ -18,7 +18,9 @@ export async function checkVariantStocks(
   productType: string,
   variantIds: string[],
 ): Promise<
-  { stocks: Record<string, number> } | { error: "invalid" } | { error: "rateLimited"; retryAfter: number }
+  | { stocks: Record<string, number> }
+  | { error: "invalid" }
+  | { error: "rateLimited"; retryAfter: number }
 > {
   const parsed = inputSchema.safeParse({ productType, variantIds });
   if (!parsed.success) return { error: "invalid" };

@@ -41,7 +41,9 @@ function scope(filters: CatalogueFilters): Prisma.Sql {
   if (filters.categoryId) conditions.push(Prisma.sql`p."categoryId" = ${filters.categoryId}`);
   if (filters.query) {
     // Same match as searchActiveProducts (accent-insensitive).
-    conditions.push(Prisma.sql`unaccent(lower(p."name")) ILIKE unaccent(lower(${`%${filters.query}%`}))`);
+    conditions.push(
+      Prisma.sql`unaccent(lower(p."name")) ILIKE unaccent(lower(${`%${filters.query}%`}))`,
+    );
   }
   return Prisma.join(conditions, " AND ");
 }
@@ -96,7 +98,11 @@ const ORDER_BY: Record<CatalogueSort, Prisma.Sql> = {
   price_desc: Prisma.sql`${PRICE_MAX} DESC, p."createdAt" DESC, p."id" DESC`,
 };
 
-export function catalogueIdsSql(filters: CatalogueFilters, page: number, pageSize: number): Prisma.Sql {
+export function catalogueIdsSql(
+  filters: CatalogueFilters,
+  page: number,
+  pageSize: number,
+): Prisma.Sql {
   return Prisma.sql`
     SELECT p."id" FROM "Product" p
     WHERE ${matching(filters)}

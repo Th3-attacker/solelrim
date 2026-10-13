@@ -11,18 +11,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { cancelSale } from "@/lib/actions/sales";
 
-const KNOWN_ERRORS = new Set(["invalid", "notFound", "alreadyCancelled", "refunded", "pendingRefund"]);
+const KNOWN_ERRORS = new Set([
+  "invalid",
+  "notFound",
+  "alreadyCancelled",
+  "refunded",
+  "pendingRefund",
+]);
 
 // Voids a whole sale. The reason is mandatory and kept in the history; when
 // the sale's till is already closed the dialog warns that its frozen totals
 // won't follow.
-export function CancelSaleButton({
-  saleId,
-  tillClosed,
-}: {
-  saleId: string;
-  tillClosed: boolean;
-}) {
+export function CancelSaleButton({ saleId, tillClosed }: { saleId: string; tillClosed: boolean }) {
   const t = useTranslations("sales");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);

@@ -4,10 +4,7 @@ import { getAdminScope } from "@/lib/auth/scope";
 import { ProductForm } from "@/components/products/product-form";
 
 export default async function NewProductPage() {
-  const [t, productType] = await Promise.all([
-    getTranslations("products"),
-    getAdminScope(),
-  ]);
+  const [t, productType] = await Promise.all([getTranslations("products"), getAdminScope()]);
   const categories = await getAllCategories(productType);
 
   return (

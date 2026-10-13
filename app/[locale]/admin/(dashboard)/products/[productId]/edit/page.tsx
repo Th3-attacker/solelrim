@@ -1,10 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import {
-  getProductById,
-  getAllCategories,
-  getCategoryById,
-} from "@/lib/queries/products";
+import { getProductById, getAllCategories, getCategoryById } from "@/lib/queries/products";
 import { getAdminScope } from "@/lib/auth/scope";
 import { ProductForm } from "@/components/products/product-form";
 import { ProductImageManager } from "@/components/products/product-image-manager";
@@ -35,9 +31,7 @@ export default async function EditProductPage({
     // never shows a blank/invalid category.
     const currentCategory = await getCategoryById(product.categoryId);
     if (currentCategory) {
-      categories = [...categories, currentCategory].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      categories = [...categories, currentCategory].sort((a, b) => a.name.localeCompare(b.name));
     }
   }
 

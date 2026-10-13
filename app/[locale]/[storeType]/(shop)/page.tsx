@@ -17,11 +17,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 // lives on its own page (/{storeType}/products) behind "Voir plus".
 const PREVIEW_COUNT = 8;
 
-export default async function ShopHomePage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function ShopHomePage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [t, boutique, basePath, locale] = await Promise.all([
     getTranslations("shop"),
@@ -80,10 +76,8 @@ export default async function ShopHomePage({
           </>
         )}
       </div>
-      
-      {boutique.testimonialsEnabled && (
-        <TestimonialsSection testimonials={boutique.testimonials} />
-      )}
+
+      {boutique.testimonialsEnabled && <TestimonialsSection testimonials={boutique.testimonials} />}
 
       <TrustBadges />
     </div>

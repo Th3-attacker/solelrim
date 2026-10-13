@@ -28,16 +28,15 @@ function percentChange(current: number, previous: number): number | null {
 
 export default async function DashboardPage() {
   const scope = await getAdminScope();
-  const [t, tProducts, tCommon, revenue, bestSellers, lowStock, summary] =
-    await Promise.all([
-      getTranslations("dashboard"),
-      getTranslations("products"),
-      getTranslations("common"),
-      getRevenueByDay(scope),
-      getBestSellers(scope),
-      getLowStockVariants(scope),
-      getSummaryStats(scope),
-    ]);
+  const [t, tProducts, tCommon, revenue, bestSellers, lowStock, summary] = await Promise.all([
+    getTranslations("dashboard"),
+    getTranslations("products"),
+    getTranslations("common"),
+    getRevenueByDay(scope),
+    getBestSellers(scope),
+    getLowStockVariants(scope),
+    getSummaryStats(scope),
+  ]);
 
   const revenueTrend = percentChange(summary.revenueThisMonth, summary.revenueLastMonth);
   const salesTrend = percentChange(summary.salesThisMonth, summary.salesLastMonth);
@@ -65,9 +64,7 @@ export default async function DashboardPage() {
           }
           description={
             <>
-              {revenueTrend !== null && revenueTrend >= 0
-                ? t("trendUp")
-                : t("trendDown")}
+              {revenueTrend !== null && revenueTrend >= 0 ? t("trendUp") : t("trendDown")}
               {revenueTrend !== null &&
                 (revenueTrend >= 0 ? (
                   <TrendUp className="size-4" />
@@ -142,9 +139,7 @@ export default async function DashboardPage() {
             )
           }
           description={
-            lowStock.length > 0
-              ? t("lowStockCount", { count: lowStock.length })
-              : t("stockHealthy")
+            lowStock.length > 0 ? t("lowStockCount", { count: lowStock.length }) : t("stockHealthy")
           }
           subtitle={t("totalStockSubtitle")}
         />
@@ -213,9 +208,7 @@ export default async function DashboardPage() {
                         {variant.productName} ({variant.size}/{variant.color})
                       </TableCell>
                       <TableCell>
-                        <Badge variant="warning">
-                          {variant.stock}
-                        </Badge>
+                        <Badge variant="warning">{variant.stock}</Badge>
                       </TableCell>
                     </TableRow>
                   ))}

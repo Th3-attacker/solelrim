@@ -47,8 +47,7 @@ export function RefundDecision({
     });
   }
 
-  const money =
-    amount === null ? "—" : formatPrice(amount, tCommon("currency"));
+  const money = amount === null ? "—" : formatPrice(amount, tCommon("currency"));
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -80,11 +79,7 @@ export function RefundDecision({
         title={t("rejectTitle")}
         footer={
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRejectOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setRejectOpen(false)}>
               {tCommon("cancel")}
             </Button>
             <Button
@@ -100,9 +95,7 @@ export function RefundDecision({
         }
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`refund-reject-${requestId}`}>
-            {t("rejectReason")}
-          </Label>
+          <Label htmlFor={`refund-reject-${requestId}`}>{t("rejectReason")}</Label>
           <Textarea
             id={`refund-reject-${requestId}`}
             maxLength={500}

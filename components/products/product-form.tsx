@@ -55,9 +55,7 @@ export function ProductForm({
       isFeatured: false,
       categoryId: categories[0]?.id ?? "",
       isActive: true,
-      variants: [
-        { size: "", color: "", sku: "", stock: 0, lowStockThreshold: 5 },
-      ],
+      variants: [{ size: "", color: "", sku: "", stock: 0, lowStockThreshold: 5 }],
     },
   });
 
@@ -68,9 +66,7 @@ export function ProductForm({
 
   const onSubmit: SubmitHandler<ProductInput> = async (data) => {
     setSubmitting(true);
-    const result = productId
-      ? await updateProduct(productId, data)
-      : await createProduct(data);
+    const result = productId ? await updateProduct(productId, data) : await createProduct(data);
     setSubmitting(false);
 
     if (result.error) {
@@ -95,9 +91,7 @@ export function ProductForm({
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="name">{t("name")}</Label>
             <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
-            {errors.name && (
-              <FieldError>{tCommon("requiredField")}</FieldError>
-            )}
+            {errors.name && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2 sm:col-span-2">
@@ -114,21 +108,14 @@ export function ProductForm({
               aria-invalid={!!errors.basePrice}
               {...register("basePrice")}
             />
-            {errors.basePrice && (
-              <FieldError>{tCommon("requiredField")}</FieldError>
-            )}
+            {errors.basePrice && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="compareAtPrice">
               {t("compareAtPrice")} ({tCommon("optional")})
             </Label>
-            <Input
-              id="compareAtPrice"
-              type="number"
-              step="0.01"
-              {...register("compareAtPrice")}
-            />
+            <Input id="compareAtPrice" type="number" step="0.01" {...register("compareAtPrice")} />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -138,9 +125,7 @@ export function ProductForm({
               value={categoryId}
               onChange={(id) => setValue("categoryId", id)}
             />
-            {errors.categoryId && (
-              <FieldError>{tCommon("requiredField")}</FieldError>
-            )}
+            {errors.categoryId && <FieldError>{tCommon("requiredField")}</FieldError>}
           </div>
 
           <label className="flex items-center gap-2 text-sm">

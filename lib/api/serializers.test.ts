@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { serializeBoutique, serializeProductDetail, serializeProductSummary } from "@/lib/api/serializers";
+import {
+  serializeBoutique,
+  serializeProductDetail,
+  serializeProductSummary,
+} from "@/lib/api/serializers";
 
 // At the top level: the describe blocks below build their output while the
 // file is collected, before any beforeAll would run.
@@ -22,8 +26,26 @@ const product = {
   category: { id: "c1", name: "Vêtements", productType: null, position: 0 },
   images: [{ id: "i1", storagePath: "p/a.jpg", color: "WHITE", position: 0 }],
   variants: [
-    { id: "v1", size: "M", color: "WHITE", sku: "SECRET-SKU", price: null, stock: 9, lowStockThreshold: 3, createdAt: new Date(1) },
-    { id: "v2", size: "L", color: "WHITE", sku: "SECRET-SKU-2", price: decimal(1200), stock: 0, lowStockThreshold: 5, createdAt: new Date(1) },
+    {
+      id: "v1",
+      size: "M",
+      color: "WHITE",
+      sku: "SECRET-SKU",
+      price: null,
+      stock: 9,
+      lowStockThreshold: 3,
+      createdAt: new Date(1),
+    },
+    {
+      id: "v2",
+      size: "L",
+      color: "WHITE",
+      sku: "SECRET-SKU-2",
+      price: decimal(1200),
+      stock: 0,
+      lowStockThreshold: 5,
+      createdAt: new Date(1),
+    },
   ],
 };
 
@@ -64,7 +86,14 @@ describe("serializeProductDetail", () => {
 
 describe("serializeProductSummary colors", () => {
   const variant = (id: string, color: string, stock: number, createdAt: number) => ({
-    id, size: "M", color, sku: `SKU-${id}`, price: null, stock, lowStockThreshold: 5, createdAt: new Date(createdAt),
+    id,
+    size: "M",
+    color,
+    sku: `SKU-${id}`,
+    price: null,
+    stock,
+    lowStockThreshold: 5,
+    createdAt: new Date(createdAt),
   });
   const out = serializeProductSummary({
     ...product,

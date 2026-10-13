@@ -65,7 +65,12 @@ export function PromoCodeField({
     setApplying(true);
     setError(null);
     try {
-      const result = await previewPromoCode({ code: input, productType: storeType, customerPhone, subtotal });
+      const result = await previewPromoCode({
+        code: input,
+        productType: storeType,
+        customerPhone,
+        subtotal,
+      });
       if ("error" in result) {
         setError(errorMessage(result.error));
         return;

@@ -4,8 +4,20 @@ import { computeRefund, type RefundSaleLine } from "@/lib/shop/refund";
 // 2 × 600 + 1 × 800 = 2 000 subtotal; 200 discount → 1 800 paid.
 function lines(refund: [number, number]): RefundSaleLine[] {
   return [
-    { saleItemId: "a", unitPrice: 600, quantity: 2, refundedQuantity: 0, refundQuantity: refund[0] },
-    { saleItemId: "b", unitPrice: 800, quantity: 1, refundedQuantity: 0, refundQuantity: refund[1] },
+    {
+      saleItemId: "a",
+      unitPrice: 600,
+      quantity: 2,
+      refundedQuantity: 0,
+      refundQuantity: refund[0],
+    },
+    {
+      saleItemId: "b",
+      unitPrice: 800,
+      quantity: 1,
+      refundedQuantity: 0,
+      refundQuantity: refund[1],
+    },
   ];
 }
 

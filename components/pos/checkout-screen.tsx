@@ -167,9 +167,7 @@ export function CheckoutScreen({
     // what the cart shows.
     sellableLines.length === lines.length &&
     !pending &&
-    (paymentMethod === "cash"
-      ? received === null || received >= total
-      : walletAccountId !== null);
+    (paymentMethod === "cash" ? received === null || received >= total : walletAccountId !== null);
 
   function quantityInCart(variantId: string) {
     return lines.find((line) => line.variantId === variantId)?.quantity ?? 0;
@@ -365,9 +363,7 @@ export function CheckoutScreen({
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
               {visibleProducts.map((product) => {
-                const inStock = product.variants.some(
-                  (v) => v.stock - quantityInCart(v.id) > 0,
-                );
+                const inStock = product.variants.some((v) => v.stock - quantityInCart(v.id) > 0);
                 const prices = product.variants.map((v) => v.price);
                 const minPrice = Math.min(...prices);
                 const variesInPrice = minPrice !== Math.max(...prices);
@@ -426,12 +422,7 @@ export function CheckoutScreen({
       {isWide === false && (
         <>
           <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur">
-            <Button
-              type="button"
-              size="lg"
-              className="w-full"
-              onClick={() => setCartOpen(true)}
-            >
+            <Button type="button" size="lg" className="w-full" onClick={() => setCartOpen(true)}>
               <ShoppingCart className="size-5" />
               {t("viewCart", { count: itemCount, total: formatPrice(total, currency) })}
             </Button>

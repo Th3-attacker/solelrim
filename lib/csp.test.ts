@@ -11,7 +11,10 @@ describe("contentSecurityPolicy", () => {
   });
 
   it("falls back to inline scripts without a nonce, and adds extra sources", () => {
-    const policy = contentSecurityPolicy({ extraScriptSources: ["https://cdn.jsdelivr.net"], isDev: false });
+    const policy = contentSecurityPolicy({
+      extraScriptSources: ["https://cdn.jsdelivr.net"],
+      isDev: false,
+    });
     expect(policy).toContain("script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net");
   });
 

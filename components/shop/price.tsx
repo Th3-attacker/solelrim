@@ -39,10 +39,7 @@ export function Price({
       </span>
       {currency && (
         <span
-          className={cn(
-            "font-medium text-muted-foreground",
-            size === "lg" ? "text-sm" : "text-xs",
-          )}
+          className={cn("font-medium text-muted-foreground", size === "lg" ? "text-sm" : "text-xs")}
         >
           {currency}
         </span>

@@ -43,7 +43,11 @@ export function CheckoutSuccess({
             onClick={handleCopyReference}
             aria-label={t("copyReference")}
           >
-            {referenceCopied ? <Check className="size-4 text-success" /> : <Copy className="size-4" />}
+            {referenceCopied ? (
+              <Check className="size-4 text-success" />
+            ) : (
+              <Copy className="size-4" />
+            )}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">{t("keepReferenceHint")}</p>

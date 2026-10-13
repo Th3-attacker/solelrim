@@ -36,16 +36,16 @@ export const getSolalContact = cache(function getSolalContact() {
 // product-type picker.
 // Cached across requests (lib/data-cache.ts): every storefront request asks.
 export const getStoreTypes = cache(
-  cachedShopQuery("getStoreTypes", () => prisma.storeType.findMany({ orderBy: { createdAt: "asc" } })),
+  cachedShopQuery("getStoreTypes", () =>
+    prisma.storeType.findMany({ orderBy: { createdAt: "asc" } }),
+  ),
 );
 
 // A single boutique's full public/admin-facing settings, by its productType
 // key — for the admin settings page, whose productType always comes from
 // requireAdminScope() and is therefore guaranteed to already be a real
 // boutique (throwing here would mean that guarantee broke, not bad input).
-export const getBoutiqueSettings = cache(function getBoutiqueSettings(
-  productType: string,
-) {
+export const getBoutiqueSettings = cache(function getBoutiqueSettings(productType: string) {
   return prisma.storeType.findUniqueOrThrow({
     where: { key: productType },
     include: {

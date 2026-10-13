@@ -335,9 +335,9 @@ describe("createProductType (superadmin only)", () => {
   it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin();
 
-    await expect(
-      createProductType({ name: "Bijoux", categories: [] }),
-    ).rejects.toThrow("forbidden");
+    await expect(createProductType({ name: "Bijoux", categories: [] })).rejects.toThrow(
+      "forbidden",
+    );
     expect(prismaMock.storeType.create).not.toHaveBeenCalled();
   });
 
@@ -384,9 +384,7 @@ describe("updateStoreDomain (superadmin only)", () => {
   it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin();
 
-    await expect(updateStoreDomain("sport", "sport.example.com")).rejects.toThrow(
-      "forbidden",
-    );
+    await expect(updateStoreDomain("sport", "sport.example.com")).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 
@@ -439,9 +437,7 @@ describe("updateLicenseExpiresAt (superadmin only)", () => {
   it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin();
 
-    await expect(updateLicenseExpiresAt("sport", "2027-01-01")).rejects.toThrow(
-      "forbidden",
-    );
+    await expect(updateLicenseExpiresAt("sport", "2027-01-01")).rejects.toThrow("forbidden");
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 
@@ -576,9 +572,9 @@ describe("updateLicenseClientName (superadmin only)", () => {
   it("rejects a BOUTIQUE_ADMIN", async () => {
     asBoutiqueAdmin();
 
-    await expect(
-      updateLicenseClientName("sport", "Boutique Aïcha SARL"),
-    ).rejects.toThrow("forbidden");
+    await expect(updateLicenseClientName("sport", "Boutique Aïcha SARL")).rejects.toThrow(
+      "forbidden",
+    );
     expect(prismaMock.storeType.update).not.toHaveBeenCalled();
   });
 

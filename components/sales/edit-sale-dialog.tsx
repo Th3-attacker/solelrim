@@ -134,7 +134,9 @@ export function EditSaleDialog({
               </SelectTrigger>
               <SelectContent>
                 {initialPayment === KEEP && (
-                  <SelectItem value={KEEP}>{t("currentPayment", { label: currentLabel })}</SelectItem>
+                  <SelectItem value={KEEP}>
+                    {t("currentPayment", { label: currentLabel })}
+                  </SelectItem>
                 )}
                 <SelectItem value={CASH}>{tSales("cash")}</SelectItem>
                 {wallets.map((wallet) => (
@@ -144,7 +146,9 @@ export function EditSaleDialog({
                 ))}
               </SelectContent>
             </Select>
-            {paymentLocked && <p className="text-xs text-muted-foreground">{t("paymentLockedHint")}</p>}
+            {paymentLocked && (
+              <p className="text-xs text-muted-foreground">{t("paymentLockedHint")}</p>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <Label>{tSales("client")}</Label>
@@ -161,7 +165,9 @@ export function EditSaleDialog({
                 ))}
               </SelectContent>
             </Select>
-            {clientLocked && <p className="text-xs text-muted-foreground">{t("clientLockedHint")}</p>}
+            {clientLocked && (
+              <p className="text-xs text-muted-foreground">{t("clientLockedHint")}</p>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="sale-edit-notes">{tSales("notes")}</Label>

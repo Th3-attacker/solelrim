@@ -66,8 +66,20 @@ function sale(overrides: Record<string, unknown> = {}) {
     loyaltyPointsEarned: 18,
     loyaltyPointsRedeemed: 100,
     items: [
-      { id: "item-a", variantId: "variant-a", unitPrice: decimal(600), quantity: 2, refundedQuantity: 0 },
-      { id: "item-b", variantId: "variant-b", unitPrice: decimal(800), quantity: 1, refundedQuantity: 0 },
+      {
+        id: "item-a",
+        variantId: "variant-a",
+        unitPrice: decimal(600),
+        quantity: 2,
+        refundedQuantity: 0,
+      },
+      {
+        id: "item-b",
+        variantId: "variant-b",
+        unitPrice: decimal(800),
+        quantity: 1,
+        refundedQuantity: 0,
+      },
     ],
     ...overrides,
   };
@@ -136,7 +148,13 @@ describe("requestRefund", () => {
     prismaMock.sale.findFirst.mockResolvedValue(
       sale({
         items: [
-          { id: "item-a", variantId: "variant-a", unitPrice: decimal(600), quantity: 2, refundedQuantity: 2 },
+          {
+            id: "item-a",
+            variantId: "variant-a",
+            unitPrice: decimal(600),
+            quantity: 2,
+            refundedQuantity: 2,
+          },
         ],
       }) as never,
     );
@@ -254,7 +272,9 @@ describe("approveRefund", () => {
     signedInAs("BOUTIQUE_ADMIN");
     pendingRequest();
     prismaMock.refundRequest.aggregate
-      .mockResolvedValueOnce({ _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null } } as never)
+      .mockResolvedValueOnce({
+        _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null },
+      } as never)
       .mockResolvedValueOnce({ _sum: { amount: null } } as never);
 
     expect(await approveRefund({ requestId: "request-1" })).toEqual({ requestId: "request-1" });
@@ -302,7 +322,9 @@ describe("approveRefund", () => {
       { saleItemId: "item-b", quantity: 1 },
     ]);
     prismaMock.refundRequest.aggregate
-      .mockResolvedValueOnce({ _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null } } as never)
+      .mockResolvedValueOnce({
+        _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null },
+      } as never)
       .mockResolvedValueOnce({ _sum: { amount: null } } as never);
 
     await approveRefund({ requestId: "request-1" });
@@ -362,7 +384,9 @@ describe("approveRefund", () => {
       .mockResolvedValueOnce([{ id: "sale-1" }] as never)
       .mockResolvedValueOnce([{ id: "session-9", openingFloat: "100" }] as never);
     prismaMock.refundRequest.aggregate
-      .mockResolvedValueOnce({ _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null } } as never)
+      .mockResolvedValueOnce({
+        _sum: { loyaltyPointsTakenBack: null, loyaltyPointsReturned: null },
+      } as never)
       .mockResolvedValueOnce({ _sum: { amount: null } } as never);
 
     expect(await approveRefund({ requestId: "request-1" })).toEqual({ error: "insufficientCash" });
@@ -370,7 +394,11 @@ describe("approveRefund", () => {
 
   it("records a wallet refund without touching any till", async () => {
     signedInAs("BOUTIQUE_ADMIN");
-    pendingRequest(undefined, { paymentMethod: "wallet", walletProvider: "Bankily", clientId: null });
+    pendingRequest(undefined, {
+      paymentMethod: "wallet",
+      walletProvider: "Bankily",
+      clientId: null,
+    });
     prismaMock.$queryRaw.mockReset();
     prismaMock.$queryRaw.mockResolvedValueOnce([{ id: "sale-1" }] as never);
 
@@ -411,9 +439,9 @@ describe("rejectRefund", () => {
       sale: { id: "sale-1", reference: "VNT-1" },
     } as never);
 
-    expect(
-      await rejectRefund({ requestId: "request-1", reason: "Article porté" }),
-    ).toEqual({ requestId: "request-1" });
+    expect(await rejectRefund({ requestId: "request-1", reason: "Article porté" })).toEqual({
+      requestId: "request-1",
+    });
     expect(prismaMock.refundRequest.updateMany).toHaveBeenCalledWith({
       where: { id: "request-1", productType: "sport", status: "PENDING" },
       data: expect.objectContaining({ status: "REJECTED", rejectionReason: "Article porté" }),

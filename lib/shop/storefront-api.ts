@@ -24,15 +24,27 @@ export async function fetchProductSuggestions(
 ): Promise<SuggestionsResult> {
   const params = new URLSearchParams({ q: query, pageSize: String(limit) });
   try {
-    const response = await fetch(`/api/v1/boutiques/${encodeURIComponent(productType)}/products?${params}`, {
-      signal,
-    });
+    const response = await fetch(
+      `/api/v1/boutiques/${encodeURIComponent(productType)}/products?${params}`,
+      {
+        signal,
+      },
+    );
     if (response.status === 429) {
-      return { error: "rateLimited", retryAfter: Number(response.headers.get("Retry-After")) || 60 };
+      return {
+        error: "rateLimited",
+        retryAfter: Number(response.headers.get("Retry-After")) || 60,
+      };
     }
     if (!response.ok) return { error: "failed" };
     const body = (await response.json()) as {
-      products: { id: string; slug: string; name: string; imageUrl: string | null; price: { min: number } }[];
+      products: {
+        id: string;
+        slug: string;
+        name: string;
+        imageUrl: string | null;
+        price: { min: number };
+      }[];
     };
     return {
       products: body.products.map((product) => ({

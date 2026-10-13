@@ -20,7 +20,9 @@ beforeEach(() => {
   prismaMock.$transaction.mockImplementation((cb) =>
     (cb as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock),
   );
-  prismaMock.storeType.findMany.mockResolvedValue([{ key: "sport", pendingAutoCancelHours: 48 }] as never);
+  prismaMock.storeType.findMany.mockResolvedValue([
+    { key: "sport", pendingAutoCancelHours: 48 },
+  ] as never);
   prismaMock.order.findMany.mockResolvedValue([{ id: "o1" }] as never);
   prismaMock.order.updateMany.mockResolvedValue({ count: 1 } as never);
   prismaMock.order.findUniqueOrThrow.mockResolvedValue({

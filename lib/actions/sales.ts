@@ -55,7 +55,11 @@ export async function cancelSale(input: unknown): Promise<{ error?: string }> {
           select: { status: true },
         });
         throw new Error(
-          !existing ? "notFound" : existing.status === "CANCELLED" ? "alreadyCancelled" : "refunded",
+          !existing
+            ? "notFound"
+            : existing.status === "CANCELLED"
+              ? "alreadyCancelled"
+              : "refunded",
         );
       }
       // A pending refund would be approved against a voided sale: it has to
@@ -152,7 +156,10 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
         include: {
           client: { select: { fullName: true } },
           cashSession: { select: { status: true } },
-          refundRequests: { where: { status: { in: ["PENDING", "APPROVED"] } }, select: { id: true } },
+          refundRequests: {
+            where: { status: { in: ["PENDING", "APPROVED"] } },
+            select: { id: true },
+          },
         },
       });
       if (sale.status === "CANCELLED") throw new SaleEditError("notEditable");
@@ -193,10 +200,7 @@ export async function updateSale(input: unknown): Promise<{ error?: string }> {
       if (paymentChanged && sale.refundRequests.length > 0) {
         throw new SaleEditError("paymentLocked");
       }
-      if (
-        clientChanged &&
-        (sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0)
-      ) {
+      if (clientChanged && (sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0)) {
         throw new SaleEditError("clientLocked");
       }
 

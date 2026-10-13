@@ -63,8 +63,7 @@ export default async function AdminCategoriesPage() {
           </TableHeader>
           <TableBody>
             {categories.map((category) => {
-              const canManage =
-                admin.role === "SUPERADMIN" || category.productType === productType;
+              const canManage = admin.role === "SUPERADMIN" || category.productType === productType;
               const scopeKey = category.productType ?? "";
               const ids = scopeIds.get(scopeKey) ?? [];
               const scopeIndex = ids.indexOf(category.id);

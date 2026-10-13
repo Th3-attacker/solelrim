@@ -5,7 +5,11 @@ import { ProductCard } from "@/components/shop/product-card";
 import { StateMessage } from "@/components/ui/state-message";
 import { Package, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { ListPagination } from "@/components/ui/list-pagination";
-import { getAllShopCategories, getCatalogueColors, getFilteredProductsPage } from "@/lib/queries/shop";
+import {
+  getAllShopCategories,
+  getCatalogueColors,
+  getFilteredProductsPage,
+} from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getStoreLogoUrl } from "@/lib/supabase/storage";
 import { catalogueFiltersFromSearch } from "@/lib/shop/filters";
@@ -33,12 +37,8 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || t("siteName");
   const title = `${siteName} — ${t("allProductsTitle")}`;
   const description = t("allProductsMetaDescription");
-  const imageUrl = boutique.logoStoragePath
-    ? getStoreLogoUrl(boutique.logoStoragePath)
-    : null;
-  const keywords = [
-    ...new Set([siteName, ...categories.map((category) => category.name)]),
-  ];
+  const imageUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
+  const keywords = [...new Set([siteName, ...categories.map((category) => category.name)])];
 
   return {
     title,

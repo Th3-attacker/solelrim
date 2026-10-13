@@ -179,9 +179,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                   {product.name}
                 </Link>
               </TableCell>
-              <TableCell className="text-muted-foreground">
-                {product.category.name}
-              </TableCell>
+              <TableCell className="text-muted-foreground">{product.category.name}</TableCell>
               <TableCell>{formatPrice(product.basePrice, tCommon("currency"))}</TableCell>
               <TableCell>
                 <StockBadge status={getAggregateStockStatus(product.variants)} />

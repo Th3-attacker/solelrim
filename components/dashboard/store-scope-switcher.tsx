@@ -45,11 +45,7 @@ export function StoreScopeSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full justify-between"
-          disabled={pending}
-        >
+        <Button variant="outline" className="w-full justify-between" disabled={pending}>
           <span className="flex min-w-0 items-center gap-2">
             <Storefront className="size-4 shrink-0" />
             <span className="truncate">{currentLabel}</span>

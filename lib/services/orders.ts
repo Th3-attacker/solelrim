@@ -168,9 +168,7 @@ async function checkCustomer(input: OrderInput) {
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
   const locales: readonly string[] = routing.locales;
-  return typeof value === "string" && locales.includes(value)
-    ? value
-    : routing.defaultLocale;
+  return typeof value === "string" && locales.includes(value) ? value : routing.defaultLocale;
 }
 
 type ReadOrder = {
@@ -325,7 +323,9 @@ type UploadedProof = {
   discard: () => Promise<void>;
 };
 
-async function uploadPaymentProof(file: FormDataEntryValue | null): Promise<UploadedProof | Refusal> {
+async function uploadPaymentProof(
+  file: FormDataEntryValue | null,
+): Promise<UploadedProof | Refusal> {
   if (!(file instanceof File) || file.size === 0) {
     return { error: "invalidFile" };
   }
@@ -605,7 +605,9 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
   const parsed = trackOrderSchema.safeParse(input);
   // The phone alone, when well-formed, so a blank reference still counts
   // against that number.
-  const phoneOnly = trackOrderSchema.shape.phone.safeParse((input as { phone?: unknown } | null)?.phone);
+  const phoneOnly = trackOrderSchema.shape.phone.safeParse(
+    (input as { phone?: unknown } | null)?.phone,
+  );
   const phone = phoneOnly.success ? phoneOnly.data : null;
 
   // Checked before the lookup, the right pair included: letting it through
@@ -663,7 +665,10 @@ export async function trackOrder(input: unknown): Promise<TrackOrderResult> {
                 select: {
                   name: true,
                   slug: true,
-                  images: { orderBy: { position: "asc" }, select: { storagePath: true, color: true } },
+                  images: {
+                    orderBy: { position: "asc" },
+                    select: { storagePath: true, color: true },
+                  },
                 },
               },
             },

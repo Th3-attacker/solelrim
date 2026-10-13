@@ -33,8 +33,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
   const locale = useLocale();
   const isMobile = useIsMobile();
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
-  const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } =
-    useCart();
+  const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } = useCart();
 
   async function handleShareCart() {
     const text = buildCartShareText(items, subtotal, tCommon("currency"), t("shareTotal"));
@@ -71,9 +70,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
     // leave the cart as-is rather than let an absent-from-the-map default
     // read as "everything just sold out".
     if (!stockByVariantId) return;
-    const changed = items.some(
-      (i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock,
-    );
+    const changed = items.some((i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock);
     syncStock(stockByVariantId);
     if (changed) toast.info(t("stockUpdated"));
   }
@@ -93,10 +90,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
       <SheetContent
         side={side}
         showHandle={side === "bottom"}
-        className={cn(
-          "flex flex-col gap-0",
-          side === "bottom" && "max-h-[85svh] rounded-t-2xl",
-        )}
+        className={cn("flex flex-col gap-0", side === "bottom" && "max-h-[85svh] rounded-t-2xl")}
       >
         <SheetHeader className="flex-row items-center justify-between gap-2">
           <SheetTitle>{t("title")}</SheetTitle>
@@ -142,24 +136,18 @@ export function CartTrigger({ basePath }: { basePath: string }) {
                         variant="outline"
                         size="icon"
                         aria-label={t("decreaseQuantity")}
-                        onClick={() =>
-                          updateQuantity(line.variantId, line.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(line.variantId, line.quantity - 1)}
                       >
                         <Minus className="size-3" />
                       </Button>
-                      <span className="w-4 text-center text-sm">
-                        {line.quantity}
-                      </span>
+                      <span className="w-4 text-center text-sm">{line.quantity}</span>
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         aria-label={t("increaseQuantity")}
                         disabled={line.quantity >= line.stock}
-                        onClick={() =>
-                          updateQuantity(line.variantId, line.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(line.variantId, line.quantity + 1)}
                       >
                         <Plus className="size-3" />
                       </Button>
