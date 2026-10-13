@@ -2,6 +2,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { ExpectedError } from "@/lib/errors";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Every admin-gated Server Action and page ultimately calls this. Throws
@@ -10,12 +11,12 @@ import type { AdminUser } from "@/lib/generated/prisma/client";
 // Supabase user without one is not a recognized admin.
 export async function getCurrentAdmin(): Promise<AdminUser> {
   const user = await getSessionUser();
-  if (!user) throw new Error("unauthorized");
+  if (!user) throw new ExpectedError("unauthorized");
 
   const admin = await prisma.adminUser.findUnique({
     where: { supabaseUserId: user.id },
   });
-  if (!admin) throw new Error("unauthorized");
+  if (!admin) throw new ExpectedError("unauthorized");
 
   return admin;
 }
@@ -32,7 +33,7 @@ export const getSessionUser = cache(async () => {
 
 export async function requireSuperAdmin(): Promise<AdminUser> {
   const admin = await getCurrentAdmin();
-  if (admin.role !== "SUPERADMIN") throw new Error("forbidden");
+  if (admin.role !== "SUPERADMIN") throw new ExpectedError("forbidden");
   return admin;
 }
 

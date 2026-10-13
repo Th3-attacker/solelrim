@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { sellerInputSchema, sellerQuotaSchema } from "@/lib/validation/seller";
+import { reportError } from "@/lib/report-error";
 
 // A boutique admin (or a superadmin scoped to that boutique) creates a
 // SELLER in their own boutique — the boutique always comes from the
@@ -63,7 +64,7 @@ export async function createSeller(input: unknown): Promise<{ error?: string }> 
     // supabase-js reports failure through `error`, it doesn't throw.
     const { error: rollbackError } = await supabase.auth.admin.deleteUser(data.user.id);
     if (rollbackError) {
-      console.error("[createSeller] orphaned auth user", data.user.id, rollbackError);
+      reportError("createSeller: orphaned auth user", rollbackError, { supabaseUserId: data.user.id });
     }
     if (err instanceof Error && err.message === "quotaReached") {
       return { error: "quotaReached" };

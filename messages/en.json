@@ -906,7 +906,13 @@
     "errorMessage": "Something broke on our end. Try again, or come back a little later.",
     "retry": "Try again",
     "licenseBlockedTitle": "Action blocked",
-    "licenseBlockedMessage": "This boutique is suspended, expired, or cancelled — admin actions are blocked. Contact support to reactivate it."
+    "licenseBlockedMessage": "This boutique is suspended, expired, or cancelled — admin actions are blocked. Contact support to reactivate it.",
+    "reference": "Reference: {code}",
+    "sessionExpiredTitle": "Session expired",
+    "sessionExpiredMessage": "Your session has expired. Sign in again to continue.",
+    "signIn": "Sign in",
+    "forbiddenTitle": "Access denied",
+    "forbiddenMessage": "Your account can't do this."
   },
   "auditLog": {
     "title": "Action history",

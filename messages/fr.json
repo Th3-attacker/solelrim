@@ -906,7 +906,13 @@
     "errorMessage": "Quelque chose s'est mal passé de notre côté. Réessayez, ou revenez un peu plus tard.",
     "retry": "Réessayer",
     "licenseBlockedTitle": "Action bloquée",
-    "licenseBlockedMessage": "Cette boutique est suspendue, expirée ou annulée : les actions d'administration sont bloquées. Contactez le support pour la réactiver."
+    "licenseBlockedMessage": "Cette boutique est suspendue, expirée ou annulée : les actions d'administration sont bloquées. Contactez le support pour la réactiver.",
+    "reference": "Référence : {code}",
+    "sessionExpiredTitle": "Session expirée",
+    "sessionExpiredMessage": "Votre session a expiré. Reconnectez-vous pour continuer.",
+    "signIn": "Se reconnecter",
+    "forbiddenTitle": "Accès refusé",
+    "forbiddenMessage": "Votre compte n'a pas accès à cette action."
   },
   "auditLog": {
     "title": "Historique des actions",

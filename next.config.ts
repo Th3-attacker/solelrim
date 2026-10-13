@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -104,10 +105,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Deliberately not wrapped in withSentryConfig: that plugin's only jobs
-// beyond what instrumentation.ts/instrumentation-client.ts already do are
-// source-map upload (needs a SENTRY_AUTH_TOKEN we don't have yet) and
-// build-time webpack/turbopack tree-shaking — neither is required for
-// error capture to work, and skipping it keeps the build pipeline
-// untouched. Revisit if source-mapped stack traces become worth the setup.
-export default withNextIntl(nextConfig);
+// Error capture itself lives in instrumentation.ts/instrumentation-client.ts.
+// withSentryConfig only adds the source-map upload after `next build`, so
+// browser stack traces in Sentry point at our code instead of minified
+// chunks. It needs SENTRY_AUTH_TOKEN, SENTRY_ORG and SENTRY_PROJECT (Vercel
+// env); without the token the build is exactly what it was.
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(withNextIntl(nextConfig), {
+      silent: !process.env.CI,
+      // The maps are uploaded, then removed from the deployment: Sentry has
+      // them, the public doesn't.
+      sourcemaps: { deleteSourcemapsAfterUpload: true },
+    })
+  : withNextIntl(nextConfig);

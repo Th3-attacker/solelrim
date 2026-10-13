@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { reportError } from "@/lib/report-error";
 
 // proxy.ts needs a fast host -> boutique-key lookup on every request. It
 // runs outside React's render context (no access to the request-scoped
@@ -31,7 +32,7 @@ async function fetchRouting(): Promise<Routing> {
     }
     return { domainMap, keySet };
   } catch (err) {
-    console.error("[domain-cache] fetchRouting failed", err);
+    reportError("domain-cache: fetchRouting", err);
     // A DB blip must only disable the custom-domain feature for this warm
     // instance, never take down the rest of the site. Fall back to
     // whatever we last knew (even if stale) rather than an empty map, so a

@@ -7,6 +7,7 @@ import type {
   TransactionClient,
 } from "@/lib/generated/prisma/internal/prismaNamespace";
 import type { AuditAction } from "@/lib/audit-actions";
+import { reportError } from "@/lib/report-error";
 
 export type AuditActor = { id: string; role: AdminRole; email: string };
 
@@ -79,6 +80,6 @@ export async function logAdminAction(params: {
       },
     });
   } catch (err) {
-    console.error("logAdminAction failed", err);
+    reportError("logAdminAction", err, { action: params.action });
   }
 }

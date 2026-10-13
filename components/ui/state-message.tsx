@@ -4,11 +4,14 @@ export function StateMessage({
   icon: Icon,
   title,
   message,
+  detail,
   action,
 }: {
   icon: Icon;
   title: string;
   message?: string;
+  // Small print under the message, e.g. an error's reference to quote.
+  detail?: React.ReactNode;
   action?: React.ReactNode;
 }) {
   return (
@@ -21,6 +24,7 @@ export function StateMessage({
         {message && (
           <p className="max-w-sm text-paragraph-sm text-muted-foreground">{message}</p>
         )}
+        {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
       </div>
       {action}
     </div>

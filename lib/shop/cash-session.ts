@@ -9,6 +9,7 @@ import {
   type PaymentGroup,
   type SessionTotals,
 } from "@/lib/shop/cash";
+import { reportError } from "@/lib/report-error";
 
 // Not a "use server" module: these take ids and productType as plain
 // arguments, so only code that already resolved them from the caller's own
@@ -133,7 +134,7 @@ export async function closeStaleSessions(productType: string, now = new Date()):
   try {
     await sweepStaleSessions(productType, now);
   } catch (error) {
-    console.error("closeStaleSessions failed", error);
+    reportError("closeStaleSessions", error, { productType });
   }
 }
 
