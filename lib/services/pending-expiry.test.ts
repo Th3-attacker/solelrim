@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
+vi.mock("@/lib/realtime", () => ({ notifyOrdersChanged: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
 vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 

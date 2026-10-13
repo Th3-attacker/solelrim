@@ -3,6 +3,7 @@ import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 
+vi.mock("@/lib/realtime", () => ({ notifyOrdersChanged: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   prisma: mockDeep<PrismaClient>(),
 }));

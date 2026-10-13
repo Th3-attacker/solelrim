@@ -28,6 +28,8 @@ import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 import { PAYMENT_PROOFS_BUCKET } from "@/lib/supabase/payment-proofs";
 import { revalidateAdmin } from "@/lib/revalidate";
+import { notifyOrdersChanged } from "@/lib/realtime";
+import { after } from "next/server";
 
 // Placing and tracking an order, the customer side: the website's Server
 // Actions (lib/actions/orders.ts) and the app's API routes (app/api/v1) both
@@ -476,6 +478,8 @@ async function saveOrder({
         });
       });
       revalidateAdmin();
+      // The boutique's open dashboards show it now (lib/realtime.ts).
+      after(() => notifyOrdersChanged(productType));
       return { reference: order.reference, orderId: order.id };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {

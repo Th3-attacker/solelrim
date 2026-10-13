@@ -8,6 +8,7 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
+import { notifyOrdersChanged } from "@/lib/realtime";
 import { revalidateSite, revalidateAdmin } from "@/lib/revalidate";
 import {
   orderInputFrom,
@@ -78,6 +79,7 @@ export async function confirmOrder(
   // After the response: the admin doesn't wait on Expo (up to 4 s), and a
   // push that fails never touches the action (sendOrderPush never throws).
   after(() => sendOrderPush(orderId, "confirmed"));
+  after(() => notifyOrdersChanged(productType));
   revalidateSite();
   return {};
 }
@@ -158,6 +160,7 @@ export async function rejectOrder(
   });
 
   after(() => sendOrderPush(orderId, "rejected"));
+  after(() => notifyOrdersChanged(productType));
   revalidateSite();
   return {};
 }
@@ -188,6 +191,7 @@ export async function shipOrder(
   });
 
   after(() => sendOrderPush(orderId, "shipped"));
+  after(() => notifyOrdersChanged(productType));
   revalidateAdmin();
   return {};
 }
@@ -315,6 +319,7 @@ export async function deliverOrder(
   });
 
   after(() => sendOrderPush(orderId, "delivered"));
+  after(() => notifyOrdersChanged(productType));
   revalidateSite();
   return {};
 }
@@ -395,6 +400,7 @@ export async function cancelOrder(
   });
 
   after(() => sendOrderPush(orderId, "cancelled"));
+  after(() => notifyOrdersChanged(productType));
   revalidateSite();
   return {};
 }

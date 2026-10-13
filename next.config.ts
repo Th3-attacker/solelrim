@@ -28,7 +28,7 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https://*.supabase.co;
   font-src 'self';
-  connect-src 'self' https://*.supabase.co${sentryIngestHost ? ` https://${sentryIngestHost}` : ""};
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co${sentryIngestHost ? ` https://${sentryIngestHost}` : ""};
   object-src 'none';
   base-uri 'self';
   form-action 'self';

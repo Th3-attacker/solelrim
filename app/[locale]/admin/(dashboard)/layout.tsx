@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LicenseWarningBanner } from "@/components/settings/license-warning-banner";
+import { LiveOrders } from "@/components/dashboard/live-orders";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -60,6 +61,7 @@ export default async function DashboardLayout({
           />
         </div>
         <SidebarInset>
+          <LiveOrders productType={currentScope} />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 print:hidden">
             <SidebarTrigger className="-ms-1" />
             <Separator orientation="vertical" className="h-4" />
