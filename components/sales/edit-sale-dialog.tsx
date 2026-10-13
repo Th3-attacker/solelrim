@@ -4,7 +4,6 @@ import { useState } from "react";
 import { PencilSimple } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
@@ -59,7 +58,6 @@ export function EditSaleDialog({
   const t = useTranslations("saleEdit");
   const tSales = useTranslations("sales");
   const tCommon = useTranslations("common");
-  const router = useRouter();
 
   const initialPayment =
     paymentMethod === "cash"
@@ -101,7 +99,6 @@ export function EditSaleDialog({
     toast.success(t("saved"));
     setOpen(false);
     setReason("");
-    router.refresh();
   }
 
   return (

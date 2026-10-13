@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +31,6 @@ import { REASON_LABEL_KEY, REJECT_REASON_PRESETS } from "@/lib/shop/client-messa
 export function OrderActions({ orderId }: { orderId: string }) {
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -53,7 +51,6 @@ export function OrderActions({ orderId }: { orderId: string }) {
         return;
       }
       setConfirmOpen(false);
-      router.refresh();
       toast.success(t("confirmAction"));
     });
   }
@@ -69,7 +66,6 @@ export function OrderActions({ orderId }: { orderId: string }) {
       setRejectOpen(false);
       setReasonPreset(REJECT_REASON_PRESETS[0]);
       setCustomReason("");
-      router.refresh();
       toast.success(t("rejectAction"));
     });
   }

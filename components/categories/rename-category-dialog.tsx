@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Pencil } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +19,6 @@ export function RenameCategoryDialog({
 }) {
   const t = useTranslations("categories");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(currentName);
   const [pending, startTransition] = useTransition();
@@ -35,7 +33,6 @@ export function RenameCategoryDialog({
         return;
       }
       setOpen(false);
-      router.refresh();
     });
   }
 

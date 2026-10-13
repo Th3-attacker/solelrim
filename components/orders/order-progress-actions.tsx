@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +18,6 @@ export function OrderProgressActions({
 }) {
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [advancePending, setAdvancePending] = useState(false);
   const [cancelPending, startCancelTransition] = useTransition();
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -34,7 +32,6 @@ export function OrderProgressActions({
         toast.error(t("alreadyProcessed"));
         return;
       }
-      router.refresh();
       toast.success(status === "CONFIRMED" ? t("shipAction") : t("deliverAction"));
     } finally {
       setAdvancePending(false);
@@ -52,7 +49,6 @@ export function OrderProgressActions({
       }
       setCancelOpen(false);
       setReason("");
-      router.refresh();
       toast.success(t("cancelAction"));
     });
   }

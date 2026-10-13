@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +48,6 @@ type Product = {
 export function ProductsTable({ products }: { products: Product[] }) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -76,7 +75,6 @@ export function ProductsTable({ products }: { products: Product[] }) {
     startTransition(async () => {
       await bulkSetProductsActive([...selected], isActive);
       setSelected(new Set());
-      router.refresh();
     });
   }
 
@@ -91,7 +89,6 @@ export function ProductsTable({ products }: { products: Product[] }) {
           skipped: result.skippedCount,
         }),
       );
-      router.refresh();
     });
   }
 

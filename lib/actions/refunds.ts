@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import {
@@ -15,20 +14,13 @@ import {
   refundRejectionSchema,
   refundRequestSchema,
 } from "@/lib/validation/refund";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 // Thrown inside a transaction to roll it back, returned to the caller as a
 // value (Next masks thrown action messages in production).
 class RefundError extends Error {}
 
 const REFUNDABLE_STATUSES = ["COMPLETED", "PARTIALLY_REFUNDED"] as const;
-
-function revalidateRefunds(saleId: string) {
-  revalidatePath("/admin/pos/refunds");
-  revalidatePath(`/admin/pos/receipt/${saleId}`);
-  revalidatePath(`/admin/sales/${saleId}`);
-  revalidatePath("/admin/sales");
-  revalidatePath("/admin/pos/my-sales");
-}
 
 export type RefundActionResult = { error?: string; requestId?: string };
 
@@ -121,7 +113,7 @@ export async function requestRefund(
       });
       return created;
     });
-    revalidateRefunds(saleId);
+    revalidateAdmin();
     return { requestId: request.id };
   } catch (err) {
     if (err instanceof RefundError) return { error: err.message };
@@ -147,7 +139,7 @@ export async function approveRefund(
   const actor = await getAuditActor(admin);
 
   try {
-    const saleId = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // PENDING -> APPROVED first: the gate against a double approval.
       const gate = await tx.refundRequest.updateMany({
         where: { id: requestId, productType, status: "PENDING" },
@@ -303,10 +295,9 @@ export async function approveRefund(
         },
         reason: request.reason,
       });
-      return sale.id;
     });
-    revalidateRefunds(saleId);
-    revalidatePath("/admin/pos/register");
+    revalidateAdmin();
+    revalidateAdmin();
     return { requestId };
   } catch (err) {
     if (err instanceof RefundError) return { error: err.message };
@@ -324,7 +315,7 @@ export async function rejectRefund(
   const actor = await getAuditActor(admin);
 
   try {
-    const saleId = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const gate = await tx.refundRequest.updateMany({
         where: { id: requestId, productType, status: "PENDING" },
         data: {
@@ -355,9 +346,8 @@ export async function rejectRefund(
         newValue: { status: "REJECTED" },
         reason,
       });
-      return request.sale.id;
     });
-    revalidateRefunds(saleId);
+    revalidateAdmin();
     return { requestId };
   } catch (err) {
     if (err instanceof RefundError) return { error: err.message };

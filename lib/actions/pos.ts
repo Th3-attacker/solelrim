@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { tryCheckoutScope } from "@/lib/shop/admin-scope";
 import { getAuditActor } from "@/lib/audit";
 import { recordSale } from "@/lib/shop/record-sale";
 import { posSaleSchema } from "@/lib/validation/pos";
+import { revalidateSite } from "@/lib/revalidate";
 
 export type PosSaleResult = {
   error?: string;
@@ -67,10 +67,7 @@ export async function createPosSale(input: unknown): Promise<PosSaleResult> {
     return { error: result.error };
   }
 
-  revalidatePath("/admin/pos");
-  revalidatePath("/admin/sales");
-  revalidatePath("/admin/products");
-  revalidatePath("/");
+  revalidateSite();
   return {
     saleId: result.saleId,
     reference: result.reference,

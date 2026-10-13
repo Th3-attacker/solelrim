@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatPrice } from "@/lib/format/currency";
@@ -15,7 +14,6 @@ import { useCashError } from "@/components/cash/use-cash-error";
 
 export function CashMovementForm() {
   const t = useTranslations("cash");
-  const router = useRouter();
   const showError = useCashError();
   const tCommon = useTranslations("common");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -37,7 +35,6 @@ export function CashMovementForm() {
     toast.success(t(type === "IN" ? "movementInSaved" : "movementOutSaved"));
     setAmount("");
     setReason("");
-    router.refresh();
   }
 
   return (

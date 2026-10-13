@@ -5,7 +5,7 @@ import { CalendarBlank, FileText, Pencil, Trash } from "@phosphor-icons/react/di
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { fr, enUS, arMA } from "date-fns/locale";
 import { toast } from "@/components/ui/toast";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const format = useFormatter();
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [couponsPending, startCouponsTransition] = useTransition();
@@ -134,7 +133,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDomainOpen(false);
-      router.refresh();
     });
   }
 
@@ -146,7 +144,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setRenameOpen(false);
-      router.refresh();
     });
   }
 
@@ -160,7 +157,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDeleteOpen(false);
-      router.refresh();
     });
   }
 
@@ -175,7 +171,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setDateOpen(false);
-      router.refresh();
     });
   }
 
@@ -189,7 +184,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -204,7 +198,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleSaveClientName() {
@@ -215,7 +208,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         return;
       }
       setClientNameOpen(false);
-      router.refresh();
     });
   }
 
@@ -226,7 +218,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -237,7 +228,6 @@ function BoutiqueLicenseRow({ storeType }: { storeType: StoreTypeRow }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

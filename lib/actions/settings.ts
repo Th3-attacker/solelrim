@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -33,6 +32,7 @@ import {
 } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
+import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -92,8 +92,7 @@ export async function updateBoutiqueSettings(
     data: admin.role === "SUPERADMIN" ? { ...general, ...superadminOnly } : general,
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -142,8 +141,7 @@ export async function uploadStoreLogo(
     data: { logoStoragePath: storagePath },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -163,8 +161,7 @@ export async function removeStoreLogo(): Promise<{ error?: string }> {
     data: { logoStoragePath: null },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -215,8 +212,7 @@ export async function uploadStoreHeroImage(
     data: { heroImagePath: storagePath },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -236,8 +232,7 @@ export async function removeStoreHeroImage(): Promise<{ error?: string }> {
     data: { heroImagePath: null },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -253,8 +248,7 @@ export async function setStoreTheme(themeId: string): Promise<{ error?: string }
     data: { themeId, customThemeColor: null },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -277,8 +271,7 @@ export async function setCustomThemeColor(color: string): Promise<{ error?: stri
     data: { themeId: CUSTOM_THEME_ID, customThemeColor: parsed.data.color },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -295,8 +288,7 @@ export async function setColorMode(mode: string): Promise<{ error?: string }> {
     data: { colorMode: parsed.data },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -313,8 +305,7 @@ export async function setHeroVariant(variant: string): Promise<{ error?: string 
     data: { heroVariant: parsed.data },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -331,8 +322,7 @@ export async function setCardVariant(variant: string): Promise<{ error?: string 
     data: { cardVariant: parsed.data },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -349,8 +339,7 @@ export async function setFooterVariant(variant: string): Promise<{ error?: strin
     data: { footerVariant: parsed.data },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -385,9 +374,7 @@ export async function setProductType(productType: string): Promise<{ error?: str
     });
   }
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/admin/products");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -431,9 +418,7 @@ export async function createProductType(
     });
   }
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/admin/products");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -454,8 +439,7 @@ export async function updateStoreTypeLabel(
     data: { label: parsed.data.label },
   });
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -524,8 +508,7 @@ export async function deleteStoreType(productType: string): Promise<{ error?: st
 
   await prisma.storeType.delete({ where: { key: productType } });
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -562,8 +545,7 @@ export async function updateStoreDomain(
     throw err;
   }
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -586,8 +568,7 @@ export async function updateLicenseExpiresAt(
     data: { licenseExpiresAt: parsedDate },
   });
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/admin", "layout");
+  revalidateAdmin();
   return {};
 }
 
@@ -632,9 +613,7 @@ export async function updateBoutiqueLicense(
     },
   });
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -652,8 +631,7 @@ export async function setCouponsEnabled(
     data: { couponsEnabled: enabled },
   });
 
-  revalidatePath("/admin/settings/global");
-  revalidatePath("/admin/promo-codes");
+  revalidateAdmin();
   return {};
 }
 
@@ -675,7 +653,7 @@ export async function setPendingAutoCancelHours(
     data: { pendingAutoCancelHours: hours },
   });
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }
 
@@ -698,7 +676,7 @@ export async function updateLicenseClientName(
     data: { licenseClientName: parsed.data.licenseClientName || null },
   });
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }
 
@@ -721,6 +699,6 @@ export async function updateSolalContact(
     create: { id: "singleton", ...parsed.data },
   });
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }

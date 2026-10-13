@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Trash, CaretUp, CaretDown, ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,6 @@ type SocialLink = { id: string; platform: string; url: string };
 export function SocialLinksManager({ links }: { links: SocialLink[] }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState("");
   const [url, setUrl] = useState("");
@@ -37,7 +35,6 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
       setPlatform("");
       setUrl("");
       setOpen(false);
-      router.refresh();
     });
   }
 
@@ -47,7 +44,6 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleMove(id: string, direction: "up" | "down") {
@@ -57,7 +53,6 @@ export function SocialLinksManager({ links }: { links: SocialLink[] }) {
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

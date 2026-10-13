@@ -4,7 +4,6 @@ import { useTransition } from "react";
 import { CaretUp, CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { moveCategory } from "@/lib/actions/categories";
 
@@ -18,7 +17,6 @@ export function MoveCategoryButtons({
   disableDown: boolean;
 }) {
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleMove(direction: "up" | "down") {
@@ -28,7 +26,6 @@ export function MoveCategoryButtons({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

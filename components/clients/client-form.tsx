@@ -59,7 +59,6 @@ export function ClientForm({
     }
 
     router.push(`/admin/clients/${result.clientId}`);
-    router.refresh();
     toast.success(tCommon("save"));
   };
 

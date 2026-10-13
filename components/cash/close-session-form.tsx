@@ -52,7 +52,6 @@ export function CloseSessionForm({
     if (result.error) return showError(result.error);
     toast.success(t("closed"));
     if (redirectTo) router.push(redirectTo);
-    router.refresh();
   }
 
   const money = (amount: number) => formatPrice(amount, tCommon("currency"));

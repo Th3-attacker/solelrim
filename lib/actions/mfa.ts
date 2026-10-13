@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentAdmin, requireSuperAdmin } from "@/lib/auth/admin";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 export async function enrollTotpFactor(): Promise<
   { factorId: string; qrCode: string; secret: string } | { error: string }
@@ -44,7 +44,7 @@ export async function verifyTotpEnrollment(
     return { error: "invalidCode" };
   }
 
-  revalidatePath("/admin/settings");
+  revalidateAdmin();
   return {};
 }
 
@@ -67,7 +67,7 @@ export async function unenrollTotpFactor(factorId: string): Promise<{ error?: st
     return { error: "unenrollFailed" };
   }
 
-  revalidatePath("/admin/settings");
+  revalidateAdmin();
   return {};
 }
 
@@ -92,6 +92,6 @@ export async function resetAdminMfa(adminUserId: string): Promise<{ error?: stri
     ),
   );
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }

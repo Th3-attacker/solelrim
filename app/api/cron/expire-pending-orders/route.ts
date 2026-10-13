@@ -1,5 +1,5 @@
-import { revalidatePath } from "next/cache";
 import { cancelExpiredPendingOrders } from "@/lib/shop/pending-expiry";
+import { revalidateSite } from "@/lib/revalidate";
 
 // GET /api/cron/expire-pending-orders — called by Vercel Cron (vercel.json),
 // which sends "Authorization: Bearer $CRON_SECRET". Without CRON_SECRET set,
@@ -13,8 +13,7 @@ export async function GET(request: Request) {
   const cancelled = await cancelExpiredPendingOrders();
   if (cancelled.length > 0) {
     console.info(JSON.stringify({ cron: "expire-pending-orders", cancelled }));
-    revalidatePath("/admin/orders");
-    revalidatePath("/", "layout");
+    revalidateSite();
   }
   return Response.json({ cancelled: cancelled.length });
 }

@@ -84,7 +84,6 @@ export function SaleForm({
     }
 
     router.push(`/admin/sales/${result.saleId}`);
-    router.refresh();
     toast.success(tCommon("save"));
   };
 

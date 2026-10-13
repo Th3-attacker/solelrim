@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { ArrowCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +41,6 @@ export function RefundRequestDialog({
 }) {
   const t = useTranslations("refunds");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const showError = useRefundError();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -107,7 +105,6 @@ export function RefundRequestDialog({
       setOpen(false);
       setQuantities({});
       setReason("");
-      router.refresh();
     });
   }
 

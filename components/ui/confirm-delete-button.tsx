@@ -20,7 +20,8 @@ import {
 
 // The trash icon + confirmation dialog every "delete this row" action
 // shares. The caller supplies what differs: the action, the texts, and what
-// happens once it succeeded.
+// happens once it succeeded, if anything beyond the page the action already
+// re-renders (lib/revalidate.ts).
 export function ConfirmDeleteButton({
   title,
   description,
@@ -32,7 +33,7 @@ export function ConfirmDeleteButton({
   description: string;
   onDelete: () => Promise<{ error?: string }>;
   errorMessage: (error: string) => string;
-  onDeleted: () => void;
+  onDeleted?: () => void;
 }) {
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -47,7 +48,7 @@ export function ConfirmDeleteButton({
         return;
       }
       setOpen(false);
-      onDeleted();
+      onDeleted?.();
     });
   }
 

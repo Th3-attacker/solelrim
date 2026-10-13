@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import type { z } from "zod";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +48,6 @@ export function PromoCodeFormDialog({
 }) {
   const t = useTranslations("promoCodes");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -114,7 +112,6 @@ export function PromoCodeFormDialog({
 
     if (!promoCode) reset();
     setOpen(false);
-    router.refresh();
     toast.success(tCommon("save"));
   };
 

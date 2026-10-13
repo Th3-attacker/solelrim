@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Plus, Trash } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -41,7 +40,6 @@ export function SellersManager({
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -71,7 +69,6 @@ export function SellersManager({
       setEmail("");
       setPassword("");
       setOpen(false);
-      router.refresh();
     });
   }
 
@@ -84,7 +81,6 @@ export function SellersManager({
         );
         return;
       }
-      router.refresh();
     });
   }
 
@@ -95,7 +91,6 @@ export function SellersManager({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +24,6 @@ type SolalContactValues = {
 export function SolalContactForm({ contact }: { contact: SolalContactValues }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [values, setValues] = useState(contact);
 
@@ -41,7 +39,6 @@ export function SolalContactForm({ contact }: { contact: SolalContactValues }) {
         return;
       }
       toast.success(tCommon("save"));
-      router.refresh();
     });
   }
 

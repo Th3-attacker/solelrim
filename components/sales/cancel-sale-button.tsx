@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -26,7 +25,6 @@ export function CancelSaleButton({
 }) {
   const t = useTranslations("sales");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
@@ -44,7 +42,6 @@ export function CancelSaleButton({
       }
       setOpen(false);
       setReason("");
-      router.refresh();
       toast.success(t("cancelled"));
     });
   }

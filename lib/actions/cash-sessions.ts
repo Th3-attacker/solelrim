@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import type { InputJsonObject } from "@/lib/generated/prisma/internal/prismaNamespace";
@@ -26,16 +25,14 @@ import {
   dayClosureSchema,
   openSessionSchema,
 } from "@/lib/validation/cash-session";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 // Thrown inside a transaction to roll it back, returned to the caller as a
 // value (Next masks thrown action messages in production).
 class CashError extends Error {}
 
 function revalidateRegister() {
-  revalidatePath("/admin/pos");
-  revalidatePath("/admin/pos/register");
-  revalidatePath("/admin/pos/sessions");
-  revalidatePath("/admin/cash-closures");
+  revalidateAdmin();
 }
 
 export type CashActionResult = { error?: string; sessionId?: string };
@@ -221,7 +218,7 @@ export async function closeCashSession(input: unknown): Promise<CashActionResult
       });
     });
     revalidateRegister();
-    revalidatePath(`/admin/pos/sessions/${sessionId}`);
+    revalidateAdmin();
     return { sessionId };
   } catch (err) {
     if (err instanceof CashError) return { error: err.message };
@@ -304,6 +301,6 @@ export async function closeStoreDay(input: unknown): Promise<{ error?: string }>
     throw err;
   }
 
-  revalidatePath("/admin/cash-closures");
+  revalidateAdmin();
   return {};
 }

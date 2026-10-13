@@ -612,7 +612,7 @@ describe("submitOrder", () => {
     const createArgs = prismaMock.order.create.mock.calls[0][0];
     expect(createArgs.data.subtotal).toBe(3000); // basePrice 1500 * qty 2
     expect(createArgs.data.total).toBe(3000);
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/admin", "layout");
   });
 
   it("applies a valid promo code, stores the discount, and increments usedCount", async () => {
@@ -943,9 +943,8 @@ describe("confirmOrder", () => {
       }),
     );
     expect(sendOrderPush).toHaveBeenCalledWith("order-1", "confirmed");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders/order-1");
-    expect(revalidatePath).toHaveBeenCalledWith("/");
+    // The order lists and pages of every locale, and the storefront.
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 });
 
@@ -1099,7 +1098,7 @@ describe("deliverOrder", () => {
     });
     const saleArgs = prismaMock.sale.create.mock.calls[0][0];
     expect(saleArgs.data.notes).toContain("CMD-20260729-1234");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/sales");
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 
   it("books the sale as a wallet payment, linked to the one client with that phone", async () => {

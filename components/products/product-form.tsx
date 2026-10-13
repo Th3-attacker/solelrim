@@ -85,7 +85,6 @@ export function ProductForm({
     }
 
     router.push(`/admin/products/${result.productId}/edit`);
-    router.refresh();
     toast.success(tCommon("save"));
   };
 

@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
   promoCodeSchema,
@@ -11,6 +10,7 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
 import { getClientIp, RATE_LIMITS, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 export type PromoCodeActionResult = { error?: string; promoCodeId?: string };
 
@@ -61,8 +61,7 @@ export async function createPromoCode(
         maxUses,
       },
     });
-    revalidatePath("/admin/promo-codes");
-    revalidatePath("/admin/clients");
+    revalidateAdmin();
     return { promoCodeId: created.id };
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
@@ -108,8 +107,7 @@ export async function updatePromoCode(
     if (updated.count === 0) {
       return { error: "notFound" };
     }
-    revalidatePath("/admin/promo-codes");
-    revalidatePath("/admin/clients");
+    revalidateAdmin();
     return { promoCodeId };
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
@@ -132,8 +130,7 @@ export async function deactivatePromoCode(
     return { error: "notFound" };
   }
 
-  revalidatePath("/admin/promo-codes");
-  revalidatePath("/admin/clients");
+  revalidateAdmin();
   return {};
 }
 

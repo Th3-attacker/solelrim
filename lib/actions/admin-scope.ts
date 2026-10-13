@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ADMIN_SCOPE_COOKIE } from "@/lib/shop/admin-scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 // A boutique admin has no legitimate reason to call this — they're
 // permanently locked to their assigned boutique (see admin-scope.ts's
@@ -25,5 +26,7 @@ export async function setAdminScope(key: string): Promise<{ error?: string }> {
     secure: process.env.NODE_ENV === "production",
   });
 
+  // Every admin page shows the selected boutique's data.
+  revalidateAdmin();
   return {};
 }

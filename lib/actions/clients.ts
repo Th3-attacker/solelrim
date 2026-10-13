@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { clientSchema, type ClientInput } from "@/lib/validation/client";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 export type ClientActionResult = { error?: string; clientId?: string };
 
@@ -20,7 +20,7 @@ export async function createClientRecord(
   const created = await prisma.client.create({
     data: { ...parsed.data, productType },
   });
-  revalidatePath("/admin/clients");
+  revalidateAdmin();
   return { clientId: created.id };
 }
 
@@ -63,8 +63,7 @@ export async function updateClientRecord(
   if (updated.count === 0) {
     return { error: "notFound" };
   }
-  revalidatePath("/admin/clients");
-  revalidatePath(`/admin/clients/${clientId}`);
+  revalidateAdmin();
   return { clientId };
 }
 
@@ -87,6 +86,6 @@ export async function deleteClient(
   }
 
   await prisma.client.delete({ where: { id: clientId } });
-  revalidatePath("/admin/clients");
+  revalidateAdmin();
   return {};
 }

@@ -1,7 +1,6 @@
 "use server";
 
 import { createHash } from "node:crypto";
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStoreTypes } from "@/lib/queries/settings";
@@ -32,6 +31,7 @@ import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import { getProductImageUrl } from "@/lib/supabase/storage";
+import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
@@ -366,7 +366,7 @@ async function placeOrder(
           },
         });
       });
-      revalidatePath("/admin/orders");
+      revalidateAdmin();
       return { reference: order.reference, orderId: order.id };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
@@ -652,9 +652,7 @@ export async function confirmOrder(
   });
 
   await sendOrderPush(orderId, "confirmed");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -734,9 +732,7 @@ export async function rejectOrder(
   });
 
   await sendOrderPush(orderId, "rejected");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -766,8 +762,7 @@ export async function shipOrder(
   });
 
   await sendOrderPush(orderId, "shipped");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
+  revalidateAdmin();
   return {};
 }
 
@@ -894,10 +889,7 @@ export async function deliverOrder(
   });
 
   await sendOrderPush(orderId, "delivered");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/admin/sales");
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }
 
@@ -977,8 +969,6 @@ export async function cancelOrder(
   });
 
   await sendOrderPush(orderId, "cancelled");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/");
+  revalidateSite();
   return {};
 }

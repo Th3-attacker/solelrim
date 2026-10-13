@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { adminUserInputSchema } from "@/lib/validation/admin-user";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 export async function createBoutiqueAdmin(
   input: unknown,
@@ -53,7 +53,7 @@ export async function createBoutiqueAdmin(
     throw err;
   }
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }
 
@@ -74,7 +74,7 @@ export async function deleteBoutiqueAdmin(
   await supabase.auth.admin.deleteUser(admin.supabaseUserId).catch(() => {});
   await prisma.adminUser.delete({ where: { id: adminUserId } });
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }
 
@@ -98,7 +98,7 @@ export async function setAdminCanManageAppearance(
     data: { canManageAppearance },
   });
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }
 
@@ -126,6 +126,6 @@ export async function setAdminMfaRequired(
     return { error: "updateFailed" };
   }
 
-  revalidatePath("/admin/settings/global");
+  revalidateAdmin();
   return {};
 }

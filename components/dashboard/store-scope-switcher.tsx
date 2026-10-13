@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import { CaretUpDown, Storefront } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +26,6 @@ export function StoreScopeSwitcher({
   currentScope: string;
 }) {
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const current = storeTypes.find((s) => s.key === currentScope);
@@ -41,7 +39,6 @@ export function StoreScopeSwitcher({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
