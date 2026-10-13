@@ -381,7 +381,7 @@ export function CheckoutFlow({
         <h1 className="text-heading-xs">{t("successTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
         <div className="flex w-full flex-col items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-md border bg-card py-1.5 pr-1.5 pl-3">
+          <div className="flex items-center gap-1 rounded-md border bg-card py-1.5 ps-3 pe-1.5">
             <span className="font-mono text-sm">{reference}</span>
             <Button
               type="button"

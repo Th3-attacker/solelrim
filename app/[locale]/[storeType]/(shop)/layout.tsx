@@ -229,36 +229,21 @@ export default async function ShopLayout({
                   </Link>
                 </div>
                 <nav aria-label={t("mainNavLabel")} className="hidden items-center justify-center gap-6 md:flex">
-                  <Link
-                    href={basePath || "/"}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {tNav("home")}
-                  </Link>
-                  <Link
-                    href={`${basePath}/products`}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {tNav("products")}
-                  </Link>
-                  <Link
-                    href={`${basePath}/about`}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {t("aboutLink")}
-                  </Link>
-                  <Link
-                    href={`${basePath}/contact`}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {t("contactLink")}
-                  </Link>
-                  <Link
-                    href={`${basePath}/track-order`}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {t("trackOrderLink")}
-                  </Link>
+                  {[
+                    { href: basePath || "/", label: tNav("home") },
+                    { href: `${basePath}/products`, label: tNav("products") },
+                    { href: `${basePath}/about`, label: t("aboutLink") },
+                    { href: `${basePath}/contact`, label: t("contactLink") },
+                    { href: `${basePath}/track-order`, label: t("trackOrderLink") },
+                  ].map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                 </nav>
                 <div className="flex items-center justify-end gap-1">
                   <div className="hidden md:block">

@@ -213,10 +213,7 @@ export default async function DashboardPage() {
                         {variant.productName} ({variant.size}/{variant.color})
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="border-amber-300 text-amber-700 dark:border-amber-800 dark:text-amber-400"
-                        >
+                        <Badge variant="warning">
                           {variant.stock}
                         </Badge>
                       </TableCell>
