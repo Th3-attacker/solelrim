@@ -382,7 +382,10 @@ describe("submitOrder", () => {
         meta: { target: ["productType", "idempotencyKey"] },
       }),
     );
-    prismaMock.order.findUnique.mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+    // Nothing yet when this send starts; the winner's order once it lost.
+    prismaMock.order.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
 
     const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
 
@@ -395,6 +398,49 @@ describe("submitOrder", () => {
     // Not retried with a fresh reference, and this attempt's upload is cleaned up.
     expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
     expect(remove).toHaveBeenCalled();
+  });
+
+  it("answers a resend whose first try went through with that order, placing nothing", async () => {
+    prismaMock.order.findUnique.mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+    expect(prismaMock.order.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" } },
+      }),
+    );
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("gives a resend that stopped early (the first send took the last unit) the first order", async () => {
+    prismaMock.order.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ ...baseVariant, stock: 0 }] as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+  });
+
+  it("keeps a business error when no order exists for the key", async () => {
+    prismaMock.order.findUnique.mockResolvedValue(null);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ ...baseVariant, stock: 0 }] as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ error: "insufficientStock" });
+  });
+
+  it("refuses a malformed key", async () => {
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "x".repeat(65) });
+
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("stores the wallet transaction id, trimmed and upper-cased, and the screenshot's SHA-256", async () => {

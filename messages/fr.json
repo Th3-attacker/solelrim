@@ -441,7 +441,10 @@
     "promoCodeExpiredError": "Ce code promo a expiré.",
     "promoCodeUsageLimitError": "Ce code promo a atteint sa limite d'utilisation.",
     "promoCodeNotYoursError": "Ce code promo n'est pas valide pour ce numéro de téléphone.",
-    "promoCodeAlreadyUsedError": "Ce code promo a déjà été utilisé avec ce numéro de téléphone."
+    "promoCodeAlreadyUsedError": "Ce code promo a déjà été utilisé avec ce numéro de téléphone.",
+    "submitFailedError": "La commande n'a pas pu être envoyée. Vérifiez votre connexion et réessayez : elle ne sera pas enregistrée deux fois.",
+    "uploadFailedError": "L'envoi de la capture d'écran a échoué. Merci de réessayer.",
+    "invalidFileError": "Ce fichier n'est pas une image valide (JPG, PNG ou WebP)."
   },
   "orders": {
     "title": "Commandes",

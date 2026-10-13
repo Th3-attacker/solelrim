@@ -18,9 +18,9 @@ import { StateMessage } from "@/components/ui/state-message";
 import { useCart } from "@/components/cart/cart-provider";
 import { CheckoutStepper } from "@/components/checkout/checkout-stepper";
 import { OrderSummary } from "@/components/checkout/order-summary";
-import { submitOrder } from "@/lib/actions/orders";
+import { submitOrder, type SubmitOrderResult } from "@/lib/actions/orders";
 import { previewPromoCode } from "@/lib/actions/promo-codes";
-import { computeDiscountAmount } from "@/lib/shop/promo-code";
+import { computeDiscountAmount, isPromoCodeError } from "@/lib/shop/promo-code";
 import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
@@ -44,6 +44,24 @@ type Settings = {
 };
 
 type Step = 1 | 2 | 3 | "success";
+
+// What the customer is told when submitOrder refuses the order; any other
+// code gets the generic "check your info" message.
+const SUBMIT_ERROR_MESSAGES: Record<string, string> = {
+  insufficientStock: "insufficientStockError",
+  rateLimited: "rateLimitedError",
+  fileTooLarge: "fileTooLarge",
+  invalidFile: "invalidFileError",
+  uploadFailed: "uploadFailedError",
+};
+
+// 32 hex characters. getRandomValues rather than randomUUID, which only
+// exists on https (a phone testing the dev server over the LAN has none).
+function newAttemptKey(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+}
 
 export function CheckoutFlow({
   settings,
@@ -100,6 +118,12 @@ export function CheckoutFlow({
     customer: CheckoutCustomerInput;
     senderPhone: string;
   } | null>(null);
+
+  // The Idempotency-Key of the order being submitted, kept while its content
+  // stays the same: a retry after a lost answer (bad connection) gets the
+  // order the first try placed instead of a second one. A changed cart,
+  // customer, sender number or promo code is a different order, so a new key.
+  const attemptRef = useRef<{ key: string; content: string } | null>(null);
 
   const storageKey = `solelrim-checkout-${storeType}`;
   const previousVariantIdsRef = useRef<Set<string>>(new Set());
@@ -235,7 +259,13 @@ export function CheckoutFlow({
       setSenderPhoneError(tCommon("invalidPhone"));
       return;
     }
-    setSubmitting(true);
+    const items = JSON.stringify(
+      cart.items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+    );
+    const content = JSON.stringify([items, customerInfo, senderPhone, appliedPromo?.code ?? null]);
+    if (attemptRef.current?.content !== content) {
+      attemptRef.current = { key: newAttemptKey(), content };
+    }
 
     const formData = new FormData();
     formData.set("customerName", customerInfo.customerName);
@@ -244,23 +274,27 @@ export function CheckoutFlow({
     formData.set("paymentSenderPhone", senderPhone);
     formData.set("locale", locale);
     formData.set("productType", storeType);
-    formData.set(
-      "items",
-      JSON.stringify(
-        cart.items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
-      ),
-    );
+    formData.set("items", items);
     formData.set("screenshot", file);
     if (appliedPromo) {
       formData.set("promoCode", appliedPromo.code);
     }
 
-    const result = await submitOrder(formData);
-    setSubmitting(false);
+    setSubmitting(true);
+    let result: SubmitOrderResult;
+    try {
+      result = await submitOrder(formData, { idempotencyKey: attemptRef.current.key });
+    } catch {
+      // No answer (connection lost, server error): the order may or may not
+      // exist. The button comes back, and a retry sends the same key.
+      toast.error(t("submitFailedError"));
+      return;
+    } finally {
+      setSubmitting(false);
+    }
 
     if (result.error || !result.reference) {
-      const promoErrors = ["notFound", "expired", "usageLimitReached", "notYours", "alreadyUsed"];
-      if (result.error && promoErrors.includes(result.error)) {
+      if (isPromoCodeError(result.error)) {
         // The code passed preview but became invalid by the time this
         // submitted (deactivated, limit hit by someone else, etc) — the
         // total just went up from what the customer's screenshot was for.
@@ -275,25 +309,17 @@ export function CheckoutFlow({
         toast.error(promoCodeErrorMessage(result.error));
         return;
       }
-      if (result.error === "fileTooLarge") {
+      if (result.error === "fileTooLarge" || result.error === "invalidFile") {
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
-        setFileSizeError(t("fileTooLarge"));
+        setFileSizeError(t(SUBMIT_ERROR_MESSAGES[result.error]));
       }
       if (result.error === "insufficientStock") {
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setStep(1);
       }
-      toast.error(
-        result.error === "insufficientStock"
-          ? t("insufficientStockError")
-          : result.error === "rateLimited"
-            ? t("rateLimitedError")
-            : result.error === "fileTooLarge"
-              ? t("fileTooLarge")
-              : t("validationError"),
-      );
+      toast.error(t(SUBMIT_ERROR_MESSAGES[result.error ?? ""] ?? "validationError"));
       return;
     }
 

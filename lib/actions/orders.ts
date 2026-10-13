@@ -9,6 +9,7 @@ import {
   cancelReasonSchema,
   checkoutCustomerSchema,
   orderItemsSchema,
+  idempotencyKeySchema,
   paymentSenderPhoneSchema,
   trackOrderSchema,
 } from "@/lib/validation/order";
@@ -20,7 +21,7 @@ import { getClientIp, peekRateLimit, rateLimitRetryAfter, recordRateLimitHit } f
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
-import { findValidPromoCode, computePromoDiscount } from "@/lib/shop/promo-code";
+import { findValidPromoCode, computePromoDiscount, isPromoCodeError } from "@/lib/shop/promo-code";
 import { logAdminAction } from "@/lib/audit";
 import { sendOrderPush } from "@/lib/push/order-push";
 import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
@@ -51,11 +52,43 @@ export type SubmitOrderResult = {
   orderId?: string;
 };
 
+// Places the order the checkout form (or the app's multipart body) describes.
+//
+// idempotencyKey (optional): the same on every resend of one order — the
+// app's Idempotency-Key header, the website's checkout attempt. A resend whose
+// first try already went through (the answer was lost on a bad connection)
+// gets that order back instead of placing a second one: no stock or promo
+// code taken twice.
 export async function submitOrder(
   formData: FormData,
   options?: { idempotencyKey?: string },
 ): Promise<SubmitOrderResult> {
-  const idempotencyKey = options?.idempotencyKey ?? null;
+  const idempotencyKey = options?.idempotencyKey;
+  if (idempotencyKey === undefined) return placeOrder(formData, null);
+  if (!idempotencyKeySchema.safeParse(idempotencyKey).success) {
+    return { error: "invalid" };
+  }
+
+  // Looked up only in the boutique the form names: placeOrder checks that
+  // value against the registry, and a key only ever matches its own boutique.
+  const productType = formData.get("productType");
+  if (typeof productType !== "string") return { error: "invalid" };
+
+  const earlier = await findOrderByIdempotencyKey(productType, idempotencyKey);
+  if (earlier) return earlier;
+
+  const result = await placeOrder(formData, idempotencyKey);
+  if (!result.error) return result;
+  // Two sends of the same order side by side: the one that lost may stop
+  // early (the winner took the last unit, or the rate limit) — the order
+  // exists all the same, so it gets the winner's answer.
+  return (await findOrderByIdempotencyKey(productType, idempotencyKey)) ?? result;
+}
+
+async function placeOrder(
+  formData: FormData,
+  idempotencyKey: string | null,
+): Promise<SubmitOrderResult> {
   const ip = await getClientIp();
   const ipWait = await rateLimitRetryAfter(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
   if (ipWait !== null) {
@@ -244,8 +277,6 @@ export async function submitOrder(
     }
   };
 
-  const PROMO_CODE_ERRORS = ["notFound", "expired", "usageLimitReached", "notYours", "alreadyUsed"];
-
   for (let attempt = 0; attempt < 3; attempt++) {
     const reference = buildOrderReference();
     try {
@@ -369,7 +400,7 @@ export async function submitOrder(
         await discardProof();
         return { error: "insufficientStock" };
       }
-      if (err instanceof Error && PROMO_CODE_ERRORS.includes(err.message)) {
+      if (err instanceof Error && isPromoCodeError(err.message)) {
         await discardProof();
         return { error: err.message };
       }

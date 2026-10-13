@@ -441,7 +441,10 @@
     "promoCodeExpiredError": "انتهت صلاحية كود الخصم هذا.",
     "promoCodeUsageLimitError": "بلغ كود الخصم هذا حد استخدامه.",
     "promoCodeNotYoursError": "كود الخصم هذا غير صالح لهذا الرقم.",
-    "promoCodeAlreadyUsedError": "تم استخدام كود الخصم هذا من قبل مع هذا الرقم."
+    "promoCodeAlreadyUsedError": "تم استخدام كود الخصم هذا من قبل مع هذا الرقم.",
+    "submitFailedError": "تعذّر إرسال طلبك. تحقّق من اتصالك ثم أعد المحاولة، ولن يُسجَّل الطلب مرتين.",
+    "uploadFailedError": "تعذّر رفع لقطة الشاشة. يرجى إعادة المحاولة.",
+    "invalidFileError": "هذا الملف ليس صورة صالحة (JPG أو PNG أو WebP)."
   },
   "orders": {
     "title": "الطلبات",

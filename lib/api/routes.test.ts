@@ -6,7 +6,6 @@ vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/actions/orders", () => ({ submitOrder: vi.fn(), trackOrder: vi.fn() }));
 vi.mock("@/lib/actions/promo-codes", () => ({ previewPromoCode: vi.fn() }));
-vi.mock("@/lib/queries/orders", () => ({ findOrderByIdempotencyKey: vi.fn() }));
 vi.mock("@/lib/actions/cart", () => ({ checkVariantStocks: vi.fn() }));
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: vi.fn(),
@@ -26,7 +25,6 @@ import { prisma } from "@/lib/prisma";
 import { submitOrder, trackOrder } from "@/lib/actions/orders";
 import { checkRateLimit, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { checkVariantStocks } from "@/lib/actions/cart";
-import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import {
   getActiveProductsPage,
   getCatalogueFacets,
@@ -44,7 +42,6 @@ const trackOrderMock = trackOrder as unknown as Mock;
 const rateLimitMock = checkRateLimit as unknown as Mock;
 const retryAfterMock = rateLimitRetryAfter as unknown as Mock;
 const stocksMock = checkVariantStocks as unknown as Mock;
-const findByKeyMock = findOrderByIdempotencyKey as unknown as Mock;
 
 const ctx = (key: string) => ({ params: Promise.resolve({ key }) });
 const open = { key: "sport", licenseStatus: "ACTIVE", licenseType: "MONTHLY", licenseExpiresAt: null };
@@ -62,7 +59,6 @@ beforeEach(() => {
   rateLimitMock.mockReset().mockResolvedValue(true);
   retryAfterMock.mockReset().mockResolvedValue(null);
   stocksMock.mockReset();
-  findByKeyMock.mockReset().mockResolvedValue(null);
   prismaMock.storeType.findUnique.mockResolvedValue(open as never);
 });
 
@@ -144,38 +140,15 @@ describe("POST orders with an Idempotency-Key", () => {
     expect(submitOrderMock.mock.calls[0][1]).toEqual({ idempotencyKey: "k-1" });
   });
 
-  it("answers a resend after success with the same order, without placing another", async () => {
-    findByKeyMock.mockResolvedValue({ reference: "CMD-1", orderId: "o1" });
+  it("answers a resend with the order submitOrder found for the key", async () => {
+    // The lookup itself is submitOrder's (lib/actions/orders.test.ts).
+    submitOrderMock.mockResolvedValue({ reference: "CMD-1", orderId: "o1" });
 
     const response = await postOrder(withKey("k-1"), ctx("sport"));
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-    expect(findByKeyMock).toHaveBeenCalledWith("sport", "k-1");
-    expect(submitOrderMock).not.toHaveBeenCalled();
-  });
-
-  it("gives the losing one of two concurrent sends the winner's order", async () => {
-    // The winner took the last unit while this one was on its way.
-    findByKeyMock.mockResolvedValueOnce(null).mockResolvedValueOnce({ reference: "CMD-1", orderId: "o1" });
-    submitOrderMock.mockResolvedValue({ error: "insufficientStock" });
-
-    const response = await postOrder(withKey("k-1"), ctx("sport"));
-
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-  });
-
-  it("looks the key up only in the boutique of the URL", async () => {
-    // The same key was already used in "sport"; here it's a new order.
-    prismaMock.storeType.findUnique.mockResolvedValue({ ...open, key: "cosmetique" } as never);
-    submitOrderMock.mockResolvedValue({ reference: "CMD-2", orderId: "o2" });
-
-    const response = await postOrder(withKey("k-1"), ctx("cosmetique"));
-
-    expect(response.status).toBe(201);
-    expect(findByKeyMock).toHaveBeenCalledWith("cosmetique", "k-1");
-    expect(submitOrderMock).toHaveBeenCalled();
+    expect(submitOrderMock.mock.calls[0][0].get("productType")).toBe("sport");
   });
 
   it("refuses a key longer than 64 characters", async () => {
@@ -191,7 +164,6 @@ describe("POST orders with an Idempotency-Key", () => {
     const response = await postOrder(post("/x", new FormData()), ctx("sport"));
 
     expect(response.status).toBe(409);
-    expect(findByKeyMock).not.toHaveBeenCalled();
     expect(submitOrderMock.mock.calls[0][1]).toEqual({ idempotencyKey: undefined });
   });
 });

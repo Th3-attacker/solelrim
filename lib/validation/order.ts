@@ -33,6 +33,10 @@ const orderItemInputSchema = z.object({
 // transaction that issues one UPDATE per line.
 export const orderItemsSchema = z.array(orderItemInputSchema).min(1).max(50);
 
+// The key a resend of one order carries (the app's Idempotency-Key header,
+// the website's checkout attempt): at most 64 printable ASCII characters.
+export const idempotencyKeySchema = z.string().regex(/^[\x21-\x7e]{1,64}$/);
+
 export const cancelReasonSchema = z.object({
   reason: z.string().min(1),
 });
