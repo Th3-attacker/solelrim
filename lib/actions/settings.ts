@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/scope";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { revalidateSite } from "@/lib/revalidate";
+import { PUBLIC_IMAGE_CACHE_CONTROL } from "@/lib/image-config";
 
 const PRODUCT_IMAGES_BUCKET = "product-images";
 
@@ -107,6 +108,7 @@ export async function uploadStoreLogo(formData: FormData): Promise<{ error?: str
     .from(PRODUCT_IMAGES_BUCKET)
     .upload(storagePath, fileBuffer, {
       contentType: detected.contentType,
+      cacheControl: PUBLIC_IMAGE_CACHE_CONTROL,
     });
 
   if (uploadError) {
@@ -172,6 +174,7 @@ export async function uploadStoreHeroImage(formData: FormData): Promise<{ error?
     .from(PRODUCT_IMAGES_BUCKET)
     .upload(storagePath, fileBuffer, {
       contentType: detected.contentType,
+      cacheControl: PUBLIC_IMAGE_CACHE_CONTROL,
     });
 
   if (uploadError) {

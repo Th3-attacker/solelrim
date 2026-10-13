@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl } from "@/lib/supabase/storage";
+import { optimizedImagePath } from "@/lib/image-config";
 import { getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct } from "@/lib/shop/badges";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
@@ -42,7 +43,12 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${product.name} — ${siteName}`;
   const description = product.description?.trim() || tShop("heroSubtitle");
-  const imageUrl = product.images[0] ? getProductImageUrl(product.images[0].storagePath) : null;
+  // Through the image optimizer, not the original: WhatsApp and the other
+  // link previews fetch og:image on every share, and an original can weigh
+  // a few MB (each fetch counts against Supabase's egress).
+  const imageUrl = product.images[0]
+    ? optimizedImagePath(getProductImageUrl(product.images[0].storagePath), 1200)
+    : null;
   const keywords = [
     ...new Set([
       product.name,
@@ -134,7 +140,9 @@ export default async function ProductDetailPage({
     "@type": "Product",
     name: product.name,
     description: product.description?.trim() || t("heroSubtitle"),
-    image: images.map((image) => image.url),
+    image: images.map((image) =>
+      new URL(optimizedImagePath(image.url, 1200), canonicalUrl).toString(),
+    ),
     category: product.category.name,
     brand: { "@type": "Brand", name: siteName },
     offers: {
