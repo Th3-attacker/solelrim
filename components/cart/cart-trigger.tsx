@@ -22,7 +22,7 @@ import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
 import { StateMessage } from "@/components/ui/state-message";
 import { toast } from "@/components/ui/toast";
-import { getVariantStocks } from "@/lib/actions/cart";
+import { fetchVariantStocks } from "@/lib/shop/storefront-api";
 import { buildCartShareText } from "@/lib/shop/cart-share";
 import { encodeCartEntries } from "@/lib/shop/cart-link";
 import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
@@ -62,11 +62,12 @@ export function CartTrigger({ basePath }: { basePath: string }) {
   // sheet opens, not continuously — cheap enough to just re-check then.
   async function handleOpenChange(open: boolean) {
     if (!open || items.length === 0) return;
-    const stockByVariantId = await getVariantStocks(
+    const stockByVariantId = await fetchVariantStocks(
       storeType,
       items.map((i) => i.variantId),
     );
-    // null means the check didn't happen (rate-limited or invalid input) —
+    // null means the check didn't happen (rate-limited, invalid input, no
+    // connection) —
     // leave the cart as-is rather than let an absent-from-the-map default
     // read as "everything just sold out".
     if (!stockByVariantId) return;

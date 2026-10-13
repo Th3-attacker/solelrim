@@ -21,7 +21,7 @@ import {
   SHEET_PEEK_INSET,
 } from "@/hooks/use-visual-viewport";
 import { matchesSearch } from "@/lib/shop/search-text";
-import { searchProductSuggestions } from "@/lib/actions/search";
+import { fetchProductSuggestions } from "@/lib/shop/storefront-api";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +39,7 @@ type SearchItem =
     };
 
 const MAX_CATEGORY_SUGGESTIONS = 3;
+const MAX_PRODUCT_SUGGESTIONS = 6;
 const SEARCH_DEBOUNCE_MS = 250;
 
 export function SearchTrigger({
@@ -75,12 +76,15 @@ export function SearchTrigger({
     [categories, basePath],
   );
 
-  // Product matches come from the database (lib/actions/search.ts), not a
+  // Product matches come from the database (the catalogue API's search), not a
   // full in-memory catalog filtered here — the catalog can grow well past
   // what's reasonable to ship to every visitor just to power the search
   // box. Debounced so it isn't a query per keystroke.
   const [matchedProducts, setMatchedProducts] = useState<SearchItem[]>([]);
   const [searchPending, startSearchTransition] = useTransition();
+  // Set when the search was refused for too many requests, so the box says
+  // so instead of "no results".
+  const [searchLimited, setSearchLimited] = useState(false);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -88,11 +92,22 @@ export function SearchTrigger({
     // returns [] whenever the query is empty, so a stale matchedProducts
     // value from a previous query never actually surfaces.
     if (!trimmed) return;
+    const controller = new AbortController();
     const timeout = setTimeout(() => {
       startSearchTransition(async () => {
-        const results = await searchProductSuggestions(productType, trimmed);
+        let result;
+        try {
+          result = await fetchProductSuggestions(productType, trimmed, MAX_PRODUCT_SUGGESTIONS, controller.signal);
+        } catch {
+          return; // superseded by a newer query
+        }
+        setSearchLimited("error" in result && result.error === "rateLimited");
+        if ("error" in result) {
+          setMatchedProducts([]);
+          return;
+        }
         setMatchedProducts(
-          results.map((product) => ({
+          result.products.map((product) => ({
             type: "product",
             id: product.id,
             href: `${basePath}/products/${product.slug}`,
@@ -103,7 +118,10 @@ export function SearchTrigger({
         );
       });
     }, SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, [query, productType, basePath]);
 
   const matchedItems = useMemo<SearchItem[]>(() => {
@@ -212,7 +230,11 @@ export function SearchTrigger({
       </div>
     ) : (
       <p className="py-3 text-sm text-muted-foreground">
-        {hasQuery && searchPending ? tCommon("loading") : tCommon("noResults")}
+        {hasQuery && searchPending
+          ? tCommon("loading")
+          : hasQuery && searchLimited
+            ? t("searchRateLimited")
+            : tCommon("noResults")}
       </p>
     );
 

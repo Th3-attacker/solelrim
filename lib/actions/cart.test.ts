@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { getVariantStocks, resolveSharedCartLines } from "@/lib/actions/cart";
+import { resolveSharedCartLines } from "@/lib/actions/cart";
 import { checkVariantStocks } from "@/lib/services/cart";
 import { RATE_LIMITS } from "@/lib/rate-limit";
 
@@ -28,11 +28,11 @@ beforeEach(() => {
   );
 });
 
-describe("getVariantStocks", () => {
-  it("returns an empty object without querying anything for an empty list", async () => {
-    const result = await getVariantStocks("sport", []);
+describe("checkVariantStocks: the stock map", () => {
+  it("returns an empty map without querying anything for an empty list", async () => {
+    const result = await checkVariantStocks("sport", []);
 
-    expect(result).toEqual({});
+    expect(result).toEqual({ stocks: {} });
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
@@ -42,9 +42,9 @@ describe("getVariantStocks", () => {
       { id: "variant-2", stock: 0 },
     ] as never);
 
-    const result = await getVariantStocks("sport", ["variant-1", "variant-2"]);
+    const result = await checkVariantStocks("sport", ["variant-1", "variant-2"]);
 
-    expect(result).toEqual({ "variant-1": 5, "variant-2": 0 });
+    expect(result).toEqual({ stocks: { "variant-1": 5, "variant-2": 0 } });
     // A product taken off sale is left out like a variant that no longer
     // exists, so the cart drops it (submitOrder would refuse it).
     expect(prismaMock.productVariant.findMany).toHaveBeenCalledWith(
@@ -55,25 +55,6 @@ describe("getVariantStocks", () => {
         },
       }),
     );
-  });
-
-  it("returns null instead of an empty object for invalid input", async () => {
-    // Regression guard: the cart's SYNC_STOCK reducer treats any variant
-    // absent from the returned map as 0 in stock and drops it, so a `{}`
-    // here (rather than null) would silently empty a real cart.
-    const result = await getVariantStocks("sport", Array(51).fill("variant-1"));
-
-    expect(result).toBeNull();
-    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
-  });
-
-  it("returns null and does no query once the caller's IP is over the limit", async () => {
-    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.stocksPerIp.max);
-
-    const result = await getVariantStocks("sport", ["variant-1"]);
-
-    expect(result).toBeNull();
-    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 });
 

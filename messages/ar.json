@@ -320,7 +320,8 @@
     "footerNavLabel": "روابط تذييل الصفحة",
     "breadcrumbLabel": "مسار التنقل",
     "skipToContent": "الانتقال إلى المحتوى",
-    "colorSwatchLabel": "اللون: {color}"
+    "colorSwatchLabel": "اللون: {color}",
+    "searchRateLimited": "عمليات بحث كثيرة في وقت واحد. أعد المحاولة بعد دقيقة."
   },
   "contact": {
     "metaTitle": "تواصل معنا",

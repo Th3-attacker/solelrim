@@ -320,7 +320,8 @@
     "footerNavLabel": "Footer links",
     "breadcrumbLabel": "Breadcrumb",
     "skipToContent": "Skip to content",
-    "colorSwatchLabel": "Color: {color}"
+    "colorSwatchLabel": "Color: {color}",
+    "searchRateLimited": "Too many searches at once. Try again in a minute."
   },
   "contact": {
     "metaTitle": "Contact",

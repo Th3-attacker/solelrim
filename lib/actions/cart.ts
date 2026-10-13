@@ -3,28 +3,8 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
-import { checkVariantStocks, MAX_CART_LINES } from "@/lib/services/cart";
+import { MAX_CART_LINES } from "@/lib/services/cart";
 import { getVariantPrice } from "@/lib/shop/price";
-
-// The cart persists in localStorage with a stock snapshot taken at
-// add-to-cart time, which can go stale (another sale, an admin adjusting
-// stock, or the visitor just coming back days later). Public and
-// unauthenticated by design — this only ever reveals a stock count for
-// variants the caller already knows the id of, same as the storefront
-// itself already shows.
-//
-// Returns null (not `{}`) on invalid input or when rate-limited — the
-// caller's cart-sync reducer treats any variant absent from the returned
-// map as 0 in stock and drops it, so an empty object here would read as
-// "everything in the cart just sold out" and wipe it. null tells the
-// caller to skip syncing this time instead.
-export async function getVariantStocks(
-  productType: string,
-  variantIds: string[],
-): Promise<Record<string, number> | null> {
-  const result = await checkVariantStocks(productType, variantIds);
-  return "stocks" in result ? result.stocks : null;
-}
 
 export type SharedCartLine = {
   variantId: string;

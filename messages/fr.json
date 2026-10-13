@@ -320,7 +320,8 @@
     "footerNavLabel": "Liens du pied de page",
     "breadcrumbLabel": "Fil d'Ariane",
     "skipToContent": "Aller au contenu",
-    "colorSwatchLabel": "Couleur : {color}"
+    "colorSwatchLabel": "Couleur : {color}",
+    "searchRateLimited": "Trop de recherches d'un coup. Réessayez dans une minute."
   },
   "contact": {
     "metaTitle": "Contact",
