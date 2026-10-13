@@ -15,18 +15,20 @@ import type { AdminUser } from "@/lib/generated/prisma/client";
 export const ADMIN_SCOPE_COOKIE = "admin_store_scope";
 
 export async function getAdminScope(): Promise<string> {
-  const admin = await getCurrentAdmin().catch(() => null);
-  // Every admin data page (orders, clients, sales, revenue, ...) resolves
-  // its boutique through here, so refusing a SELLER here is the
-  // server-side guard behind proxy.ts's redirect — a request that skips
-  // the proxy still can't read those pages.
-  if (admin?.role === "SELLER") {
+  // Every admin data page (orders and their payment proofs, clients, sales,
+  // revenue, ...) resolves its boutique through here, so this is the
+  // server-side guard behind proxy.ts's redirect: a request that skips the
+  // proxy, or a client navigation that re-renders only the page and not the
+  // layout's own check, still can't read those pages. No session or no
+  // AdminUser row: unauthorized (getCurrentAdmin throws). A SELLER: forbidden.
+  const admin = await getCurrentAdmin();
+  if (admin.role === "SELLER") {
     throw new ExpectedError("forbidden");
   }
   // A boutique admin is permanently locked to their assigned boutique —
   // the free-choice cookie is never consulted for this role, so nothing
   // (a stale cookie, a crafted request) can move them outside it.
-  if (admin?.role === "BOUTIQUE_ADMIN") {
+  if (admin.role === "BOUTIQUE_ADMIN") {
     return admin.productType!;
   }
 

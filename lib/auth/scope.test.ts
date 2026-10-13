@@ -27,6 +27,7 @@ import {
   requireSuperAdminScope,
   requireWritableAdminScope,
 } from "@/lib/auth/scope";
+import { ExpectedError } from "@/lib/errors";
 
 const getCurrentAdminMock = getCurrentAdmin as unknown as Mock;
 const getStoreSettingsMock = getStoreSettings as unknown as Mock;
@@ -137,13 +138,13 @@ describe("getAdminScope", () => {
     expect(result).toBe("sport");
   });
 
-  it("falls back to the cookie/public-type flow when the caller isn't a recognized admin at all", async () => {
-    getCurrentAdminMock.mockRejectedValue(new Error("unauthorized"));
+  it("refuses a caller who isn't a recognized admin, whatever the cookie says", async () => {
+    // No session, or a Supabase user without an AdminUser row: the page
+    // (an order and its payment proof, say) must not render at all.
+    getCurrentAdminMock.mockRejectedValue(new ExpectedError("unauthorized"));
     cookieValue("sport");
 
-    const result = await getAdminScope();
-
-    expect(result).toBe("sport");
+    await expect(getAdminScope()).rejects.toThrow("unauthorized");
   });
 });
 
