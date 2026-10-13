@@ -34,7 +34,7 @@ describe("getVariantStocks", () => {
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
-  it("returns a stock map scoped to the given productType", async () => {
+  it("returns a stock map scoped to the given productType's products on sale", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([
       { id: "variant-1", stock: 5 },
       { id: "variant-2", stock: 0 },
@@ -43,11 +43,13 @@ describe("getVariantStocks", () => {
     const result = await getVariantStocks("sport", ["variant-1", "variant-2"]);
 
     expect(result).toEqual({ "variant-1": 5, "variant-2": 0 });
+    // A product taken off sale is left out like a variant that no longer
+    // exists, so the cart drops it (submitOrder would refuse it).
     expect(prismaMock.productVariant.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           id: { in: ["variant-1", "variant-2"] },
-          product: { productType: "sport" },
+          product: { productType: "sport", isActive: true },
         },
       }),
     );

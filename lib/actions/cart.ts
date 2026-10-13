@@ -55,8 +55,13 @@ export async function checkVariantStocks(
   const wait = await rateLimitRetryAfter(`variant-stocks:${ip}`, GET_VARIANT_STOCKS_RATE_LIMIT);
   if (wait !== null) return { error: "rateLimited", retryAfter: wait };
 
+  // A product taken off sale is left out like a variant that no longer
+  // exists: the cart drops it, as submitOrder would refuse it.
   const variants = await prisma.productVariant.findMany({
-    where: { id: { in: parsed.data.variantIds }, product: { productType: parsed.data.productType } },
+    where: {
+      id: { in: parsed.data.variantIds },
+      product: { productType: parsed.data.productType, isActive: true },
+    },
     select: { id: true, stock: true },
   });
 
