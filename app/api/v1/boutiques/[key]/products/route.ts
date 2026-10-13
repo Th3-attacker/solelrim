@@ -8,11 +8,7 @@ import {
   getFilteredProductsPage,
   searchActiveProducts,
 } from "@/lib/queries/shop";
-import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
-
-// Same budget as the website's search box: the leading wildcard in the
-// search can't use an index, so it must not be callable without limit.
-const SEARCH_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 40 };
+import { getClientIp, RATE_LIMITS, rateLimitRetryAfter } from "@/lib/rate-limit";
 
 // GET /api/v1/boutiques/{key}/products?category=&q=&page=&pageSize=
 //   &sort=&sizes=&colors=&priceMin=&priceMax=&facets=1
@@ -34,7 +30,7 @@ async function get(request: Request, ctx: { params: Promise<{ key: string }> }) 
 
   if (query) {
     if (query.length > 100) return fail("invalid", 400);
-    const wait = await rateLimitRetryAfter(`api-search:${await getClientIp()}`, SEARCH_RATE_LIMIT);
+    const wait = await rateLimitRetryAfter(`api-search:${await getClientIp()}`, RATE_LIMITS.searchPerIp);
     if (wait !== null) return fail("rateLimited", 429, { "Retry-After": String(wait) });
   }
 

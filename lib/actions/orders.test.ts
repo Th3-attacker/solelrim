@@ -39,6 +39,7 @@ import {
   trackOrder,
 } from "@/lib/actions/orders";
 import { sendOrderPush } from "@/lib/push/order-push";
+import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -821,7 +822,7 @@ describe("submitOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(20);
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.orderPerIp.max);
 
     const result = await submitOrder(buildOrderForm());
 

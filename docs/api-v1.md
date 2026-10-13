@@ -57,14 +57,18 @@ an "update the app" screen with a link to the store.
 ## Rate limits
 
 Counted per IP address and, where the body carries one, per phone number
-(a sliding window; the website shares the same counters).
+(a sliding window; the website shares the same counters). Mauritanian carriers
+put many customers behind one IP address (CGNAT), so the per-IP limits are
+only a safety net against a flood from one machine; the per-phone ones are
+what holds one person back. All of them are in `RATE_LIMITS`
+(`lib/rate-limit.ts`).
 
-| Route                             | Per phone                     | Per IP      |
-| --------------------------------- | ----------------------------- | ----------- |
-| `POST .../orders`                 | 5 / hour (`customerPhone`)    | 20 / hour   |
-| `POST .../orders/track`           | see below                     | see below   |
-| `POST .../promo`                  | 10 / 15 min (`customerPhone`) | 20 / 15 min |
-| `POST` / `DELETE .../orders/push` | —                             | 20 / hour   |
+| Route                             | Per phone                     | Per IP       |
+| --------------------------------- | ----------------------------- | ------------ |
+| `POST .../orders`                 | 5 / hour (`customerPhone`)    | 120 / hour   |
+| `POST .../orders/track`           | see below                     | see below    |
+| `POST .../promo`                  | 10 / 15 min (`customerPhone`) | 120 / 15 min |
+| `POST` / `DELETE .../orders/push` | —                             | 600 / hour   |
 
 **Tracking** tells guessing from following an order. Many customers share one
 IP address (Mauritanian carriers use CGNAT), so a customer following their own
@@ -84,8 +88,8 @@ guesser when they found it). The website's tracking page follows the same
 rules and shares the counters.
 
 Over a limit: `429 { "error": "rateLimited" }` with a `Retry-After` header
-(seconds), on every route — the search (`q`, 40 / 15 min per IP) and
-`POST .../stocks` (60 / 15 min per IP) included. A malformed `stocks` list
+(seconds), on every route — the search (`q`, 120 / min per IP) and
+`POST .../stocks` (120 / min per IP) included. A malformed `stocks` list
 (over 50 ids, a non-string id) is a `400 invalid`, not a 429. A resend carrying
 an already-used `Idempotency-Key` is never counted.
 
@@ -331,8 +335,8 @@ every resend** of that order.
   boutique in the database); both get the same `201`.
 - The same key in another boutique is a different order.
 - A malformed key (empty, over 64 characters, spaces or non-ASCII) → `400 invalid`.
-- No header: unchanged behaviour (each send is a new order). The website
-  doesn't send one.
+- No header: unchanged behaviour (each send is a new order). The website's
+  checkout sends one too, kept while the order's content is unchanged.
 
 **Mobile side:** create the key when the customer taps "Order" (not per HTTP
 attempt), keep it with the pending order until a `201` arrives, and reuse it
@@ -356,8 +360,15 @@ same phone + reference as tracking.
 A device that uninstalled the app is forgotten automatically. A failed push never
 blocks the admin's action. The WhatsApp messages the admin can send are
 unchanged: push is an addition. Pushes go out with `priority: "high"`, so a
-phone in standby gets them right away. Server side, `EXPO_ACCESS_TOKEN` (optional) is
-the Expo "enhanced push security" token.
+phone in standby gets them right away. Server side, `EXPO_ACCESS_TOKEN` is
+the Expo "enhanced push security" token: turn that security on in production,
+or anyone holding a customer's token can push to their phone.
+
+**Mobile side:** with pushes on, an open order doesn't need polling every
+minute: refresh the tracking screen when the app comes back to the foreground,
+when a push arrives, and on pull-to-refresh. Every customer behind the same
+carrier address shares the per-IP safety net, so fewer background calls keep
+it clear.
 
 **Android channel.** `EXPO_ANDROID_CHANNEL_ID` (server, unset by default) names
 the notification channel pushes are sent to, e.g. `orders`. Android drops a

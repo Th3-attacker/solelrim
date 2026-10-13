@@ -8,7 +8,8 @@ vi.mock("@/lib/supabase/server", () => ({
 // only exercises login()/logout()'s own logic: input validation, the
 // rate-limit gate, reading Supabase's result, and the locale-aware
 // redirect.
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", async (importOriginal) => ({
+  RATE_LIMITS: (await importOriginal<typeof import("@/lib/rate-limit")>()).RATE_LIMITS,
   checkRateLimit: vi.fn(),
   getClientIp: vi.fn(),
 }));
@@ -17,7 +18,7 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 
 import { createClient } from "@/lib/supabase/server";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { login, logout, verifyLoginMfa } from "@/lib/actions/auth";
@@ -99,10 +100,23 @@ describe("login", () => {
 
     expect(result.error).toBe("rateLimited");
     expect(getClientIpMock).toHaveBeenCalled();
-    expect(checkRateLimitMock).toHaveBeenCalledWith("login:203.0.113.5", {
-      windowMs: 15 * 60 * 1000,
-      max: 10,
-    });
+    expect(checkRateLimitMock).toHaveBeenCalledWith("login:203.0.113.5", RATE_LIMITS.loginPerIp);
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits per account too, whatever the IP", async () => {
+    checkRateLimitMock.mockImplementation(async (key: string) => key !== "login-email:admin@example.com");
+
+    const result = await login(
+      {},
+      loginFormData({ email: "Admin@Example.com", password: "secret", locale: "fr" }),
+    );
+
+    expect(result.error).toBe("rateLimited");
+    expect(checkRateLimitMock).toHaveBeenCalledWith(
+      "login-email:admin@example.com",
+      RATE_LIMITS.loginPerEmail,
+    );
     expect(createClientMock).not.toHaveBeenCalled();
   });
 
@@ -189,11 +203,24 @@ describe("verifyLoginMfa", () => {
     const result = await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "fr" }));
 
     expect(result.error).toBe("rateLimited");
-    expect(checkRateLimitMock).toHaveBeenCalledWith("login-mfa:203.0.113.5", {
-      windowMs: 15 * 60 * 1000,
-      max: 10,
-    });
+    expect(checkRateLimitMock).toHaveBeenCalledWith("login-mfa:203.0.113.5", RATE_LIMITS.mfaPerIp);
     expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits the code per account too", async () => {
+    checkRateLimitMock.mockImplementation(async (key: string) => key !== "login-mfa-user:u1");
+    const listFactors = vi.fn();
+    createClientMock.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+        mfa: { listFactors },
+      },
+    });
+
+    const result = await verifyLoginMfa({}, mfaFormData({ code: "123456", locale: "fr" }));
+
+    expect(result.error).toBe("rateLimited");
+    expect(listFactors).not.toHaveBeenCalled();
   });
 
   it("sends an expired/missing aal1 session back to the login page", async () => {

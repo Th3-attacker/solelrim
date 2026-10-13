@@ -1,15 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { pushRegistrationSchema } from "@/lib/validation/push";
-import { getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
-
-const PUSH_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 20 };
+import { getClientIp, RATE_LIMITS, rateLimitRetryAfter } from "@/lib/rate-limit";
 // A customer with a phone, a tablet and a reinstall: a handful at most. Past
 // this the oldest token is dropped so the table can't be filled for one order.
 const MAX_TOKENS_PER_ORDER = 5;
 
 async function findOrder(productType: string, input: unknown) {
   const ip = await getClientIp();
-  const wait = await rateLimitRetryAfter(`push:${ip}`, PUSH_RATE_LIMIT);
+  const wait = await rateLimitRetryAfter(`push:${ip}`, RATE_LIMITS.pushPerIp);
   if (wait !== null) {
     return { error: "rateLimited" as const, retryAfter: wait };
   }

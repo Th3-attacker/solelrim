@@ -17,7 +17,13 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 import { buildOrderReference, buildSaleReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { routing } from "@/i18n/routing";
-import { getClientIp, peekRateLimit, rateLimitRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
+import {
+  getClientIp,
+  peekRateLimit,
+  RATE_LIMITS,
+  rateLimitRetryAfter,
+  recordRateLimitHit,
+} from "@/lib/rate-limit";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
@@ -28,13 +34,6 @@ import { findOrderByIdempotencyKey } from "@/lib/queries/orders";
 import { getProductImageUrl } from "@/lib/supabase/storage";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
-
-// Public, unauthenticated action that accepts a file upload — capped per IP
-// so it can't be used to spam Storage or flood the admin with fake orders.
-// Per IP, loose enough for customers sharing a carrier's address; the real
-// cap is per phone number, checked once the form is parsed.
-const SUBMIT_ORDER_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 20 };
-const SUBMIT_ORDER_PHONE_RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 5 };
 
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
@@ -89,8 +88,10 @@ async function placeOrder(
   formData: FormData,
   idempotencyKey: string | null,
 ): Promise<SubmitOrderResult> {
+  // Public and unauthenticated, with a file upload: capped so it can't spam
+  // Storage or flood the admin with fake orders (see RATE_LIMITS).
   const ip = await getClientIp();
-  const ipWait = await rateLimitRetryAfter(`order:${ip}`, SUBMIT_ORDER_RATE_LIMIT);
+  const ipWait = await rateLimitRetryAfter(`order:${ip}`, RATE_LIMITS.orderPerIp);
   if (ipWait !== null) {
     return { error: "rateLimited", retryAfter: ipWait };
   }
@@ -105,7 +106,7 @@ async function placeOrder(
   }
   const phoneWait = await rateLimitRetryAfter(
     `order-phone:${customerParsed.data.customerPhone}`,
-    SUBMIT_ORDER_PHONE_RATE_LIMIT,
+    RATE_LIMITS.orderPerPhone,
   );
   if (phoneWait !== null) {
     return { error: "rateLimited", retryAfter: phoneWait };

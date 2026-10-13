@@ -7,7 +7,8 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/actions/orders", () => ({ submitOrder: vi.fn(), trackOrder: vi.fn() }));
 vi.mock("@/lib/actions/promo-codes", () => ({ previewPromoCode: vi.fn() }));
 vi.mock("@/lib/actions/cart", () => ({ checkVariantStocks: vi.fn() }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", async (importOriginal) => ({
+  RATE_LIMITS: (await importOriginal<typeof import("@/lib/rate-limit")>()).RATE_LIMITS,
   checkRateLimit: vi.fn(),
   rateLimitRetryAfter: vi.fn(),
   getClientIp: vi.fn().mockResolvedValue("1.2.3.4"),

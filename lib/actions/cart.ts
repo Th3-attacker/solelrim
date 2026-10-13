@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp, rateLimitRetryAfter } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, RATE_LIMITS, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { getVariantPrice } from "@/lib/shop/price";
 
 // A real cart never has more than a handful of distinct line items — caps
@@ -13,10 +13,6 @@ const inputSchema = z.object({
   variantIds: z.array(z.string().min(1)).max(MAX_VARIANT_IDS),
 });
 
-// Fires on every cart-open, not just a rare action like login/checkout —
-// generous limit sized for normal browsing (opening/closing the cart
-// repeatedly while shopping), not the abuse-deterrent windows used elsewhere.
-const GET_VARIANT_STOCKS_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 60 };
 
 // The cart persists in localStorage with a stock snapshot taken at
 // add-to-cart time, which can go stale (another sale, an admin adjusting
@@ -52,7 +48,7 @@ export async function checkVariantStocks(
   if (parsed.data.variantIds.length === 0) return { stocks: {} };
 
   const ip = await getClientIp();
-  const wait = await rateLimitRetryAfter(`variant-stocks:${ip}`, GET_VARIANT_STOCKS_RATE_LIMIT);
+  const wait = await rateLimitRetryAfter(`variant-stocks:${ip}`, RATE_LIMITS.stocksPerIp);
   if (wait !== null) return { error: "rateLimited", retryAfter: wait };
 
   // A product taken off sale is left out like a variant that no longer
@@ -89,9 +85,6 @@ const sharedCartInputSchema = z.object({
   entries: z.array(sharedCartEntrySchema).max(MAX_VARIANT_IDS),
 });
 
-// Same rate-limit shape as getVariantStocks above — this fires once per
-// visit to a shared-cart link, not per keystroke, but still worth capping.
-const RESOLVE_SHARED_CART_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 30 };
 
 // The cart itself only ever lives in the recipient's own localStorage —
 // there's no server-side cart to fetch by id. A "share cart" link instead
@@ -109,10 +102,7 @@ export async function resolveSharedCartLines(
   if (!parsed.success || parsed.data.entries.length === 0) return [];
 
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(
-    `resolve-shared-cart:${ip}`,
-    RESOLVE_SHARED_CART_RATE_LIMIT,
-  );
+  const allowed = await checkRateLimit(`resolve-shared-cart:${ip}`, RATE_LIMITS.sharedCartPerIp);
   if (!allowed) return [];
 
   const quantityByVariantId = new Map(

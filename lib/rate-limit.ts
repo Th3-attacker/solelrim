@@ -2,6 +2,38 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+
+// Every budget in one place. Mauritanian carriers put thousands of phones
+// behind one public address (carrier-grade NAT), so a per-IP budget can only
+// be a safety net against a flood from one machine, sized for a whole
+// carrier's customers at once; the budget that actually holds one person back
+// is keyed by what the request carries: a phone number, an account.
+export const RATE_LIMITS = {
+  // Placing an order (an upload): the phone is required and checked once the
+  // form is parsed.
+  orderPerIp: { windowMs: HOUR, max: 120 },
+  orderPerPhone: { windowMs: HOUR, max: 5 },
+  // Header search, live as the customer types (debounced). The leading
+  // wildcard can't use an index, so it stays bounded.
+  searchPerIp: { windowMs: MINUTE, max: 120 },
+  // The cart's stock check when it opens, and opening a shared cart link.
+  stocksPerIp: { windowMs: MINUTE, max: 120 },
+  sharedCartPerIp: { windowMs: MINUTE, max: 60 },
+  // Promo code preview: guessing codes is held back per phone.
+  promoPerIp: { windowMs: 15 * MINUTE, max: 120 },
+  promoPerPhone: { windowMs: 15 * MINUTE, max: 10 },
+  // The app asking for pushes on an order (phone + reference checked).
+  pushPerIp: { windowMs: HOUR, max: 600 },
+  // Admin sign-in: per account, so guessing one password or one 2FA code
+  // from many addresses stops too; per IP a little looser.
+  loginPerIp: { windowMs: 15 * MINUTE, max: 30 },
+  loginPerEmail: { windowMs: 15 * MINUTE, max: 10 },
+  mfaPerIp: { windowMs: 15 * MINUTE, max: 30 },
+  mfaPerUser: { windowMs: 15 * MINUTE, max: 10 },
+} satisfies Record<string, { windowMs: number; max: number }>;
+
 // A bare "unknown" fallback would put every request missing both proxy
 // headers (misconfiguration, or direct/local access) into one shared
 // bucket — either it locks every such visitor out together once one of

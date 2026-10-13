@@ -12,6 +12,7 @@ vi.mock("next/headers", () => ({
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { checkVariantStocks, getVariantStocks, resolveSharedCartLines } from "@/lib/actions/cart";
+import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const headersMock = headers as unknown as Mock;
@@ -66,7 +67,7 @@ describe("getVariantStocks", () => {
   });
 
   it("returns null and does no query once the caller's IP is over the limit", async () => {
-    prismaMock.rateLimitHit.count.mockResolvedValue(60);
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.stocksPerIp.max);
 
     const result = await getVariantStocks("sport", ["variant-1"]);
 
@@ -79,8 +80,11 @@ describe("checkVariantStocks", () => {
   it("tells a malformed list (fix the request) from a rate limit (wait)", async () => {
     expect(await checkVariantStocks("sport", Array(51).fill("variant-1"))).toEqual({ error: "invalid" });
 
-    prismaMock.rateLimitHit.count.mockResolvedValue(60);
-    expect(await checkVariantStocks("sport", ["variant-1"])).toEqual({ error: "rateLimited", retryAfter: 900 });
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.stocksPerIp.max);
+    expect(await checkVariantStocks("sport", ["variant-1"])).toEqual({
+      error: "rateLimited",
+      retryAfter: RATE_LIMITS.stocksPerIp.windowMs / 1000,
+    });
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 });
@@ -192,7 +196,7 @@ describe("resolveSharedCartLines", () => {
   });
 
   it("returns an empty list once the caller's IP is over the limit", async () => {
-    prismaMock.rateLimitHit.count.mockResolvedValue(30);
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.sharedCartPerIp.max);
 
     const result = await resolveSharedCartLines("sport", [
       { variantId: "variant-1", quantity: 1 },
