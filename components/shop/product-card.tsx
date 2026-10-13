@@ -72,7 +72,7 @@ export function ProductCard({
   const isOutOfStock = status === "out";
 
   return (
-    <div
+    <article
       className={cn(
         "group relative flex h-full flex-col gap-3 rounded-2xl border bg-card p-4 transition-[transform,box-shadow] duration-300 ease-out",
         !isOutOfStock && "hover:-translate-y-1 hover:shadow-lg",
@@ -126,21 +126,18 @@ export function ProductCard({
               <a> — that combination is invalid HTML and made click targeting
               unreliable. Out-of-stock products disable the card entirely:
               no ::after overlay, so nothing beneath is clickable. */}
-          {isOutOfStock ? (
-            <span
-              aria-disabled="true"
-              className="truncate text-sm text-muted-foreground"
-            >
-              {product.name}
-            </span>
-          ) : (
-            <Link
-              href={productHref}
-              className="truncate text-sm text-foreground after:absolute after:inset-0 after:content-['']"
-            >
-              {product.name}
-            </Link>
-          )}
+          <h3 className="min-w-0 truncate text-sm font-normal">
+            {isOutOfStock ? (
+              <span className="text-muted-foreground">{product.name}</span>
+            ) : (
+              <Link
+                href={productHref}
+                className="text-foreground after:absolute after:inset-0 after:content-['']"
+              >
+                {product.name}
+              </Link>
+            )}
+          </h3>
           <FavoriteButton
             productId={product.id}
             className="relative z-10 size-7 shrink-0 bg-transparent shadow-none hover:bg-transparent"
@@ -169,6 +166,8 @@ export function ProductCard({
             {colors.slice(0, MAX_SWATCHES).map((color) => (
               <span
                 key={color}
+                role="img"
+                aria-label={t("colorSwatchLabel", { color })}
                 title={color}
                 className="size-3.5 rounded-full ring-1 ring-inset ring-foreground/15"
                 style={getSwatchStyle(color)}
@@ -205,7 +204,7 @@ export function ProductCard({
             >
               <Link href={productHref}>
                 <Eye className="size-3.5" />
-                <span className="hidden truncate sm:inline">{t("viewProduct")}</span>
+                <span className="sr-only truncate sm:not-sr-only">{t("viewProduct")}</span>
               </Link>
             </Button>
             {defaultVariant && (
@@ -220,6 +219,6 @@ export function ProductCard({
           </div>
         )}
       </div>
-    </div>
+    </article>
   );
 }

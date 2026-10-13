@@ -315,7 +315,12 @@
     "menu": "Menu",
     "footerShopTitle": "Shop",
     "footerHelpTitle": "Support",
-    "footerFollowTitle": "Follow us"
+    "footerFollowTitle": "Follow us",
+    "mainNavLabel": "Main navigation",
+    "footerNavLabel": "Footer links",
+    "breadcrumbLabel": "Breadcrumb",
+    "skipToContent": "Skip to content",
+    "colorSwatchLabel": "Color: {color}"
   },
   "contact": {
     "metaTitle": "Contact",

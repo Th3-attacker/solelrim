@@ -62,7 +62,7 @@ export function MobileNav({
           <SheetHeader className="sr-only">
             <SheetTitle>{t("menu")}</SheetTitle>
           </SheetHeader>
-          <nav className="flex flex-col gap-1 px-4 py-4">
+          <nav aria-label={t("mainNavLabel")} className="flex flex-col gap-1 px-4 py-4">
             <button
               type="button"
               onClick={handleSearchRowClick}

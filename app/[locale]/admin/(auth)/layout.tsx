@@ -15,7 +15,7 @@ export default async function AuthLayout({
   const t = await getTranslations("auth.login");
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-4">
       {children}
       {/* /admin/login is now reachable from a boutique's own branded
           domain (see proxy.ts), not just the main one — a visitor who
@@ -28,6 +28,6 @@ export default async function AuthLayout({
         <Storefront className="size-4" />
         {t("backToShop")}
       </Link>
-    </div>
+    </main>
   );
 }

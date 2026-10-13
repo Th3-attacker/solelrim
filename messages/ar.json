@@ -315,7 +315,12 @@
     "menu": "القائمة",
     "footerShopTitle": "المتجر",
     "footerHelpTitle": "المساعدة",
-    "footerFollowTitle": "تابعنا"
+    "footerFollowTitle": "تابعنا",
+    "mainNavLabel": "التنقل الرئيسي",
+    "footerNavLabel": "روابط تذييل الصفحة",
+    "breadcrumbLabel": "مسار التنقل",
+    "skipToContent": "الانتقال إلى المحتوى",
+    "colorSwatchLabel": "اللون: {color}"
   },
   "contact": {
     "metaTitle": "تواصل معنا",

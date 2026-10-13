@@ -174,7 +174,7 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLdScriptProps([productJsonLd, breadcrumbJsonLd])}
       />
-      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm">
+      <nav aria-label={t("breadcrumbLabel")} className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
           <Link href={basePath || "/"} className="hover:text-foreground">
             {t("siteName")}
@@ -245,16 +245,16 @@ export default async function ProductDetailPage({
       {relatedProducts.length > 0 && (
         <div className="flex flex-col gap-4">
           <h2 className="text-heading-xs">{t("relatedProducts")}</h2>
-          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
+          <ul
+            role="list"
+            className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4"
+          >
             {relatedProducts.map((related) => (
-              <ProductCard
-                key={related.id}
-                product={related}
-                basePath={basePath}
-                cardVariant={boutique.cardVariant}
-              />
+              <li key={related.id}>
+                <ProductCard product={related} basePath={basePath} cardVariant={boutique.cardVariant} />
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
     </div>

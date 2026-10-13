@@ -315,7 +315,12 @@
     "menu": "Menu",
     "footerShopTitle": "Boutique",
     "footerHelpTitle": "Assistance",
-    "footerFollowTitle": "Suivez-nous"
+    "footerFollowTitle": "Suivez-nous",
+    "mainNavLabel": "Navigation principale",
+    "footerNavLabel": "Liens du pied de page",
+    "breadcrumbLabel": "Fil d'Ariane",
+    "skipToContent": "Aller au contenu",
+    "colorSwatchLabel": "Couleur : {color}"
   },
   "contact": {
     "metaTitle": "Contact",

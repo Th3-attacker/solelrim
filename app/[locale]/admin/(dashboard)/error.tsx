@@ -26,6 +26,7 @@ export default function DashboardError({
     case "licenseBlocked":
       return (
         <StateMessage
+          heading="h1"
           icon={Warning}
           title={t("licenseBlockedTitle")}
           message={t("licenseBlockedMessage")}
@@ -34,6 +35,7 @@ export default function DashboardError({
     case "unauthorized":
       return (
         <StateMessage
+          heading="h1"
           icon={Warning}
           title={t("sessionExpiredTitle")}
           message={t("sessionExpiredMessage")}
@@ -45,11 +47,12 @@ export default function DashboardError({
         />
       );
     case "forbidden":
-      return <StateMessage icon={Warning} title={t("forbiddenTitle")} message={t("forbiddenMessage")} />;
+      return <StateMessage heading="h1" icon={Warning} title={t("forbiddenTitle")} message={t("forbiddenMessage")} />;
   }
 
   return (
     <StateMessage
+          heading="h1"
       icon={Warning}
       title={t("errorTitle")}
       message={t("errorMessage")}

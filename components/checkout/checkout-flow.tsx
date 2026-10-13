@@ -421,6 +421,7 @@ export function CheckoutFlow({
   if (cart.hydrated && cart.items.length === 0) {
     return (
       <StateMessage
+        heading="h1"
         icon={ShoppingBag}
         title={t("emptyCartTitle")}
         message={t("emptyCartMessage")}
@@ -462,11 +463,13 @@ export function CheckoutFlow({
                   <Label htmlFor="customerName">{t("customerName")}</Label>
                   <Input
                     id="customerName"
+                    autoComplete="name"
                     aria-invalid={!!errors.customerName}
+                    aria-describedby={errors.customerName ? "customerName-error" : undefined}
                     {...register("customerName")}
                   />
                   {errors.customerName && (
-                    <FieldError>
+                    <FieldError id="customerName-error">
                       {fieldErrorMessage(errors.customerName.message)}
                     </FieldError>
                   )}
@@ -475,13 +478,16 @@ export function CheckoutFlow({
                   <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
                   <Input
                     id="customerPhone"
+                    type="tel"
                     inputMode="numeric"
+                    autoComplete="tel-national"
                     maxLength={8}
                     aria-invalid={!!errors.customerPhone}
+                    aria-describedby={errors.customerPhone ? "customerPhone-error" : undefined}
                     {...register("customerPhone")}
                   />
                   {errors.customerPhone && (
-                    <FieldError>
+                    <FieldError id="customerPhone-error">
                       {fieldErrorMessage(errors.customerPhone.message)}
                     </FieldError>
                   )}
@@ -490,11 +496,13 @@ export function CheckoutFlow({
                   <Label htmlFor="customerCity">{t("customerCity")}</Label>
                   <Input
                     id="customerCity"
+                    autoComplete="address-level2"
                     aria-invalid={!!errors.customerCity}
+                    aria-describedby={errors.customerCity ? "customerCity-error" : undefined}
                     {...register("customerCity")}
                   />
                   {errors.customerCity && (
-                    <FieldError>
+                    <FieldError id="customerCity-error">
                       {fieldErrorMessage(errors.customerCity.message)}
                     </FieldError>
                   )}
@@ -555,7 +563,9 @@ export function CheckoutFlow({
                           setPromoError(null);
                         }}
                         placeholder={t("promoCodePlaceholder")}
+                        autoComplete="off"
                         aria-invalid={!!promoError}
+                        aria-describedby={promoError ? "promoCode-error" : undefined}
                         className="flex-1"
                       />
                       <Button
@@ -569,7 +579,7 @@ export function CheckoutFlow({
                       </Button>
                     </div>
                   )}
-                  {promoError && <FieldError>{promoError}</FieldError>}
+                  {promoError && <FieldError id="promoCode-error">{promoError}</FieldError>}
                 </div>
               )}
 
@@ -671,7 +681,9 @@ export function CheckoutFlow({
                     <Label htmlFor="senderPhone">{t("paymentSenderPhone")}</Label>
                     <Input
                       id="senderPhone"
+                      type="tel"
                       inputMode="numeric"
+                      autoComplete="off"
                       maxLength={8}
                       value={senderPhone}
                       onChange={(e) => {
@@ -679,11 +691,14 @@ export function CheckoutFlow({
                         setSenderPhoneError(null);
                       }}
                       aria-invalid={!!senderPhoneError}
+                      aria-describedby={
+                        senderPhoneError ? "senderPhone-error senderPhone-hint" : "senderPhone-hint"
+                      }
                     />
                     {senderPhoneError && (
-                      <FieldError>{senderPhoneError}</FieldError>
+                      <FieldError id="senderPhone-error">{senderPhoneError}</FieldError>
                     )}
-                    <p className="text-xs text-muted-foreground">
+                    <p id="senderPhone-hint" className="text-xs text-muted-foreground">
                       {t("paymentSenderPhoneHint")}
                     </p>
                   </div>
@@ -694,13 +709,17 @@ export function CheckoutFlow({
                       <StatusAlert variant="warning">{promoDroppedMessage}</StatusAlert>
                     )}
                     {fileSizeError && (
-                      <FieldError>{fileSizeError}</FieldError>
+                      <FieldError id="screenshot-error">{fileSizeError}</FieldError>
                     )}
                     <Input
                       id="screenshot"
                       ref={fileInputRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
+                      aria-invalid={!!fileSizeError}
+                      aria-describedby={
+                        fileSizeError ? "screenshot-error screenshot-hint" : "screenshot-hint"
+                      }
                       onChange={(e) => {
                         const picked = e.target.files?.[0] ?? null;
                         // Rejected before it ever reaches the network — the
@@ -718,7 +737,7 @@ export function CheckoutFlow({
                         setPromoDroppedMessage(null);
                       }}
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p id="screenshot-hint" className="text-xs text-muted-foreground">
                       {t("uploadScreenshotHint")}
                     </p>
                   </div>

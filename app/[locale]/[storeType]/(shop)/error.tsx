@@ -18,6 +18,7 @@ export default function ShopError({
 
   return (
     <StateMessage
+      heading="h1"
       icon={Warning}
       title={t("errorTitle")}
       message={t("errorMessage")}

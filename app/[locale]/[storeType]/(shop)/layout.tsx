@@ -181,6 +181,13 @@ export default async function ShopLayout({
             />
           )}
           <div className="shop-theme flex min-h-screen flex-col">
+            {/* First stop for a keyboard: past the header's links, to the page. */}
+            <a
+              href="#main-content"
+              className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
+            >
+              {t("skipToContent")}
+            </a>
             {announcementText && (
               <div className="bg-primary py-2 text-center text-xs font-medium text-primary-foreground sm:text-sm">
                 {announcementText}
@@ -221,7 +228,7 @@ export default async function ShopLayout({
                     )}
                   </Link>
                 </div>
-                <nav className="hidden items-center justify-center gap-6 md:flex">
+                <nav aria-label={t("mainNavLabel")} className="hidden items-center justify-center gap-6 md:flex">
                   <Link
                     href={basePath || "/"}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -266,7 +273,7 @@ export default async function ShopLayout({
                 </div>
               </div>
             </header>
-            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 desktop:px-8 md:py-10">
+            <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 outline-none desktop:px-8 md:py-10">
               {children}
             </main>
             <Footer

@@ -110,13 +110,16 @@ export function TrackOrderForm({
               <Label htmlFor="phone">{t("phoneLabel")}</Label>
               <Input
                 id="phone"
+                type="tel"
                 inputMode="numeric"
+                autoComplete="tel-national"
                 maxLength={8}
                 aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
                 {...register("phone")}
               />
               {errors.phone && (
-                <FieldError>{tCommon("invalidPhone")}</FieldError>
+                <FieldError id="phone-error">{tCommon("invalidPhone")}</FieldError>
               )}
             </div>
             <div className="flex flex-col gap-2">
@@ -124,11 +127,14 @@ export function TrackOrderForm({
               <Input
                 id="reference"
                 placeholder={t("referencePlaceholder")}
+                autoComplete="off"
+                autoCapitalize="characters"
                 aria-invalid={!!errors.reference}
+                aria-describedby={errors.reference ? "reference-error" : undefined}
                 {...register("reference")}
               />
               {errors.reference && (
-                <FieldError>{tCommon("requiredField")}</FieldError>
+                <FieldError id="reference-error">{tCommon("requiredField")}</FieldError>
               )}
             </div>
             <Button type="submit" loading={submitting} className="w-full">

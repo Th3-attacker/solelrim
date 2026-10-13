@@ -121,17 +121,21 @@ export default async function ProductsPage({
             title={hasFilters ? tCommon("noResults") : t("noProducts")}
           />
         ) : (
-          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
+          <ul
+            role="list"
+            className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4"
+          >
             {displayedProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                basePath={basePath}
-                priority={index < 4}
-                cardVariant={boutique.cardVariant}
-              />
+              <li key={product.id}>
+                <ProductCard
+                  product={product}
+                  basePath={basePath}
+                  priority={index < 4}
+                  cardVariant={boutique.cardVariant}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 

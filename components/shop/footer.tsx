@@ -108,10 +108,10 @@ function ColumnsFooter({
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+            <h2 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               {t("footerShopTitle")}
-            </h3>
-            <nav className="flex flex-col gap-2 text-sm">
+            </h2>
+            <nav aria-label={t("footerShopTitle")} className="flex flex-col gap-2 text-sm">
               <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
                 {t("allProductsTitle")}
               </Link>
@@ -131,10 +131,10 @@ function ColumnsFooter({
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+            <h2 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               {t("footerHelpTitle")}
-            </h3>
-            <nav className="flex flex-col gap-2 text-sm">
+            </h2>
+            <nav aria-label={t("footerHelpTitle")} className="flex flex-col gap-2 text-sm">
               <Link href={`${basePath}/about`} className="transition-colors hover:text-white">
                 {t("aboutLink")}
               </Link>
@@ -153,10 +153,10 @@ function ColumnsFooter({
 
           {socialLinks.length > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+              <h2 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
                 {t("footerFollowTitle")}
-              </h3>
-              <nav className="flex flex-col gap-2 text-sm">
+              </h2>
+              <nav aria-label={t("footerFollowTitle")} className="flex flex-col gap-2 text-sm">
                 {socialLinks.map((social) => (
                   <a
                     key={social.id}
@@ -197,7 +197,7 @@ function MinimalFooter({
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 desktop:px-8 sm:flex-row sm:justify-between">
         <BrandMark siteName={siteName} logoUrl={logoUrl} basePath={basePath} size={24} className="text-sm" />
 
-        <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        <nav aria-label={t("footerNavLabel")} className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
           <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
             {t("allProductsTitle")}
           </Link>
@@ -253,7 +253,7 @@ function CenteredFooter({
         <BrandMark siteName={siteName} logoUrl={logoUrl} basePath={basePath} size={32} className="text-lg" />
         <p className="max-w-sm text-sm text-zinc-400">{t("heroSubtitle")}</p>
 
-        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+        <nav aria-label={t("footerNavLabel")} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
           <Link href={`${basePath}/products`} className="transition-colors hover:text-white">
             {t("allProductsTitle")}
           </Link>
@@ -273,7 +273,7 @@ function CenteredFooter({
         </nav>
 
         {socialLinks.length > 0 && (
-          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+          <nav aria-label={t("footerFollowTitle")} className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
             {socialLinks.map((social) => (
               <a
                 key={social.id}
