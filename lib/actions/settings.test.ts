@@ -54,7 +54,7 @@ const cookiesMock = cookies as unknown as Mock;
 // still scoped to "whichever boutique they're currently managing" — that
 // resolution (requireAdminScope -> getAdminScope) reads the scope cookie
 // and validates it against the real StoreType table, both mocked here the
-// same way lib/shop/admin-scope.test.ts does.
+// same way lib/auth/scope.test.ts does.
 const STORE_TYPES = [{ key: "cosmetique", label: "Cosmétique", createdAt: new Date() }];
 
 function asSuperAdminScopedTo(productType: string) {

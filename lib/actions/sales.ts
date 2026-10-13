@@ -2,8 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { saleSchema, type SaleInput } from "@/lib/validation/sale";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
-import { recordSale } from "@/lib/shop/record-sale";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
+import { recordSale } from "@/lib/services/record-sale";
 import { saleEditSchema } from "@/lib/validation/sale-edit";
 import { saleCancelSchema } from "@/lib/validation/sale-cancel";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";

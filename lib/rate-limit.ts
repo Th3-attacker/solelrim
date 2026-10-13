@@ -25,6 +25,16 @@ export const RATE_LIMITS = {
   // Promo code preview: guessing codes is held back per phone.
   promoPerIp: { windowMs: 15 * MINUTE, max: 120 },
   promoPerPhone: { windowMs: 15 * MINUTE, max: 10 },
+  // Tracking an order tells guessing from following one. Failed lookups
+  // (unknown pair, malformed phone or reference) are held tight per phone,
+  // so one customer's references can't be guessed even from many addresses,
+  // and looser per IP, where every customer's typos add up. Successes are
+  // counted per order (only a runaway loop reaches it); every lookup per IP
+  // is the burst safety net.
+  trackFailurePerPhone: { windowMs: 15 * MINUTE, max: 10 },
+  trackFailurePerIp: { windowMs: 15 * MINUTE, max: 60 },
+  trackSuccessPerOrder: { windowMs: MINUTE, max: 30 },
+  trackPerIp: { windowMs: MINUTE, max: 300 },
   // The app asking for pushes on an order (phone + reference checked).
   pushPerIp: { windowMs: HOUR, max: 600 },
   // Admin sign-in: per account, so guessing one password or one 2FA code

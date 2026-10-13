@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getActiveProducts } from "@/lib/queries/shop";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { ArrowRight, Package } from "@phosphor-icons/react/dist/ssr";
 import { getLocale, getTranslations } from "next-intl/server";
 

@@ -29,7 +29,7 @@ import {
   requireWritableAdminScope,
   requireWritableSuperAdminScope,
   requireAppearanceScope,
-} from "@/lib/shop/admin-scope";
+} from "@/lib/auth/scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";

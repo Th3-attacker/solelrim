@@ -11,7 +11,8 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { checkVariantStocks, getVariantStocks, resolveSharedCartLines } from "@/lib/actions/cart";
+import { getVariantStocks, resolveSharedCartLines } from "@/lib/actions/cart";
+import { checkVariantStocks } from "@/lib/services/cart";
 import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;

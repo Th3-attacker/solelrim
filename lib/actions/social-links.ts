@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { socialLinkSchema } from "@/lib/validation/settings";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { revalidateSite } from "@/lib/revalidate";
 
 export async function createSocialLink(input: unknown) {

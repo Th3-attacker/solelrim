@@ -5,7 +5,7 @@ import { Plus, Receipt } from "@phosphor-icons/react/dist/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { getAllSales } from "@/lib/queries/sales";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { countPendingRefunds } from "@/lib/queries/refunds";
 import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { Button } from "@/components/ui/button";

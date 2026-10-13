@@ -4,7 +4,7 @@ import { differenceInHours } from "date-fns";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { getOrderById, getOrdersSharingPaymentProof } from "@/lib/queries/orders";
 import { getSignedPaymentProofUrl } from "@/lib/supabase/payment-proofs";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { REASON_LABEL_KEY } from "@/lib/shop/client-messages";
 import { STALE_PENDING_HOURS } from "@/lib/shop/order-status";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";

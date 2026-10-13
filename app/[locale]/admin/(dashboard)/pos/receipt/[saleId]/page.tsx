@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { WhatsAppReceiptForm } from "@/components/pos/whatsapp-receipt-form";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { getReceipt } from "@/lib/queries/pos";
 import { getSaleRefunds } from "@/lib/queries/refunds";
 import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";

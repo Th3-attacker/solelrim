@@ -17,7 +17,7 @@ type StoreTypeOption = { key: string; label: string };
 
 // Independent from the public "live" toggle (Réglages) — lets an admin
 // browse/manage one boutique's back office while another is currently live
-// to customers. See lib/shop/admin-scope.ts.
+// to customers. See lib/auth/scope.ts.
 export function StoreScopeSwitcher({
   storeTypes,
   currentScope,

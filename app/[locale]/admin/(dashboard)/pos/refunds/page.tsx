@@ -1,7 +1,7 @@
 import { ArrowCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { countPendingRefunds, listRefundRequests, REFUNDS_PAGE_SIZE } from "@/lib/queries/refunds";
 import { toPageNumber } from "@/lib/shop/pagination";
 import { cn } from "@/lib/utils";

@@ -48,7 +48,7 @@ export function getEffectiveLicenseState(
 
 // States where the storefront must be taken down and every sensitive admin
 // action rejected server-side — see (shop)/layout.tsx and
-// lib/shop/admin-scope.ts (requireWritableAdminScope). GRACE_PERIOD is
+// lib/auth/scope.ts (requireWritableAdminScope). GRACE_PERIOD is
 // deliberately excluded: it's a warning window before SUSPENDED/EXPIRED,
 // not a block in itself.
 const BLOCKING_STATES: ReadonlySet<LicenseStatus> = new Set([

@@ -17,7 +17,7 @@ import { Link } from "@/i18n/navigation";
 import { getActiveProducts, getAllShopCategories } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getPriceRange } from "@/lib/shop/price";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";

@@ -1,4 +1,4 @@
-import { cancelExpiredPendingOrders } from "@/lib/shop/pending-expiry";
+import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";
 import { revalidateSite } from "@/lib/revalidate";
 
 // GET /api/cron/expire-pending-orders — called by Vercel Cron (vercel.json),

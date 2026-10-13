@@ -17,7 +17,7 @@ import {
 //
 // Unlike before, this is no longer purely visual for a BOUTIQUE_ADMIN: once
 // the state is one isLicenseBlocking() flags, every sensitive write action
-// is actually rejected server-side (lib/shop/admin-scope.ts:
+// is actually rejected server-side (lib/auth/scope.ts:
 // requireWritableAdminScope) — the banner's copy says so rather than just
 // warning about an upcoming date.
 export async function LicenseWarningBanner({ license }: { license: LicenseInfo }) {

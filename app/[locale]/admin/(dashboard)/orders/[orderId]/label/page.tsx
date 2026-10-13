@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { getOrderById } from "@/lib/queries/orders";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { PrintLabelButton } from "@/components/orders/print-label-button";
 import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { formatPrice } from "@/lib/format/currency";

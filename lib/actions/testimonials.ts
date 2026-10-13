@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { testimonialSchema } from "@/lib/validation/settings";
-import { requireWritableSuperAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableSuperAdminScope } from "@/lib/auth/scope";
 import { revalidateSite } from "@/lib/revalidate";
 
 export async function createTestimonial(input: unknown) {

@@ -1,7 +1,7 @@
 import { ArrowLeft, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { getOpenSession, getSessionView } from "@/lib/queries/cash-sessions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

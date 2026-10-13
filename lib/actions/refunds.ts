@@ -5,10 +5,10 @@ import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/p
 import {
   requireWritableAdminScope,
   tryCheckoutScope,
-} from "@/lib/shop/admin-scope";
+} from "@/lib/auth/scope";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";
 import { computeRefund } from "@/lib/shop/refund";
-import { loadSessionTotals } from "@/lib/shop/cash-session";
+import { loadSessionTotals } from "@/lib/services/cash-session";
 import {
   refundDecisionSchema,
   refundRejectionSchema,

@@ -5,7 +5,7 @@ import {
   getAllCategories,
   getCategoryById,
 } from "@/lib/queries/products";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { ProductForm } from "@/components/products/product-form";
 import { ProductImageManager } from "@/components/products/product-image-manager";
 import type { ProductInput } from "@/lib/validation/product";

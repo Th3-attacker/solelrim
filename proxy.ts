@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
-import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
+import { getStoreTypeRouting } from "@/lib/services/domain-cache";
 import { serverEnv } from "@/lib/env";
 
 const handleI18nRouting = createIntlMiddleware(routing);

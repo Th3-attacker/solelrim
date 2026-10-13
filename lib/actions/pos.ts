@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { tryCheckoutScope } from "@/lib/shop/admin-scope";
+import { tryCheckoutScope } from "@/lib/auth/scope";
 import { getAuditActor } from "@/lib/audit";
-import { recordSale } from "@/lib/shop/record-sale";
+import { recordSale } from "@/lib/services/record-sale";
 import { posSaleSchema } from "@/lib/validation/pos";
 import { revalidateSite } from "@/lib/revalidate";
 

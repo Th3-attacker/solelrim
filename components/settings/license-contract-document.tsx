@@ -18,7 +18,7 @@ import type { LicenseType } from "@/lib/generated/prisma/enums";
 // the active locale.
 //
 // Every field this pulls from `boutique` already drives the actual
-// enforcement (lib/shop/admin-scope.ts: requireWritableAdminScope, the
+// enforcement (lib/auth/scope.ts: requireWritableAdminScope, the
 // (shop) layout) — the printed contract and the running system can never
 // silently drift apart, since there's no separate "contract database".
 

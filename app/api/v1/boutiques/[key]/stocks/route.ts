@@ -1,7 +1,7 @@
 import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, failFromCode, ok, readJson } from "@/lib/api/http";
-import { checkVariantStocks } from "@/lib/actions/cart";
+import { checkVariantStocks } from "@/lib/services/cart";
 
 // POST /api/v1/boutiques/{key}/stocks  { "variantIds": ["..."] }
 // → { "stocks": { "<variantId>": 12 } } — refreshes a cart that may be days

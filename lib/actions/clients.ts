@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { clientSchema, type ClientInput } from "@/lib/validation/client";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { revalidateAdmin } from "@/lib/revalidate";
 
 export type ClientActionResult = { error?: string; clientId?: string };

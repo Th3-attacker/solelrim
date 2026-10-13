@@ -1,7 +1,7 @@
 import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { fail, failFromCode } from "@/lib/api/http";
-import { submitOrder } from "@/lib/actions/orders";
+import { orderInputFrom, placeOrder } from "@/lib/services/orders";
 import { idempotencyKeySchema } from "@/lib/validation/order";
 
 // POST /api/v1/boutiques/{key}/orders — multipart/form-data, the same fields
@@ -11,12 +11,13 @@ import { idempotencyKeySchema } from "@/lib/validation/order";
 //   screenshot (the payment proof image).
 // → 201 { reference, orderId }
 //
-// It calls submitOrder itself, so prices, stock, promo codes, the file check
-// and the rate limit are the website's, not a second copy of them.
+// It calls placeOrder (lib/services/orders.ts) like the website's checkout,
+// so prices, stock, promo codes, the file check and the rate limit are the
+// website's, not a second copy of them.
 //
 // Optional Idempotency-Key header (≤ 64 printable characters, the same on
 // every resend of one order): a resend gets the first answer back instead of
-// a second order — no stock or promo code taken twice (see submitOrder).
+// a second order — no stock or promo code taken twice (see placeOrder).
 async function post(request: Request, ctx: { params: Promise<{ key: string }> }) {
   const { key } = await ctx.params;
   const { boutique, response } = await loadOpenBoutique(key);
@@ -34,9 +35,8 @@ async function post(request: Request, ctx: { params: Promise<{ key: string }> })
     return fail("invalid", 400);
   }
   // The boutique is the one in the URL, whatever the body claims.
-  formData.set("productType", boutique.key);
-
-  const result = await submitOrder(formData, { idempotencyKey });
+  const input = { ...orderInputFrom(formData), productType: boutique.key };
+  const result = await placeOrder(input, { idempotencyKey });
   if (result.error || !result.reference) {
     return failFromCode(result.error ?? "invalid", result.retryAfter);
   }

@@ -8,7 +8,7 @@ import { getActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 
 export async function generateMetadata({

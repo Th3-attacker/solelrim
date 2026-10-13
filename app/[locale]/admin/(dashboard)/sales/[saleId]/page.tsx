@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getFormatter } from "next-intl/server";
 import { getSaleById } from "@/lib/queries/sales";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { CancelSaleButton } from "@/components/sales/cancel-sale-button";

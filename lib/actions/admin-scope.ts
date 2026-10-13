@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { ADMIN_SCOPE_COOKIE } from "@/lib/shop/admin-scope";
+import { ADMIN_SCOPE_COOKIE } from "@/lib/auth/scope";
 import { requireSuperAdmin } from "@/lib/auth/admin";
 import { revalidateAdmin } from "@/lib/revalidate";
 

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperAdmin } from "@/lib/auth/admin";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { sellerInputSchema, sellerQuotaSchema } from "@/lib/validation/seller";
 import { reportError } from "@/lib/report-error";
 import { revalidateAdmin } from "@/lib/revalidate";

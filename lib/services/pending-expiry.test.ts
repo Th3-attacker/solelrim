@@ -7,7 +7,7 @@ vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
 import { sendOrderPush } from "@/lib/push/order-push";
-import { cancelExpiredPendingOrders } from "@/lib/shop/pending-expiry";
+import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const pushMock = sendOrderPush as unknown as Mock;

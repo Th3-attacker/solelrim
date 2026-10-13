@@ -4,9 +4,13 @@ import type { PrismaClient } from "@/lib/generated/prisma/client";
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("@/lib/actions/orders", () => ({ submitOrder: vi.fn(), trackOrder: vi.fn() }));
-vi.mock("@/lib/actions/promo-codes", () => ({ previewPromoCode: vi.fn() }));
-vi.mock("@/lib/actions/cart", () => ({ checkVariantStocks: vi.fn() }));
+vi.mock("@/lib/services/orders", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/services/orders")>()),
+  placeOrder: vi.fn(),
+  trackOrder: vi.fn(),
+}));
+vi.mock("@/lib/services/promo-codes", () => ({ previewPromoCode: vi.fn() }));
+vi.mock("@/lib/services/cart", () => ({ checkVariantStocks: vi.fn() }));
 vi.mock("@/lib/rate-limit", async (importOriginal) => ({
   RATE_LIMITS: (await importOriginal<typeof import("@/lib/rate-limit")>()).RATE_LIMITS,
   checkRateLimit: vi.fn(),
@@ -23,9 +27,9 @@ vi.mock("@/lib/queries/shop", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
-import { submitOrder, trackOrder } from "@/lib/actions/orders";
+import { placeOrder, trackOrder } from "@/lib/services/orders";
 import { checkRateLimit, rateLimitRetryAfter } from "@/lib/rate-limit";
-import { checkVariantStocks } from "@/lib/actions/cart";
+import { checkVariantStocks } from "@/lib/services/cart";
 import {
   getActiveProductsPage,
   getCatalogueFacets,
@@ -38,7 +42,7 @@ import { GET as getProducts } from "@/app/api/v1/boutiques/[key]/products/route"
 import { POST as postStocks } from "@/app/api/v1/boutiques/[key]/stocks/route";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-const submitOrderMock = submitOrder as unknown as Mock;
+const submitOrderMock = placeOrder as unknown as Mock;
 const trackOrderMock = trackOrder as unknown as Mock;
 const rateLimitMock = checkRateLimit as unknown as Mock;
 const retryAfterMock = rateLimitRetryAfter as unknown as Mock;
@@ -94,9 +98,9 @@ describe("POST orders", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-    const sent = submitOrderMock.mock.calls[0][0] as FormData;
-    expect(sent.get("productType")).toBe("sport");
-    expect(sent.get("customerName")).toBe("Aïcha");
+    const sent = submitOrderMock.mock.calls[0][0];
+    expect(sent.productType).toBe("sport");
+    expect(sent.customerName).toBe("Aïcha");
   });
 
   it("turns the action's error codes into HTTP statuses", async () => {
@@ -149,7 +153,7 @@ describe("POST orders with an Idempotency-Key", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ reference: "CMD-1", orderId: "o1" });
-    expect(submitOrderMock.mock.calls[0][0].get("productType")).toBe("sport");
+    expect(submitOrderMock.mock.calls[0][0].productType).toBe("sport");
   });
 
   it("refuses a key longer than 64 characters", async () => {

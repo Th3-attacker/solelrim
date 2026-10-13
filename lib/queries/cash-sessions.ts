@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { toPageNumber } from "@/lib/shop/pagination";
 import { combineSessionTotals, roundMoney, type BreakdownRow } from "@/lib/shop/cash";
-import { closeStaleSessions, sessionTotalsOf } from "@/lib/shop/cash-session";
+import { closeStaleSessions, sessionTotalsOf } from "@/lib/services/cash-session";
 
 // Every function here takes productType (and the viewer) already resolved
 // from the caller's own scope — never from the URL.

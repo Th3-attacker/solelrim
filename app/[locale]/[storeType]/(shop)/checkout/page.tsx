@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { getWalletLogoUrl } from "@/lib/supabase/storage";
 import { walletLogoSrc } from "@/lib/shop/wallet-providers";
 

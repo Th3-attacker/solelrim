@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { productSchema, type ProductInput } from "@/lib/validation/product";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { slugify } from "@/lib/shop/slug";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { validateImageBytes, MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
 import { logAdminAction } from "@/lib/audit";
 import { revalidateSite } from "@/lib/revalidate";

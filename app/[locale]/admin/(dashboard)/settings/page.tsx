@@ -19,7 +19,7 @@ import { LoyaltySettingsForm } from "@/components/settings/loyalty-settings-form
 import { listSellers } from "@/lib/queries/sellers";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireAdminScope } from "@/lib/auth/scope";
 import { THEME_PRESETS, DEFAULT_THEME_ID } from "@/lib/theme/presets";
 
 // The settings sections that aren't a Card of their own sit in the same

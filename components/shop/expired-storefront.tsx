@@ -9,7 +9,7 @@ import { getTranslations } from "next-intl/server";
 // which of the three caused it. The admin dashboard is untouched: a
 // boutique/superadmin can still sign in and see the license section to
 // reactivate it (only sensitive write actions are blocked there — see
-// lib/shop/admin-scope.ts: requireWritableAdminScope).
+// lib/auth/scope.ts: requireWritableAdminScope).
 export async function ExpiredStorefront({
   siteName,
   logoUrl,

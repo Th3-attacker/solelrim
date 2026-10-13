@@ -13,7 +13,7 @@ import { getProductImageUrl } from "@/lib/supabase/storage";
 import { getVariantPrice } from "@/lib/shop/price";
 import { isNewProduct } from "@/lib/shop/badges";
 import { buildSocialMetadata, buildStoreUrl, jsonLdScriptProps } from "@/lib/shop/metadata";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { ProductDetailView } from "@/components/shop/product-detail-view";
 import { ProductCard } from "@/components/shop/product-card";

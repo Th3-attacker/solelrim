@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import type { InputJsonObject } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/auth/scope";
 import { getAuditActor, writeAuditLog } from "@/lib/audit";
 import {
   businessDateOf,
@@ -18,7 +18,7 @@ import {
   loadSessionTotals,
   lockBoutiqueDay,
   sessionTotalsOf,
-} from "@/lib/shop/cash-session";
+} from "@/lib/services/cash-session";
 import {
   cashMovementSchema,
   closeSessionSchema,

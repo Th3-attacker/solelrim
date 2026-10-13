@@ -9,7 +9,7 @@ import {
   CLIENT_SALES_PAGE_SIZE,
 } from "@/lib/queries/clients";
 import { getOrdersByPhonePage, CLIENT_ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
 import { PromoCodeFormDialog } from "@/components/settings/promo-code-form-dialog";

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { walletAccountSchema } from "@/lib/validation/settings";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { findWalletProvider } from "@/lib/shop/wallet-providers";
 import { revalidateSite } from "@/lib/revalidate";
 

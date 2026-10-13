@@ -7,7 +7,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
-import { AUTO_CLOSE_NOTE, STALE_SESSION_MS, closeStaleSessions } from "@/lib/shop/cash-session";
+import { AUTO_CLOSE_NOTE, STALE_SESSION_MS, closeStaleSessions } from "@/lib/services/cash-session";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const now = new Date("2026-10-05T12:00:00Z");

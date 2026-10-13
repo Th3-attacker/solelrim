@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { categorySchema } from "@/lib/validation/product";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
 

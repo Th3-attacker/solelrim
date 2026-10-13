@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getPendingOrderCount } from "@/lib/queries/orders";
 import { getCurrentAdmin, getSessionUser } from "@/lib/auth/admin";

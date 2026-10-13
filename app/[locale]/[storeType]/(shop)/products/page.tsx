@@ -13,7 +13,7 @@ import {
   getAllCatalogColors,
   sortProducts,
 } from "@/lib/shop/filters";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
 import { getLocale, getTranslations } from "next-intl/server";

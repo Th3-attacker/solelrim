@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/auth/scope";
 import { normalizeLocalPhone } from "@/lib/shop/phone";
 import { loyaltyEnrollSchema, loyaltySettingsSchema } from "@/lib/validation/loyalty";
 import { revalidateAdmin } from "@/lib/revalidate";
