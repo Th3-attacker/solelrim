@@ -1,5 +1,6 @@
 import "server-only";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { SHOP_DATA_TAG } from "@/lib/data-cache";
 
 // Every page sits under a locale segment (localePrefix "always" in
 // i18n/routing.ts): the real URLs are /fr/admin/orders, /ar/sport/products/…
@@ -14,14 +15,23 @@ import { revalidatePath } from "next/cache";
 // The back office: every page under /[locale]/admin.
 export function revalidateAdmin(): void {
   revalidatePath("/[locale]/admin", "layout");
+  expireShopData();
 }
 
 // The storefronts: every page of every boutique.
 export function revalidateStorefront(): void {
   revalidatePath("/[locale]/[storeType]", "layout");
+  expireShopData();
 }
 
 // Both, for what shows on either side (a boutique's name, theme, wallets…).
 export function revalidateSite(): void {
   revalidatePath("/", "layout");
+  expireShopData();
+}
+
+// The storefront's cached reads (lib/data-cache.ts), right away: admin writes
+// (stock, prices, settings) and customer orders all show on a storefront.
+function expireShopData(): void {
+  revalidateTag(SHOP_DATA_TAG, { expire: 0 });
 }

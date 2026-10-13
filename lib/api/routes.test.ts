@@ -3,7 +3,7 @@ import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 vi.mock("@/lib/services/orders", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/services/orders")>()),
   placeOrder: vi.fn(),

@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { cachedShopQuery } from "@/lib/data-cache";
 
 // Every visible storefront concern now lives on StoreType (one row per
 // boutique, each with its own public route) — this singleton keeps a
@@ -33,9 +34,10 @@ export const getSolalContact = cache(function getSolalContact() {
 // Every boutique that has ever been created — the durable registry behind
 // the public [storeType] route segment, the admin scope switcher, and the
 // product-type picker.
-export const getStoreTypes = cache(function getStoreTypes() {
-  return prisma.storeType.findMany({ orderBy: { createdAt: "asc" } });
-});
+// Cached across requests (lib/data-cache.ts): every storefront request asks.
+export const getStoreTypes = cache(
+  cachedShopQuery("getStoreTypes", () => prisma.storeType.findMany({ orderBy: { createdAt: "asc" } })),
+);
 
 // A single boutique's full public/admin-facing settings, by its productType
 // key — for the admin settings page, whose productType always comes from
@@ -61,17 +63,21 @@ export const getBoutiqueSettings = cache(function getBoutiqueSettings(
 // runs this same check — but Next resolves metadata and nested segments in
 // parallel with an ancestor layout's own body, so a page can't rely on that
 // check having already run by the time its own code executes.
-export const getPublicBoutiqueSettings = cache(async function getPublicBoutiqueSettings(
-  productType: string,
-) {
-  const boutique = await prisma.storeType.findUnique({
+const findPublicBoutique = cachedShopQuery("findPublicBoutique", (productType: string) =>
+  prisma.storeType.findUnique({
     where: { key: productType },
     include: {
       socialLinks: { orderBy: { position: "asc" } },
       walletAccounts: { orderBy: { position: "asc" } },
       testimonials: { orderBy: { position: "asc" } },
     },
-  });
+  }),
+);
+
+export const getPublicBoutiqueSettings = cache(async function getPublicBoutiqueSettings(
+  productType: string,
+) {
+  const boutique = await findPublicBoutique(productType);
   if (!boutique) {
     notFound();
   }

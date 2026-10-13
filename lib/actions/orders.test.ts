@@ -18,6 +18,7 @@ vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
 vi.mock("next/server", () => ({ after: (task: () => unknown) => void task() }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 vi.mock("next/headers", () => ({
   headers: vi.fn(),

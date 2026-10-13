@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 vi.mock("@/lib/services/pending-expiry", () => ({ cancelExpiredPendingOrders: vi.fn() }));
 
 import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";

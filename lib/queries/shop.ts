@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { cachedShopQuery } from "@/lib/data-cache";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { sortBySize } from "@/lib/shop/size-order";
 import {
@@ -21,7 +22,8 @@ const VARIANT_ENTRY_ORDER = [{ createdAt: "asc" }, { id: "asc" }] satisfies Pris
 
 // Once per request for the same arguments: the shop layout and the home and
 // catalogue pages all want a boutique's whole catalogue.
-export const getActiveProducts = cache(function getActiveProducts(
+// Cached across requests too (lib/data-cache.ts).
+export const getActiveProducts = cache(cachedShopQuery("getActiveProducts", function getActiveProducts(
   productType: string,
   categoryId?: string,
   options?: { excludeId?: string; take?: number },
@@ -41,7 +43,7 @@ export const getActiveProducts = cache(function getActiveProducts(
     orderBy: { createdAt: "desc" },
     ...(options?.take ? { take: options.take } : {}),
   });
-});
+}));
 
 // One page of a boutique's active catalogue, newest first, with the total the
 // app needs to know when to stop scrolling (the website's grid loads it all).
@@ -70,7 +72,9 @@ export async function getActiveProductsPage(
 // The mobile catalogue with sort and filters (lib/queries/catalogue-filters.ts):
 // one page of ids in order, the filtered total, then the same rows as
 // getActiveProductsPage for those ids.
-export async function getFilteredProductsPage(
+export const getFilteredProductsPage = cachedShopQuery("getFilteredProductsPage", filteredProductsPage);
+
+async function filteredProductsPage(
   filters: CatalogueFilters,
   { page, pageSize }: { page: number; pageSize: number },
 ) {
@@ -127,7 +131,9 @@ export function getActiveProductsByIds(productType: string, ids: string[]) {
 
 // Every color of a boutique's catalogue, for the filter sheet's swatches:
 // what the color facet lists, alphabetically.
-export async function getCatalogueColors(productType: string): Promise<string[]> {
+export const getCatalogueColors = cachedShopQuery("getCatalogueColors", catalogueColors);
+
+async function catalogueColors(productType: string): Promise<string[]> {
   const rows = await prisma.$queryRaw<FacetRow[]>(
     colorFacetSql({ productType, sort: "newest", sizes: [], colors: [] }),
   );
@@ -181,21 +187,21 @@ export async function searchActiveProducts(
 // Wrapped in React's per-request cache — generateMetadata and the shop
 // layout/products page below both call this for the same storeType, and
 // without cache() that's an extra round trip to the DB per request.
-export const getAllShopCategories = cache(function getAllShopCategories(
-  productType: string,
-) {
-  return prisma.category.findMany({
-    where: { OR: [{ productType: null }, { productType }] },
-    orderBy: [{ position: "asc" }, { name: "asc" }],
-  });
-});
+export const getAllShopCategories = cache(
+  cachedShopQuery("getAllShopCategories", (productType: string) =>
+    prisma.category.findMany({
+      where: { OR: [{ productType: null }, { productType }] },
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    }),
+  ),
+);
 
 // Wrapped in React's per-request cache — generateMetadata and the page
 // component below both call this for the same product, and without cache()
 // that's two round trips to the DB instead of one.
 // Variants come back sorted by size (S, M, L, XL — see sortBySize), then in
 // entry order within a size, for both the product page and the mobile API.
-export const getActiveProductBySlug = cache(async function getActiveProductBySlug(
+export const getActiveProductBySlug = cache(cachedShopQuery("getActiveProductBySlug", async function getActiveProductBySlug(
   slug: string,
   productType: string,
 ) {
@@ -209,7 +215,7 @@ export const getActiveProductBySlug = cache(async function getActiveProductBySlu
   });
   if (!product) return null;
   return { ...product, variants: sortBySize(product.variants, (variant) => variant.size) };
-});
+}));
 
 // Legacy links shared before the slug migration still use the raw id —
 // looked up regardless of isActive so an old link to a product that's since
