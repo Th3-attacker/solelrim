@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { setProductType, createProductType } from "@/lib/actions/settings";
+import { setProductType, createProductType } from "@/lib/actions/boutiques";
 
 type StoreTypeOption = { key: string; label: string };
 

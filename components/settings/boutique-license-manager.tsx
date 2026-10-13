@@ -50,7 +50,7 @@ import {
   setPendingAutoCancelHours,
   updateStoreTypeLabel,
   deleteStoreType,
-} from "@/lib/actions/settings";
+} from "@/lib/actions/boutiques";
 import { PENDING_AUTO_CANCEL_CHOICES } from "@/lib/shop/order-status";
 
 const CALENDAR_LOCALES: Record<string, typeof fr> = { fr, en: enUS, ar: arMA };
