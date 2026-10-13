@@ -9,6 +9,7 @@ import {
   ShoppingCart,
 } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { toast } from "@/components/ui/toast";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -377,12 +378,15 @@ export function CheckoutScreen({
                     >
                       <span className="relative flex aspect-square w-full items-center justify-center border-b bg-card">
                         {product.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          // Through the optimizer: the tile is ~200px wide,
+                          // the original can weigh a few MB, and the till
+                          // shows the whole catalogue at once.
+                          <Image
                             src={product.imageUrl}
                             alt=""
-                            loading="lazy"
-                            className="size-full object-cover"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 200px"
+                            className="object-cover"
                           />
                         ) : (
                           <Package aria-hidden="true" className="size-8 text-muted-foreground" />

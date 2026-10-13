@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { withSentryConfig } from "@sentry/nextjs";
 import { contentSecurityPolicy } from "./lib/csp";
+import { DEVICE_SIZES, IMAGE_SIZES, OPTIMIZED_IMAGE_TTL_SECONDS } from "./lib/image-config";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -35,6 +36,12 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+    // Fewer widths and a month-long cache: each optimized copy that expires
+    // or is missing makes Vercel download the original from Supabase
+    // (lib/image-config.ts).
+    deviceSizes: [...DEVICE_SIZES],
+    imageSizes: [...IMAGE_SIZES],
+    minimumCacheTTL: OPTIMIZED_IMAGE_TTL_SECONDS,
     // The image optimizer refuses a host that resolves to a non-public
     // address (SSRF guard). On a network with DNS64 (IPv6 with NAT64, common
     // with Mauritanian carriers and some ISPs), Supabase also resolves to
