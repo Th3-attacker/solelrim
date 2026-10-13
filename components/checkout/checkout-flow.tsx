@@ -9,22 +9,23 @@ import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { StateMessage } from "@/components/ui/state-message";
 import { useCart } from "@/components/cart/cart-provider";
 import { CheckoutStepper } from "@/components/checkout/checkout-stepper";
+import { CheckoutSuccess } from "@/components/checkout/checkout-success";
+import { CustomerStep } from "@/components/checkout/customer-step";
+import { WalletList } from "@/components/checkout/wallet-list";
+import {
+  PromoCodeField,
+  usePromoCodeErrorMessage,
+  type AppliedPromo,
+} from "@/components/checkout/promo-code-field";
 import { OrderSummary } from "@/components/checkout/order-summary";
 import { submitOrder, type SubmitOrderResult } from "@/lib/actions/orders";
-import { previewPromoCode } from "@/lib/actions/promo-codes";
 import { computeDiscountAmount, isPromoCodeError } from "@/lib/shop/promo-code";
-import type { PromoDiscountType } from "@/lib/generated/prisma/enums";
 import { buildOrderWhatsAppLink } from "@/lib/shop/whatsapp";
 import { MAX_IMAGE_BYTES } from "@/lib/shop/image-signature";
-import { Wallet, X, Pencil, Package, Copy, Check, ArrowLeft, ArrowRight, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
+import { Pencil, ArrowLeft, ArrowRight, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import {
   checkoutCustomerSchema,
@@ -74,7 +75,6 @@ export function CheckoutFlow({
 }) {
   const t = useTranslations("checkout");
   const tCommon = useTranslations("common");
-  const tTrackOrder = useTranslations("trackOrder");
   const locale = useLocale();
   const cart = useCart();
 
@@ -90,18 +90,10 @@ export function CheckoutFlow({
   const [paymentDetailsVisible, setPaymentDetailsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
-  const [referenceCopied, setReferenceCopied] = useState(false);
-  const [copiedWalletIndex, setCopiedWalletIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [promoInput, setPromoInput] = useState("");
-  const [applyingPromo, setApplyingPromo] = useState(false);
-  const [promoError, setPromoError] = useState<string | null>(null);
-  const [appliedPromo, setAppliedPromo] = useState<{
-    code: string;
-    discountType: PromoDiscountType;
-    discountValue: number;
-  } | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const promoCodeErrorMessage = usePromoCodeErrorMessage();
   // Derived from the live cart subtotal on every render, not frozen at
   // whatever it was when the code was applied — a PERCENT code must track
   // the cart if it changes afterward (e.g. a stock sync clamps a quantity).
@@ -155,15 +147,11 @@ export function CheckoutFlow({
     }
   }, [cart.hydrated, cart.items, step, storageKey]);
 
-  const {
-    register,
-    handleSubmit,
-    reset: resetCustomerForm,
-    formState: { errors },
-  } = useForm<CheckoutCustomerInput>({
+  const customerForm = useForm<CheckoutCustomerInput>({
     resolver: zodResolver(checkoutCustomerSchema),
     defaultValues: { customerName: "", customerPhone: "", customerCity: "" },
   });
+  const resetCustomerForm = customerForm.reset;
 
   // Resuming an interrupted checkout: restores step 1's info (and which
   // step they'd reached) so a reload or an accidental navigation away
@@ -195,58 +183,6 @@ export function CheckoutFlow({
     if (!customerInfo || step === "success") return;
     localStorage.setItem(storageKey, JSON.stringify({ step, customerInfo }));
   }, [storageKey, customerInfo, step]);
-
-  function fieldErrorMessage(message?: string) {
-    if (message === "required") return tCommon("requiredField");
-    if (message === "invalidPhone") return tCommon("invalidPhone");
-    return t("validationError");
-  }
-
-  function promoCodeErrorMessage(code: string) {
-    switch (code) {
-      case "expired":
-        return t("promoCodeExpiredError");
-      case "usageLimitReached":
-        return t("promoCodeUsageLimitError");
-      case "notYours":
-        return t("promoCodeNotYoursError");
-      case "alreadyUsed":
-        return t("promoCodeAlreadyUsedError");
-      default:
-        return t("promoCodeInvalidError");
-    }
-  }
-
-  async function handleApplyPromoCode() {
-    if (!promoInput.trim() || !customerInfo) return;
-    setApplyingPromo(true);
-    setPromoError(null);
-
-    const result = await previewPromoCode({
-      code: promoInput,
-      productType: storeType,
-      customerPhone: customerInfo.customerPhone,
-      subtotal: cart.subtotal,
-    });
-    setApplyingPromo(false);
-
-    if ("error" in result) {
-      setPromoError(promoCodeErrorMessage(result.error));
-      return;
-    }
-
-    setAppliedPromo({
-      code: promoInput.trim().toUpperCase(),
-      discountType: result.discountType,
-      discountValue: result.discountValue,
-    });
-  }
-
-  function handleRemovePromoCode() {
-    setAppliedPromo(null);
-    setPromoInput("");
-    setPromoError(null);
-  }
 
   const onSubmitStep1: SubmitHandler<CheckoutCustomerInput> = (data) => {
     setCustomerInfo(data);
@@ -356,63 +292,11 @@ export function CheckoutFlow({
     window.open(link, "_blank");
   }
 
-  async function handleCopyReference() {
-    if (!reference) return;
-    await navigator.clipboard.writeText(reference);
-    setReferenceCopied(true);
-    toast.success(t("referenceCopied"));
-    setTimeout(() => setReferenceCopied(false), 2000);
-  }
-
-  async function handleCopyWalletNumber(index: number, provider: string, number: string) {
-    await navigator.clipboard.writeText(number);
-    setCopiedWalletIndex(index);
-    toast.success(t("walletNumberCopied", { provider }));
-    setTimeout(() => {
-      setCopiedWalletIndex((current) => (current === index ? null : current));
-    }, 2000);
-  }
-
   if (step === "success") {
-    return (
-      <div
-        className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border bg-card p-6 text-center sm:my-6 sm:p-8"
-      >
-        <h1 className="text-heading-xs">{t("successTitle")}</h1>
-        <p className="text-sm text-muted-foreground">{t("successMessage")}</p>
-        <div className="flex w-full flex-col items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-md border bg-card py-1.5 ps-3 pe-1.5">
-            <span className="font-mono text-sm">{reference}</span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleCopyReference}
-              aria-label={t("copyReference")}
-            >
-              {referenceCopied ? (
-                <Check className="size-4 text-success" />
-              ) : (
-                <Copy className="size-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">{t("keepReferenceHint")}</p>
-        </div>
-        <Button onClick={handleSendWhatsApp} className="w-full">
-          {t("sendWhatsApp")}
-        </Button>
-        <Button variant="outline" className="w-full" asChild>
-          <Link href={`${basePath}/track-order`}>
-            <Package className="size-4" />
-            {tTrackOrder("title")}
-          </Link>
-        </Button>
-        <Button variant="ghost" className="w-full" asChild>
-          <Link href={basePath || "/"}>{t("backToCatalog")}</Link>
-        </Button>
-      </div>
-    );
+    // reference is set together with the step.
+    return reference ? (
+      <CheckoutSuccess reference={reference} basePath={basePath} onSendWhatsApp={handleSendWhatsApp} />
+    ) : null;
   }
 
   // Visiting /checkout directly with nothing in the cart (or right after a
@@ -453,66 +337,7 @@ export function CheckoutFlow({
           className="flex flex-col gap-6 rounded-2xl border bg-card p-4 duration-200 animate-in fade-in-0 slide-in-from-bottom-2 sm:p-6"
         >
           {step === 1 && (
-            <form onSubmit={handleSubmit(onSubmitStep1)} className="flex flex-col gap-4">
-              <div>
-                <h1 className="text-heading-xs">{t("step1Title")}</h1>
-                <p className="text-sm text-muted-foreground">{t("step1Hint")}</p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <Label htmlFor="customerName">{t("customerName")}</Label>
-                  <Input
-                    id="customerName"
-                    autoComplete="name"
-                    aria-invalid={!!errors.customerName}
-                    aria-describedby={errors.customerName ? "customerName-error" : undefined}
-                    {...register("customerName")}
-                  />
-                  {errors.customerName && (
-                    <FieldError id="customerName-error">
-                      {fieldErrorMessage(errors.customerName.message)}
-                    </FieldError>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customerPhone">{t("customerPhone")}</Label>
-                  <Input
-                    id="customerPhone"
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                    maxLength={8}
-                    aria-invalid={!!errors.customerPhone}
-                    aria-describedby={errors.customerPhone ? "customerPhone-error" : undefined}
-                    {...register("customerPhone")}
-                  />
-                  {errors.customerPhone && (
-                    <FieldError id="customerPhone-error">
-                      {fieldErrorMessage(errors.customerPhone.message)}
-                    </FieldError>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="customerCity">{t("customerCity")}</Label>
-                  <Input
-                    id="customerCity"
-                    autoComplete="address-level2"
-                    aria-invalid={!!errors.customerCity}
-                    aria-describedby={errors.customerCity ? "customerCity-error" : undefined}
-                    {...register("customerCity")}
-                  />
-                  {errors.customerCity && (
-                    <FieldError id="customerCity-error">
-                      {fieldErrorMessage(errors.customerCity.message)}
-                    </FieldError>
-                  )}
-                </div>
-              </div>
-              <Button type="submit" size="lg" className="self-start">
-                {t("next")}
-                <ArrowRight className="size-4 rtl:rotate-180" />
-              </Button>
-            </form>
+            <CustomerStep form={customerForm} onSubmit={onSubmitStep1} />
           )}
 
           {step === 2 && customerInfo && (
@@ -538,49 +363,14 @@ export function CheckoutFlow({
               </div>
 
               {settings.couponsEnabled && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="promoCode">{t("promoCode")}</Label>
-                  {appliedPromo ? (
-                    <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-                      <span className="font-mono font-medium">{appliedPromo.code}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={handleRemovePromoCode}
-                        aria-label={t("removePromoCode")}
-                      >
-                        <X className="size-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input
-                        id="promoCode"
-                        value={promoInput}
-                        onChange={(e) => {
-                          setPromoInput(e.target.value);
-                          setPromoError(null);
-                        }}
-                        placeholder={t("promoCodePlaceholder")}
-                        autoComplete="off"
-                        aria-invalid={!!promoError}
-                        aria-describedby={promoError ? "promoCode-error" : undefined}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        loading={applyingPromo}
-                        disabled={!promoInput.trim()}
-                        onClick={handleApplyPromoCode}
-                      >
-                        {t("applyPromoCode")}
-                      </Button>
-                    </div>
-                  )}
-                  {promoError && <FieldError id="promoCode-error">{promoError}</FieldError>}
-                </div>
+                <PromoCodeField
+                  storeType={storeType}
+                  customerPhone={customerInfo.customerPhone}
+                  subtotal={cart.subtotal}
+                  applied={appliedPromo}
+                  onApply={setAppliedPromo}
+                  onRemove={() => setAppliedPromo(null)}
+                />
               )}
 
               <div className="flex gap-2">
@@ -627,53 +417,7 @@ export function CheckoutFlow({
                   {settings.wallets.length > 0 && (
                     <>
                       <p className="text-sm text-muted-foreground">{t("paymentStepHint")}</p>
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        {settings.wallets.map((wallet, index) => (
-                          <Popover key={index}>
-                            <div className="flex min-w-0 flex-col items-center gap-1.5 rounded-xl border bg-card p-3 text-center transition-colors hover:bg-muted/50">
-                              <PopoverTrigger asChild>
-                                <button type="button" className="flex flex-col items-center gap-1.5">
-                                  {wallet.logoUrl ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                      src={wallet.logoUrl}
-                                      alt=""
-                                      className="size-8 shrink-0 rounded-lg object-cover"
-                                    />
-                                  ) : (
-                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-card">
-                                      <Wallet className="size-4 text-muted-foreground" />
-                                    </div>
-                                  )}
-                                  <span className="truncate text-xs font-medium text-muted-foreground">
-                                    {wallet.provider}
-                                  </span>
-                                </button>
-                              </PopoverTrigger>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleCopyWalletNumber(index, wallet.provider, wallet.number)
-                                }
-                                aria-label={t("copyWalletNumber", { provider: wallet.provider })}
-                                className="flex min-w-0 items-center gap-1 text-sm font-semibold"
-                              >
-                                <span dir="ltr" className="truncate">
-                                  {wallet.number}
-                                </span>
-                                {copiedWalletIndex === index ? (
-                                  <Check className="size-3.5 shrink-0 text-success" />
-                                ) : (
-                                  <Copy className="size-3.5 shrink-0 text-muted-foreground" />
-                                )}
-                              </button>
-                            </div>
-                            <PopoverContent className="w-64 text-center text-sm">
-                              {t("walletNumberHint", { provider: wallet.provider })}
-                            </PopoverContent>
-                          </Popover>
-                        ))}
-                      </div>
+                      <WalletList wallets={settings.wallets} />
                     </>
                   )}
 
