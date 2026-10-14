@@ -1,0 +1,33 @@
+import { use } from "react";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { IntlProvider } from "use-intl";
+import { TIME_ZONE, isLocale } from "~/i18n/config";
+import { detectLocale } from "~/i18n/detect";
+import { loadMessages } from "~/i18n/messages";
+import { NotFound } from "~/components/not-found";
+
+export const Route = createFileRoute("/$locale")({
+  beforeLoad: ({ params, location }) => {
+    if (isLocale(params.locale)) return { locale: params.locale };
+    // An address without a language ("/admin/orders"): the same one in the
+    // visitor's, where it is found or gets that language's 404 page.
+    throw redirect({ href: `/${detectLocale()}${location.href}` });
+  },
+  // Started here so the messages load alongside the page's own data.
+  loader: ({ context }) => {
+    void loadMessages(context.locale);
+  },
+  component: LocaleLayout,
+  notFoundComponent: NotFound,
+});
+
+function LocaleLayout() {
+  const { locale } = Route.useRouteContext();
+  const messages = use(loadMessages(locale));
+
+  return (
+    <IntlProvider locale={locale} messages={messages} timeZone={TIME_ZONE}>
+      <Outlet />
+    </IntlProvider>
+  );
+}
