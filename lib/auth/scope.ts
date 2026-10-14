@@ -2,17 +2,17 @@ import "server-only";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
-import { DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { ExpectedError, expectedErrorCode } from "@/lib/errors";
 import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
+import { ADMIN_SCOPE_COOKIE, resolveSuperAdminScope } from "@/lib/auth/scope-core";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Independent from StoreSettings.productType (the public "live" toggle) —
 // lets a superadmin browse/manage one boutique's back office while a
 // different one is currently live to customers. See
 // lib/actions/admin-scope.ts.
-export const ADMIN_SCOPE_COOKIE = "admin_store_scope";
+export { ADMIN_SCOPE_COOKIE };
 
 export async function getAdminScope(): Promise<string> {
   // Every admin data page (orders and their payment proofs, clients, sales,
@@ -34,17 +34,11 @@ export async function getAdminScope(): Promise<string> {
 
   const storeTypes = await getStoreTypes();
   const cookieStore = await cookies();
-  const cookieValue = cookieStore.get(ADMIN_SCOPE_COOKIE)?.value;
-  if (cookieValue && storeTypes.some((t) => t.key === cookieValue)) {
-    return cookieValue;
-  }
-
-  const settings = await getStoreSettings();
-  if (storeTypes.some((t) => t.key === settings.productType)) {
-    return settings.productType;
-  }
-
-  return storeTypes[0]?.key ?? DEFAULT_PRODUCT_TYPE;
+  return resolveSuperAdminScope({
+    requested: cookieStore.get(ADMIN_SCOPE_COOKIE)?.value,
+    storeTypeKeys: storeTypes.map((t) => t.key),
+    liveProductType: async () => (await getStoreSettings()).productType,
+  });
 }
 
 // The single replacement for every action's old

@@ -1295,9 +1295,7 @@
           "Scan the QR code with an authenticator app.",
           "Enter the 6-digit code to confirm."
         ],
-        "issues": [
-          "Keep your phone: if you lose it, only support can reset 2FA (see below)."
-        ]
+        "issues": ["Keep your phone: if you lose it, only support can reset 2FA (see below)."]
       },
       "processOrder": {
         "title": "Process an online order",
@@ -1349,9 +1347,7 @@
           "Choose “Cash in” or “Cash out” and enter the amount.",
           "Give the reason (required), then “Record”."
         ],
-        "issues": [
-          "A cash out higher than the expected cash is refused."
-        ]
+        "issues": ["A cash out higher than the expected cash is refused."]
       },
       "promoCode": {
         "title": "Create a promo code",
@@ -1374,9 +1370,7 @@
           "If no card exists, click “Create card”.",
           "The sale adds the points automatically; the customer can use their reward on a later sale."
         ],
-        "issues": [
-          "The programme must be switched on and configured by the admin in “Settings”."
-        ]
+        "issues": ["The programme must be switched on and configured by the admin in “Settings”."]
       },
       "manageClients": {
         "title": "Manage clients",
@@ -1386,9 +1380,7 @@
           "Create or edit a record with the name and phone.",
           "Open a client's record to see their history."
         ],
-        "issues": [
-          "A client who already has sales cannot be deleted."
-        ]
+        "issues": ["A client who already has sales cannot be deleted."]
       },
       "closeRegister": {
         "title": "Close your till",
@@ -1447,10 +1439,7 @@
       "cancelSale": {
         "title": "Cancel or correct a sale",
         "when": "When a sale was entered by mistake. Boutique admin only.",
-        "steps": [
-          "Open “Sales”, then the sale.",
-          "Correct it, or cancel it with a reason."
-        ],
+        "steps": ["Open “Sales”, then the sale.", "Correct it, or cancel it with a reason."],
         "issues": [
           "If the customer returned an item, use a refund instead.",
           "Every cancellation is recorded in “History”."
@@ -1498,10 +1487,7 @@
       "sellerQuota": {
         "title": "Maximum number of sellers",
         "when": "When you can no longer create a seller because the limit is reached.",
-        "steps": [
-          "The quota is changed by support.",
-          "Say how many sellers you need."
-        ]
+        "steps": ["The quota is changed by support.", "Say how many sellers you need."]
       },
       "adminAccount": {
         "title": "Admin account: add or remove",
@@ -1536,6 +1522,54 @@
           "For SEO, send the title and description you want; for a customer review, the customer's name and their text."
         ]
       }
+    }
+  },
+  "formErrors": {
+    "required": "This field is required.",
+    "invalidValue": "Invalid value.",
+    "invalidEmail": "Invalid email address."
+  },
+  "admin": {
+    "shell": {
+      "skipToContent": "Skip to content",
+      "adminNavigationLabel": "Admin navigation",
+      "mobileTabBarLabel": "Main navigation",
+      "breadcrumbLabel": "Breadcrumb",
+      "openMenu": "Open menu",
+      "hideSidebar": "Hide menu",
+      "showSidebar": "Show menu",
+      "moreTab": "More",
+      "menuDrawerTitle": "Menu",
+      "adminBadge": "ADMIN",
+      "superadminOnlyBadge": "Super admin",
+      "languageSwitcherLabel": "Interface language",
+      "darkModeSwitch": "Dark mode",
+      "switchToDarkMode": "Switch to dark mode",
+      "switchToLightMode": "Switch to light mode",
+      "activeBoutiqueSwitchLabel": "Active store: {name}. Switch store",
+      "switchBoutiqueMenuTitle": "Switch store",
+      "boutiqueSwitchedToast": "You're now managing {name}.",
+      "viewStorefront": "View store",
+      "pendingOrdersCount": "{count, plural, one {# order to check} other {# orders to check}}",
+      "pendingRefundsCount": "{count, plural, one {# refund to handle} other {# refunds to handle}}"
+    },
+    "nav": {
+      "overviewGroup": "Overview",
+      "salesGroup": "Sales",
+      "catalogGroup": "Catalog",
+      "clientsGroup": "Customers",
+      "boutiqueGroup": "Store",
+      "platformGroup": "Platform",
+      "platformLimitsAndDomains": "Limits and domains"
+    },
+    "table": {
+      "selectAllOnPage": "Select all on this page",
+      "selectedRowsCount": "{count, plural, one {# row selected} other {# rows selected}}",
+      "clearSelection": "Clear selection"
+    },
+    "ui": {
+      "decreaseQuantity": "Less",
+      "increaseQuantity": "More"
     }
   }
 }

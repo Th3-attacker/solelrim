@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslations } from "use-intl";
+import { Button, IconButton } from "~/components/ui/button";
+import { Icon } from "~/components/ui/icon";
 import type { Locale } from "~/i18n/config";
 import { logout } from "./auth.functions";
 
-export function LogoutButton({ locale }: { locale: Locale }) {
+export function LogoutButton({ locale, compact = false }: { locale: Locale; compact?: boolean }) {
   const t = useTranslations("nav");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -18,15 +20,23 @@ export function LogoutButton({ locale }: { locale: Locale }) {
     },
   });
 
+  if (compact) {
+    return (
+      <IconButton
+        label={t("logout")}
+        variant="quiet"
+        className="text-muted"
+        busy={signOut.isPending}
+        onClick={() => signOut.mutate()}
+      >
+        <Icon name="logout" />
+      </IconButton>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={() => signOut.mutate()}
-      disabled={signOut.isPending}
-      aria-busy={signOut.isPending}
-      className="h-10 rounded-control border border-line-strong bg-surface px-4 font-semibold"
-    >
+    <Button busy={signOut.isPending} onClick={() => signOut.mutate()}>
+      <Icon name="logout" />
       {t("logout")}
-    </button>
+    </Button>
   );
 }

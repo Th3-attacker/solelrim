@@ -14,6 +14,7 @@ import { Route as LocaleRouteRouteImport } from './routes/$locale/route'
 import { Route as LocaleIndexRouteImport } from './routes/$locale/index'
 import { Route as LocaleAdminRouteRouteImport } from './routes/$locale/admin/route'
 import { Route as LocaleAdminDashboardRouteRouteImport } from './routes/$locale/admin/_dashboard/route'
+import { Route as LocaleAdminDesignSystemRouteImport } from './routes/$locale/admin/design-system'
 import { Route as LocaleAdminLoginRouteImport } from './routes/$locale/admin/login'
 import { Route as LocaleAdminDashboardIndexRouteImport } from './routes/$locale/admin/_dashboard/index'
 
@@ -42,6 +43,11 @@ const LocaleAdminDashboardRouteRoute =
     id: '/_dashboard',
     getParentRoute: () => LocaleAdminRouteRoute,
   } as any)
+const LocaleAdminDesignSystemRoute = LocaleAdminDesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
+  getParentRoute: () => LocaleAdminRouteRoute,
+} as any)
 const LocaleAdminLoginRoute = LocaleAdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/$locale': typeof LocaleRouteRouteWithChildren
   '/$locale/admin': typeof LocaleAdminRouteRouteWithChildren
   '/$locale/': typeof LocaleIndexRoute
+  '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/': typeof LocaleAdminDashboardIndexRoute
 }
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$locale/admin': typeof LocaleAdminDashboardIndexRoute
   '/$locale': typeof LocaleIndexRoute
+  '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
 }
 export interface FileRoutesById {
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/$locale/admin': typeof LocaleAdminRouteRouteWithChildren
   '/$locale/': typeof LocaleIndexRoute
   '/$locale/admin/_dashboard': typeof LocaleAdminDashboardRouteRouteWithChildren
+  '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/_dashboard/': typeof LocaleAdminDashboardIndexRoute
 }
@@ -85,10 +94,16 @@ export interface FileRouteTypes {
     | '/$locale'
     | '/$locale/admin'
     | '/$locale/'
+    | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$locale/admin' | '/$locale' | '/$locale/admin/login'
+  to:
+    | '/'
+    | '/$locale/admin'
+    | '/$locale'
+    | '/$locale/admin/design-system'
+    | '/$locale/admin/login'
   id:
     | '__root__'
     | '/'
@@ -96,6 +111,7 @@ export interface FileRouteTypes {
     | '/$locale/admin'
     | '/$locale/'
     | '/$locale/admin/_dashboard'
+    | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/_dashboard/'
   fileRoutesById: FileRoutesById
@@ -142,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleAdminDashboardRouteRouteImport
       parentRoute: typeof LocaleAdminRouteRoute
     }
+    '/$locale/admin/design-system': {
+      id: '/$locale/admin/design-system'
+      path: '/design-system'
+      fullPath: '/$locale/admin/design-system'
+      preLoaderRoute: typeof LocaleAdminDesignSystemRouteImport
+      parentRoute: typeof LocaleAdminRouteRoute
+    }
     '/$locale/admin/login': {
       id: '/$locale/admin/login'
       path: '/login'
@@ -175,11 +198,13 @@ const LocaleAdminDashboardRouteRouteWithChildren =
 
 interface LocaleAdminRouteRouteChildren {
   LocaleAdminDashboardRouteRoute: typeof LocaleAdminDashboardRouteRouteWithChildren
+  LocaleAdminDesignSystemRoute: typeof LocaleAdminDesignSystemRoute
   LocaleAdminLoginRoute: typeof LocaleAdminLoginRoute
 }
 
 const LocaleAdminRouteRouteChildren: LocaleAdminRouteRouteChildren = {
   LocaleAdminDashboardRouteRoute: LocaleAdminDashboardRouteRouteWithChildren,
+  LocaleAdminDesignSystemRoute: LocaleAdminDesignSystemRoute,
   LocaleAdminLoginRoute: LocaleAdminLoginRoute,
 }
 

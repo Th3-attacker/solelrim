@@ -1,26 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslations } from "use-intl";
-import { LogoutButton } from "~/features/auth/logout-button";
+import { PageHeader } from "~/components/ui/page-header";
 
-// Step 0: proves the chain (session, guard, server functions) end to end.
-// The dashboard of the design replaces this page in step 2.
+// The design's dashboard (step 2) takes this page over.
 export const Route = createFileRoute("/$locale/admin/_dashboard/")({
+  staticData: { title: "nav.dashboard" },
   component: DashboardPage,
 });
 
 function DashboardPage() {
-  const t = useTranslations();
-  const { admin, locale } = Route.useRouteContext();
+  const t = useTranslations("nav");
+  const { admin } = Route.useRouteContext();
 
   return (
-    <main className="mx-auto flex max-w-[1180px] flex-col gap-4 px-4 py-7 md:px-8">
-      <h1 className="text-page-title">{t("nav.dashboard")}</h1>
-      <p className="text-ink-2">
-        {admin.email} · {t(`auditLog.role.${admin.role}`)}
-      </p>
-      <div>
-        <LogoutButton locale={locale} />
-      </div>
-    </main>
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-5 px-4 pt-7 pb-14 md:px-8">
+      <PageHeader title={t("dashboard")} description={admin.email} />
+    </div>
   );
 }

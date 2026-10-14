@@ -1,10 +1,11 @@
-import { use } from "react";
+import { use, type ReactNode } from "react";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { IntlProvider } from "use-intl";
+import { IntlProvider, useTranslations } from "use-intl";
 import { TIME_ZONE, isLocale } from "~/i18n/config";
 import { detectLocale } from "~/i18n/detect";
 import { loadMessages } from "~/i18n/messages";
 import { NotFound } from "~/components/not-found";
+import { ToastProvider } from "~/components/ui/toast";
 
 export const Route = createFileRoute("/$locale")({
   beforeLoad: ({ params, location }) => {
@@ -27,7 +28,14 @@ function LocaleLayout() {
 
   return (
     <IntlProvider locale={locale} messages={messages} timeZone={TIME_ZONE}>
-      <Outlet />
+      <Notifications>
+        <Outlet />
+      </Notifications>
     </IntlProvider>
   );
+}
+
+function Notifications({ children }: { children: ReactNode }) {
+  const t = useTranslations("common");
+  return <ToastProvider closeLabel={t("close")}>{children}</ToastProvider>;
 }

@@ -1349,9 +1349,7 @@
           "Choisissez « Entrée » ou « Sortie » et saisissez le montant.",
           "Indiquez le motif (obligatoire), puis « Enregistrer »."
         ],
-        "issues": [
-          "Une sortie supérieure aux espèces attendues est refusée."
-        ]
+        "issues": ["Une sortie supérieure aux espèces attendues est refusée."]
       },
       "promoCode": {
         "title": "Créer un code promo",
@@ -1374,9 +1372,7 @@
           "Si aucune carte n'existe, cliquez sur « Créer la carte ».",
           "La vente ajoute les points automatiquement ; le client peut utiliser sa récompense à une vente suivante."
         ],
-        "issues": [
-          "Le programme doit être activé et réglé par l'admin dans « Paramètres »."
-        ]
+        "issues": ["Le programme doit être activé et réglé par l'admin dans « Paramètres »."]
       },
       "manageClients": {
         "title": "Gérer les clients",
@@ -1386,9 +1382,7 @@
           "Créez ou modifiez une fiche avec le nom et le téléphone.",
           "Ouvrez la fiche d'un client pour voir son historique."
         ],
-        "issues": [
-          "Un client qui a déjà des ventes ne peut pas être supprimé."
-        ]
+        "issues": ["Un client qui a déjà des ventes ne peut pas être supprimé."]
       },
       "closeRegister": {
         "title": "Fermer sa caisse",
@@ -1536,6 +1530,54 @@
           "Pour le SEO, envoyez le titre et la description voulus ; pour un avis client, le nom du client et son texte."
         ]
       }
+    }
+  },
+  "formErrors": {
+    "required": "Ce champ est requis.",
+    "invalidValue": "Valeur invalide.",
+    "invalidEmail": "Adresse e-mail invalide."
+  },
+  "admin": {
+    "shell": {
+      "skipToContent": "Aller au contenu",
+      "adminNavigationLabel": "Navigation de l'administration",
+      "mobileTabBarLabel": "Navigation principale",
+      "breadcrumbLabel": "Fil d'Ariane",
+      "openMenu": "Ouvrir le menu",
+      "hideSidebar": "Masquer le menu",
+      "showSidebar": "Afficher le menu",
+      "moreTab": "Plus",
+      "menuDrawerTitle": "Menu",
+      "adminBadge": "ADMIN",
+      "superadminOnlyBadge": "Super-admin",
+      "languageSwitcherLabel": "Langue de l'interface",
+      "darkModeSwitch": "Mode sombre",
+      "switchToDarkMode": "Passer en mode sombre",
+      "switchToLightMode": "Passer en mode clair",
+      "activeBoutiqueSwitchLabel": "Boutique active : {name}. Changer de boutique",
+      "switchBoutiqueMenuTitle": "Changer de boutique",
+      "boutiqueSwitchedToast": "Vous gérez maintenant {name}.",
+      "viewStorefront": "Voir la boutique",
+      "pendingOrdersCount": "{count, plural, one {# commande à vérifier} other {# commandes à vérifier}}",
+      "pendingRefundsCount": "{count, plural, one {# remboursement à traiter} other {# remboursements à traiter}}"
+    },
+    "nav": {
+      "overviewGroup": "Pilotage",
+      "salesGroup": "Ventes",
+      "catalogGroup": "Catalogue",
+      "clientsGroup": "Clients",
+      "boutiqueGroup": "Boutique",
+      "platformGroup": "Plateforme",
+      "platformLimitsAndDomains": "Limites et domaines"
+    },
+    "table": {
+      "selectAllOnPage": "Tout sélectionner sur cette page",
+      "selectedRowsCount": "{count, plural, one {# ligne sélectionnée} other {# lignes sélectionnées}}",
+      "clearSelection": "Annuler la sélection"
+    },
+    "ui": {
+      "decreaseQuantity": "Moins",
+      "increaseQuantity": "Plus"
     }
   }
 }

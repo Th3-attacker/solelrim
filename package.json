@@ -33,6 +33,7 @@
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-direction": "^1.1.2",
     "@sentry/nextjs": "^10.70.0",
+    "@supabase/realtime-js": "2.112.2",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.0",
     "@tanstack/react-form": "^1.33.5",
