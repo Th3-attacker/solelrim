@@ -13,7 +13,7 @@ import {
 import type { OrderStatus, StoreType } from "@/lib/generated/prisma/client";
 import { buildOrderReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { routing } from "@/i18n/routing";
+import { DEFAULT_LOCALE, isAppLocale } from "@/lib/i18n-locales";
 import {
   getClientIp,
   peekRateLimit,
@@ -167,8 +167,7 @@ async function checkCustomer(input: OrderInput) {
 }
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
-  const locales: readonly string[] = routing.locales;
-  return typeof value === "string" && locales.includes(value) ? value : routing.defaultLocale;
+  return isAppLocale(value) ? value : DEFAULT_LOCALE;
 }
 
 type ReadOrder = {

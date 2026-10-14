@@ -4,7 +4,7 @@ import type { AdminRole } from "~/server/admin-access";
 // Admin pages under /$locale. An entry joins the menu with its page: each
 // migration step adds its own (order of the design: Pilotage, Ventes,
 // Catalogue, Clients, Boutique, Plateforme).
-export type AdminPath = "/$locale/admin";
+export type AdminPath = "/$locale/admin" | "/$locale/admin/orders";
 
 export type NavItem = {
   to: AdminPath;
@@ -25,6 +25,18 @@ export const NAV: readonly NavGroup[] = [
   {
     label: "admin.nav.overviewGroup",
     items: [{ to: "/$locale/admin", label: "nav.dashboard", icon: "dashboard", tabBar: true }],
+  },
+  {
+    label: "admin.nav.salesGroup",
+    items: [
+      {
+        to: "/$locale/admin/orders",
+        label: "nav.orders",
+        icon: "orders",
+        badge: "pendingOrders",
+        tabBar: true,
+      },
+    ],
   },
 ];
 

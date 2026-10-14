@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useLocale, useTranslations } from "use-intl";
-import { LOCALES, LOCALE_COOKIE, type Locale } from "~/i18n/config";
+import { LOCALE_COOKIE, type Locale } from "~/i18n/config";
 import { cn } from "~/lib/cn";
 
+// In the design's order.
+const SHOWN: readonly Locale[] = ["fr", "en", "ar"];
 const SHORT: Record<Locale, string> = { fr: "FR", en: "EN", ar: "ع" };
 const NATIVE: Record<Locale, string> = { fr: "Français", en: "English", ar: "العربية" };
 
@@ -18,7 +20,7 @@ export function LanguageSwitcher({ wide = false }: { wide?: boolean }) {
       aria-label={t("languageSwitcherLabel")}
       className={cn("inline-flex gap-0.5 rounded-control bg-tile p-[3px]", wide && "flex w-full")}
     >
-      {LOCALES.map((locale) => (
+      {SHOWN.map((locale) => (
         <Link
           key={locale}
           to="."

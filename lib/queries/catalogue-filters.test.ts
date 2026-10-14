@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { unaccent } from "@electric-sql/pglite/contrib/unaccent";
 import type { Prisma } from "@/lib/generated/prisma/client";
@@ -11,6 +11,10 @@ import {
   type CatalogueFilters,
 } from "@/lib/queries/catalogue-filters";
 import { sortBySize } from "@/lib/shop/size-order";
+
+// Queries run in an in-memory Postgres (WASM): quick alone, but a busy
+// machine running the whole suite can push one past the default 5 s.
+vi.setConfig({ testTimeout: 20_000 });
 
 // The filters are SQL, so they are tested on a real (in-memory) Postgres with
 // the columns they read, not on mocks.

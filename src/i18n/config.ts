@@ -1,17 +1,17 @@
+import { DEFAULT_LOCALE, LOCALES, isAppLocale, type AppLocale } from "@/lib/i18n-locales";
+
 // The app's languages. Same set, default and cookie as the Next.js build
 // (i18n/routing.ts, next-intl), so a visitor's choice survives the cutover.
-export const LOCALES = ["fr", "en", "ar"] as const;
-export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = "fr";
+
+export { DEFAULT_LOCALE, LOCALES };
+export type Locale = AppLocale;
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 // Every date the admin shows is Mauritanian time, whatever the device says:
 // server and browser format alike, so hydration never disagrees.
 export const TIME_ZONE = "Africa/Nouakchott";
 
-export function isLocale(value: unknown): value is Locale {
-  return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
-}
+export const isLocale = isAppLocale;
 
 export function getDirection(locale: Locale): "rtl" | "ltr" {
   return locale === "ar" ? "rtl" : "ltr";
