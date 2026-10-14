@@ -38,7 +38,17 @@ export const staffMiddleware = createMiddleware({ type: "function" }).server(asy
         // database guarantees they have one.
         admin.productType!;
 
-  return next({ context: { admin, email: user.email ?? "", productType } });
+  // The name the admin gave, if any: greetings and the menu fall back to
+  // the email address.
+  const metadata = user.user_metadata ?? {};
+  const name =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name
+      : typeof metadata.name === "string"
+        ? metadata.name
+        : null;
+
+  return next({ context: { admin, email: user.email ?? "", name, productType } });
 });
 
 // Boutique admins and superadmins: everything but the checkout is closed to

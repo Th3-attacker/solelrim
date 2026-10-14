@@ -4,6 +4,7 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { createIsomorphicFn, getGlobalStartContext } from "@tanstack/react-start";
 import { routeTree } from "./routeTree.gen";
 import { NotFound } from "./components/not-found";
+import { RouteError } from "./components/route-error";
 
 // The CSP nonce of the page being rendered (src/start.ts). Only the server
 // needs it: the browser runs the scripts already in the page.
@@ -33,6 +34,7 @@ export function getRouter() {
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
     defaultNotFoundComponent: NotFound,
+    defaultErrorComponent: RouteError,
     ssr: { nonce: getNonce() },
   });
 

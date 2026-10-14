@@ -205,12 +205,15 @@ export function Segmented<Value extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={cn("inline-flex gap-0.5 rounded-control bg-tile p-[3px]", className)}
+      className={cn(
+        "inline-flex max-w-full gap-0.5 overflow-x-auto rounded-control bg-tile p-[3px]",
+        className,
+      )}
     >
       {options.map((option) => (
         <label
           key={option.value}
-          className="inline-flex h-8 cursor-pointer items-center rounded-lg px-3 text-[13px] font-semibold text-muted has-checked:bg-surface has-checked:text-brand has-checked:shadow-[0_1px_3px_rgb(15_23_42/0.12)] has-focus-visible:outline-2 has-focus-visible:outline-brand"
+          className="inline-flex h-8 flex-none cursor-pointer items-center rounded-lg px-3 text-[13px] whitespace-nowrap font-semibold text-muted has-checked:bg-surface has-checked:text-brand has-checked:shadow-[0_1px_3px_rgb(15_23_42/0.12)] has-focus-visible:outline-2 has-focus-visible:outline-brand"
         >
           <input
             type="radio"

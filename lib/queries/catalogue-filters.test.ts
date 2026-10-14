@@ -24,6 +24,8 @@ const run = async <T>(sql: Prisma.Sql) => (await db.query<T>(sql.text, sql.value
 // p4 Écharpe     base 500,  Jan 3 (same instant as p3), cat c1: TU Rouge base (0)
 // p7 Cadeau      base 1500, Dec 31, cat c1: no variants
 // p5 hidden (inactive), p6 in another boutique: never listed.
+// Booting the in-memory Postgres (WASM) takes a few seconds, more on a busy
+// machine running the whole suite in parallel: past the default 10 s.
 beforeAll(async () => {
   db = new PGlite({ extensions: { unaccent } });
   await db.exec(`
@@ -59,7 +61,7 @@ beforeAll(async () => {
       ('v9', 'p5', 'S',    'Noir',       NULL, 9, '2026-01-04 00:00:01'),
       ('v10','p6', 'S',    'Noir',       NULL, 9, '2026-01-04 00:00:01');
   `);
-});
+}, 30_000);
 
 afterAll(async () => {
   await db.close();

@@ -52,7 +52,7 @@ export const Route = createFileRoute("/$locale/admin/design-system")({
 function fixtureClient() {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } });
   client.setQueryData(shellQuery.queryKey, {
-    admin: { email: "elhadj@solal-rim.com", role: "SUPERADMIN" },
+    admin: { email: "elhadj@solal-rim.com", name: "Elhadj", role: "SUPERADMIN" },
     boutique: { key: "sport", label: "Sport", domain: "solal-rim.com" },
     boutiques: [
       { key: "sport", label: "Sport", domain: "solal-rim.com" },

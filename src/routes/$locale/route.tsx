@@ -5,6 +5,7 @@ import { TIME_ZONE, isLocale } from "~/i18n/config";
 import { detectLocale } from "~/i18n/detect";
 import { loadMessages } from "~/i18n/messages";
 import { NotFound } from "~/components/not-found";
+import { RootError } from "~/components/route-error";
 import { ToastProvider } from "~/components/ui/toast";
 
 export const Route = createFileRoute("/$locale")({
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/$locale")({
   },
   component: LocaleLayout,
   notFoundComponent: NotFound,
+  errorComponent: RootError,
 });
 
 function LocaleLayout() {

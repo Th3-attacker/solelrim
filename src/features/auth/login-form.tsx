@@ -1,8 +1,9 @@
-import { useId, useState } from "react";
-import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslations } from "use-intl";
+import { useAppForm } from "~/components/form/form";
+import { Icon } from "~/components/ui/icon";
 import type { Locale } from "~/i18n/config";
 import { login, verifyLoginMfa } from "./auth.functions";
 import { adminSessionQuery } from "./auth.queries";
@@ -10,8 +11,7 @@ import { loginSchema, mfaCodeSchema } from "./auth.schemas";
 
 type ErrorKey = "error" | "rateLimitedError" | "mfaInvalidCode";
 
-// Sign-in in two steps when the admin has 2FA: password, then the code. The
-// layout is the plain step-0 one; the "Connexion" design replaces it later.
+// Sign-in in two steps when the admin has 2FA: password, then the code.
 export function LoginForm({ locale }: { locale: Locale }) {
   const t = useTranslations("auth.login");
   const queryClient = useQueryClient();
@@ -26,19 +26,20 @@ export function LoginForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <section
-      aria-labelledby="login-title"
-      className="w-full max-w-sm rounded-card border border-line bg-surface p-6"
-    >
-      <h1 id="login-title" className="text-page-title">
-        {step === "password" ? t("title") : t("mfaTitle")}
-      </h1>
-      <p className="mt-1.5 text-muted">{step === "password" ? t("subtitle") : t("mfaSubtitle")}</p>
+    <div className="flex w-full max-w-[380px] flex-col gap-[18px]">
+      <div>
+        <h1 className="text-page-title">
+          {step === "password" ? t("welcomeTitle") : t("mfaTitle")}
+        </h1>
+        <p className="mt-2 text-[15px] text-muted">
+          {step === "password" ? t("welcomeSubtitle") : t("mfaSubtitle")}
+        </p>
+      </div>
 
       {error && (
         <p
           role="alert"
-          className="mt-4 rounded-control bg-bad-bg px-3 py-2 text-[13px] font-medium text-bad-ink"
+          className="rounded-control bg-bad-bg px-3 py-2.5 text-[13px] font-medium text-bad-ink"
         >
           {t(error)}
         </p>
@@ -67,9 +68,17 @@ export function LoginForm({ locale }: { locale: Locale }) {
           }}
         />
       )}
-    </section>
+    </div>
   );
 }
+
+// method="post": a press on "Se connecter" before the page's script has
+// loaded never puts the password in the address bar.
+const formProps = {
+  method: "post",
+  noValidate: true,
+  className: "flex flex-col gap-[18px]",
+} as const;
 
 function PasswordStep({
   onError,
@@ -79,10 +88,9 @@ function PasswordStep({
   onDone: (status: "signedIn" | "mfaRequired") => Promise<void>;
 }) {
   const t = useTranslations();
-  const passwordId = useId();
   const [showPassword, setShowPassword] = useState(false);
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: { email: "", password: "" },
     validators: { onSubmit: loginSchema },
     onSubmit: async ({ value }) => {
@@ -97,73 +105,52 @@ function PasswordStep({
 
   return (
     <form
-      className="mt-6 flex flex-col gap-4"
+      {...formProps}
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
       }}
     >
-      <form.Field name="email">
+      <form.AppField name="email">
         {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={field.name} className="text-[13px] font-semibold">
-              {t("auth.login.email")}
-            </label>
-            <input
-              id={field.name}
-              name={field.name}
-              type="email"
-              dir="ltr"
-              required
-              autoComplete="username"
-              autoFocus
-              value={field.state.value}
-              onChange={(event) => field.handleChange(event.target.value)}
-              onBlur={field.handleBlur}
-              aria-invalid={field.state.meta.errors.length > 0 || undefined}
-              className="h-[42px] rounded-control border border-line-strong bg-surface px-3 text-[14px]"
-            />
-          </div>
+          <field.TextField
+            label={t("auth.login.emailAddress")}
+            type="email"
+            dir="ltr"
+            autoComplete="username"
+            placeholder="vous@exemple.com"
+            required
+          />
         )}
-      </form.Field>
-
-      <form.Field name="password">
+      </form.AppField>
+      <form.AppField name="password">
         {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={passwordId} className="text-[13px] font-semibold">
-              {t("auth.login.password")}
-            </label>
-            <div className="flex h-[42px] items-center rounded-control border border-line-strong bg-surface focus-within:outline-2 focus-within:outline-brand">
-              <input
-                id={passwordId}
-                name={field.name}
-                type={showPassword ? "text" : "password"}
-                dir="ltr"
-                required
-                autoComplete="current-password"
-                value={field.state.value}
-                onChange={(event) => field.handleChange(event.target.value)}
-                onBlur={field.handleBlur}
-                aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                className="h-full min-w-0 flex-1 bg-transparent px-3 text-[14px] outline-none"
-              />
+          <field.TextField
+            label={t("auth.login.password")}
+            type={showPassword ? "text" : "password"}
+            dir="ltr"
+            autoComplete="current-password"
+            required
+            trailing={
               <button
                 type="button"
                 onClick={() => setShowPassword((shown) => !shown)}
-                aria-controls={passwordId}
                 aria-pressed={showPassword}
-                className="h-full px-3 text-[13px] font-semibold text-brand"
+                className="-me-1.5 h-8 rounded-lg bg-tile px-2.5 text-[12px] font-semibold text-brand"
               >
                 {showPassword ? t("common.hidePassword") : t("common.showPassword")}
               </button>
-            </div>
-          </div>
+            }
+          />
         )}
-      </form.Field>
-
-      <form.Subscribe selector={(state) => state.isSubmitting}>
-        {(busy) => <SubmitButton busy={busy} label={t("auth.login.submit")} />}
-      </form.Subscribe>
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton label={t("auth.login.submit")} />
+      </form.AppForm>
+      <p className="flex items-start gap-2 text-[13px] text-muted">
+        <Icon name="shield" className="mt-px size-4" />
+        {t("auth.login.twoStepNotice")}
+      </p>
     </form>
   );
 }
@@ -179,7 +166,7 @@ function MfaStep({
 }) {
   const t = useTranslations("auth.login");
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: { code: "" },
     validators: { onSubmit: mfaCodeSchema },
     onSubmit: async ({ value }) => {
@@ -190,63 +177,38 @@ function MfaStep({
       }
       await onDone(result.status);
     },
-    // A code that isn't six digits never leaves the browser.
-    onSubmitInvalid: () => onError("mfaInvalidCode"),
   });
 
   return (
     <form
-      className="mt-6 flex flex-col gap-4"
+      {...formProps}
       onSubmit={(event) => {
         event.preventDefault();
         void form.handleSubmit();
       }}
     >
-      <form.Field name="code">
+      <form.AppField name="code">
         {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={field.name} className="text-[13px] font-semibold">
-              {t("mfaCode")}
-            </label>
-            <input
-              id={field.name}
-              name={field.name}
-              required
-              inputMode="numeric"
-              dir="ltr"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              autoComplete="one-time-code"
-              autoFocus
-              value={field.state.value}
-              onChange={(event) => field.handleChange(event.target.value.replace(/\D/g, ""))}
-              onBlur={field.handleBlur}
-              className="h-[42px] rounded-control border border-line-strong bg-surface px-3 text-[18px] tracking-[0.3em]"
-            />
-          </div>
+          <field.TextField
+            label={t("mfaCode")}
+            inputMode="numeric"
+            dir="ltr"
+            autoComplete="one-time-code"
+            maxLength={6}
+            required
+          />
         )}
-      </form.Field>
-
-      <form.Subscribe selector={(state) => state.isSubmitting}>
-        {(busy) => <SubmitButton busy={busy} label={t("mfaSubmit")} />}
-      </form.Subscribe>
-      <button type="button" onClick={onBack} className="text-[13px] font-semibold text-brand">
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton label={t("mfaSubmit")} />
+      </form.AppForm>
+      <button
+        type="button"
+        onClick={onBack}
+        className="self-start text-[13px] font-semibold text-brand"
+      >
         {t("mfaOtherAccount")}
       </button>
     </form>
-  );
-}
-
-// The step's single main action, busy while the server answers.
-function SubmitButton({ busy, label }: { busy: boolean; label: string }) {
-  return (
-    <button
-      type="submit"
-      disabled={busy}
-      aria-busy={busy}
-      className="h-12 rounded-control bg-brand font-semibold text-on-brand hover:bg-brand-hover disabled:opacity-60"
-    >
-      {label}
-    </button>
   );
 }

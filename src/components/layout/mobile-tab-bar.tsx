@@ -29,7 +29,7 @@ export function MobileTabBar({ locale, onMore }: { locale: Locale; onMore: () =>
             key={item.to}
             to={item.to}
             params={{ locale }}
-            activeOptions={{ exact: item.to === "/$locale/admin" }}
+            activeOptions={{ exact: item.to === "/$locale/admin", includeSearch: false }}
             className={tab}
           >
             <Icon name={item.icon} className="size-5" />

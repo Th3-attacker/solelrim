@@ -9,6 +9,7 @@ import {
   useParams,
 } from "@tanstack/react-router";
 import { DEFAULT_LOCALE, getDirection, isLocale } from "~/i18n/config";
+import { RootError } from "~/components/route-error";
 import appCss from "~/styles/app.css?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 
@@ -37,6 +38,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
   }),
   component: RootComponent,
+  errorComponent: () => (
+    <RootDocument>
+      <RootError />
+    </RootDocument>
+  ),
 });
 
 // Before the first paint: the theme the admin chose (same "theme" key as the

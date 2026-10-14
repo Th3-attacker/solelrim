@@ -14,8 +14,18 @@ const ROLE_KEY = {
 export function Account({ locale }: { locale: Locale }) {
   const t = useTranslations("nav");
   const { data } = useSuspenseQuery(shellQuery);
-  const { email, role } = data.admin;
-  const initials = email.slice(0, 2).toUpperCase();
+  const { email, name, role } = data.admin;
+  const shown = name ?? email;
+  const initials = (
+    name
+      ? name
+          .split(/\s+/)
+          .map((part) => part[0])
+          .join("")
+      : email
+  )
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="flex items-center gap-2.5 px-1">
@@ -26,7 +36,9 @@ export function Account({ locale }: { locale: Locale }) {
         {initials}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-semibold">{email}</span>
+        <span className="block truncate text-[13px] font-semibold" title={email}>
+          {shown}
+        </span>
         <span className="block text-[12px] text-muted">{t(ROLE_KEY[role])}</span>
       </span>
       <LogoutButton locale={locale} compact />

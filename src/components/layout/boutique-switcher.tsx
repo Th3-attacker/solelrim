@@ -19,11 +19,11 @@ export function BoutiqueSwitcher() {
   const switchTo = useMutation({
     mutationFn: (key: string) => setAdminScope({ data: { key } }),
     onSuccess: async (_, key) => {
+      const name = data.boutiques.find((boutique) => boutique.key === key)?.label ?? key;
+      notify({ title: t("boutiqueSwitchedToast", { name }) });
       // Every page shows the chosen boutique's data: nothing cached stays.
       await queryClient.invalidateQueries();
       await router.invalidate();
-      const name = data.boutiques.find((boutique) => boutique.key === key)?.label ?? key;
-      notify({ title: t("boutiqueSwitchedToast", { name }) });
     },
   });
 
@@ -60,19 +60,21 @@ export function BoutiqueSwitcher() {
       <BaseMenu.Portal>
         <BaseMenu.Positioner sideOffset={6} align="start" className="z-50 outline-none">
           <BaseMenu.Popup className="w-(--anchor-width) min-w-56 rounded-xl border border-line bg-surface p-1.5 shadow-pop outline-none">
-            <BaseMenu.GroupLabel className="px-2.5 pt-1.5 pb-1 text-label text-muted uppercase">
-              {t("switchBoutiqueMenuTitle")}
-            </BaseMenu.GroupLabel>
             <BaseMenu.RadioGroup
               value={data.boutique.key}
               onValueChange={(key: string) => {
                 if (key !== data.boutique.key) switchTo.mutate(key);
               }}
             >
+              <BaseMenu.GroupLabel className="px-2.5 pt-1.5 pb-1 text-label text-muted uppercase">
+                {t("switchBoutiqueMenuTitle")}
+              </BaseMenu.GroupLabel>
               {data.boutiques.map((boutique) => (
                 <BaseMenu.RadioItem
                   key={boutique.key}
                   value={boutique.key}
+                  // The choice is made: the menu closes, like a page link.
+                  closeOnClick
                   className="flex h-10 cursor-default items-center gap-2.5 rounded-lg px-2.5 text-[14px] outline-none data-highlighted:bg-tile"
                 >
                   <span className="min-w-0 flex-1 truncate">{boutique.label}</span>

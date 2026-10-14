@@ -14,7 +14,7 @@ import { staffMiddleware, superAdminMiddleware } from "~/server/admin-middleware
 // on the menu's badges.
 export const getShell = createServerFn({ method: "GET" })
   .middleware([staffMiddleware])
-  .handler(async ({ context: { admin, email, productType } }) => {
+  .handler(async ({ context: { admin, email, name, productType } }) => {
     const isSeller = admin.role === "SELLER";
     const [boutiques, pendingOrders, pendingRefunds] = await Promise.all([
       prisma.storeType.findMany({
@@ -29,7 +29,7 @@ export const getShell = createServerFn({ method: "GET" })
     ]);
 
     return {
-      admin: { email, role: admin.role },
+      admin: { email, name, role: admin.role },
       boutique: boutiques.find((boutique) => boutique.key === productType) ?? {
         key: productType,
         label: productType,
