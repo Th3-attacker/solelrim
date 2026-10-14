@@ -977,7 +977,21 @@
       "disabled": "La carte de fidélité est désactivée pour cette boutique.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous pour continuer.",
       "licenseBlocked": "La boutique est suspendue ou sa licence a expiré."
-    }
+    },
+    "ticketTitle": "Ticket",
+    "viewTicket": "Voir le ticket",
+    "catalogLabel": "Articles",
+    "searchLabel": "Scanner ou chercher un article",
+    "categoriesLabel": "Catégories",
+    "allCategories": "Tout",
+    "addToTicket": "Ajouter {name} au ticket",
+    "clearTicket": "Vider",
+    "unitPrice": "{price} l'unité",
+    "itemCount": "{count, plural, =0 {Aucun article} one {# article} other {# articles}}",
+    "toPay": "À payer",
+    "changeShort": "Rendu",
+    "printReceipt": "Imprimer le reçu",
+    "walletCheckHint": "Vérifiez la réception sur le téléphone de la boutique avant d'encaisser."
   },
   "sales": {
     "title": "Ventes",
@@ -1236,7 +1250,22 @@
     "movementConfirmBody": "{amount} — {reason}. Elle ne pourra pas être supprimée.",
     "closeConfirmTitle": "Fermer la caisse ?",
     "closeConfirmBody": "Espèces comptées : {counted}. {difference} Une fois fermée, la caisse ne peut plus être modifiée.",
-    "cashRefunds": "Remboursements espèces"
+    "cashRefunds": "Remboursements espèces",
+    "lastClosedSummary": "Dernière fermeture : {date}, {counted} comptés, écart {difference}.",
+    "openingFloatLabel": "Fond de caisse",
+    "openingFloatHint": "Les espèces présentes dans le tiroir avant la première vente.",
+    "goBack": "Revenir",
+    "notCounted": "Non comptée",
+    "expectedCashHint": "Attendu : {amount}",
+    "previousSessions": "Voir les sessions précédentes",
+    "openBadge": "Ouverte · fond {amount} · depuis {time}",
+    "sessionsDescription": "Chaque caisse ouverte, ce qu'elle a encaissé et l'écart à sa fermeture.",
+    "cashSections": "Caisse et clôtures",
+    "closuresTab": "Clôtures",
+    "sessionTitle": "Caisse du {date}",
+    "closuresDescription": "Le bilan de chaque journée : ce qui est entré, par quel moyen, et l'écart.",
+    "closeDayConfirmTitle": "Clôturer la journée du {date} ?",
+    "noClosures": "Aucune journée clôturée pour le moment."
   },
   "mySales": {
     "title": "Mes ventes",

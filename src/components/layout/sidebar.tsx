@@ -120,7 +120,7 @@ function NavSection({
             <Link
               to={item.to}
               params={{ locale }}
-              activeOptions={{ exact: item.to === "/$locale/admin", includeSearch: false }}
+              activeOptions={{ exact: item.exact === true, includeSearch: false }}
               onClick={onNavigate}
               className="flex h-[38px] items-center gap-2.5 rounded-control px-2.5 text-[14px] font-medium text-ink-2 no-underline hover:bg-bg hover:text-ink aria-[current=page]:bg-tint aria-[current=page]:font-semibold aria-[current=page]:text-brand"
             >

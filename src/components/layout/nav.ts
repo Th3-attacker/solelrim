@@ -4,7 +4,12 @@ import type { AdminRole } from "~/server/admin-access";
 // Admin pages under /$locale. An entry joins the menu with its page: each
 // migration step adds its own (order of the design: Pilotage, Ventes,
 // Catalogue, Clients, Boutique, Plateforme).
-export type AdminPath = "/$locale/admin" | "/$locale/admin/orders";
+export type AdminPath =
+  | "/$locale/admin"
+  | "/$locale/admin/orders"
+  | "/$locale/admin/pos"
+  | "/$locale/admin/pos/sessions"
+  | "/$locale/admin/cash-closures";
 
 export type NavItem = {
   to: AdminPath;
@@ -17,14 +22,27 @@ export type NavItem = {
   roles?: readonly AdminRole[];
   // Also on the phone's bottom bar (five places at most, "Plus" included).
   tabBar?: boolean;
+  // Active only on its own page, not on the pages under it (the checkout,
+  // not its sessions).
+  exact?: boolean;
 };
 
 export type NavGroup = { label: string; superadminOnly?: boolean; items: readonly NavItem[] };
 
+const STAFF: readonly AdminRole[] = ["SUPERADMIN", "BOUTIQUE_ADMIN", "SELLER"];
+
 export const NAV: readonly NavGroup[] = [
   {
     label: "admin.nav.overviewGroup",
-    items: [{ to: "/$locale/admin", label: "nav.dashboard", icon: "dashboard", tabBar: true }],
+    items: [
+      {
+        to: "/$locale/admin",
+        label: "nav.dashboard",
+        icon: "dashboard",
+        tabBar: true,
+        exact: true,
+      },
+    ],
   },
   {
     label: "admin.nav.salesGroup",
@@ -36,6 +54,16 @@ export const NAV: readonly NavGroup[] = [
         badge: "pendingOrders",
         tabBar: true,
       },
+      {
+        to: "/$locale/admin/pos",
+        label: "nav.pos",
+        icon: "pos",
+        roles: STAFF,
+        tabBar: true,
+        exact: true,
+      },
+      { to: "/$locale/admin/pos/sessions", label: "nav.cashSessions", icon: "clock", roles: STAFF },
+      { to: "/$locale/admin/cash-closures", label: "nav.cashClosures", icon: "lock" },
     ],
   },
 ];

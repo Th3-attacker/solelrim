@@ -5,8 +5,10 @@ import { formatPrice } from "@/lib/format/currency";
 import { DEFAULT_LOCALE, isAppLocale } from "@/lib/i18n-locales";
 import { REASON_LABEL_KEY } from "@/lib/shop/order-reasons";
 
-// The presets live apart (no message bundles): screens import them.
+// The presets and the wa.me link live apart (no message bundles): screens
+// import them.
 export { REASON_LABEL_KEY, REJECT_REASON_PRESETS } from "@/lib/shop/order-reasons";
+export { buildClientWhatsAppLink } from "@/lib/shop/whatsapp-link";
 
 // Messages sent to the *customer* (order confirmed/rejected), unlike
 // buildOrderWhatsAppLink in whatsapp.ts which is addressed to the
@@ -108,14 +110,4 @@ export function buildOrderPushMessage(params: {
     cancelled: orders.pushCancelled,
   }[params.event];
   return { title: fillTemplate(orders.pushTitle, { reference: params.reference }), body };
-}
-
-export function buildClientWhatsAppLink(phone: string, message: string): string {
-  // customerPhone is stored as a bare 8-digit local number (see
-  // checkoutCustomerSchema / /^[234]\d{7}$/), with no country code — wa.me
-  // needs the full international number, so without this prefix WhatsApp
-  // guesses a country from the leading digits (e.g. "32..." reads as
-  // Belgium +32) instead of Mauritania.
-  const digits = phone.replace(/\D/g, "");
-  return `https://wa.me/222${digits}?text=${encodeURIComponent(message)}`;
 }

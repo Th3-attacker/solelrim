@@ -977,7 +977,21 @@
       "disabled": "بطاقة الولاء معطلة لهذا المتجر.",
       "unauthorized": "انتهت جلستك. سجّل الدخول من جديد للمتابعة.",
       "licenseBlocked": "المتجر موقوف أو انتهت رخصته."
-    }
+    },
+    "ticketTitle": "التذكرة",
+    "viewTicket": "عرض التذكرة",
+    "catalogLabel": "المنتجات",
+    "searchLabel": "امسح أو ابحث عن منتج",
+    "categoriesLabel": "الفئات",
+    "allCategories": "الكل",
+    "addToTicket": "إضافة {name} إلى التذكرة",
+    "clearTicket": "إفراغ",
+    "unitPrice": "{price} للقطعة",
+    "itemCount": "{count, plural, zero {لا قطع} one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
+    "toPay": "المبلغ المستحق",
+    "changeShort": "الباقي",
+    "printReceipt": "طباعة الإيصال",
+    "walletCheckHint": "تحقق من وصول الدفع على هاتف المتجر قبل التحصيل."
   },
   "sales": {
     "title": "المبيعات",
@@ -1236,7 +1250,22 @@
     "movementConfirmBody": "{amount} — {reason}. لا يمكن حذفه.",
     "closeConfirmTitle": "إغلاق الصندوق؟",
     "closeConfirmBody": "النقد المعدود: {counted}. {difference} بعد الإغلاق لا يمكن تعديل الصندوق.",
-    "cashRefunds": "استرجاعات نقدية"
+    "cashRefunds": "استرجاعات نقدية",
+    "lastClosedSummary": "آخر إغلاق: {date}، {counted} معدودة، الفارق {difference}.",
+    "openingFloatLabel": "رصيد الافتتاح",
+    "openingFloatHint": "النقود الموجودة في الدرج قبل أول عملية بيع.",
+    "goBack": "رجوع",
+    "notCounted": "غير معدودة",
+    "expectedCashHint": "المتوقع: {amount}",
+    "previousSessions": "عرض الجلسات السابقة",
+    "openBadge": "مفتوح · رصيد {amount} · منذ {time}",
+    "sessionsDescription": "كل صندوق فُتح، وما حصّله، والفارق عند إغلاقه.",
+    "cashSections": "الصناديق والإغلاقات",
+    "closuresTab": "الإغلاقات",
+    "sessionTitle": "صندوق يوم {date}",
+    "closuresDescription": "حصيلة كل يوم: ما دخل، وبأي وسيلة، والفارق.",
+    "closeDayConfirmTitle": "إغلاق يوم {date}؟",
+    "noClosures": "لم يُغلق أي يوم بعد."
   },
   "mySales": {
     "title": "مبيعاتي",
