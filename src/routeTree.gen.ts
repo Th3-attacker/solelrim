@@ -17,6 +17,10 @@ import { Route as LocaleAdminDashboardRouteRouteImport } from './routes/$locale/
 import { Route as LocaleAdminDesignSystemRouteImport } from './routes/$locale/admin/design-system'
 import { Route as LocaleAdminLoginRouteImport } from './routes/$locale/admin/login'
 import { Route as LocaleAdminDashboardIndexRouteImport } from './routes/$locale/admin/_dashboard/index'
+import { Route as LocaleAdminDashboardOrdersIndexRouteImport } from './routes/$locale/admin/_dashboard/orders/index'
+import { Route as LocaleAdminDashboardOrdersLabelsRouteImport } from './routes/$locale/admin/_dashboard/orders/labels'
+import { Route as LocaleAdminDashboardOrdersOrderIdIndexRouteImport } from './routes/$locale/admin/_dashboard/orders/$orderId/index'
+import { Route as LocaleAdminDashboardOrdersOrderIdLabelRouteImport } from './routes/$locale/admin/_dashboard/orders/$orderId/label'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +63,30 @@ const LocaleAdminDashboardIndexRoute =
     path: '/',
     getParentRoute: () => LocaleAdminDashboardRouteRoute,
   } as any)
+const LocaleAdminDashboardOrdersIndexRoute =
+  LocaleAdminDashboardOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
+const LocaleAdminDashboardOrdersLabelsRoute =
+  LocaleAdminDashboardOrdersLabelsRouteImport.update({
+    id: '/orders/labels',
+    path: '/orders/labels',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
+const LocaleAdminDashboardOrdersOrderIdIndexRoute =
+  LocaleAdminDashboardOrdersOrderIdIndexRouteImport.update({
+    id: '/orders/$orderId/',
+    path: '/orders/$orderId/',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
+const LocaleAdminDashboardOrdersOrderIdLabelRoute =
+  LocaleAdminDashboardOrdersOrderIdLabelRouteImport.update({
+    id: '/orders/$orderId/label',
+    path: '/orders/$orderId/label',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +96,10 @@ export interface FileRoutesByFullPath {
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/': typeof LocaleAdminDashboardIndexRoute
+  '/$locale/admin/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/orders/': typeof LocaleAdminDashboardOrdersIndexRoute
+  '/$locale/admin/orders/$orderId/label': typeof LocaleAdminDashboardOrdersOrderIdLabelRoute
+  '/$locale/admin/orders/$orderId/': typeof LocaleAdminDashboardOrdersOrderIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +107,10 @@ export interface FileRoutesByTo {
   '/$locale': typeof LocaleIndexRoute
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
+  '/$locale/admin/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/orders': typeof LocaleAdminDashboardOrdersIndexRoute
+  '/$locale/admin/orders/$orderId/label': typeof LocaleAdminDashboardOrdersOrderIdLabelRoute
+  '/$locale/admin/orders/$orderId': typeof LocaleAdminDashboardOrdersOrderIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +122,10 @@ export interface FileRoutesById {
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/_dashboard/': typeof LocaleAdminDashboardIndexRoute
+  '/$locale/admin/_dashboard/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/_dashboard/orders/': typeof LocaleAdminDashboardOrdersIndexRoute
+  '/$locale/admin/_dashboard/orders/$orderId/label': typeof LocaleAdminDashboardOrdersOrderIdLabelRoute
+  '/$locale/admin/_dashboard/orders/$orderId/': typeof LocaleAdminDashboardOrdersOrderIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +137,10 @@ export interface FileRouteTypes {
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/'
+    | '/$locale/admin/orders/labels'
+    | '/$locale/admin/orders/'
+    | '/$locale/admin/orders/$orderId/label'
+    | '/$locale/admin/orders/$orderId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,6 +148,10 @@ export interface FileRouteTypes {
     | '/$locale'
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
+    | '/$locale/admin/orders/labels'
+    | '/$locale/admin/orders'
+    | '/$locale/admin/orders/$orderId/label'
+    | '/$locale/admin/orders/$orderId'
   id:
     | '__root__'
     | '/'
@@ -114,6 +162,10 @@ export interface FileRouteTypes {
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/_dashboard/'
+    | '/$locale/admin/_dashboard/orders/labels'
+    | '/$locale/admin/_dashboard/orders/'
+    | '/$locale/admin/_dashboard/orders/$orderId/label'
+    | '/$locale/admin/_dashboard/orders/$orderId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,16 +231,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleAdminDashboardIndexRouteImport
       parentRoute: typeof LocaleAdminDashboardRouteRoute
     }
+    '/$locale/admin/_dashboard/orders/': {
+      id: '/$locale/admin/_dashboard/orders/'
+      path: '/orders'
+      fullPath: '/$locale/admin/orders/'
+      preLoaderRoute: typeof LocaleAdminDashboardOrdersIndexRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
+    '/$locale/admin/_dashboard/orders/labels': {
+      id: '/$locale/admin/_dashboard/orders/labels'
+      path: '/orders/labels'
+      fullPath: '/$locale/admin/orders/labels'
+      preLoaderRoute: typeof LocaleAdminDashboardOrdersLabelsRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
+    '/$locale/admin/_dashboard/orders/$orderId/': {
+      id: '/$locale/admin/_dashboard/orders/$orderId/'
+      path: '/orders/$orderId'
+      fullPath: '/$locale/admin/orders/$orderId/'
+      preLoaderRoute: typeof LocaleAdminDashboardOrdersOrderIdIndexRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
+    '/$locale/admin/_dashboard/orders/$orderId/label': {
+      id: '/$locale/admin/_dashboard/orders/$orderId/label'
+      path: '/orders/$orderId/label'
+      fullPath: '/$locale/admin/orders/$orderId/label'
+      preLoaderRoute: typeof LocaleAdminDashboardOrdersOrderIdLabelRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
   }
 }
 
 interface LocaleAdminDashboardRouteRouteChildren {
   LocaleAdminDashboardIndexRoute: typeof LocaleAdminDashboardIndexRoute
+  LocaleAdminDashboardOrdersLabelsRoute: typeof LocaleAdminDashboardOrdersLabelsRoute
+  LocaleAdminDashboardOrdersIndexRoute: typeof LocaleAdminDashboardOrdersIndexRoute
+  LocaleAdminDashboardOrdersOrderIdLabelRoute: typeof LocaleAdminDashboardOrdersOrderIdLabelRoute
+  LocaleAdminDashboardOrdersOrderIdIndexRoute: typeof LocaleAdminDashboardOrdersOrderIdIndexRoute
 }
 
 const LocaleAdminDashboardRouteRouteChildren: LocaleAdminDashboardRouteRouteChildren =
   {
     LocaleAdminDashboardIndexRoute: LocaleAdminDashboardIndexRoute,
+    LocaleAdminDashboardOrdersLabelsRoute:
+      LocaleAdminDashboardOrdersLabelsRoute,
+    LocaleAdminDashboardOrdersIndexRoute: LocaleAdminDashboardOrdersIndexRoute,
+    LocaleAdminDashboardOrdersOrderIdLabelRoute:
+      LocaleAdminDashboardOrdersOrderIdLabelRoute,
+    LocaleAdminDashboardOrdersOrderIdIndexRoute:
+      LocaleAdminDashboardOrdersOrderIdIndexRoute,
   }
 
 const LocaleAdminDashboardRouteRouteWithChildren =

@@ -1,11 +1,13 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { ExpectedError, expectedErrorCode } from "@/lib/errors";
-import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
-import { ADMIN_SCOPE_COOKIE, resolveSuperAdminScope } from "@/lib/auth/scope-core";
+import {
+  ADMIN_SCOPE_COOKIE,
+  assertLicenseWritable,
+  resolveSuperAdminScope,
+} from "@/lib/auth/scope-core";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Independent from StoreSettings.productType (the public "live" toggle) —
@@ -133,21 +135,6 @@ export async function requireAppearanceScope(): Promise<{
 // acting on their own (or, via the free-choice cookie, a SUPERADMIN acting
 // *as* a boutique — but that path never reaches here since it's still a
 // SUPERADMIN role) boutique gets blocked.
-async function assertLicenseWritable(admin: AdminUser, productType: string): Promise<void> {
-  if (admin.role === "SUPERADMIN") return;
-
-  const storeType = await prisma.storeType.findUnique({
-    where: { key: productType },
-    select: { licenseType: true, licenseStatus: true, licenseExpiresAt: true },
-  });
-  if (!storeType) return;
-
-  if (isLicenseBlocking(getEffectiveLicenseState(storeType))) {
-    // The dashboard's error.tsx tells "your boutique is suspended/expired"
-    // apart from a bug by this code (lib/errors.ts).
-    throw new ExpectedError("licenseBlocked");
-  }
-}
 
 // The gate every mutating Server Action (lib/actions/*.ts) uses instead of
 // requireAdminScope: same identity + scope resolution, plus "is this

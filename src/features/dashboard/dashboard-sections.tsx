@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "use-intl";
+import { Link } from "@tanstack/react-router";
+import { useFormatter, useLocale, useTranslations } from "use-intl";
 import { formatPriceNumber } from "@/lib/format/currency";
 import { cn } from "~/lib/cn";
+import { ButtonLink } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import { isLocale } from "~/i18n/config";
 import { Segmented } from "~/components/ui/field";
 import { Icon, type IconName } from "~/components/ui/icon";
 import { Status } from "~/components/ui/status";
@@ -14,6 +17,11 @@ import type { RevenuePeriod } from "./revenue";
 import { RevenueChart } from "./revenue-chart";
 
 // The dashboard's sections, top to bottom as in the design.
+
+function useAdminLocale() {
+  const locale = useLocale();
+  return isLocale(locale) ? locale : "fr";
+}
 
 type DashboardData = Awaited<ReturnType<typeof getDashboard>>;
 type Summary = DashboardData["summary"];
@@ -29,6 +37,7 @@ export function Welcome({
 }) {
   const t = useTranslations("dashboard");
   const format = useFormatter();
+  const locale = useAdminLocale();
   const { data: shell } = useSuspenseQuery(shellQuery);
   const name = shell.admin.name?.split(/\s+/)[0];
   const ratio =
@@ -64,6 +73,11 @@ export function Welcome({
           {t("paymentsToCheckSentence", { count: pendingCount })}
         </p>
       </div>
+      {pendingCount > 0 && (
+        <ButtonLink variant="primary" to="/$locale/admin/orders" params={{ locale }}>
+          {t("checkPaymentsAction")}
+        </ButtonLink>
+      )}
     </section>
   );
 }
@@ -77,7 +91,10 @@ export function ToHandle({ data }: { data: DashboardData }) {
     tone: string;
     title: string;
     detail?: string;
+    // The page where it gets handled, once that page exists here.
+    toOrders?: boolean;
   }> = [];
+  const locale = useAdminLocale();
 
   if (data.pending.count > 0) {
     cards.push({
@@ -85,6 +102,7 @@ export function ToHandle({ data }: { data: DashboardData }) {
       icon: "clock",
       tone: "bg-pend-bg text-pend-ink",
       title: t("pendingOrdersCard", { count: data.pending.count }),
+      toOrders: true,
       detail: data.pending.oldestAt
         ? t("oldestPendingAge", { age: format.relativeTime(data.pending.oldestAt, data.now) })
         : undefined,
@@ -125,7 +143,7 @@ export function ToHandle({ data }: { data: DashboardData }) {
         <ul className="grid gap-3 md:grid-cols-3">
           {cards.map((card) => (
             <li key={card.key}>
-              <Card className="flex h-full items-center gap-3.5 p-4">
+              <Card className="relative flex h-full items-center gap-3.5 p-4 has-[a:hover]:border-line-strong">
                 <span
                   className={cn(
                     "inline-flex size-10 flex-none items-center justify-center rounded-control",
@@ -134,12 +152,24 @@ export function ToHandle({ data }: { data: DashboardData }) {
                 >
                   <Icon name={card.icon} className="size-5" />
                 </span>
-                <span className="min-w-0">
-                  <b className="block text-[14px]">{card.title}</b>
+                <span className="min-w-0 flex-1">
+                  {card.toOrders ? (
+                    // The whole card is the link's target (::after), its text the name.
+                    <Link
+                      to="/$locale/admin/orders"
+                      params={{ locale }}
+                      className="block text-[14px] font-bold text-ink no-underline after:absolute after:inset-0 after:rounded-card hover:text-brand"
+                    >
+                      {card.title}
+                    </Link>
+                  ) : (
+                    <b className="block text-[14px]">{card.title}</b>
+                  )}
                   {card.detail && (
                     <span className="block truncate text-[13px] text-muted">{card.detail}</span>
                   )}
                 </span>
+                {card.toOrders && <Icon name="chevronRight" className="size-4 text-muted" />}
               </Card>
             </li>
           ))}
@@ -391,6 +421,7 @@ type LatestOrder = DashboardData["latestOrders"][number];
 
 export function LatestOrders({ orders, now }: { orders: LatestOrder[]; now: Date }) {
   const t = useTranslations("dashboard");
+  const locale = useAdminLocale();
   const tOrders = useTranslations("orders");
   const currency = useTranslations("common")("currency");
   const format = useFormatter();
@@ -400,11 +431,16 @@ export function LatestOrders({ orders, now }: { orders: LatestOrder[]; now: Date
 
   return (
     <Card as="section" aria-labelledby="latest-orders-title" className="overflow-hidden">
-      <div className="px-5 pt-5 pb-3">
-        <h2 id="latest-orders-title" className="text-card-title">
-          {t("latestOrdersTitle")}
-        </h2>
-        <p className="mt-0.5 text-[13px] text-muted">{t("latestOrdersSubtitle")}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-3">
+        <div>
+          <h2 id="latest-orders-title" className="text-card-title">
+            {t("latestOrdersTitle")}
+          </h2>
+          <p className="mt-0.5 text-[13px] text-muted">{t("latestOrdersSubtitle")}</p>
+        </div>
+        <ButtonLink to="/$locale/admin/orders" params={{ locale }} search={{ status: "all" }}>
+          {tOrders("backToOrders")}
+        </ButtonLink>
       </div>
       {orders.length === 0 ? (
         <p className="px-5 pb-6 text-[14px] text-muted">{tOrders("noOrders")}</p>
@@ -437,7 +473,13 @@ export function LatestOrders({ orders, now }: { orders: LatestOrder[]; now: Date
                 return (
                   <tr key={order.id} className="hover:bg-surface-2 [&:last-child>*]:border-b-0">
                     <th scope="row" className={cn(cell, "font-semibold")}>
-                      {order.reference}
+                      <Link
+                        to="/$locale/admin/orders/$orderId"
+                        params={{ locale, orderId: order.id }}
+                        className="text-ink no-underline hover:text-brand hover:underline"
+                      >
+                        {order.reference}
+                      </Link>
                     </th>
                     <td className={cell}>{order.customerName}</td>
                     <td className={cn(cell, "text-end font-semibold")}>

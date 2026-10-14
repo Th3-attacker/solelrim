@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from "react";
+import { useState, type ReactElement, type ReactNode } from "react";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { Drawer } from "@base-ui/react/drawer";
@@ -95,8 +95,15 @@ export function ConfirmDialog({
   busy?: boolean;
   tone?: "danger" | "primary";
 }) {
+  // Uncontrolled unless the caller passes `open`: confirming closes it.
+  const [innerOpen, setInnerOpen] = useState(false);
+  const isOpen = open ?? innerOpen;
+  const setOpen = (next: boolean) => {
+    setInnerOpen(next);
+    onOpenChange?.(next);
+  };
   return (
-    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+    <AlertDialog.Root open={isOpen} onOpenChange={setOpen}>
       {trigger && <AlertDialog.Trigger render={trigger} />}
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className={backdrop} />
@@ -113,7 +120,14 @@ export function ConfirmDialog({
             <AlertDialog.Close render={<Button variant="secondary" />}>
               {cancelLabel}
             </AlertDialog.Close>
-            <Button variant={tone} busy={busy} onClick={onConfirm}>
+            <Button
+              variant={tone}
+              busy={busy}
+              onClick={() => {
+                onConfirm();
+                setOpen(false);
+              }}
+            >
               {confirmLabel}
             </Button>
           </div>

@@ -2,7 +2,11 @@ import { createMiddleware } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 import { prisma } from "@/lib/prisma";
 import { ExpectedError } from "@/lib/errors";
-import { ADMIN_SCOPE_COOKIE, resolveSuperAdminScope } from "@/lib/auth/scope-core";
+import {
+  ADMIN_SCOPE_COOKIE,
+  assertLicenseWritable,
+  resolveSuperAdminScope,
+} from "@/lib/auth/scope-core";
 import { loadSignIn } from "./session.server";
 
 // The data boundary of the admin: every server function reading or writing
@@ -58,6 +62,20 @@ export const adminMiddleware = createMiddleware({ type: "function" })
   .server(({ next, context }) => {
     if (context.admin.role === "SELLER") throw new ExpectedError("forbidden");
     return next();
+  });
+
+// Admins changing a boutique's data: refused while its license is
+// suspended, expired or cancelled (superadmins excepted). Hands over who is
+// acting, for the audit trail.
+export const writableAdminMiddleware = createMiddleware({ type: "function" })
+  .middleware([adminMiddleware])
+  .server(async ({ next, context }) => {
+    await assertLicenseWritable(context.admin, context.productType);
+    return next({
+      context: {
+        actor: { id: context.admin.id, role: context.admin.role, email: context.email },
+      },
+    });
   });
 
 export const superAdminMiddleware = createMiddleware({ type: "function" })
