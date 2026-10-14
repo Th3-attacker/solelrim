@@ -4,3 +4,7 @@ coverage
 playwright-report
 test-results
 .tmp-*
+.output
+.nitro
+.tanstack
+src/routeTree.gen.ts
