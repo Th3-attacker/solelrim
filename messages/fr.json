@@ -1043,8 +1043,22 @@
       "reasonPlaceholder": "Ex : erreur de saisie, client revenu sur sa décision…",
       "closedTill": "La caisse de cette vente est déjà clôturée : ses totaux figés ne changeront pas. Si de l'argent a été rendu au client, notez-le dans le motif.",
       "confirm": "Annuler la vente",
-      "keep": "Conserver la vente"
-    }
+      "keep": "Conserver la vente",
+      "cancelled": "Vente annulée."
+    },
+    "description": "Les ventes en boutique, leurs paiements et leurs remboursements.",
+    "tabsLabel": "Ventes et remboursements",
+    "refundsTab": "Remboursements",
+    "saleDetailTitle": "Détail de la vente",
+    "summaryLabel": "Résumé des ventes",
+    "collected": "Encaissé",
+    "completedCount": "Ventes conclues",
+    "averageBasket": "Panier moyen",
+    "searchLabel": "Rechercher une vente",
+    "searchPlaceholder": "Référence, client ou téléphone…",
+    "saleNotFound": "Cette vente est introuvable.",
+    "closedTillShort": "Caisse clôturée",
+    "itemsTitle": "Articles"
   },
   "errors": {
     "notFoundTitle": "Page introuvable",

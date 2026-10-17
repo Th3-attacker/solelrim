@@ -1,14 +1,23 @@
+import { Suspense } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useTranslations } from "use-intl";
 import { Button, ButtonLink } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { Icon } from "~/components/ui/icon";
 import { receiptQuery } from "~/features/pos/pos.queries";
 import { SaleReceipt } from "~/features/pos/sale-receipt";
+import { SaleRefunds } from "~/features/sales/sale-refunds";
+import { saleQuery } from "~/features/sales/sales.queries";
 
 export const Route = createFileRoute("/$locale/admin/_dashboard/pos/receipt/$saleId")({
   loader: async ({ context: { queryClient }, params }) => {
-    if (!(await queryClient.ensureQueryData(receiptQuery(params.saleId)))) throw notFound();
+    const [receipt] = await Promise.all([
+      queryClient.ensureQueryData(receiptQuery(params.saleId)),
+      // The refunds shown under the ticket, read alongside it.
+      queryClient.prefetchQuery(saleQuery(params.saleId)),
+    ]);
+    if (!receipt) throw notFound();
   },
   staticData: { section: "admin.nav.salesGroup", title: "pos.receipt" },
   component: ReceiptPage,
@@ -34,6 +43,21 @@ function ReceiptPage() {
       </div>
       <h1 className="sr-only">{t("receipt")}</h1>
       <SaleReceipt receipt={data} />
+      <Suspense>
+        <ReceiptRefunds saleId={saleId} />
+      </Suspense>
     </div>
+  );
+}
+
+// Where a seller asks for a refund: under the ticket the customer brings
+// back. Only the sales they may read (their own, for a seller).
+function ReceiptRefunds({ saleId }: { saleId: string }) {
+  const { data: sale } = useSuspenseQuery(saleQuery(saleId));
+  if (!sale?.refunds) return null;
+  return (
+    <Card as="div" className="p-4 print:hidden">
+      <SaleRefunds refunds={sale.refunds} canDecide={sale.canManage} />
+    </Card>
   );
 }

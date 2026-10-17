@@ -5,7 +5,9 @@ import { notify } from "~/components/ui/toast";
 // A refusal the till or the checkout knows ("dayClosed", "insufficientStock",
 // a suspended boutique…) reads as its own message; anything else as a plain
 // error. Returned refusals and thrown ones (the gate) end up here alike.
-export function useCommandError(namespace: "pos.error" | "cash.error") {
+export function useCommandError(
+  namespace: "pos.error" | "cash.error" | "refunds.error" | "sales.cancelError" | "saleEdit.error",
+) {
   const t = useTranslations(namespace);
   const tCommon = useTranslations("common");
   return (error: unknown) => {

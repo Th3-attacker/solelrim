@@ -7,6 +7,7 @@ import type { AdminRole } from "~/server/admin-access";
 export type AdminPath =
   | "/$locale/admin"
   | "/$locale/admin/orders"
+  | "/$locale/admin/sales"
   | "/$locale/admin/pos"
   | "/$locale/admin/pos/sessions"
   | "/$locale/admin/cash-closures";
@@ -54,6 +55,7 @@ export const NAV: readonly NavGroup[] = [
         badge: "pendingOrders",
         tabBar: true,
       },
+      { to: "/$locale/admin/sales", label: "nav.sales", icon: "sales", badge: "pendingRefunds" },
       {
         to: "/$locale/admin/pos",
         label: "nav.pos",

@@ -1043,8 +1043,22 @@
       "reasonPlaceholder": "E.g. entry mistake, customer changed their mind…",
       "closedTill": "This sale's till is already closed: its frozen totals won't change. If money was handed back to the customer, mention it in the reason.",
       "confirm": "Cancel sale",
-      "keep": "Keep sale"
-    }
+      "keep": "Keep sale",
+      "cancelled": "Sale cancelled."
+    },
+    "description": "In-store sales, how they were paid and their refunds.",
+    "tabsLabel": "Sales and refunds",
+    "refundsTab": "Refunds",
+    "saleDetailTitle": "Sale details",
+    "summaryLabel": "Sales summary",
+    "collected": "Collected",
+    "completedCount": "Completed sales",
+    "averageBasket": "Average basket",
+    "searchLabel": "Search sales",
+    "searchPlaceholder": "Reference, customer or phone…",
+    "saleNotFound": "This sale could not be found.",
+    "closedTillShort": "Till closed",
+    "itemsTitle": "Items"
   },
   "errors": {
     "notFoundTitle": "Page not found",

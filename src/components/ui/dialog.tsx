@@ -150,7 +150,7 @@ export function Sheet({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  side: "start" | "bottom";
+  side: "start" | "end" | "bottom";
   title: ReactNode;
   // The title still names the panel for screen readers.
   titleHidden?: boolean;
@@ -159,11 +159,14 @@ export function Sheet({
 }) {
   const fromBottom = side === "bottom";
   const rtl = useDirection() === "rtl";
+  // The physical edge it slides from: start is the left in French, the right
+  // in Arabic; end the other way round.
+  const fromRight = (side === "end") !== rtl;
   return (
     <Drawer.Root
       open={open}
       onOpenChange={onOpenChange}
-      swipeDirection={fromBottom ? "down" : rtl ? "right" : "left"}
+      swipeDirection={fromBottom ? "down" : fromRight ? "right" : "left"}
     >
       <Drawer.Portal>
         <Drawer.Backdrop
@@ -173,7 +176,12 @@ export function Sheet({
           )}
         />
         <Drawer.Viewport
-          className={cn("fixed inset-0 z-50 flex", fromBottom ? "items-end" : "items-stretch")}
+          className={cn(
+            "fixed inset-0 z-50 flex",
+            fromBottom ? "items-end" : "items-stretch",
+            // Logical: the end edge, whichever way the page reads.
+            side === "end" && "justify-end",
+          )}
         >
           <Drawer.Popup
             className={cn(
@@ -181,8 +189,11 @@ export function Sheet({
               fromBottom
                 ? "max-h-[90dvh] w-full rounded-t-sheet pb-[env(safe-area-inset-bottom)] [transform:translateY(var(--drawer-swipe-movement-y))] data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)]"
                 : cn(
-                    "h-full w-[min(20rem,calc(100vw-3rem))] [transform:translateX(var(--drawer-swipe-movement-x))]",
-                    rtl
+                    side === "end"
+                      ? "h-full w-[min(30rem,100vw)]"
+                      : "h-full w-[min(20rem,calc(100vw-3rem))]",
+                    "[transform:translateX(var(--drawer-swipe-movement-x))]",
+                    fromRight
                       ? "data-ending-style:[transform:translateX(100%)] data-starting-style:[transform:translateX(100%)]"
                       : "data-ending-style:[transform:translateX(-100%)] data-starting-style:[transform:translateX(-100%)]",
                   ),
