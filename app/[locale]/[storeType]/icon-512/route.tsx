@@ -30,34 +30,6 @@ export async function GET(
 
   if (boutique.logoStoragePath) {
     return new ImageResponse(
-      (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#ffffff",
-            borderRadius: 112,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={getStoreLogoUrl(boutique.logoStoragePath)}
-            width={384}
-            height={384}
-            style={{ objectFit: "contain" }}
-            alt=""
-          />
-        </div>
-      ),
-      { ...size },
-    );
-  }
-
-  return new ImageResponse(
-    (
       <div
         style={{
           width: "100%",
@@ -65,17 +37,41 @@ export async function GET(
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: theme.light.primary,
+          background: "#ffffff",
           borderRadius: 112,
-          color: theme.light.primaryForeground,
-          fontSize: 320,
-          fontWeight: 700,
-          fontFamily: "system-ui, sans-serif",
         }}
       >
-        {siteName.charAt(0).toUpperCase()}
-      </div>
-    ),
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={getStoreLogoUrl(boutique.logoStoragePath)}
+          width={384}
+          height={384}
+          style={{ objectFit: "contain" }}
+          alt=""
+        />
+      </div>,
+      { ...size },
+    );
+  }
+
+  return new ImageResponse(
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: theme.light.primary,
+        borderRadius: 112,
+        color: theme.light.primaryForeground,
+        fontSize: 320,
+        fontWeight: 700,
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
+      {siteName.charAt(0).toUpperCase()}
+    </div>,
     { ...size },
   );
 }

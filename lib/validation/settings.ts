@@ -107,8 +107,7 @@ export const storeTypeLabelSchema = z.object({
 
 // A bare hostname, no protocol/path — e.g. "solel.com", not
 // "https://solel.com/". Superadmin-only (lib/actions/settings.ts).
-const HOSTNAME_RE =
-  /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+const HOSTNAME_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
 
 // Empty string clears the domain; a non-empty value is normalized (protocol/
 // path/trailing slash stripped, lowercased) then checked against a basic

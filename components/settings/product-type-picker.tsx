@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { setProductType, createProductType } from "@/lib/actions/settings";
+import { setProductType, createProductType } from "@/lib/actions/boutiques";
 
 type StoreTypeOption = { key: string; label: string };
 
@@ -105,21 +105,14 @@ export function ProductTypePicker({
           }
           title={t("productTypeNewTitle")}
           footer={
-            <Button
-              type="button"
-              disabled={!name.trim()}
-              loading={pending}
-              onClick={handleCreate}
-            >
+            <Button type="button" disabled={!name.trim()} loading={pending} onClick={handleCreate}>
               {tCommon("create")}
             </Button>
           }
         >
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="new-product-type-name">
-                {t("productTypeNewName")}
-              </Label>
+              <Label htmlFor="new-product-type-name">{t("productTypeNewName")}</Label>
               <Input
                 id="new-product-type-name"
                 value={name}
@@ -128,9 +121,7 @@ export function ProductTypePicker({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="new-product-type-categories">
-                {t("productTypeNewCategories")}
-              </Label>
+              <Label htmlFor="new-product-type-categories">{t("productTypeNewCategories")}</Label>
               <Textarea
                 id="new-product-type-categories"
                 rows={4}

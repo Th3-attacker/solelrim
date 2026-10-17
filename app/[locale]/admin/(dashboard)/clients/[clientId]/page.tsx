@@ -9,7 +9,7 @@ import {
   CLIENT_SALES_PAGE_SIZE,
 } from "@/lib/queries/clients";
 import { getOrdersByPhonePage, CLIENT_ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { ClientForm } from "@/components/clients/client-form";
 import { DeleteClientButton } from "@/components/clients/delete-client-button";
 import { PromoCodeFormDialog } from "@/components/settings/promo-code-form-dialog";
@@ -67,9 +67,7 @@ export default async function ClientDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {client.fullName}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{client.fullName}</h1>
         <div className="flex items-center gap-2">
           <PromoCodeFormDialog
             fixedClient={{ id: client.id, fullName: client.fullName }}

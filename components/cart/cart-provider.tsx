@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
@@ -41,9 +34,7 @@ function reducer(state: CartState, action: CartAction): CartState {
     case "HYDRATE":
       return { items: action.items, hydrated: true };
     case "ADD_ITEM": {
-      const existing = state.items.find(
-        (i) => i.variantId === action.line.variantId,
-      );
+      const existing = state.items.find((i) => i.variantId === action.line.variantId);
       if (existing) {
         return {
           ...state,
@@ -51,10 +42,7 @@ function reducer(state: CartState, action: CartAction): CartState {
             i.variantId === action.line.variantId
               ? {
                   ...i,
-                  quantity: Math.min(
-                    i.quantity + action.quantity,
-                    action.line.stock,
-                  ),
+                  quantity: Math.min(i.quantity + action.quantity, action.line.stock),
                 }
               : i,
           ),
@@ -210,21 +198,16 @@ export function CartProvider({
   }, [state.hydrated, searchParams, pathname, router, storeType, t]);
 
   const value = useMemo<CartContextValue>(() => {
-    const subtotal = state.items.reduce(
-      (sum, i) => sum + i.unitPrice * i.quantity,
-      0,
-    );
+    const subtotal = state.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
     return {
       storeType,
       items: state.items,
       hydrated: state.hydrated,
-      addItem: (line, quantity = 1) =>
-        dispatch({ type: "ADD_ITEM", line, quantity }),
+      addItem: (line, quantity = 1) => dispatch({ type: "ADD_ITEM", line, quantity }),
       updateQuantity: (variantId, quantity) =>
         dispatch({ type: "UPDATE_QUANTITY", variantId, quantity }),
       removeItem: (variantId) => dispatch({ type: "REMOVE_ITEM", variantId }),
-      syncStock: (stockByVariantId) =>
-        dispatch({ type: "SYNC_STOCK", stockByVariantId }),
+      syncStock: (stockByVariantId) => dispatch({ type: "SYNC_STOCK", stockByVariantId }),
       clear: () => dispatch({ type: "CLEAR" }),
       subtotal,
     };

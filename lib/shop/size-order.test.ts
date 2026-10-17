@@ -22,6 +22,10 @@ describe("sortBySize", () => {
       { size: "S", color: "Blanc" },
       { size: "M", color: "Blanc" },
     ];
-    expect(sortBySize(variants, (v) => v.size).map((v) => v.color)).toEqual(["Blanc", "Noir", "Blanc"]);
+    expect(sortBySize(variants, (v) => v.size).map((v) => v.color)).toEqual([
+      "Blanc",
+      "Noir",
+      "Blanc",
+    ]);
   });
 });

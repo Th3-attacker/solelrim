@@ -26,11 +26,7 @@ const RANGE_DAYS: Record<string, number | null> = {
   "7d": 7,
 };
 
-export function RevenueChart({
-  data,
-}: {
-  data: { day: string; total: number }[];
-}) {
+export function RevenueChart({ data }: { data: { day: string; total: number }[] }) {
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const [range, setRange] = useState<"all" | "90d" | "30d" | "7d">("90d");

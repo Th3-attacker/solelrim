@@ -9,6 +9,7 @@ export default async function DashboardNotFound() {
 
   return (
     <StateMessage
+      heading="h1"
       icon={MagnifyingGlass}
       title={t("notFoundTitle")}
       message={t("notFoundMessage")}

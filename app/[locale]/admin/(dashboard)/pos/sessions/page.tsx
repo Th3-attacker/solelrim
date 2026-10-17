@@ -1,7 +1,7 @@
 import { ArrowLeft, CashRegister } from "@phosphor-icons/react/dist/ssr";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { listSessions, SESSIONS_PAGE_SIZE } from "@/lib/queries/cash-sessions";
 import { formatPrice } from "@/lib/format/currency";
 import { Button } from "@/components/ui/button";

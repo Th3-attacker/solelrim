@@ -18,7 +18,10 @@ export async function CategoryFilterBar({
   return (
     <>
       {/* Desktop: breadcrumb */}
-      <nav className="hidden flex-wrap items-center gap-2 text-sm md:flex">
+      <nav
+        aria-label={t("breadcrumbLabel")}
+        className="hidden flex-wrap items-center gap-2 text-sm md:flex"
+      >
         <Link
           href={`${basePath}/products`}
           className={cn(

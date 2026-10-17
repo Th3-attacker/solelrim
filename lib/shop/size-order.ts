@@ -25,8 +25,7 @@ export function sortBySize<T>(items: readonly T[], getSize: (item: T) => string)
 }
 
 function compareSizes(a: string, b: string): number {
-  const group = (size: string) =>
-    letterRank(size) >= 0 ? 0 : numericValue(size) !== null ? 1 : 2;
+  const group = (size: string) => (letterRank(size) >= 0 ? 0 : numericValue(size) !== null ? 1 : 2);
   const ga = group(a);
   const gb = group(b);
   if (ga !== gb) return ga - gb;

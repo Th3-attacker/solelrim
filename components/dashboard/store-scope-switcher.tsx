@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import { CaretUpDown, Storefront } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +17,7 @@ type StoreTypeOption = { key: string; label: string };
 
 // Independent from the public "live" toggle (Réglages) — lets an admin
 // browse/manage one boutique's back office while another is currently live
-// to customers. See lib/shop/admin-scope.ts.
+// to customers. See lib/auth/scope.ts.
 export function StoreScopeSwitcher({
   storeTypes,
   currentScope,
@@ -27,7 +26,6 @@ export function StoreScopeSwitcher({
   currentScope: string;
 }) {
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const current = storeTypes.find((s) => s.key === currentScope);
@@ -41,18 +39,13 @@ export function StoreScopeSwitcher({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full justify-between"
-          disabled={pending}
-        >
+        <Button variant="outline" className="w-full justify-between" disabled={pending}>
           <span className="flex min-w-0 items-center gap-2">
             <Storefront className="size-4 shrink-0" />
             <span className="truncate">{currentLabel}</span>

@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import type { z } from "zod";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +48,6 @@ export function PromoCodeFormDialog({
 }) {
   const t = useTranslations("promoCodes");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -114,7 +112,6 @@ export function PromoCodeFormDialog({
 
     if (!promoCode) reset();
     setOpen(false);
-    router.refresh();
     toast.success(tCommon("save"));
   };
 
@@ -142,11 +139,7 @@ export function PromoCodeFormDialog({
             aria-invalid={!!errors.code}
             {...register("code")}
           />
-          {errors.code && (
-            <FieldError>
-              {fieldErrorMessage(errors.code.message)}
-            </FieldError>
-          )}
+          {errors.code && <FieldError>{fieldErrorMessage(errors.code.message)}</FieldError>}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -154,9 +147,7 @@ export function PromoCodeFormDialog({
             <Label htmlFor="discountType">{t("discountType")}</Label>
             <Select
               value={discountType}
-              onValueChange={(value) =>
-                setValue("discountType", value as "PERCENT" | "FIXED")
-              }
+              onValueChange={(value) => setValue("discountType", value as "PERCENT" | "FIXED")}
             >
               <SelectTrigger id="discountType" className="w-full">
                 <SelectValue />
@@ -177,9 +168,7 @@ export function PromoCodeFormDialog({
               {...register("discountValue")}
             />
             {errors.discountValue && (
-              <FieldError>
-                {fieldErrorMessage(errors.discountValue.message)}
-              </FieldError>
+              <FieldError>{fieldErrorMessage(errors.discountValue.message)}</FieldError>
             )}
           </div>
         </div>
@@ -228,9 +217,7 @@ export function PromoCodeFormDialog({
               min="1"
               placeholder={t("unlimited")}
               value={(maxUses as number | null) ?? ""}
-              onChange={(e) =>
-                setValue("maxUses", e.target.value ? Number(e.target.value) : null)
-              }
+              onChange={(e) => setValue("maxUses", e.target.value ? Number(e.target.value) : null)}
             />
           </div>
         </div>

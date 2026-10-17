@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getActiveProducts } from "@/lib/queries/shop";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { ArrowRight, Package } from "@phosphor-icons/react/dist/ssr";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -17,11 +17,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 // lives on its own page (/{storeType}/products) behind "Voir plus".
 const PREVIEW_COUNT = 8;
 
-export default async function ShopHomePage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function ShopHomePage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [t, boutique, basePath, locale] = await Promise.all([
     getTranslations("shop"),
@@ -51,9 +47,12 @@ export default async function ShopHomePage({
           <StateMessage icon={Package} title={t("noProducts")} />
         ) : (
           <>
-            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4">
+            <ul
+              role="list"
+              className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 desktop:grid-cols-4 desktop:gap-4"
+            >
               {previewProducts.map((product, index) => (
-                <div
+                <li
                   key={product.id}
                   style={{ animationDelay: `${Math.min(index, 7) * 60}ms` }}
                   className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out"
@@ -64,9 +63,9 @@ export default async function ShopHomePage({
                     priority={index < 4}
                     cardVariant={boutique.cardVariant}
                   />
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
             <Link
               href={`${basePath}/products`}
               className="group flex items-center gap-2 text-sm font-semibold tracking-wide uppercase transition-colors hover:text-primary"
@@ -77,10 +76,8 @@ export default async function ShopHomePage({
           </>
         )}
       </div>
-      
-      {boutique.testimonialsEnabled && (
-        <TestimonialsSection testimonials={boutique.testimonials} />
-      )}
+
+      {boutique.testimonialsEnabled && <TestimonialsSection testimonials={boutique.testimonials} />}
 
       <TrustBadges />
     </div>

@@ -17,13 +17,8 @@ const UTF8_BOM = "﻿";
 
 // BOM-prefixed so Excel (the realistic target here) detects the encoding
 // correctly instead of mangling accented French/Arabic text.
-export function toCsv(
-  columns: CsvColumn[],
-  rows: Record<string, string | number>[],
-): string {
+export function toCsv(columns: CsvColumn[], rows: Record<string, string | number>[]): string {
   const headerLine = columns.map((c) => escapeCsvCell(c.label)).join(",");
-  const lines = rows.map((row) =>
-    columns.map((c) => escapeCsvCell(row[c.key] ?? "")).join(","),
-  );
+  const lines = rows.map((row) => columns.map((c) => escapeCsvCell(row[c.key] ?? "")).join(","));
   return UTF8_BOM + [headerLine, ...lines].join("\r\n");
 }

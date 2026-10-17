@@ -5,18 +5,14 @@ import { LogoutButton } from "@/components/dashboard/logout-button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LicenseWarningBanner } from "@/components/settings/license-warning-banner";
+import { LiveOrders } from "@/components/dashboard/live-orders";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { getStoreTypes } from "@/lib/queries/settings";
 import { getPendingOrderCount } from "@/lib/queries/orders";
-import { getCurrentAdmin } from "@/lib/auth/admin";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdmin, getSessionUser } from "@/lib/auth/admin";
 
 // robots.ts already disallows /{locale}/admin for crawling, but that alone
 // doesn't stop a URL from getting indexed if it's linked from elsewhere —
@@ -25,23 +21,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [storeTypes, admin, supabase] = await Promise.all([
-    getStoreTypes(),
-    getCurrentAdmin(),
-    createClient(),
-  ]);
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [storeTypes, admin] = await Promise.all([getStoreTypes(), getCurrentAdmin()]);
   // getAdminScope() refuses a SELLER (it guards every admin data page), but
   // this layout also wraps the checkout a seller does use — a seller's
   // scope is simply their own locked boutique.
-  const currentScope =
-    admin.role === "SELLER" ? admin.productType! : await getAdminScope();
-  const [{ data: { user } }, pendingOrderCount, pendingRefundCount] = await Promise.all([
-    supabase.auth.getUser(),
+  const currentScope = admin.role === "SELLER" ? admin.productType! : await getAdminScope();
+  // getSessionUser is the request's cached getUser(): getCurrentAdmin above
+  // already made that round trip to Supabase Auth.
+  const [user, pendingOrderCount, pendingRefundCount] = await Promise.all([
+    getSessionUser(),
     getPendingOrderCount(currentScope),
     // Only an admin decides refunds, so only they get the badge.
     admin.role === "SELLER" ? Promise.resolve(0) : countPendingRefunds(currentScope),
@@ -63,6 +52,7 @@ export default async function DashboardLayout({
           />
         </div>
         <SidebarInset>
+          <LiveOrders productType={currentScope} />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 print:hidden">
             <SidebarTrigger className="-ms-1" />
             <Separator orientation="vertical" className="h-4" />
@@ -83,7 +73,7 @@ export default async function DashboardLayout({
               />
             </div>
           )}
-          <main className="min-w-0 flex-1 p-4 md:p-6 print:p-0">{children}</main>
+          <div className="min-w-0 flex-1 p-4 md:p-6 print:p-0">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

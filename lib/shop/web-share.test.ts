@@ -71,7 +71,9 @@ describe("shareContent", () => {
   });
 
   it("still treats a user cancel as a cancel, without falling back to the clipboard", async () => {
-    const share = vi.fn().mockRejectedValue(Object.assign(new Error("cancelled"), { name: "AbortError" }));
+    const share = vi
+      .fn()
+      .mockRejectedValue(Object.assign(new Error("cancelled"), { name: "AbortError" }));
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { share, clipboard: { writeText } });
 

@@ -16,4 +16,3 @@ export const saleEditSchema = z
     reason: z.string().trim().min(3).max(500),
   })
   .refine((data) => data.paymentMethod !== "wallet" || data.walletAccountId !== null);
-

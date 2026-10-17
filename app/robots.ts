@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
       // /en/admin, /ar/admin — a bare "/admin" rule wouldn't match any of
       // them, since Disallow matches on path prefix.
       disallow: routing.locales.map((locale) => `/${locale}/admin`),
+      
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

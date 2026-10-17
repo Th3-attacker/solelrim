@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FieldError } from "@/components/ui/status-alert";
 
 const initialLoginState: LoginState = {};
@@ -40,7 +34,7 @@ export function LoginForm({
     return (
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>{t("mfaTitle")}</CardTitle>
+          <CardTitle as="h1">{t("mfaTitle")}</CardTitle>
           <CardDescription>{t("mfaSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,7 +80,7 @@ export function LoginForm({
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
+        <CardTitle as="h1">{t("title")}</CardTitle>
         <CardDescription>{t("subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -100,7 +94,9 @@ export function LoginForm({
               type="email"
               required
               autoFocus
+              autoComplete="username"
               aria-invalid={!!loginState.error}
+              aria-describedby={loginState.error ? "login-error" : undefined}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -109,13 +105,15 @@ export function LoginForm({
               id="password"
               name="password"
               required
+              autoComplete="current-password"
               aria-invalid={!!loginState.error}
+              aria-describedby={loginState.error ? "login-error" : undefined}
               showLabel={tCommon("showPassword")}
               hideLabel={tCommon("hidePassword")}
             />
           </div>
           {loginState.error && (
-            <FieldError>
+            <FieldError id="login-error">
               {loginState.error === "rateLimited" ? t("rateLimitedError") : t("error")}
             </FieldError>
           )}

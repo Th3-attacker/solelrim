@@ -15,8 +15,15 @@ export function ok(data: unknown, options?: { cache?: boolean }): Response {
   });
 }
 
-export function fail(error: string, status: number, extraHeaders?: Record<string, string>): Response {
-  return Response.json({ error }, { status, headers: { "Cache-Control": "no-store", ...extraHeaders } });
+export function fail(
+  error: string,
+  status: number,
+  extraHeaders?: Record<string, string>,
+): Response {
+  return Response.json(
+    { error },
+    { status, headers: { "Cache-Control": "no-store", ...extraHeaders } },
+  );
 }
 
 // The HTTP status of an error code coming back from a Server Action.
@@ -59,4 +66,58 @@ export function pageOf(url: URL, defaultSize = 20, maxSize = 50) {
   const page = Math.max(1, Math.floor(Number(url.searchParams.get("page"))) || 1);
   const size = Math.floor(Number(url.searchParams.get("pageSize"))) || defaultSize;
   return { page, pageSize: Math.min(Math.max(size, 1), maxSize) };
+}
+
+// The catalogue's sort and filters (GET .../products). null when none is
+// given: the route then answers exactly as before they existed. "invalid"
+// for a value the API refuses.
+const CATALOGUE_PARAMS = ["sort", "sizes", "colors", "priceMin", "priceMax", "facets"] as const;
+const SORTS: readonly string[] = ["popular", "price_asc", "price_desc", "newest"];
+const MAX_LIST_VALUES = 20;
+const PRICE = /^\d{1,9}$/;
+
+export type CatalogueParams = {
+  sort: "popular" | "price_asc" | "price_desc" | "newest";
+  sizes: string[];
+  colors: string[];
+  priceMin?: number;
+  priceMax?: number;
+  facets: boolean;
+};
+
+export function catalogueParamsOf(url: URL): CatalogueParams | "invalid" | null {
+  const params = url.searchParams;
+  if (!CATALOGUE_PARAMS.some((name) => params.has(name))) return null;
+
+  const sort = params.get("sort") ?? "popular";
+  if (!SORTS.includes(sort)) return "invalid";
+
+  // Comma-separated exact values; empty ones are ignored.
+  const list = (name: string) =>
+    (params.get(name) ?? "").split(",").filter((value) => value !== "");
+  const sizes = list("sizes");
+  const colors = list("colors");
+  if (sizes.length > MAX_LIST_VALUES || colors.length > MAX_LIST_VALUES) return "invalid";
+
+  const price = (name: string) => {
+    const value = params.get(name);
+    if (value === null || value === "") return undefined;
+    return PRICE.test(value) ? Number(value) : null;
+  };
+  const priceMin = price("priceMin");
+  const priceMax = price("priceMax");
+  if (priceMin === null || priceMax === null) return "invalid";
+  if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) return "invalid";
+
+  const facets = params.get("facets");
+  if (facets !== null && facets !== "1") return "invalid";
+
+  return {
+    sort: sort as CatalogueParams["sort"],
+    sizes,
+    colors,
+    priceMin,
+    priceMax,
+    facets: facets === "1",
+  };
 }

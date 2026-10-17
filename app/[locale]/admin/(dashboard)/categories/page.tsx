@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Tag } from "@phosphor-icons/react/dist/ssr";
 import { getCategoriesForAdmin } from "@/lib/queries/categories";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireAdminScope } from "@/lib/auth/scope";
 import { CreateCategoryButton } from "@/components/categories/create-category-button";
 import { RenameCategoryDialog } from "@/components/categories/rename-category-dialog";
 import { DeleteCategoryButton } from "@/components/categories/delete-category-button";
@@ -63,8 +63,7 @@ export default async function AdminCategoriesPage() {
           </TableHeader>
           <TableBody>
             {categories.map((category) => {
-              const canManage =
-                admin.role === "SUPERADMIN" || category.productType === productType;
+              const canManage = admin.role === "SUPERADMIN" || category.productType === productType;
               const scopeKey = category.productType ?? "";
               const ids = scopeIds.get(scopeKey) ?? [];
               const scopeIndex = ids.indexOf(category.id);

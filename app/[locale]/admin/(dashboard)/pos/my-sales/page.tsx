@@ -1,7 +1,7 @@
 import { ArrowLeft, MagnifyingGlass, Receipt } from "@phosphor-icons/react/dist/ssr";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { getMySales, MY_SALES_PAGE_SIZE } from "@/lib/queries/my-sales";
 import { parseMySalesFilters } from "@/lib/shop/my-sales-filters";
 import { formatPrice } from "@/lib/format/currency";

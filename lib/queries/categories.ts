@@ -5,9 +5,7 @@ import { prisma } from "@/lib/prisma";
 // the boutique label and product count for the admin list, not just id/name.
 export function getCategoriesForAdmin(scopeFilter?: string) {
   return prisma.category.findMany({
-    where: scopeFilter
-      ? { OR: [{ productType: null }, { productType: scopeFilter }] }
-      : undefined,
+    where: scopeFilter ? { OR: [{ productType: null }, { productType: scopeFilter }] } : undefined,
     include: {
       storeType: true,
       _count: { select: { products: true } },

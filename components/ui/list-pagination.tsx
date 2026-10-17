@@ -49,9 +49,7 @@ export async function ListPagination({
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <p className="text-sm text-muted-foreground">
-        {t("paginationRange", { from, to, total })}
-      </p>
+      <p className="text-sm text-muted-foreground">{t("paginationRange", { from, to, total })}</p>
       <div className="flex items-center gap-2">
         {currentPage > 1 ? (
           <Button asChild variant="outline" size="icon-sm">

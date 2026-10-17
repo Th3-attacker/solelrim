@@ -5,10 +5,7 @@ import { serializeProductDetail } from "@/lib/api/serializers";
 import { getActiveProductBySlug } from "@/lib/queries/shop";
 
 // GET /api/v1/boutiques/{key}/products/{slug}
-async function get(
-  _request: Request,
-  ctx: { params: Promise<{ key: string; slug: string }> },
-) {
+async function get(_request: Request, ctx: { params: Promise<{ key: string; slug: string }> }) {
   const { key, slug } = await ctx.params;
   const { boutique, response } = await loadOpenBoutique(key);
   if (!boutique) return response;

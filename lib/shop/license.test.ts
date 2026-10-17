@@ -38,18 +38,12 @@ describe("getEffectiveLicenseState", () => {
   });
 
   it("is ACTIVE while the expiration date is still in the future", () => {
-    const state = getEffectiveLicenseState(
-      license({ licenseExpiresAt: daysFromNow(10) }),
-      NOW,
-    );
+    const state = getEffectiveLicenseState(license({ licenseExpiresAt: daysFromNow(10) }), NOW);
     expect(state).toBe("ACTIVE");
   });
 
   it("is GRACE_PERIOD just past expiration, within the grace window", () => {
-    const state = getEffectiveLicenseState(
-      license({ licenseExpiresAt: daysFromNow(-1) }),
-      NOW,
-    );
+    const state = getEffectiveLicenseState(license({ licenseExpiresAt: daysFromNow(-1) }), NOW);
     expect(state).toBe("GRACE_PERIOD");
   });
 

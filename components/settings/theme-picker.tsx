@@ -77,10 +77,7 @@ export function ThemePicker({
                 style={{ backgroundColor: preset.light.primary }}
               >
                 {selected && (
-                  <Check
-                    className="size-4"
-                    style={{ color: preset.light.primaryForeground }}
-                  />
+                  <Check className="size-4" style={{ color: preset.light.primaryForeground }} />
                 )}
               </span>
             </button>

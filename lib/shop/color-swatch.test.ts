@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getSwatchColors, getSwatchColor, getSwatchStyle, lookupSwatchHexes } from "@/lib/shop/color-swatch";
+import {
+  getSwatchColors,
+  getSwatchColor,
+  getSwatchStyle,
+  lookupSwatchHexes,
+} from "@/lib/shop/color-swatch";
 
 describe("getSwatchColors", () => {
   it("resolves a known French color name", () => {

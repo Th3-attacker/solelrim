@@ -229,9 +229,7 @@ export function CartPanel({
             {t("wallet")}
           </ToggleGroupItem>
         </ToggleGroup>
-        {wallets.length === 0 && (
-          <p className="text-xs text-muted-foreground">{t("noWallets")}</p>
-        )}
+        {wallets.length === 0 && <p className="text-xs text-muted-foreground">{t("noWallets")}</p>}
       </div>
 
       {paymentMethod === "cash" ? (
@@ -257,9 +255,7 @@ export function CartPanel({
             </Button>
           </div>
           {shortBy > 0 && (
-            <FieldError>
-              {t("amountTooLow", { amount: formatPrice(shortBy, currency) })}
-            </FieldError>
+            <FieldError>{t("amountTooLow", { amount: formatPrice(shortBy, currency) })}</FieldError>
           )}
           {change !== null && hasSellableLine && (
             <p className="flex justify-between rounded-md border bg-card p-2 text-sm font-medium tabular-nums">

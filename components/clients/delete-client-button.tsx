@@ -16,10 +16,7 @@ export function DeleteClientButton({ clientId }: { clientId: string }) {
       description={t("hasSalesError")}
       onDelete={() => deleteClient(clientId)}
       errorMessage={() => t("hasSalesError")}
-      onDeleted={() => {
-        router.push("/admin/clients");
-        router.refresh();
-      }}
+      onDeleted={() => router.push("/admin/clients")}
     />
   );
 }

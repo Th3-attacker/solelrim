@@ -29,9 +29,7 @@ export function CategoryFilters({
   const [price, setPrice] = useState(searchParams.get("price") ?? "all");
   const [color, setColor] = useState(searchParams.get("color") ?? "");
 
-  const activeCount = [sort !== "default", price !== "all", Boolean(color)].filter(
-    Boolean,
-  ).length;
+  const activeCount = [sort !== "default", price !== "all", Boolean(color)].filter(Boolean).length;
 
   // Clicking anywhere in the expanded panel (including a category link)
   // already closes it — this just gives keyboard users the same escape

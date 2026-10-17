@@ -1,9 +1,15 @@
 import * as Sentry from "@sentry/nextjs";
+import { expectedErrorCode } from "@/lib/errors";
 
 // Node.js and Edge each need their own Sentry.init() call — they run in
 // different runtimes with different transports, and Next.js loads this
 // file once per runtime, gated by NEXT_RUNTIME.
 export async function register() {
+  // Fail at startup, with the names, rather than on the first request that
+  // needs a missing variable (lib/env.ts).
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    (await import("@/lib/env")).serverEnv();
+  }
   if (process.env.NEXT_RUNTIME === "nodejs" || process.env.NEXT_RUNTIME === "edge") {
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -12,6 +18,9 @@ export async function register() {
       // spot slow requests on a low-traffic storefront without spending
       // much of Sentry's quota. Bump if traffic grows and headroom allows.
       tracesSampleRate: 0.1,
+      // A refusal thrown on purpose (no session, wrong role, a blocked
+      // boutique, see lib/errors.ts) is not a bug to look into.
+      beforeSend: (event, hint) => (expectedErrorCode(hint.originalException) ? null : event),
     });
   }
 }

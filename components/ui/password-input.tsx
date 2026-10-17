@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Eye, EyeSlash } from "@phosphor-icons/react/dist/ssr"
+import * as React from "react";
+import { Eye, EyeSlash } from "@phosphor-icons/react/dist/ssr";
 
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function PasswordInput({
   className,
@@ -14,18 +14,14 @@ function PasswordInput({
 }: Omit<React.ComponentProps<typeof Input>, "type"> & {
   // No i18n context inside a generic ui/ primitive — callers in the app
   // pass their own translated labels via these props.
-  showLabel?: string
-  hideLabel?: string
+  showLabel?: string;
+  hideLabel?: string;
 }) {
-  const [visible, setVisible] = React.useState(false)
+  const [visible, setVisible] = React.useState(false);
 
   return (
     <div className="relative">
-      <Input
-        type={visible ? "text" : "password"}
-        className={cn("pe-9", className)}
-        {...props}
-      />
+      <Input type={visible ? "text" : "password"} className={cn("pe-9", className)} {...props} />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
@@ -36,7 +32,7 @@ function PasswordInput({
         {visible ? <EyeSlash className="size-4" /> : <Eye className="size-4" />}
       </button>
     </div>
-  )
+  );
 }
 
-export { PasswordInput }
+export { PasswordInput };

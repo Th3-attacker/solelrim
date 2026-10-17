@@ -1,30 +1,14 @@
-import { createAdminClient } from "@/lib/supabase/admin";
-
+// Public URLs of what the product-images bucket holds (product photos, logos,
+// hero images, wallet logos). Pure string building, so client components use
+// it too — keep anything needing a Supabase client out of this file (signed
+// URLs live in lib/supabase/payment-proofs.ts).
 const PRODUCT_IMAGES_BUCKET = "product-images";
-const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 
-export function getProductImageUrl(storagePath: string): string {
+function publicImageUrl(storagePath: string): string {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${storagePath}`;
 }
 
-export function getStoreLogoUrl(storagePath: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${storagePath}`;
-}
-
-export function getStoreHeroImageUrl(storagePath: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${storagePath}`;
-}
-
-export function getWalletLogoUrl(storagePath: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${storagePath}`;
-}
-
-export async function getSignedPaymentProofUrl(
-  storagePath: string,
-): Promise<string | null> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase.storage
-    .from(PAYMENT_PROOFS_BUCKET)
-    .createSignedUrl(storagePath, 60 * 5);
-  return error ? null : data.signedUrl;
-}
+export const getProductImageUrl = publicImageUrl;
+export const getStoreLogoUrl = publicImageUrl;
+export const getStoreHeroImageUrl = publicImageUrl;
+export const getWalletLogoUrl = publicImageUrl;

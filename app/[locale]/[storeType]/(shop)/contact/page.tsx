@@ -22,9 +22,7 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
   const description = t("metaDescription", { siteName });
-  const imageUrl = boutique.logoStoragePath
-    ? getStoreLogoUrl(boutique.logoStoragePath)
-    : null;
+  const imageUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
 
   return {
     title,
@@ -42,11 +40,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ContactPage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function ContactPage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [t, boutique] = await Promise.all([
     getTranslations("contact"),
@@ -66,9 +60,7 @@ export default async function ContactPage({
   return (
     <div className="flex flex-col gap-10 py-6">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h1 className="text-heading-md text-balance sm:text-heading-lg">
-          {t("title")}
-        </h1>
+        <h1 className="text-heading-md text-balance sm:text-heading-lg">{t("title")}</h1>
         <p className="max-w-md text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
           {t("subtitle")}
         </p>

@@ -88,11 +88,7 @@ export const CLIENT_ORDERS_PAGE_SIZE = 20;
 // collects name/phone/city — so a client's online order history can only
 // be found by matching phone number, scoped to the same boutique. Paginated
 // since that history can grow past a single page.
-export async function getOrdersByPhonePage(
-  phone: string,
-  productType: string,
-  page = 1,
-) {
+export async function getOrdersByPhonePage(phone: string, productType: string, page = 1) {
   const currentPage = toPageNumber(page);
   const where = { customerPhone: phone, productType };
 

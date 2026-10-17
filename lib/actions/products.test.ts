@@ -13,6 +13,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -24,7 +25,9 @@ import {
   updateProductImageColor,
   bulkSetProductsActive,
   bulkDeleteProducts,
+  uploadProductImage,
 } from "@/lib/actions/products";
+import { PUBLIC_IMAGE_CACHE_CONTROL } from "@/lib/image-config";
 import type { ProductInput } from "@/lib/validation/product";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -241,9 +244,7 @@ describe("updateProduct", () => {
   it("untags product images whose color no longer matches any submitted variant", async () => {
     prismaMock.product.findFirst.mockResolvedValue({ id: "product-1" } as never);
     prismaMock.category.findFirst.mockResolvedValue({ id: "category-1" } as never);
-    prismaMock.productVariant.findMany.mockResolvedValue([
-      { id: "variant-1" },
-    ] as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ id: "variant-1" }] as never);
     prismaMock.$transaction.mockImplementation(async (fn) =>
       (fn as (tx: typeof prismaMock) => unknown)(prismaMock),
     );
@@ -307,6 +308,34 @@ describe("updateProductImageColor", () => {
     expect(prismaMock.productImage.update).toHaveBeenCalledWith({
       where: { id: "image-1" },
       data: { color: null },
+    });
+  });
+});
+
+describe("uploadProductImage", () => {
+  // Only the first bytes matter for the signature check.
+  const webp = () =>
+    new File(
+      [new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50])],
+      "p.webp",
+    );
+
+  it("stores the photo at a fresh path, cacheable for a year", async () => {
+    prismaMock.storeType.findUnique.mockResolvedValue({ licenseStatus: "ACTIVE" } as never);
+    prismaMock.product.findFirst.mockResolvedValue({ id: "product-1", slug: "p" } as never);
+    prismaMock.productImage.aggregate.mockResolvedValue({ _max: { position: null } } as never);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    createAdminClientMock.mockReturnValue({ storage: { from: () => ({ upload }) } });
+    const form = new FormData();
+    form.set("file", webp());
+
+    expect(await uploadProductImage("product-1", form)).toEqual({});
+
+    const [path, , options] = upload.mock.calls[0];
+    expect(path).toMatch(/^products\/product-1\/[0-9a-f-]{36}\.webp$/);
+    expect(options).toEqual({
+      contentType: "image/webp",
+      cacheControl: PUBLIC_IMAGE_CACHE_CONTROL,
     });
   });
 });

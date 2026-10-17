@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { testimonialSchema } from "@/lib/validation/settings";
-import { requireWritableSuperAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableSuperAdminScope } from "@/lib/auth/scope";
+import { revalidateSite } from "@/lib/revalidate";
 
 export async function createTestimonial(input: unknown) {
   const { productType } = await requireWritableSuperAdminScope();
@@ -39,8 +39,7 @@ export async function createTestimonial(input: unknown) {
     },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return { testimonial };
 }
 
@@ -52,8 +51,7 @@ export async function deleteTestimonial(id: string) {
     return { error: "notFound" as const };
   }
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -81,8 +79,7 @@ export async function moveTestimonial(id: string, direction: "up" | "down") {
     prisma.testimonial.update({ where: { id: b.id }, data: { position: a.position } }),
   ]);
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -94,7 +91,6 @@ export async function setTestimonialsEnabled(enabled: boolean): Promise<{ error?
     data: { testimonialsEnabled: enabled },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }

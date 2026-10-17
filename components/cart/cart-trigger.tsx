@@ -22,7 +22,7 @@ import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
 import { StateMessage } from "@/components/ui/state-message";
 import { toast } from "@/components/ui/toast";
-import { getVariantStocks } from "@/lib/actions/cart";
+import { fetchVariantStocks } from "@/lib/shop/storefront-api";
 import { buildCartShareText } from "@/lib/shop/cart-share";
 import { encodeCartEntries } from "@/lib/shop/cart-link";
 import { shareContent, isShareCancelled } from "@/lib/shop/web-share";
@@ -33,8 +33,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
   const locale = useLocale();
   const isMobile = useIsMobile();
   const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
-  const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } =
-    useCart();
+  const { items, hydrated, subtotal, updateQuantity, removeItem, storeType, syncStock } = useCart();
 
   async function handleShareCart() {
     const text = buildCartShareText(items, subtotal, tCommon("currency"), t("shareTotal"));
@@ -62,17 +61,16 @@ export function CartTrigger({ basePath }: { basePath: string }) {
   // sheet opens, not continuously — cheap enough to just re-check then.
   async function handleOpenChange(open: boolean) {
     if (!open || items.length === 0) return;
-    const stockByVariantId = await getVariantStocks(
+    const stockByVariantId = await fetchVariantStocks(
       storeType,
       items.map((i) => i.variantId),
     );
-    // null means the check didn't happen (rate-limited or invalid input) —
+    // null means the check didn't happen (rate-limited, invalid input, no
+    // connection) —
     // leave the cart as-is rather than let an absent-from-the-map default
     // read as "everything just sold out".
     if (!stockByVariantId) return;
-    const changed = items.some(
-      (i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock,
-    );
+    const changed = items.some((i) => (stockByVariantId[i.variantId] ?? 0) !== i.stock);
     syncStock(stockByVariantId);
     if (changed) toast.info(t("stockUpdated"));
   }
@@ -92,10 +90,7 @@ export function CartTrigger({ basePath }: { basePath: string }) {
       <SheetContent
         side={side}
         showHandle={side === "bottom"}
-        className={cn(
-          "flex flex-col gap-0",
-          side === "bottom" && "max-h-[85svh] rounded-t-2xl",
-        )}
+        className={cn("flex flex-col gap-0", side === "bottom" && "max-h-[85svh] rounded-t-2xl")}
       >
         <SheetHeader className="flex-row items-center justify-between gap-2">
           <SheetTitle>{t("title")}</SheetTitle>
@@ -141,24 +136,18 @@ export function CartTrigger({ basePath }: { basePath: string }) {
                         variant="outline"
                         size="icon"
                         aria-label={t("decreaseQuantity")}
-                        onClick={() =>
-                          updateQuantity(line.variantId, line.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(line.variantId, line.quantity - 1)}
                       >
                         <Minus className="size-3" />
                       </Button>
-                      <span className="w-4 text-center text-sm">
-                        {line.quantity}
-                      </span>
+                      <span className="w-4 text-center text-sm">{line.quantity}</span>
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         aria-label={t("increaseQuantity")}
                         disabled={line.quantity >= line.stock}
-                        onClick={() =>
-                          updateQuantity(line.variantId, line.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(line.variantId, line.quantity + 1)}
                       >
                         <Plus className="size-3" />
                       </Button>

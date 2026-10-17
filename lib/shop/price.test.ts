@@ -28,7 +28,11 @@ describe("getPriceRange", () => {
   });
 
   it("reports the min/max across variants with different prices", () => {
-    const variants = [{ price: decimal(1200) as never }, { price: null }, { price: decimal(900) as never }];
+    const variants = [
+      { price: decimal(1200) as never },
+      { price: null },
+      { price: decimal(900) as never },
+    ];
     expect(getPriceRange(variants, decimal(1000) as never)).toEqual({
       min: 900,
       max: 1200,

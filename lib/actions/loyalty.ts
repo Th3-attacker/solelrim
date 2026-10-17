@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope, tryCheckoutScope } from "@/lib/auth/scope";
 import { normalizeLocalPhone } from "@/lib/shop/phone";
 import { loyaltyEnrollSchema, loyaltySettingsSchema } from "@/lib/validation/loyalty";
+import { revalidateAdmin } from "@/lib/revalidate";
 
 export type LoyaltyCard = {
   clientId: string;
@@ -22,7 +22,12 @@ export type LoyaltyCardResult = {
 
 const CARD_SELECT = { id: true, fullName: true, phone: true, loyaltyPoints: true } as const;
 
-function toCard(client: { id: string; fullName: string; phone: string | null; loyaltyPoints: number }) {
+function toCard(client: {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  loyaltyPoints: number;
+}) {
   return {
     clientId: client.id,
     name: client.fullName,
@@ -129,7 +134,6 @@ export async function updateLoyaltySettings(input: unknown): Promise<{ error?: s
     },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/admin/pos");
+  revalidateAdmin();
   return {};
 }

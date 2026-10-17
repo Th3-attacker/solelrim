@@ -81,9 +81,7 @@ export function ProductDetailView({
         {(promo || isNew || isFeatured) && (
           <div className="flex flex-wrap gap-1">
             {promo && (
-              <Badge className="border-0 bg-foreground text-background">
-                {t("promoBadge")}
-              </Badge>
+              <Badge className="border-0 bg-foreground text-background">{t("promoBadge")}</Badge>
             )}
             {isNew && <Badge variant="outline">{t("newBadge")}</Badge>}
             {isFeatured && <Badge variant="outline">{t("bestSellerBadge")}</Badge>}
@@ -102,9 +100,7 @@ export function ProductDetailView({
           )}
         </p>
 
-        {description && (
-          <p className="text-paragraph-sm text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="text-paragraph-sm text-muted-foreground">{description}</p>}
 
         <div className="mt-4">
           <VariantPicker

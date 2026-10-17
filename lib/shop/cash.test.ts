@@ -77,7 +77,9 @@ describe("cash refunds", () => {
 
     // A till frozen before refunds existed has no cashRefunds at all.
     const { cashRefunds: _legacyMissing, ...legacy } = till;
-    expect(combineSessionTotals([till, { ...legacy, cashRefunds: undefined }]).cashRefunds).toBe(250);
+    expect(combineSessionTotals([till, { ...legacy, cashRefunds: undefined }]).cashRefunds).toBe(
+      250,
+    );
   });
 });
 

@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useTranslations, useFormatter } from "next-intl";
 import { Plus, Trash, CaretUp, CaretDown, Star, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +55,6 @@ export function TestimonialsManager({
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const format = useFormatter();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [quote, setQuote] = useState("");
@@ -84,7 +82,6 @@ export function TestimonialsManager({
       setRating(null);
       setOrderId(NO_ORDER);
       setOpen(false);
-      router.refresh();
     });
   }
 
@@ -94,7 +91,6 @@ export function TestimonialsManager({
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleMove(id: string, direction: "up" | "down") {
@@ -104,7 +100,6 @@ export function TestimonialsManager({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -115,7 +110,6 @@ export function TestimonialsManager({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 

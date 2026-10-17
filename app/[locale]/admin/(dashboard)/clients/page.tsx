@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Plus, Users, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { getClientsPage, CLIENTS_PAGE_SIZE } from "@/lib/queries/clients";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { Button } from "@/components/ui/button";
 import { StateMessage } from "@/components/ui/state-message";
 import { ListPagination } from "@/components/ui/list-pagination";
@@ -73,12 +73,8 @@ export default async function AdminClientsPage({
                     {client.fullName}
                   </Link>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {client.phone}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {client.email}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{client.phone}</TableCell>
+                <TableCell className="text-muted-foreground">{client.email}</TableCell>
               </TableRow>
             ))}
           </TableBody>

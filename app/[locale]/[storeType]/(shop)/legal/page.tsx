@@ -21,9 +21,7 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
   const description = t("metaDescription");
-  const imageUrl = boutique.logoStoragePath
-    ? getStoreLogoUrl(boutique.logoStoragePath)
-    : null;
+  const imageUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
 
   return {
     title,
@@ -50,11 +48,7 @@ function Section({ title, body }: { title: string; body: string }) {
   );
 }
 
-export default async function LegalPage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function LegalPage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [t, tShop, locale, boutique] = await Promise.all([
     getTranslations("legal"),

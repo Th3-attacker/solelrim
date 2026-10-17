@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
+import { reportError } from "@/lib/report-error";
 
 // The whole active catalog at once: a boutique's catalog is small, and
 // shipping it in one go lets the checkout search instantly on the device
@@ -99,7 +100,7 @@ export async function getReceipt(saleId: string, productType: string) {
       sale.seller.supabaseUserId,
     );
     if (error) {
-      console.error("[getReceipt] seller lookup failed", error);
+      reportError("getReceipt: seller lookup", error, { saleId });
     }
     sellerLabel = data.user?.email?.split("@")[0] ?? null;
   }

@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CaretUpDown, ClockCounterClockwise, Question, SignOut } from "@phosphor-icons/react/dist/ssr";
+import {
+  CaretUpDown,
+  ClockCounterClockwise,
+  Question,
+  SignOut,
+} from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertDialog,

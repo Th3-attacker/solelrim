@@ -10,6 +10,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 import { prisma } from "@/lib/prisma";
@@ -453,7 +454,11 @@ describe("createPosSale with a loyalty card", () => {
 
     expect(result.error).toBe("invalid");
     expect(prismaMock.client.findFirst).toHaveBeenCalledWith({
-      where: { id: "client-elsewhere", productType: "cosmetique", loyaltyEnrolledAt: { not: null } },
+      where: {
+        id: "client-elsewhere",
+        productType: "cosmetique",
+        loyaltyEnrolledAt: { not: null },
+      },
       select: { id: true },
     });
     expect(prismaMock.sale.create).not.toHaveBeenCalled();

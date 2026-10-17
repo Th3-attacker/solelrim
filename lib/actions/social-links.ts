@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { socialLinkSchema } from "@/lib/validation/settings";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
+import { revalidateSite } from "@/lib/revalidate";
 
 export async function createSocialLink(input: unknown) {
   const { productType } = await requireWritableAdminScope();
@@ -25,8 +25,7 @@ export async function createSocialLink(input: unknown) {
     },
   });
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return { link };
 }
 
@@ -38,8 +37,7 @@ export async function deleteSocialLink(id: string) {
     return { error: "notFound" as const };
   }
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -67,7 +65,6 @@ export async function moveSocialLink(id: string, direction: "up" | "down") {
     prisma.socialLink.update({ where: { id: b.id }, data: { position: a.position } }),
   ]);
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }

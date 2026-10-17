@@ -1,16 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("@/lib/shop/pending-expiry", () => ({ cancelExpiredPendingOrders: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
+vi.mock("@/lib/services/pending-expiry", () => ({ cancelExpiredPendingOrders: vi.fn() }));
 
-import { cancelExpiredPendingOrders } from "@/lib/shop/pending-expiry";
+import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";
 import { GET } from "@/app/api/cron/expire-pending-orders/route";
 
 const cancelMock = cancelExpiredPendingOrders as unknown as Mock;
 const call = (authorization?: string) =>
-  GET(new Request("https://shop.example/api/cron/expire-pending-orders", {
-    headers: authorization ? { authorization } : {},
-  }));
+  GET(
+    new Request("https://shop.example/api/cron/expire-pending-orders", {
+      headers: authorization ? { authorization } : {},
+    }),
+  );
 
 beforeEach(() => {
   cancelMock.mockReset().mockResolvedValue([]);

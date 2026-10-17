@@ -50,7 +50,10 @@ function clampRange(range: DateRange): DateRange {
 // date" / "year to date" style presets are deliberately left out since they'd
 // silently get clamped to 15 days, making their own label misleading.
 const DATE_PRESETS: { labelKey: string; range: () => DateRange }[] = [
-  { labelKey: "presetToday", range: () => ({ from: startOfDay(new Date()), to: startOfDay(new Date()) }) },
+  {
+    labelKey: "presetToday",
+    range: () => ({ from: startOfDay(new Date()), to: startOfDay(new Date()) }),
+  },
   {
     labelKey: "presetYesterday",
     range: () => {
@@ -107,7 +110,10 @@ export function OrderFilters() {
   const [dateOpen, setDateOpen] = useState(false);
   const [pendingRange, setPendingRange] = useState<DateRange | undefined>(
     filters.fromDate
-      ? { from: new Date(filters.fromDate), to: filters.toDate ? new Date(filters.toDate) : undefined }
+      ? {
+          from: new Date(filters.fromDate),
+          to: filters.toDate ? new Date(filters.toDate) : undefined,
+        }
       : undefined,
   );
 
@@ -144,7 +150,10 @@ export function OrderFilters() {
     if (open) {
       setPendingRange(
         filters.fromDate
-          ? { from: new Date(filters.fromDate), to: filters.toDate ? new Date(filters.toDate) : undefined }
+          ? {
+              from: new Date(filters.fromDate),
+              to: filters.toDate ? new Date(filters.toDate) : undefined,
+            }
           : undefined,
       );
     }

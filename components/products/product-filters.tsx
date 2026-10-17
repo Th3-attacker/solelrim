@@ -30,11 +30,7 @@ function readFilters(searchParams: URLSearchParams): Filters {
 
 // Mirrors OrderFilters' debounced-URL-sync pattern (components/orders/order-filters.tsx),
 // scaled down to just search + category — no date range/status needed here.
-export function ProductFilters({
-  categories,
-}: {
-  categories: { id: string; name: string }[];
-}) {
+export function ProductFilters({ categories }: { categories: { id: string; name: string }[] }) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
   const router = useRouter();

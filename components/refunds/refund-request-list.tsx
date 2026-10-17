@@ -46,8 +46,7 @@ export function RefundRequestList({
   const tCommon = useTranslations("common");
   const format = useFormatter();
   const money = (amount: number) => formatPrice(amount, tCommon("currency"));
-  const date = (value: Date) =>
-    format.dateTime(value, { dateStyle: "medium", timeStyle: "short" });
+  const date = (value: Date) => format.dateTime(value, { dateStyle: "medium", timeStyle: "short" });
 
   return (
     <ul className="flex flex-col gap-3">
@@ -59,10 +58,7 @@ export function RefundRequestList({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
               {request.saleId && request.saleReference && (
-                <Link
-                  href={saleHref(request.saleId)}
-                  className="font-medium hover:underline"
-                >
+                <Link href={saleHref(request.saleId)} className="font-medium hover:underline">
                   {request.saleReference}
                 </Link>
               )}
@@ -92,8 +88,7 @@ export function RefundRequestList({
             ))}
           </ul>
           <p>
-            <span className="text-muted-foreground">{t("reason")}:</span>{" "}
-            {request.reason}
+            <span className="text-muted-foreground">{t("reason")}:</span> {request.reason}
           </p>
           <p className="text-xs text-muted-foreground">
             {t("requestedBy", {
@@ -115,9 +110,7 @@ export function RefundRequestList({
               requestId={request.id}
               amount={request.amount}
               paymentMethod={request.salePaymentMethod ?? request.paymentMethod}
-              walletProvider={
-                request.saleWalletProvider ?? request.walletProvider
-              }
+              walletProvider={request.saleWalletProvider ?? request.walletProvider}
             />
           )}
         </li>

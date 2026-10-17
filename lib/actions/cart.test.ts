@@ -11,7 +11,9 @@ vi.mock("next/headers", () => ({
 
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { getVariantStocks, resolveSharedCartLines } from "@/lib/actions/cart";
+import { resolveSharedCartLines } from "@/lib/actions/cart";
+import { checkVariantStocks } from "@/lib/services/cart";
+import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const headersMock = headers as unknown as Mock;
@@ -26,49 +28,47 @@ beforeEach(() => {
   );
 });
 
-describe("getVariantStocks", () => {
-  it("returns an empty object without querying anything for an empty list", async () => {
-    const result = await getVariantStocks("sport", []);
+describe("checkVariantStocks: the stock map", () => {
+  it("returns an empty map without querying anything for an empty list", async () => {
+    const result = await checkVariantStocks("sport", []);
 
-    expect(result).toEqual({});
+    expect(result).toEqual({ stocks: {} });
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
-  it("returns a stock map scoped to the given productType", async () => {
+  it("returns a stock map scoped to the given productType's products on sale", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([
       { id: "variant-1", stock: 5 },
       { id: "variant-2", stock: 0 },
     ] as never);
 
-    const result = await getVariantStocks("sport", ["variant-1", "variant-2"]);
+    const result = await checkVariantStocks("sport", ["variant-1", "variant-2"]);
 
-    expect(result).toEqual({ "variant-1": 5, "variant-2": 0 });
+    expect(result).toEqual({ stocks: { "variant-1": 5, "variant-2": 0 } });
+    // A product taken off sale is left out like a variant that no longer
+    // exists, so the cart drops it (submitOrder would refuse it).
     expect(prismaMock.productVariant.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           id: { in: ["variant-1", "variant-2"] },
-          product: { productType: "sport" },
+          product: { productType: "sport", isActive: true },
         },
       }),
     );
   });
+});
 
-  it("returns null instead of an empty object for invalid input", async () => {
-    // Regression guard: the cart's SYNC_STOCK reducer treats any variant
-    // absent from the returned map as 0 in stock and drops it, so a `{}`
-    // here (rather than null) would silently empty a real cart.
-    const result = await getVariantStocks("sport", Array(51).fill("variant-1"));
+describe("checkVariantStocks", () => {
+  it("tells a malformed list (fix the request) from a rate limit (wait)", async () => {
+    expect(await checkVariantStocks("sport", Array(51).fill("variant-1"))).toEqual({
+      error: "invalid",
+    });
 
-    expect(result).toBeNull();
-    expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
-  });
-
-  it("returns null and does no query once the caller's IP is over the limit", async () => {
-    prismaMock.rateLimitHit.count.mockResolvedValue(60);
-
-    const result = await getVariantStocks("sport", ["variant-1"]);
-
-    expect(result).toBeNull();
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.stocksPerIp.max);
+    expect(await checkVariantStocks("sport", ["variant-1"])).toEqual({
+      error: "rateLimited",
+      retryAfter: RATE_LIMITS.stocksPerIp.windowMs / 1000,
+    });
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 });
@@ -101,9 +101,7 @@ describe("resolveSharedCartLines", () => {
   it("resolves a live variant into a full cart line, scoped to active products of this boutique", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([variant()] as never);
 
-    const result = await resolveSharedCartLines("sport", [
-      { variantId: "variant-1", quantity: 2 },
-    ]);
+    const result = await resolveSharedCartLines("sport", [{ variantId: "variant-1", quantity: 2 }]);
 
     expect(result).toEqual([
       {
@@ -133,9 +131,7 @@ describe("resolveSharedCartLines", () => {
       variant({ price: { toNumber: () => 999 } }),
     ] as never);
 
-    const [line] = await resolveSharedCartLines("sport", [
-      { variantId: "variant-1", quantity: 1 },
-    ]);
+    const [line] = await resolveSharedCartLines("sport", [{ variantId: "variant-1", quantity: 1 }]);
 
     expect(line.unitPrice).toBe(999);
   });
@@ -153,9 +149,7 @@ describe("resolveSharedCartLines", () => {
   it("drops a line whose live stock has hit 0", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([variant({ stock: 0 })] as never);
 
-    const result = await resolveSharedCartLines("sport", [
-      { variantId: "variant-1", quantity: 1 },
-    ]);
+    const result = await resolveSharedCartLines("sport", [{ variantId: "variant-1", quantity: 1 }]);
 
     expect(result).toEqual([]);
   });
@@ -163,28 +157,22 @@ describe("resolveSharedCartLines", () => {
   it("silently drops a variant that no longer matches (deleted, deactivated, or another boutique)", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([] as never);
 
-    const result = await resolveSharedCartLines("sport", [
-      { variantId: "gone", quantity: 1 },
-    ]);
+    const result = await resolveSharedCartLines("sport", [{ variantId: "gone", quantity: 1 }]);
 
     expect(result).toEqual([]);
   });
 
   it("returns an empty list for malformed input instead of throwing", async () => {
-    const result = await resolveSharedCartLines("sport", [
-      { variantId: "", quantity: 1 },
-    ]);
+    const result = await resolveSharedCartLines("sport", [{ variantId: "", quantity: 1 }]);
 
     expect(result).toEqual([]);
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
   });
 
   it("returns an empty list once the caller's IP is over the limit", async () => {
-    prismaMock.rateLimitHit.count.mockResolvedValue(30);
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.sharedCartPerIp.max);
 
-    const result = await resolveSharedCartLines("sport", [
-      { variantId: "variant-1", quantity: 1 },
-    ]);
+    const result = await resolveSharedCartLines("sport", [{ variantId: "variant-1", quantity: 1 }]);
 
     expect(result).toEqual([]);
     expect(prismaMock.productVariant.findMany).not.toHaveBeenCalled();
