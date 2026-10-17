@@ -3,7 +3,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useFormatter, useTranslations } from "use-intl";
 import type { z } from "zod";
-import { MY_SALES_PAGE_SIZE } from "@/lib/queries/my-sales";
 import { SALE_STATUSES } from "@/lib/shop/my-sales-filters";
 import { Button, ButtonLink } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -239,7 +238,7 @@ export function MySales({
 
       <Pagination
         page={data.page}
-        pageSize={MY_SALES_PAGE_SIZE}
+        pageSize={data.pageSize}
         total={data.total}
         rangeLabel={(range) => tCommon("paginationRange", range)}
         previousLabel={tCommon("previous")}
