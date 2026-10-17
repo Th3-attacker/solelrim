@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "/",
     },
     openGraph: {
-      type: "website",    
+      type: "website",
       locale: "fr_FR",
       url: getSiteUrl(),
       siteName: "Solal",
