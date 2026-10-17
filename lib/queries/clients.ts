@@ -51,11 +51,7 @@ export const CLIENT_SALES_PAGE_SIZE = 20;
 // Separate from getClientById — a loyal client's purchase history can grow
 // past a single page, so it's fetched (and paginated) independently rather
 // than as an unbounded include on the client record.
-export async function getClientSalesPage(
-  clientId: string,
-  productType: string,
-  page = 1,
-) {
+export async function getClientSalesPage(clientId: string, productType: string, page = 1) {
   const currentPage = toPageNumber(page);
   const where = { clientId, productType };
 

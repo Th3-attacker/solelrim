@@ -9,27 +9,20 @@ export const contentType = "image/png";
 // that convention is for favicon <link> tags, not manifest.ts icon entries.
 export function GET() {
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: SOLAL_COLORS.marine,
-          borderRadius: 112,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={svgDataUri(solalSymbolSvg(SOLAL_COLORS.white))}
-          width={341}
-          height={341}
-          alt=""
-        />
-      </div>
-    ),
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: SOLAL_COLORS.marine,
+        borderRadius: 112,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={svgDataUri(solalSymbolSvg(SOLAL_COLORS.white))} width={341} height={341} alt="" />
+    </div>,
     { ...size },
   );
 }

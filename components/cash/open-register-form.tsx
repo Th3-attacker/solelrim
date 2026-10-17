@@ -31,9 +31,13 @@ export function OpenRegisterForm() {
 
   async function handleOpen() {
     const result = await openCashSession({ openingFloat: value });
-    // alreadyOpen: another tab opened it — refreshing shows the checkout.
-    if (result.error && result.error !== "alreadyOpen") return showError(result.error);
-    router.refresh();
+    if (result.error === "alreadyOpen") {
+      // Another tab opened it: refreshing shows the checkout. (A success
+      // already comes back with the page re-rendered.)
+      router.refresh();
+      return;
+    }
+    if (result.error) showError(result.error);
   }
 
   return (

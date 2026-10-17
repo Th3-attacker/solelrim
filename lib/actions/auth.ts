@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -14,20 +14,13 @@ const loginSchema = z.object({
 
 export type LoginState = { error?: string; mfaRequired?: boolean };
 
-// Unauthenticated by definition — capped per IP so the admin password can't
-// be brute-forced. 10/15min is loose enough for a legitimate typo or two.
-const LOGIN_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
-
 function resolveLoginLocale(locale: string) {
   return routing.locales.includes(locale as (typeof routing.locales)[number])
     ? locale
     : routing.defaultLocale;
 }
 
-export async function login(
-  _prevState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
+export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -38,13 +31,19 @@ export async function login(
     return { error: "invalid" };
   }
 
+  const { email, password, locale } = parsed.data;
+
+  // Unauthenticated by definition: capped per address and per account, so
+  // one admin's password can't be guessed from many addresses either.
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`login:${ip}`, LOGIN_RATE_LIMIT);
-  if (!allowed) {
+  const [ipAllowed, accountAllowed] = await Promise.all([
+    checkRateLimit(`login:${ip}`, RATE_LIMITS.loginPerIp),
+    checkRateLimit(`login-email:${email.toLowerCase()}`, RATE_LIMITS.loginPerEmail),
+  ]);
+  if (!ipAllowed || !accountAllowed) {
     return { error: "rateLimited" };
   }
 
-  const { email, password, locale } = parsed.data;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -72,18 +71,10 @@ const mfaSchema = z.object({
 
 export type MfaState = { error?: string };
 
-// Same budget as LOGIN_RATE_LIMIT, keyed separately — a brute force of the
-// 6-digit code is a distinct attack from password guessing and shouldn't
-// share (or exhaust) the same counter.
-const MFA_RATE_LIMIT = { windowMs: 15 * 60 * 1000, max: 10 };
-
 // The second step of login, submitted from the same page once `login`
 // above returns mfaRequired — relies on the aal1 session signInWithPassword
 // already created (via the request's cookies), not on email/password again.
-export async function verifyLoginMfa(
-  _prevState: MfaState,
-  formData: FormData,
-): Promise<MfaState> {
+export async function verifyLoginMfa(_prevState: MfaState, formData: FormData): Promise<MfaState> {
   const parsed = mfaSchema.safeParse({
     code: formData.get("code"),
     locale: formData.get("locale"),
@@ -92,9 +83,10 @@ export async function verifyLoginMfa(
     return { error: "invalidCode" };
   }
 
+  // Counted apart from the password step: guessing the 6-digit code is a
+  // different attack and must not share (or exhaust) the same counters.
   const ip = await getClientIp();
-  const allowed = await checkRateLimit(`login-mfa:${ip}`, MFA_RATE_LIMIT);
-  if (!allowed) {
+  if (!(await checkRateLimit(`login-mfa:${ip}`, RATE_LIMITS.mfaPerIp))) {
     return { error: "rateLimited" };
   }
 
@@ -108,6 +100,10 @@ export async function verifyLoginMfa(
     // days later) — back to square one instead of a dead-end error.
     redirect({ href: "/admin/login", locale: resolveLoginLocale(locale) });
     return {};
+  }
+  // Per account too: the stolen password's owner is the one being guessed.
+  if (!(await checkRateLimit(`login-mfa-user:${user.id}`, RATE_LIMITS.mfaPerUser))) {
+    return { error: "rateLimited" };
   }
 
   const { data: factors } = await supabase.auth.mfa.listFactors();

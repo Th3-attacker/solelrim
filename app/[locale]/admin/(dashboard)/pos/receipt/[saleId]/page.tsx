@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
 import { PrintPageStyle } from "@/components/ui/print-page-style";
 import { WhatsAppReceiptForm } from "@/components/pos/whatsapp-receipt-form";
-import { requireCheckoutViewScope } from "@/lib/shop/admin-scope";
+import { requireCheckoutViewScope } from "@/lib/auth/scope";
 import { getReceipt } from "@/lib/queries/pos";
 import { getSaleRefunds } from "@/lib/queries/refunds";
 import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";
@@ -25,11 +25,7 @@ const LEGACY_PAYMENT_METHODS = new Set(["card", "transfer"]);
 // uses the view scope (no license gate: reprinting an old receipt isn't a
 // write), and getReceipt is scoped to the caller's boutique — another
 // boutique's sale id is a 404.
-export default async function ReceiptPage({
-  params,
-}: {
-  params: Promise<{ saleId: string }>;
-}) {
+export default async function ReceiptPage({ params }: { params: Promise<{ saleId: string }> }) {
   const { saleId } = await params;
   const { admin, productType } = await requireCheckoutViewScope();
   const [receipt, refunds, t, tSales, tCommon, format, locale] = await Promise.all([
@@ -157,7 +153,9 @@ export default async function ReceiptPage({
           {buildReceiptSummary(data, money).map((row) => (
             <div
               key={row.key}
-              className={row.emphasis ? "flex justify-between text-sm font-bold" : "flex justify-between"}
+              className={
+                row.emphasis ? "flex justify-between text-sm font-bold" : "flex justify-between"
+              }
             >
               <dt>{labels[row.key]}</dt>
               <dd>{row.value}</dd>

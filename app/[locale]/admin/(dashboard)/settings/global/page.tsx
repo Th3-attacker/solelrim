@@ -38,10 +38,7 @@ export default async function GlobalSettingsPage() {
 
       <BoutiquesOverview storeTypes={storeTypes} />
 
-      <ProductTypePicker
-        storeTypes={storeTypes}
-        currentProductType={settings.productType}
-      />
+      <ProductTypePicker storeTypes={storeTypes} currentProductType={settings.productType} />
 
       <Card>
         <CardHeader>

@@ -76,9 +76,7 @@ function u32be(b: Uint8Array, o: number): number {
 // returns null on anything it can't parse (truncated header, an exotic
 // variant), so an unparseable file is judged by the other checks rather
 // than blocked here — a real bomb always carries a valid, huge header.
-export function readImageDimensions(
-  bytes: Uint8Array,
-): { width: number; height: number } | null {
+export function readImageDimensions(bytes: Uint8Array): { width: number; height: number } | null {
   try {
     // PNG — IHDR is always the first chunk: [8 sig][4 len]["IHDR"][4 w][4 h]
     if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes.length >= 24) {
@@ -98,11 +96,7 @@ export function readImageDimensions(
         }
         const len = (bytes[o + 2] << 8) + bytes[o + 3];
         const isSof =
-          marker >= 0xc0 &&
-          marker <= 0xcf &&
-          marker !== 0xc4 &&
-          marker !== 0xc8 &&
-          marker !== 0xcc;
+          marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
         if (isSof) {
           const height = (bytes[o + 5] << 8) + bytes[o + 6];
           const width = (bytes[o + 7] << 8) + bytes[o + 8];

@@ -51,14 +51,8 @@ export function VariantPicker({
 
   const { addItem } = useCart();
 
-  const sizes = useMemo(
-    () => [...new Set(variants.map((v) => v.size))],
-    [variants],
-  );
-  const colors = useMemo(
-    () => [...new Set(variants.map((v) => v.color))],
-    [variants],
-  );
+  const sizes = useMemo(() => [...new Set(variants.map((v) => v.size))], [variants]);
+  const colors = useMemo(() => [...new Set(variants.map((v) => v.color))], [variants]);
 
   const [rawQuantity, setQuantity] = useState(1);
 
@@ -169,9 +163,7 @@ export function VariantPicker({
               variant="outline"
               size="icon-sm"
               aria-label={tCart("increaseQuantity")}
-              onClick={() =>
-                setQuantity((q) => Math.min(resolvedVariant?.stock ?? 1, q + 1))
-              }
+              onClick={() => setQuantity((q) => Math.min(resolvedVariant?.stock ?? 1, q + 1))}
               disabled={!resolvedVariant || quantity >= resolvedVariant.stock}
             >
               <Plus className="size-3" />
@@ -182,10 +174,7 @@ export function VariantPicker({
 
       {resolvedVariant && (
         <StockBadge
-          status={getVariantStockStatus(
-            resolvedVariant.stock,
-            resolvedVariant.lowStockThreshold,
-          )}
+          status={getVariantStockStatus(resolvedVariant.stock, resolvedVariant.lowStockThreshold)}
         />
       )}
 

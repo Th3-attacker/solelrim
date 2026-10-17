@@ -9,7 +9,7 @@ import { getTranslations } from "next-intl/server";
 // which of the three caused it. The admin dashboard is untouched: a
 // boutique/superadmin can still sign in and see the license section to
 // reactivate it (only sensitive write actions are blocked there — see
-// lib/shop/admin-scope.ts: requireWritableAdminScope).
+// lib/auth/scope.ts: requireWritableAdminScope).
 export async function ExpiredStorefront({
   siteName,
   logoUrl,
@@ -22,13 +22,7 @@ export async function ExpiredStorefront({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
       {logoUrl ? (
-        <Image
-          src={logoUrl}
-          alt=""
-          width={56}
-          height={56}
-          className="size-14 object-contain"
-        />
+        <Image src={logoUrl} alt="" width={56} height={56} className="size-14 object-contain" />
       ) : (
         <div className="flex size-14 items-center justify-center rounded-full border bg-card text-muted-foreground">
           <Prohibit className="size-6" />

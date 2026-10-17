@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  CreditCard,
-  ChatCircle,
-  Package,
-  ShoppingBag,
-} from "@phosphor-icons/react/dist/ssr";
+import { CreditCard, ChatCircle, Package, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,9 +39,7 @@ function OrderProcedureSteps() {
             </div>
             <div>
               <p className="text-sm font-medium">{t(`step${step}Title`)}</p>
-              <p className="text-sm text-muted-foreground">
-                {t(`step${step}Description`)}
-              </p>
+              <p className="text-sm text-muted-foreground">{t(`step${step}Description`)}</p>
             </div>
           </li>
         );

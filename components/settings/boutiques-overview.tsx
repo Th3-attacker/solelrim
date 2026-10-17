@@ -2,11 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatPriceNumber } from "@/lib/format/currency";
 import { LICENSE_PRICING } from "@/lib/legal/license-terms";
-import {
-  getEffectiveLicenseState,
-  type LicenseInfo,
-  type LicenseStatus,
-} from "@/lib/shop/license";
+import { getEffectiveLicenseState, type LicenseInfo, type LicenseStatus } from "@/lib/shop/license";
 
 type Boutique = LicenseInfo;
 
@@ -125,11 +121,7 @@ function Stat({
   tone?: "ok" | "warn" | "bad";
 }) {
   const toneClass =
-    tone === "bad"
-      ? "text-destructive"
-      : tone === "warn"
-        ? "text-warning"
-        : "text-foreground";
+    tone === "bad" ? "text-destructive" : tone === "warn" ? "text-warning" : "text-foreground";
   return (
     <div className="flex flex-col gap-0.5 rounded-md border bg-card p-2">
       <span className={`text-xl font-semibold ${toneClass}`}>{value}</span>

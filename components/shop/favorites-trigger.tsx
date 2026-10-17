@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFavorites } from "@/components/shop/favorites-provider";
+import { getFavoriteProducts, type FavoriteProductSummary } from "@/lib/actions/favorites";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -20,47 +22,49 @@ import { Heart } from "@phosphor-icons/react/dist/ssr";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 
-export type FavoriteProductSummary = {
-  id: string;
-  slug: string;
-  name: string;
-  imageUrl: string | null;
-  price: number;
-};
-
 export function FavoritesTrigger({
-  products,
+  productType,
   basePath,
 }: {
-  products: FavoriteProductSummary[];
+  productType: string;
   basePath: string;
 }) {
   const t = useTranslations("shop");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const isMobile = useIsMobile();
-  const side = isMobile
-    ? "bottom"
-    : getDirection(locale) === "rtl"
-      ? "left"
-      : "right";
+  const side = isMobile ? "bottom" : getDirection(locale) === "rtl" ? "left" : "right";
   const { ids, hydrated, toggleFavorite } = useFavorites();
 
+  // Resolved when the drawer is opened (and kept in step with the list), not
+  // shipped with every page.
+  const [open, setOpen] = useState(false);
+  const [products, setProducts] = useState<FavoriteProductSummary[]>([]);
+  const idsKey = ids.join(",");
+  useEffect(() => {
+    if (!open || !hydrated) return;
+    let current = true;
+    getFavoriteProducts(productType, ids).then((found) => {
+      if (current) setProducts(found);
+    });
+    return () => {
+      current = false;
+    };
+    // idsKey stands for ids.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, hydrated, productType, idsKey]);
+
   const favoriteProducts = products.filter((p) => ids.includes(p.id));
+  const count = hydrated ? ids.length : 0;
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label={t("favoritesTitle")}
-        >
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("favoritesTitle")}>
           <Heart className="size-4" />
-          {hydrated && favoriteProducts.length > 0 && (
+          {count > 0 && (
             <span className="absolute -top-1 -end-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-              {favoriteProducts.length}
+              {count}
             </span>
           )}
         </Button>
@@ -116,10 +120,7 @@ export function FavoritesTrigger({
                     aria-label={t("removeFromFavorites")}
                     onClick={() => toggleFavorite(product.id)}
                   >
-                    <Heart
-                      weight="fill"
-                      className="size-3 fill-destructive text-destructive"
-                    />
+                    <Heart weight="fill" className="size-3 fill-destructive text-destructive" />
                   </Button>
                 </div>
               ))}

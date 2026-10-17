@@ -69,7 +69,12 @@ function HeroFallback({
           <Button asChild size="lg">
             <a href={ctaHref}>{ctaLabel}</a>
           </Button>
-          <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background"
+          >
             <a href={trackOrderHref}>
               <Package className="size-4" />
               {trackOrderLabel}
@@ -107,9 +112,7 @@ function HeroSplit({
             {badgeText}
           </span>
         )}
-        <h1 className="max-w-3xl text-heading-lg text-balance sm:text-heading-2xl">
-          {title}
-        </h1>
+        <h1 className="max-w-3xl text-heading-lg text-balance sm:text-heading-2xl">{title}</h1>
         <p className="max-w-sm text-paragraph-lg  text-muted-foreground sm:text-paragraph-xl">
           {subtitle}
         </p>
@@ -215,7 +218,12 @@ function HeroFullbleed({
           <Button asChild size="lg">
             <a href={ctaHref}>{ctaLabel}</a>
           </Button>
-          <Button asChild size="lg" variant="outline" className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background">
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background"
+          >
             <a href={trackOrderHref}>
               <Package className="size-4" />
               {trackOrderLabel}
@@ -249,12 +257,8 @@ function HeroMinimal({
             {badgeText}
           </span>
         )}
-        <h1 className="max-w-lg text-heading-md text-balance sm:text-heading-lg">
-          {title}
-        </h1>
-        <p className="max-w-sm text-paragraph-md text-muted-foreground">
-          {subtitle}
-        </p>
+        <h1 className="max-w-lg text-heading-md text-balance sm:text-heading-lg">{title}</h1>
+        <p className="max-w-sm text-paragraph-md text-muted-foreground">{subtitle}</p>
         <div className="mt-1 flex flex-wrap items-center gap-3">
           <Button asChild>
             <a href={ctaHref}>{ctaLabel}</a>
@@ -317,7 +321,5 @@ export async function HeroSection({
     return <HeroFallback {...content} />;
   }
 
-  return (
-    <HeroSplit {...content} imageOnLeft={settings.heroImagePosition === "left"} />
-  );
+  return <HeroSplit {...content} imageOnLeft={settings.heroImagePosition === "left"} />;
 }

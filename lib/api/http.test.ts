@@ -36,6 +36,9 @@ describe("pageOf", () => {
 
   it("caps the page size and ignores nonsense", () => {
     expect(pageOf(new URL("https://x/api?page=3&pageSize=500"))).toEqual({ page: 3, pageSize: 50 });
-    expect(pageOf(new URL("https://x/api?page=-4&pageSize=abc"))).toEqual({ page: 1, pageSize: 20 });
+    expect(pageOf(new URL("https://x/api?page=-4&pageSize=abc"))).toEqual({
+      page: 1,
+      pageSize: 20,
+    });
   });
 });

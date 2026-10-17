@@ -8,7 +8,7 @@ import { getActiveProducts } from "@/lib/queries/shop";
 import { getPublicBoutiqueSettings } from "@/lib/queries/settings";
 import { getProductImageUrl, getStoreLogoUrl } from "@/lib/supabase/storage";
 import { buildSocialMetadata } from "@/lib/shop/metadata";
-import { getStorefrontBasePath } from "@/lib/shop/storefront-path";
+import { getStorefrontBasePath } from "@/lib/services/storefront-path";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 
 export async function generateMetadata({
@@ -26,9 +26,7 @@ export async function generateMetadata({
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${t("metaTitle")} — ${siteName}`;
   const description = t("metaDescription", { siteName });
-  const imageUrl = boutique.logoStoragePath
-    ? getStoreLogoUrl(boutique.logoStoragePath)
-    : null;
+  const imageUrl = boutique.logoStoragePath ? getStoreLogoUrl(boutique.logoStoragePath) : null;
 
   return {
     title,
@@ -46,11 +44,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function AboutPage({
-  params,
-}: {
-  params: Promise<{ storeType: string }>;
-}) {
+export default async function AboutPage({ params }: { params: Promise<{ storeType: string }> }) {
   const { storeType } = await params;
   const [t, tShop, boutique, basePath] = await Promise.all([
     getTranslations("about"),
@@ -83,9 +77,7 @@ export default async function AboutPage({
         <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
           {t("missionEyebrow")}
         </span>
-        <h2 className="text-heading-sm text-balance sm:text-heading-md">
-          {t("missionTitle")}
-        </h2>
+        <h2 className="text-heading-sm text-balance sm:text-heading-md">{t("missionTitle")}</h2>
         <p className="text-paragraph-md text-muted-foreground sm:text-paragraph-lg">
           {t("missionBody")}
         </p>

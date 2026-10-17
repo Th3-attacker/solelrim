@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { hasAdminCredentials, loginAsAdmin, openOrderByReference, submitCheckoutOrder } from "./helpers";
+import {
+  hasAdminCredentials,
+  loginAsAdmin,
+  openOrderByReference,
+  submitCheckoutOrder,
+} from "./helpers";
 
 // Needs a real admin account, same as e2e/admin-login.spec.ts — no seeded/
 // isolated test fixture exists yet. Set E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD
@@ -34,7 +39,9 @@ test.describe("admin order lifecycle", () => {
     await expect(page.getByText("Livrée")).toBeVisible({ timeout: 15_000 });
   });
 
-  test("rejecting a pending order records the reason and stops progress actions", async ({ page }) => {
+  test("rejecting a pending order records the reason and stops progress actions", async ({
+    page,
+  }) => {
     const reference = await submitCheckoutOrder(page);
 
     await loginAsAdmin(page);

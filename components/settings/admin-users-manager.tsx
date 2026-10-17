@@ -10,7 +10,6 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +52,6 @@ export function AdminUsersManager({
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,7 +75,6 @@ export function AdminUsersManager({
       setPassword("");
       setCanManageAppearance(false);
       setOpen(false);
-      router.refresh();
     });
   }
 
@@ -87,7 +84,6 @@ export function AdminUsersManager({
       toast.error(tCommon("error"));
       return;
     }
-    router.refresh();
   }
 
   function handleToggleAppearance(id: string, next: boolean) {
@@ -97,7 +93,6 @@ export function AdminUsersManager({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -108,7 +103,6 @@ export function AdminUsersManager({
         toast.error(tCommon("error"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -242,9 +236,7 @@ export function AdminUsersManager({
               showLabel={tCommon("showPassword")}
               hideLabel={tCommon("hidePassword")}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("adminUserPasswordHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("adminUserPasswordHint")}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="admin-user-boutique">{t("adminUserBoutique")}</Label>

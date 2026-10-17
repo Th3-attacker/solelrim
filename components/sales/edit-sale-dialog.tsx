@@ -4,7 +4,6 @@ import { useState } from "react";
 import { PencilSimple } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
@@ -59,7 +58,6 @@ export function EditSaleDialog({
   const t = useTranslations("saleEdit");
   const tSales = useTranslations("sales");
   const tCommon = useTranslations("common");
-  const router = useRouter();
 
   const initialPayment =
     paymentMethod === "cash"
@@ -101,7 +99,6 @@ export function EditSaleDialog({
     toast.success(t("saved"));
     setOpen(false);
     setReason("");
-    router.refresh();
   }
 
   return (
@@ -137,7 +134,9 @@ export function EditSaleDialog({
               </SelectTrigger>
               <SelectContent>
                 {initialPayment === KEEP && (
-                  <SelectItem value={KEEP}>{t("currentPayment", { label: currentLabel })}</SelectItem>
+                  <SelectItem value={KEEP}>
+                    {t("currentPayment", { label: currentLabel })}
+                  </SelectItem>
                 )}
                 <SelectItem value={CASH}>{tSales("cash")}</SelectItem>
                 {wallets.map((wallet) => (
@@ -147,7 +146,9 @@ export function EditSaleDialog({
                 ))}
               </SelectContent>
             </Select>
-            {paymentLocked && <p className="text-xs text-muted-foreground">{t("paymentLockedHint")}</p>}
+            {paymentLocked && (
+              <p className="text-xs text-muted-foreground">{t("paymentLockedHint")}</p>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <Label>{tSales("client")}</Label>
@@ -164,7 +165,9 @@ export function EditSaleDialog({
                 ))}
               </SelectContent>
             </Select>
-            {clientLocked && <p className="text-xs text-muted-foreground">{t("clientLockedHint")}</p>}
+            {clientLocked && (
+              <p className="text-xs text-muted-foreground">{t("clientLockedHint")}</p>
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="sale-edit-notes">{tSales("notes")}</Label>

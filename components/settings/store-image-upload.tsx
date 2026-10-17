@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { compressImage, type CompressionTarget } from "@/lib/shop/compress-image";
 
 // The upload / replace / remove control the boutique's logo and hero image
 // share; they differ only in the actions, the label and the preview box.
@@ -14,6 +15,7 @@ export function StoreImageUpload({
   label,
   imageUrl,
   upload,
+  compression,
   remove,
   previewClassName,
   previewWidth,
@@ -22,6 +24,8 @@ export function StoreImageUpload({
   label: string;
   imageUrl: string | null;
   upload: (formData: FormData) => Promise<{ error?: string }>;
+  // How the picked file is resized before upload (lib/shop/compress-image.ts).
+  compression: CompressionTarget;
   remove: () => Promise<{ error?: string }>;
   previewClassName: string;
   previewWidth: number;
@@ -33,10 +37,11 @@ export function StoreImageUpload({
 
   function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
-    const formData = new FormData();
-    formData.set("file", files[0]);
+    const picked = files[0];
 
     startTransition(async () => {
+      const formData = new FormData();
+      formData.set("file", await compressImage(picked, compression));
       const result = await upload(formData);
       if (result.error) {
         toast.error(tCommon("error"));

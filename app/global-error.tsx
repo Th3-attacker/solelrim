@@ -1,15 +1,20 @@
 "use client";
 
+import { useReportedError } from "@/hooks/use-reported-error";
+
 // Last-resort boundary for errors that escape the [locale] layout itself —
 // it replaces the entire root layout when it triggers, so it can't rely on
 // globals.css or next-intl context being available. Deliberately plain and
 // not translated.
 export default function GlobalError({
+  error,
   retry,
 }: {
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const reference = useReportedError(error);
+
   return (
     <html lang="en">
       <body
@@ -26,12 +31,13 @@ export default function GlobalError({
           padding: "1.5rem",
         }}
       >
-        <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>
-          Something went wrong
-        </h1>
+        <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Something went wrong</h1>
         <p style={{ color: "#666", margin: 0, maxWidth: "24rem" }}>
           Please try again, or come back a little later.
         </p>
+        {reference && (
+          <p style={{ color: "#666", margin: 0, fontSize: "0.75rem" }}>Reference: {reference}</p>
+        )}
         <button
           onClick={() => retry()}
           style={{

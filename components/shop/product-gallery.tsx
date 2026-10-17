@@ -20,12 +20,7 @@ export function ProductGallery({
   const current = images[selectedIndex];
 
   return (
-    <div
-      className={cn(
-        "grid gap-3",
-        images.length > 1 ? "grid-cols-[auto_1fr]" : "grid-cols-1",
-      )}
-    >
+    <div className={cn("grid gap-3", images.length > 1 ? "grid-cols-[auto_1fr]" : "grid-cols-1")}>
       {images.length > 1 && (
         <div className="flex flex-col gap-2">
           {images.map((image, index) => (

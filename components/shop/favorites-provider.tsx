@@ -1,18 +1,10 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 
 type FavoritesState = { ids: string[]; hydrated: boolean };
 
-type FavoritesAction =
-  | { type: "HYDRATE"; ids: string[] }
-  | { type: "TOGGLE"; id: string };
+type FavoritesAction = { type: "HYDRATE"; ids: string[] } | { type: "TOGGLE"; id: string };
 
 function reducer(state: FavoritesState, action: FavoritesAction): FavoritesState {
   switch (action.type) {
@@ -77,11 +69,7 @@ export function FavoritesProvider({
     [state],
   );
 
-  return (
-    <FavoritesContext.Provider value={value}>
-      {children}
-    </FavoritesContext.Provider>
-  );
+  return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }
 
 export function useFavorites() {

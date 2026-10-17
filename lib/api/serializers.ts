@@ -1,4 +1,9 @@
-import { getProductImageUrl, getStoreHeroImageUrl, getStoreLogoUrl, getWalletLogoUrl } from "@/lib/supabase/storage";
+import {
+  getProductImageUrl,
+  getStoreHeroImageUrl,
+  getStoreLogoUrl,
+  getWalletLogoUrl,
+} from "@/lib/supabase/storage";
 import { getPriceRange, getVariantPrice } from "@/lib/shop/price";
 import { resolveBoutiqueText } from "@/lib/shop/localized-boutique-text";
 import { resolveStoreTheme } from "@/lib/theme/presets";
@@ -36,6 +41,9 @@ export function serializeBoutique(boutique: OpenBoutique, locale: string, origin
         const bundled = walletLogoSrc(wallet.provider, null);
         const uploaded = wallet.logoStoragePath ? getWalletLogoUrl(wallet.logoStoragePath) : null;
         return {
+          // Stable across edits: the app keys its list by it, so a wallet the
+          // admin renames or re-orders stays the same row.
+          id: wallet.id,
           provider: wallet.provider,
           // The app can ship its own logo for a known provider; logoUrl is
           // for the others (and a fallback).
@@ -54,7 +62,8 @@ export function serializeBoutique(boutique: OpenBoutique, locale: string, origin
 // "Noir" and "noir" are two colors, as they are for the variants themselves.
 function distinctColors(variants: ProductRow["variants"]) {
   const entryOrder = [...variants].sort(
-    (a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+    (a, b) =>
+      a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
   return [...new Set(entryOrder.map((variant) => variant.color))];
 }
@@ -62,7 +71,7 @@ function distinctColors(variants: ProductRow["variants"]) {
 // The website's swatch lookup (lib/shop/color-swatch.ts), so the app shows the
 // same dots. One hex per hyphen segment ("Noir-Blanc"); null where the name
 // isn't known, for the app to pick its own fallback.
-function serializeColorSwatch(name: string) {
+export function serializeColorSwatch(name: string) {
   const hexes = lookupSwatchHexes(name);
   return { name, hex: hexes[0] ?? null, hexes };
 }
@@ -102,5 +111,19 @@ export function serializeProductDetail(product: ProductRow) {
       stock: variant.stock,
       lowStockThreshold: variant.lowStockThreshold,
     })),
+  };
+}
+
+// The filter sheet's options (getCatalogueFacets): color names come with the
+// same swatch as ProductSummary.colorSwatches.
+export function serializeFacets(facets: {
+  sizes: { value: string; count: number }[];
+  colors: { value: string; count: number }[];
+  price: { min: number; max: number } | null;
+}) {
+  return {
+    sizes: facets.sizes,
+    colors: facets.colors.map(({ value, count }) => ({ ...serializeColorSwatch(value), count })),
+    price: facets.price,
   };
 }

@@ -7,7 +7,8 @@ describe("findWalletProvider", () => {
   });
 
   it("matches the alternative spellings", () => {
-    expect(findWalletProvider("Masrvi")?.key).toBe("masrivi");
+    expect(findWalletProvider("Masrivi")?.key).toBe("masrvi");
+    expect(findWalletProvider("Masrivy")?.key).toBe("masrvi");
     expect(findWalletProvider("Bim Bank")?.key).toBe("bimbank");
   });
 

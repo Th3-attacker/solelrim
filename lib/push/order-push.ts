@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildOrderPushMessage, type OrderPushEvent } from "@/lib/shop/client-messages";
+import { reportError } from "@/lib/report-error";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const SEND_TIMEOUT_MS = 4000;
@@ -28,11 +29,21 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       locale: order.locale,
       reference: order.reference,
     });
+    const androidChannelId = process.env.EXPO_ANDROID_CHANNEL_ID?.trim();
     const messages = order.pushTokens.map(({ token }) => ({
       to: token,
       title,
       body,
       sound: "default",
+      // Delivered right away even when the phone is idle (Android Doze, iOS
+      // low-power): a status change is what the customer is waiting for.
+      priority: "high",
+      // EXPO_ANDROID_CHANNEL_ID (e.g. "orders", unset by default): the
+      // Android notification channel the app creates at startup, so the
+      // customer can tune order notifications on their own. Left out until
+      // the app ships that channel — Android drops a notification sent to a
+      // channel the device doesn't have.
+      ...(androidChannelId ? { channelId: androidChannelId } : {}),
       // What the app needs to open the right tracking screen when tapped.
       data: { reference: order.reference, status: order.status, boutique: order.productType },
     }));
@@ -50,7 +61,10 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     });
     if (!response.ok) {
-      console.error("sendOrderPush: Expo answered", response.status);
+      reportError("sendOrderPush", new Error(`Expo answered ${response.status}`), {
+        orderId,
+        event,
+      });
       return;
     }
 
@@ -65,6 +79,6 @@ export async function sendOrderPush(orderId: string, event: OrderPushEvent): Pro
       await prisma.pushToken.deleteMany({ where: { id: { in: gone } } });
     }
   } catch (error) {
-    console.error("sendOrderPush failed", error);
+    reportError("sendOrderPush", error, { orderId, event });
   }
 }

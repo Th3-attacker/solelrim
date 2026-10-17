@@ -2,7 +2,7 @@ import { getTranslations, getFormatter } from "next-intl/server";
 import { Pencil, Plus, Ticket } from "@phosphor-icons/react/dist/ssr";
 import { getAllPromoCodes } from "@/lib/queries/promo-codes";
 import { getAllClients } from "@/lib/queries/clients";
-import { getAdminScope } from "@/lib/shop/admin-scope";
+import { getAdminScope } from "@/lib/auth/scope";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StateMessage } from "@/components/ui/state-message";
@@ -106,9 +106,7 @@ export default async function PromoCodesPage() {
                       </Button>
                     }
                   />
-                  {promoCode.isActive && (
-                    <DeactivatePromoCodeButton promoCodeId={promoCode.id} />
-                  )}
+                  {promoCode.isActive && <DeactivatePromoCodeButton promoCodeId={promoCode.id} />}
                 </TableCell>
               </TableRow>
             ))}

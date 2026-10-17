@@ -1,7 +1,7 @@
 import { withApi } from "@/lib/api/trace";
 import { loadOpenBoutique } from "@/lib/api/boutique";
 import { failFromCode, ok, readJson } from "@/lib/api/http";
-import { previewPromoCode } from "@/lib/actions/promo-codes";
+import { previewPromoCode } from "@/lib/services/promo-codes";
 
 // POST /api/v1/boutiques/{key}/promo
 //   { "code": "ETE10", "customerPhone": "37737353", "subtotal": 1500 }

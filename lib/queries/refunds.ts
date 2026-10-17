@@ -89,9 +89,7 @@ function estimate(
   sale: SaleForEstimate,
   request: { items: { quantity: number; saleItem: { id: string } }[] },
 ) {
-  const requested = new Map(
-    request.items.map((item) => [item.saleItem.id, item.quantity]),
-  );
+  const requested = new Map(request.items.map((item) => [item.saleItem.id, item.quantity]));
   return (
     computeRefund({
       subtotal: sale.subtotal.toNumber(),
@@ -150,11 +148,8 @@ export async function getSaleRefunds(saleId: string, productType: string) {
 
   return {
     saleId: sale.id,
-    refundable:
-      sale.status === "COMPLETED" || sale.status === "PARTIALLY_REFUNDED",
-    hasPending: sale.refundRequests.some(
-      (request) => request.status === "PENDING",
-    ),
+    refundable: sale.status === "COMPLETED" || sale.status === "PARTIALLY_REFUNDED",
+    hasPending: sale.refundRequests.some((request) => request.status === "PENDING"),
     paymentMethod: sale.paymentMethod,
     subtotal: sale.subtotal.toNumber(),
     total: sale.total.toNumber(),
@@ -169,10 +164,7 @@ export async function getSaleRefunds(saleId: string, productType: string) {
       refundedQuantity: line.refundedQuantity,
     })),
     requests: sale.refundRequests.map((request) => ({
-      ...toRequestView(
-        request,
-        request.status === "PENDING" ? estimate(sale, request) : null,
-      ),
+      ...toRequestView(request, request.status === "PENDING" ? estimate(sale, request) : null),
       salePaymentMethod: sale.paymentMethod,
       saleWalletProvider: sale.walletProvider,
     })),

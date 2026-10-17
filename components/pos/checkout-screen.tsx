@@ -9,6 +9,7 @@ import {
   ShoppingCart,
 } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { toast } from "@/components/ui/toast";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -167,9 +168,7 @@ export function CheckoutScreen({
     // what the cart shows.
     sellableLines.length === lines.length &&
     !pending &&
-    (paymentMethod === "cash"
-      ? received === null || received >= total
-      : walletAccountId !== null);
+    (paymentMethod === "cash" ? received === null || received >= total : walletAccountId !== null);
 
   function quantityInCart(variantId: string) {
     return lines.find((line) => line.variantId === variantId)?.quantity ?? 0;
@@ -365,9 +364,7 @@ export function CheckoutScreen({
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
               {visibleProducts.map((product) => {
-                const inStock = product.variants.some(
-                  (v) => v.stock - quantityInCart(v.id) > 0,
-                );
+                const inStock = product.variants.some((v) => v.stock - quantityInCart(v.id) > 0);
                 const prices = product.variants.map((v) => v.price);
                 const minPrice = Math.min(...prices);
                 const variesInPrice = minPrice !== Math.max(...prices);
@@ -381,12 +378,15 @@ export function CheckoutScreen({
                     >
                       <span className="relative flex aspect-square w-full items-center justify-center border-b bg-card">
                         {product.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          // Through the optimizer: the tile is ~200px wide,
+                          // the original can weigh a few MB, and the till
+                          // shows the whole catalogue at once.
+                          <Image
                             src={product.imageUrl}
                             alt=""
-                            loading="lazy"
-                            className="size-full object-cover"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 200px"
+                            className="object-cover"
                           />
                         ) : (
                           <Package aria-hidden="true" className="size-8 text-muted-foreground" />
@@ -426,12 +426,7 @@ export function CheckoutScreen({
       {isWide === false && (
         <>
           <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur">
-            <Button
-              type="button"
-              size="lg"
-              className="w-full"
-              onClick={() => setCartOpen(true)}
-            >
+            <Button type="button" size="lg" className="w-full" onClick={() => setCartOpen(true)}>
               <ShoppingCart className="size-5" />
               {t("viewCart", { count: itemCount, total: formatPrice(total, currency) })}
             </Button>

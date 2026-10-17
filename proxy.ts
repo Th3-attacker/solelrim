@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
-import { getStoreTypeRouting } from "@/lib/shop/domain-cache";
+import { getStoreTypeRouting } from "@/lib/services/domain-cache";
+import { serverEnv } from "@/lib/env";
+import { contentSecurityPolicy, newNonce } from "@/lib/csp";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
 function isAdminPath(pathWithoutLocale: string) {
-  return (
-    pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/")
-  );
+  return pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/");
 }
 
 // The only admin areas a SELLER may open — the checkout and everything
@@ -23,10 +23,7 @@ function isSellerPath(pathWithoutLocale: string) {
 }
 
 function isAdminLoginPath(pathWithoutLocale: string) {
-  return (
-    pathWithoutLocale === "/admin/login" ||
-    pathWithoutLocale.startsWith("/admin/login/")
-  );
+  return pathWithoutLocale === "/admin/login" || pathWithoutLocale.startsWith("/admin/login/");
 }
 
 // app/[locale]/opengraph-image.tsx (and any future twitter-image) is a
@@ -39,14 +36,28 @@ function isLocaleMetadataRoute(pathWithoutLocale: string) {
   return /^\/(opengraph-image|twitter-image)(\/|$)/.test(pathWithoutLocale);
 }
 
+// Every page gets a Content-Security-Policy with a fresh nonce (lib/csp.ts).
+// Set on the request too: Next.js reads the nonce from there to put it on
+// its own scripts, and the layouts read x-nonce for theirs.
 export async function proxy(request: NextRequest) {
+  const nonce = newNonce();
+  const policy = contentSecurityPolicy({ nonce });
+  const headers = new Headers(request.headers);
+  headers.set("x-nonce", nonce);
+  headers.set("content-security-policy", policy);
+
+  const response = await route(new NextRequest(request, { headers }));
+  response.headers.set("Content-Security-Policy", policy);
+  return response;
+}
+
+async function route(request: NextRequest) {
+  // next-intl forwards this request's headers (the nonce included).
   const response = handleI18nRouting(request);
 
   const segments = request.nextUrl.pathname.split("/");
   const maybeLocale = segments[1];
-  const hasLocalePrefix = routing.locales.includes(
-    maybeLocale as (typeof routing.locales)[number],
-  );
+  const hasLocalePrefix = routing.locales.includes(maybeLocale as (typeof routing.locales)[number]);
   const locale = hasLocalePrefix ? maybeLocale : routing.defaultLocale;
   const pathWithoutLocale = "/" + segments.slice(2).join("/");
 
@@ -69,11 +80,7 @@ export async function proxy(request: NextRequest) {
   // main domain or a boutique's own branded domain. Login sets the
   // Supabase session cookie scoped to whichever host was used, so it works
   // as long as the admin stays on that same domain for the whole session.
-  if (
-    boutiqueKey &&
-    !isAdminPath(pathWithoutLocale) &&
-    !isLocaleMetadataRoute(pathWithoutLocale)
-  ) {
+  if (boutiqueKey && !isAdminPath(pathWithoutLocale) && !isLocaleMetadataRoute(pathWithoutLocale)) {
     const segs = pathWithoutLocale.split("/").filter(Boolean);
     const first = segs[0];
 
@@ -84,7 +91,7 @@ export async function proxy(request: NextRequest) {
       const rest = first && keySet.has(first) ? segs.slice(1) : segs;
       const url = request.nextUrl.clone();
       url.pathname = `/${locale}/${boutiqueKey}${rest.length ? "/" + rest.join("/") : ""}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: request.headers } });
     }
     // Already correct (normal internal navigation) — fall through.
   }
@@ -96,18 +103,17 @@ export async function proxy(request: NextRequest) {
 
   const isLoginRoute = isAdminLoginPath(pathWithoutLocale);
 
+  const env = serverEnv();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );

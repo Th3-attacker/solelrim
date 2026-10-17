@@ -5,7 +5,7 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 // lock a unit indefinitely. Past this threshold the admin orders list/detail
 // page flags the order so a human can confirm or reject it instead of it
 // aging silently. A boutique can also have them cancelled on their own
-// (StoreType.pendingAutoCancelHours, lib/shop/pending-expiry.ts).
+// (StoreType.pendingAutoCancelHours, lib/services/pending-expiry.ts).
 export const STALE_PENDING_HOURS = 24;
 
 // Choices offered for StoreType.pendingAutoCancelHours in the superadmin

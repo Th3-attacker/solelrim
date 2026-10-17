@@ -39,7 +39,10 @@ afterEach(() => {
 describe("sendOrderPush", () => {
   it("sends one message per registered phone, in the language of the order", async () => {
     prismaMock.order.findUnique.mockResolvedValue(order());
-    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ data: [{ status: "ok" }, { status: "ok" }] }) });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [{ status: "ok" }, { status: "ok" }] }),
+    });
 
     await sendOrderPush("o1", "shipped");
 
@@ -52,7 +55,21 @@ describe("sendOrderPush", () => {
       title: "Order CMD-1",
       body: "Your order is on its way.",
       data: { reference: "CMD-1", status: "SHIPPING", boutique: "sport" },
+      priority: "high",
     });
+    expect(messages[0]).not.toHaveProperty("channelId");
+  });
+
+  it("sends to the Android channel named by EXPO_ANDROID_CHANNEL_ID", async () => {
+    vi.stubEnv("EXPO_ANDROID_CHANNEL_ID", "orders");
+    prismaMock.order.findUnique.mockResolvedValue(order());
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ data: [] }) });
+
+    await sendOrderPush("o1", "shipped");
+
+    const messages = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(messages[0]).toMatchObject({ channelId: "orders" });
+    vi.unstubAllEnvs();
   });
 
   it("does nothing when nobody asked to be notified", async () => {
@@ -67,7 +84,9 @@ describe("sendOrderPush", () => {
     prismaMock.order.findUnique.mockResolvedValue(order());
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ data: [{ status: "ok" }, { status: "error", details: { error: "DeviceNotRegistered" } }] }),
+      json: async () => ({
+        data: [{ status: "ok" }, { status: "error", details: { error: "DeviceNotRegistered" } }],
+      }),
     });
 
     await sendOrderPush("o1", "delivered");

@@ -3,7 +3,7 @@
   "info": {
     "title": "SOLAL public API",
     "version": "1.0.0",
-    "description": "Public API of the SOLAL boutiques for the mobile app. No accounts: a customer proves an order with phone + reference. v1 only grows (fields and routes are added, never removed or renamed). Human-readable contract: docs/api-v1.md. Every response carries X-Request-Id."
+    "description": "Public API of the SOLAL boutiques for the mobile app. JSON in and out.\n\n**No accounts, no token.** A customer proves an order with the phone number and order reference they give.\n\n**Stability.** v1 only grows: fields and routes are added, never removed, renamed or changed in meaning. A breaking change means `/api/v2`.\n\n**Headers.** Send `X-Request-Id` (a UUID per call), `X-App-Version` and `X-App-Platform` on every call. Every response carries `X-Request-Id`: show it on error screens. `426 appUpdateRequired` means the app is older than the server's minimum version.\n\n**Errors** are `{ \"error\": \"<code>\" }`: `invalid` / `invalidFile` 400, `storefrontExpired` 403, `notFound` 404, `insufficientStock` / `alreadyUsed` / `referenceCollision` / `transactionAlreadyUsed` 409, `fileTooLarge` 413, `appUpdateRequired` 426, `rateLimited` 429 (with `Retry-After`, in seconds), `uploadFailed` 502, any other business error 422.\n\n**Caching.** Catalogue `GET`s may be cached 30 s; everything else is `no-store`. Amounts are in MRU.\n\nInteractive reference: `GET /api/v1/docs`. Full contract with the mobile-side notes: `docs/api-v1.md`."
   },
   "servers": [
     {
@@ -174,7 +174,45 @@
               "type": "string",
               "maxLength": 100
             },
-            "description": "Search (accent-insensitive, rate-limited 40 / 15 min per IP)."
+            "description": "Search (accent-insensitive, rate-limited 120 / min per IP)."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["popular", "price_asc", "price_desc", "newest"], "default": "popular" },
+            "description": "popular: featured products first, then newest. price_asc: by price.min. price_desc: by price.max. newest: by creation date. Ties: newest, then id, so pages never repeat or skip a product. Without any of sort / sizes / colors / priceMin / priceMax / facets, the answer is exactly the one from before they existed (newest first; a search is one capped page). With any of them, a search is paginated too and total is the real count."
+          },
+          {
+            "name": "sizes",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "M,L",
+            "description": "Comma-separated exact sizes, 20 at most: keeps a product with a variant in stock in one of them. Size, color and price apply to the same variant. An unknown size gives no result, not an error."
+          },
+          {
+            "name": "colors",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "Noir,Noir-Blanc",
+            "description": "Comma-separated exact color names, URL-encoded, 20 at most: keeps a product with a variant in stock in one of them. Sort the values of sizes and colors: the CDN caches by exact URL."
+          },
+          {
+            "name": "priceMin",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0 },
+            "description": "MRU. Keeps a product with a variant in stock at this price or more (\"Plus de 2 000\" = 2001)."
+          },
+          {
+            "name": "priceMax",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0 },
+            "description": "MRU, not under priceMin. Keeps a product with a variant in stock at this price or less (\"Moins de 1 000\" = 999)."
+          },
+          {
+            "name": "facets",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "1 adds `facets` to the answer: the filter sheet's sizes, colors and price range."
           },
           {
             "name": "page",
@@ -603,6 +641,7 @@
         "operationId": "trackOrder",
         "tags": ["Orders"],
         "summary": "Order status, proven with phone + reference",
+        "description": "Failed lookups (notFound, malformed phone or empty reference) are limited to 10 per 15 min per phone and 60 per 15 min per IP. Successes don't count against those: they are limited to 30 per minute per order, and every lookup to 300 per minute per IP (many customers share one IP behind CGNAT). Over a failure limit, every lookup from that phone or IP gets 429 until Retry-After, the right pair included. Retry-After is the time really left, the longest one when several limits apply.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BoutiqueKey"
@@ -839,16 +878,21 @@
       },
       "Wallet": {
         "type": "object",
-        "required": ["provider", "providerKey", "number", "logoUrl"],
+        "required": ["id", "provider", "providerKey", "number", "logoUrl"],
+        "description": "The boutique's admin can add, edit, re-order and delete wallets at any time: show the list as received.",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable across edits (rename, new number, new logo, re-order)."
+          },
           "provider": {
             "type": "string",
             "example": "Bankily"
           },
           "providerKey": {
             "type": ["string", "null"],
-            "description": "Known provider id (the app may ship its own logo), null otherwise.",
-            "example": "bankily"
+            "description": "Known provider id, for the app to draw its own logo: bankily, masrvi, sedad or bimbank (the full list today). null for any other provider. More ids may be added later: treat an id the app doesn't know like null (use logoUrl).",
+            "examples": ["bankily", "masrvi", "sedad", "bimbank"]
           },
           "number": {
             "type": "string"
@@ -1170,7 +1214,68 @@
             "type": "integer"
           },
           "total": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Products matching, all pages together."
+          },
+          "facets": {
+            "$ref": "#/components/schemas/ProductFacets"
+          }
+        }
+      },
+      "ProductFacets": {
+        "type": "object",
+        "description": "Only with facets=1. Scope: the boutique, category and search asked for. A value's count is the number of products adding it would give with the other filters active (a filter doesn't change its own counts); 0 means nothing in stock, to grey out.",
+        "required": ["sizes", "colors", "price"],
+        "properties": {
+          "sizes": {
+            "type": "array",
+            "description": "Every size of the scope, 0 included, in size order (XXS…XXXL, then numeric, then the rest).",
+            "items": {
+              "type": "object",
+              "required": ["value", "count"],
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "example": "M"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "colors": {
+            "type": "array",
+            "description": "Every color of the scope, in entry order, with the same swatch as ProductSummary.colorSwatches.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ColorSwatch"
+                },
+                {
+                  "type": "object",
+                  "required": ["count"],
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "price": {
+            "type": ["object", "null"],
+            "description": "Lowest and highest price in stock in the scope, with the size and color filters but not the price one. null when nothing is in stock.",
+            "required": ["min", "max"],
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              }
+            }
           }
         }
       },
@@ -1205,7 +1310,10 @@
           "status",
           "total",
           "createdAt",
-          "statusSince"
+          "statusSince",
+          "subtotal",
+          "discount",
+          "items"
         ],
         "properties": {
           "reference": {
@@ -1223,7 +1331,59 @@
           },
           "statusSince": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the order reached its current status."
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "Before the promo code."
+          },
+          "discount": {
+            "type": "number",
+            "description": "Promo code discount (0 without one). total = subtotal - discount."
+          },
+          "items": {
+            "type": "array",
+            "description": "What was ordered, at the price paid.",
+            "items": {
+              "$ref": "#/components/schemas/TrackedOrderItem"
+            }
+          }
+        }
+      },
+      "TrackedOrderItem": {
+        "type": "object",
+        "required": ["variantId", "productName", "productSlug", "size", "color", "quantity", "unitPrice", "lineTotal", "imageUrl"],
+        "properties": {
+          "variantId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productSlug": {
+            "type": "string",
+            "description": "For GET /boutiques/{key}/products/{slug} (the product may since be hidden: 404)."
+          },
+          "size": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "lineTotal": {
+            "type": "number"
+          },
+          "imageUrl": {
+            "type": ["string", "null"],
+            "format": "uri",
+            "description": "The product photo of that color, else its first photo."
           }
         }
       },
@@ -1389,7 +1549,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Seconds to wait (not sent by search and stocks)."
+            "description": "Seconds to wait before retrying."
           }
         },
         "content": {

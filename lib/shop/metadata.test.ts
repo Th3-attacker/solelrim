@@ -8,7 +8,12 @@ afterEach(() => {
 describe("buildStoreUrl", () => {
   it("uses the bound custom domain with no /{storeKey} segment when one is set", () => {
     expect(
-      buildStoreUrl({ domain: "solal.example.com", storeKey: "sport", path: "/products", locale: "fr" }),
+      buildStoreUrl({
+        domain: "solal.example.com",
+        storeKey: "sport",
+        path: "/products",
+        locale: "fr",
+      }),
     ).toBe("https://solal.example.com/fr/products");
   });
 

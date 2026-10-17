@@ -24,6 +24,11 @@
 # production
 /build
 
+# TanStack Start (vite build, nitro)
+/.output/
+/.nitro/
+/.tanstack/
+
 # misc
 .DS_Store
 *.pem

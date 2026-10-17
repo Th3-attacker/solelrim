@@ -1,0 +1,196 @@
+@import "tailwindcss" source(none);
+@import "@fontsource-variable/inter";
+
+/* Only the new app's own sources: the Next.js app's classes stay out. */
+@source "../";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens of the admin redesign ("SOLAL Admin — refonte complète").
+   Every color goes through one of these variables; .dark on <html> swaps
+   them all at once. Status pairs (-bg + -ink) are always shown with a dot
+   and a word, never the color alone. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --tile: #f1f2f4;
+  --img: #e6e8eb;
+  --ink: #171717;
+  --ink-2: #3d3d3d;
+  --muted: #606060;
+  --faint: #8a8a8a;
+  --line: #e7e9ee;
+  --line-soft: #eef0f3;
+  --line-strong: #dde1e7;
+  --line-strong-2: #c9ced6;
+  --brand: #1e3a5f;
+  --brand-hover: #18304f;
+  --brand-2: #7fa3c8;
+  --on-brand: #ffffff;
+  --tint: #e8eef5;
+  --tint-soft: #f3f6fa;
+  --hero-sub: #d6e2f0;
+  --meter: #1e3a5f;
+  --danger: #b91c1c;
+  --pend-bg: #fef3c7;
+  --pend-ink: #854d0e;
+  --ok-bg: #dcfce7;
+  --ok-ink: #166534;
+  --bad-bg: #fee2e2;
+  --bad-ink: #991b1b;
+  --warn-bg: #ffedd5;
+  --warn-ink: #9a3412;
+  --warn-line: #fdba74;
+  --ship-bg: #e0f2fe;
+  --ship-ink: #075985;
+  --scrim: rgb(15 23 42 / 0.45);
+  --pop: 0 12px 32px rgb(15 23 42 / 0.16), 0 2px 6px rgb(15 23 42 / 0.06);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0e1116;
+  --surface: #161a20;
+  --surface-2: #1b2027;
+  --tile: #222830;
+  --img: #2a3039;
+  --ink: #f2f4f7;
+  --ink-2: #c9ced6;
+  --muted: #a0a7b2;
+  --faint: #7d8590;
+  --line: #262c35;
+  --line-soft: #222830;
+  --line-strong: #323a45;
+  --line-strong-2: #46505c;
+  --brand: #7fb2e5;
+  --brand-hover: #9cc4ee;
+  --brand-2: #3d5f84;
+  --on-brand: #0b1e33;
+  --tint: #1b2b40;
+  --tint-soft: #172333;
+  --hero-sub: #23405f;
+  --meter: #7fb2e5;
+  --danger: #f87171;
+  --pend-bg: #33290a;
+  --pend-ink: #fcd34d;
+  --ok-bg: #10301d;
+  --ok-ink: #86efac;
+  --bad-bg: #3b1618;
+  --bad-ink: #fca5a5;
+  --warn-bg: #3a230f;
+  --warn-ink: #fdba74;
+  --warn-line: #7c4a1e;
+  --ship-bg: #0e2a3c;
+  --ship-ink: #7dd3fc;
+  --scrim: rgb(0 0 0 / 0.6);
+  --pop: 0 12px 32px rgb(0 0 0 / 0.5), 0 0 0 1px #2e3540;
+  color-scheme: dark;
+}
+
+/* Exposed to Tailwind as utilities (bg-surface, text-muted, border-line…),
+   still resolved at runtime so the theme switch costs no re-render. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-tile: var(--tile);
+  --color-img: var(--img);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-strong: var(--line-strong);
+  --color-line-strong-2: var(--line-strong-2);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-2: var(--brand-2);
+  --color-on-brand: var(--on-brand);
+  --color-tint: var(--tint);
+  --color-tint-soft: var(--tint-soft);
+  --color-meter: var(--meter);
+  --color-danger: var(--danger);
+  --color-pend-bg: var(--pend-bg);
+  --color-pend-ink: var(--pend-ink);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-ink: var(--ok-ink);
+  --color-bad-bg: var(--bad-bg);
+  --color-bad-ink: var(--bad-ink);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-line: var(--warn-line);
+  --color-ship-bg: var(--ship-bg);
+  --color-ship-ink: var(--ship-ink);
+  --color-scrim: var(--scrim);
+  --shadow-pop: var(--pop);
+}
+
+@theme {
+  /* Inter for Latin scripts; Arabic falls through to the system's own. */
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Radii of the guide: fields and buttons, cards, dialogs, mobile sheets. */
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-dialog: 16px;
+  --radius-sheet: 28px;
+
+  /* Type scale of the guide (size / line height, weight). */
+  --text-page-title: 1.75rem;
+  --text-page-title--line-height: 2.125rem;
+  --text-page-title--letter-spacing: -0.6px;
+  --text-page-title--font-weight: 700;
+  --text-card-title: 1rem;
+  --text-card-title--line-height: 1.375rem;
+  --text-card-title--font-weight: 700;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.3125rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.6px;
+  --text-label--font-weight: 600;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-variant-numeric: tabular-nums;
+  }
+
+  a {
+    color: var(--brand);
+  }
+
+  a:hover {
+    color: var(--brand-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

@@ -1,8 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { RefundRequestDialog, type RefundableLine } from "@/components/refunds/refund-request-dialog";
-import { RefundRequestList, type RefundRequestView } from "@/components/refunds/refund-request-list";
+import {
+  RefundRequestDialog,
+  type RefundableLine,
+} from "@/components/refunds/refund-request-dialog";
+import {
+  RefundRequestList,
+  type RefundRequestView,
+} from "@/components/refunds/refund-request-list";
 
 // On a sale's page: ask for a refund, and follow (or, for an admin, decide)
 // the sale's requests.
@@ -44,7 +50,9 @@ export function SaleRefundsSection({
           />
         )}
       </div>
-      {hasPending && !canDecide && <p className="text-sm text-muted-foreground">{t("pendingHint")}</p>}
+      {hasPending && !canDecide && (
+        <p className="text-sm text-muted-foreground">{t("pendingHint")}</p>
+      )}
       {requests.length > 0 && <RefundRequestList requests={requests} canDecide={canDecide} />}
     </section>
   );

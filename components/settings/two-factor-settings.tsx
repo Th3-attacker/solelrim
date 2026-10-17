@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { ShieldCheck, ShieldSlash } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,6 @@ export function TwoFactorSettings({
 }) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [enrollment, setEnrollment] = useState<EnrollmentData | null>(null);
@@ -66,7 +64,6 @@ export function TwoFactorSettings({
       }
       setEnrollOpen(false);
       setEnrollment(null);
-      router.refresh();
       toast.success(t("twoFactorEnabledToast"));
     });
   }
@@ -80,7 +77,6 @@ export function TwoFactorSettings({
         return;
       }
       setDisableOpen(false);
-      router.refresh();
       toast.success(t("twoFactorDisabledToast"));
     });
   }
@@ -115,9 +111,7 @@ export function TwoFactorSettings({
 
           {factorId ? (
             required ? (
-              <span className="text-xs text-muted-foreground">
-                {t("twoFactorRequiredLocked")}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("twoFactorRequiredLocked")}</span>
             ) : (
               <Button
                 type="button"
@@ -192,9 +186,7 @@ export function TwoFactorSettings({
                 }}
                 aria-invalid={verifyError}
               />
-              {verifyError && (
-                <FieldError>{t("twoFactorInvalidCode")}</FieldError>
-              )}
+              {verifyError && <FieldError>{t("twoFactorInvalidCode")}</FieldError>}
             </div>
           </div>
         )}

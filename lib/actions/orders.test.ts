@@ -3,6 +3,7 @@ import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
 
+vi.mock("@/lib/realtime", () => ({ notifyOrdersChanged: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   prisma: mockDeep<PrismaClient>(),
 }));
@@ -13,8 +14,11 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
 vi.mock("@/lib/push/order-push", () => ({ sendOrderPush: vi.fn() }));
+// after() runs its task once the response is sent; here, right away.
+vi.mock("next/server", () => ({ after: (task: () => unknown) => void task() }));
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 vi.mock("next/headers", () => ({
   headers: vi.fn(),
@@ -39,6 +43,7 @@ import {
   trackOrder,
 } from "@/lib/actions/orders";
 import { sendOrderPush } from "@/lib/push/order-push";
+import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const createClientMock = createClient as unknown as Mock;
@@ -144,20 +149,14 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
   form.set("paymentSenderPhone", overrides.paymentSenderPhone ?? "23456789");
   form.set("locale", overrides.locale ?? "fr");
   form.set("productType", overrides.productType ?? "cosmetique");
-  form.set(
-    "items",
-    overrides.items ?? JSON.stringify([{ variantId: "variant-1", quantity: 2 }]),
-  );
+  form.set("items", overrides.items ?? JSON.stringify([{ variantId: "variant-1", quantity: 2 }]));
   if (overrides.promoCode) {
     form.set("promoCode", overrides.promoCode);
   }
   if (overrides.screenshot === "none") {
     // omitted
   } else if (overrides.screenshot === "invalid-content") {
-    form.set(
-      "screenshot",
-      new File(["not-actually-an-image"], "proof.png", { type: "image/png" }),
-    );
+    form.set("screenshot", new File(["not-actually-an-image"], "proof.png", { type: "image/png" }));
   } else if (overrides.screenshot === "too-large") {
     // MAX_IMAGE_BYTES is 5 * 1024 * 1024 (5,242,880) — comfortably over that.
     form.set(
@@ -165,10 +164,7 @@ function buildOrderForm(overrides: Partial<Record<string, string>> = {}) {
       new File([new Uint8Array(6_000_000)], "proof.png", { type: "image/png" }),
     );
   } else {
-    form.set(
-      "screenshot",
-      new File([PNG_MAGIC_BYTES], "proof.png", { type: "image/png" }),
-    );
+    form.set("screenshot", new File([PNG_MAGIC_BYTES], "proof.png", { type: "image/png" }));
   }
   return form;
 }
@@ -177,7 +173,7 @@ const baseVariant = {
   id: "variant-1",
   stock: 10,
   price: null,
-  product: { basePrice: decimal(1500), productType: "cosmetique" },
+  product: { basePrice: decimal(1500), productType: "cosmetique", isActive: true },
 };
 
 describe("submitOrder", () => {
@@ -239,10 +235,21 @@ describe("submitOrder", () => {
     expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
-  it("rejects when a variant has insufficient stock", async () => {
+  it("refuses a product that was taken off sale, before uploading anything", async () => {
     prismaMock.productVariant.findMany.mockResolvedValue([
-      { ...baseVariant, stock: 1 },
+      { ...baseVariant, product: { ...baseVariant.product, isActive: false } },
     ] as never);
+
+    const result = await submitOrder(buildOrderForm());
+
+    expect(result).toEqual({ error: "insufficientStock" });
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+    expect(prismaMock.productVariant.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects when a variant has insufficient stock", async () => {
+    prismaMock.productVariant.findMany.mockResolvedValue([{ ...baseVariant, stock: 1 }] as never);
     const form = buildOrderForm({
       items: JSON.stringify([{ variantId: "variant-1", quantity: 2 }]),
     });
@@ -369,19 +376,72 @@ describe("submitOrder", () => {
         meta: { target: ["productType", "idempotencyKey"] },
       }),
     );
-    prismaMock.order.findUnique.mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+    // Nothing yet when this send starts; the winner's order once it lost.
+    prismaMock.order.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
 
     const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
 
     expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
     expect(prismaMock.order.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" } },
+        where: {
+          productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" },
+        },
       }),
     );
     // Not retried with a fresh reference, and this attempt's upload is cleaned up.
     expect(prismaMock.order.create).toHaveBeenCalledTimes(1);
     expect(remove).toHaveBeenCalled();
+  });
+
+  it("answers a resend whose first try went through with that order, placing nothing", async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      id: "order-1",
+      reference: "CMD-FIRST",
+    } as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+    expect(prismaMock.order.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          productType_idempotencyKey: { productType: "cosmetique", idempotencyKey: "key-1" },
+        },
+      }),
+    );
+    expect(createAdminClientMock).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it("gives a resend that stopped early (the first send took the last unit) the first order", async () => {
+    prismaMock.order.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ id: "order-1", reference: "CMD-FIRST" } as never);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ ...baseVariant, stock: 0 }] as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ reference: "CMD-FIRST", orderId: "order-1" });
+  });
+
+  it("keeps a business error when no order exists for the key", async () => {
+    prismaMock.order.findUnique.mockResolvedValue(null);
+    prismaMock.productVariant.findMany.mockResolvedValue([{ ...baseVariant, stock: 0 }] as never);
+
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "key-1" });
+
+    expect(result).toEqual({ error: "insufficientStock" });
+  });
+
+  it("refuses a malformed key", async () => {
+    const result = await submitOrder(buildOrderForm(), { idempotencyKey: "x".repeat(65) });
+
+    expect(result).toEqual({ error: "invalid" });
+    expect(prismaMock.order.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
   });
 
   it("stores the wallet transaction id, trimmed and upper-cased, and the screenshot's SHA-256", async () => {
@@ -552,7 +612,7 @@ describe("submitOrder", () => {
     const createArgs = prismaMock.order.create.mock.calls[0][0];
     expect(createArgs.data.subtotal).toBe(3000); // basePrice 1500 * qty 2
     expect(createArgs.data.total).toBe(3000);
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/admin", "layout");
   });
 
   it("applies a valid promo code, stores the discount, and increments usedCount", async () => {
@@ -762,7 +822,7 @@ describe("submitOrder", () => {
     headersMock.mockResolvedValue({
       get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9, 10.0.0.1" : null),
     });
-    prismaMock.rateLimitHit.count.mockResolvedValue(20);
+    prismaMock.rateLimitHit.count.mockResolvedValue(RATE_LIMITS.orderPerIp.max);
 
     const result = await submitOrder(buildOrderForm());
 
@@ -883,9 +943,8 @@ describe("confirmOrder", () => {
       }),
     );
     expect(sendOrderPush).toHaveBeenCalledWith("order-1", "confirmed");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/orders/order-1");
-    expect(revalidatePath).toHaveBeenCalledWith("/");
+    // The order lists and pages of every locale, and the storefront.
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 });
 
@@ -1039,7 +1098,7 @@ describe("deliverOrder", () => {
     });
     const saleArgs = prismaMock.sale.create.mock.calls[0][0];
     expect(saleArgs.data.notes).toContain("CMD-20260729-1234");
-    expect(revalidatePath).toHaveBeenCalledWith("/admin/sales");
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 
   it("books the sale as a wallet payment, linked to the one client with that phone", async () => {
@@ -1179,6 +1238,158 @@ describe("cancelOrder", () => {
   });
 });
 
+describe("trackOrder rate limits", () => {
+  // An in-memory RateLimitHit table, so the limits count for real across calls.
+  let hits: { key: string; createdAt: Date }[];
+  const countFor = (prefix: string) => hits.filter((hit) => hit.key.startsWith(prefix)).length;
+  const inWindow = (where: { key: string; createdAt?: { gte?: Date } }) =>
+    hits
+      .filter(
+        (hit) =>
+          hit.key === where.key && (!where.createdAt?.gte || hit.createdAt >= where.createdAt.gte),
+      )
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+  const found = {
+    reference: "CMD-7KQ4M9XP",
+    status: "PENDING",
+    total: { toNumber: () => 1000 },
+    subtotal: { toNumber: () => 1000 },
+    discount: { toNumber: () => 0 },
+    createdAt: new Date(),
+    confirmedAt: null,
+    shippedAt: null,
+    deliveredAt: null,
+    rejectedAt: null,
+    cancelledAt: null,
+    items: [],
+  };
+  const track = (phone: string, reference = "CMD-7KQ4M9XP") =>
+    trackOrder({ phone, reference, productType: "sport" });
+  const fromIp = (ip: string) =>
+    headersMock.mockResolvedValue({ get: (name: string) => (name === "x-real-ip" ? ip : null) });
+
+  beforeEach(() => {
+    hits = [];
+    fromIp("41.188.0.1");
+    prismaMock.rateLimitHit.count.mockImplementation(((args: {
+      where: { key: string; createdAt?: { gte?: Date } };
+    }) => Promise.resolve(inWindow(args.where).length)) as never);
+    prismaMock.rateLimitHit.create.mockImplementation(((args: { data: { key: string } }) => {
+      hits.push({ key: args.data.key, createdAt: new Date() });
+      return Promise.resolve({});
+    }) as never);
+    prismaMock.rateLimitHit.findFirst.mockImplementation(((args: {
+      where: { key: string; createdAt?: { gte?: Date } };
+      skip?: number;
+    }) => Promise.resolve(inWindow(args.where)[args.skip ?? 0] ?? null)) as never);
+  });
+
+  it("counts a failed lookup against the IP and the phone", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+
+    expect(await track("37737353")).toEqual({ error: "notFound" });
+
+    expect(countFor("track-fail-ip:41.188.0.1")).toBe(1);
+    expect(countFor("track-fail-phone:37737353")).toBe(1);
+  });
+
+  it("counts a malformed request as a failure too", async () => {
+    expect(await track("37737353", "")).toEqual({ error: "invalid" });
+
+    expect(countFor("track-fail-phone:37737353")).toBe(1);
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("never blocks a customer following their order: successes don't touch the failure counters", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+
+    // Over ten times the failure limit, as an open order screen polling
+    // every minute and the order list would do.
+    for (let i = 0; i < 25; i++) {
+      expect(await track("37737353")).toMatchObject({ reference: "CMD-7KQ4M9XP" });
+    }
+
+    expect(countFor("track-fail-")).toBe(0);
+    expect(countFor("track-ok:sport:CMD-7KQ4M9XP")).toBe(25);
+  });
+
+  it("blocks a phone after 10 failures, the right pair included", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 10; i++) await track("37737353", `CMD-GUESS${i}`);
+
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+  });
+
+  it("doesn't let one phone's failures block another phone behind the same IP", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 10; i++) await track("37737353", `CMD-GUESS${i}`);
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    expect(await track("22345678")).toMatchObject({ reference: "CMD-7KQ4M9XP" });
+  });
+
+  it("blocks an IP after 60 failures, whatever the phone", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    for (let i = 0; i < 60; i++) await track(`2${String(i).padStart(7, "0")}`);
+
+    expect(await track("44556677")).toMatchObject({ error: "rateLimited" });
+    fromIp("41.188.0.2");
+    expect(await track("44556677")).toEqual({ error: "notFound" });
+  });
+
+  it("caps successes per order at 30 a minute", async () => {
+    prismaMock.order.findFirst.mockResolvedValue(found as never);
+    for (let i = 0; i < 30; i++) await track("37737353");
+
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+  });
+
+  it("caps every lookup from one IP at 300 a minute", async () => {
+    hits = Array.from({ length: 300 }, () => ({
+      key: "track-ip:41.188.0.1",
+      createdAt: new Date(),
+    }));
+
+    expect(await track("37737353")).toMatchObject({ error: "rateLimited" });
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("says how long is really left in Retry-After", async () => {
+    // 10 failures, the oldest 10 minutes ago: 5 minutes left in the window.
+    hits = Array.from({ length: 10 }, (_, i) => ({
+      key: "track-fail-phone:37737353",
+      createdAt: new Date(Date.now() - (10 - i) * 60_000),
+    }));
+
+    const result = await track("37737353");
+
+    expect(result).toMatchObject({ error: "rateLimited" });
+    const { retryAfter } = result as { retryAfter: number };
+    expect(retryAfter).toBeGreaterThanOrEqual(299);
+    expect(retryAfter).toBeLessThanOrEqual(300);
+  });
+
+  it("announces the longest wait when the IP and the phone are both blocked", async () => {
+    hits = [
+      ...Array.from({ length: 10 }, () => ({
+        key: "track-fail-phone:37737353",
+        createdAt: new Date(Date.now() - 14 * 60_000),
+      })),
+      ...Array.from({ length: 60 }, () => ({
+        key: "track-fail-ip:41.188.0.1",
+        createdAt: new Date(),
+      })),
+    ];
+
+    const { retryAfter } = (await track("37737353")) as { retryAfter: number };
+
+    expect(retryAfter).toBeGreaterThanOrEqual(899);
+  });
+});
+
 describe("trackOrder", () => {
   it("returns invalid for a malformed phone or a blank reference", async () => {
     const result = await trackOrder({
@@ -1188,36 +1399,6 @@ describe("trackOrder", () => {
     });
 
     expect(result).toEqual({ error: "invalid" });
-    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
-  });
-
-  it("rejects with rateLimited and does no lookup when the caller's IP is over the limit", async () => {
-    headersMock.mockResolvedValue({
-      get: (name: string) => (name === "x-forwarded-for" ? "203.0.113.9" : null),
-    });
-    prismaMock.rateLimitHit.count.mockResolvedValue(30);
-
-    const result = await trackOrder({
-      phone: "37737353",
-      reference: "CMD-20260815-1234",
-      productType: "sport",
-    });
-
-    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
-    expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
-  });
-
-  it("caps lookups per phone number, 10 per 15 minutes, against guessing references", async () => {
-    prismaMock.rateLimitHit.count.mockImplementation(((args: { where: { key: string } }) =>
-      Promise.resolve(args.where.key === "track-order-phone:37737353" ? 10 : 0)) as never);
-
-    const result = await trackOrder({
-      phone: "37737353",
-      reference: "CMD-20260815-1234",
-      productType: "sport",
-    });
-
-    expect(result).toEqual({ error: "rateLimited", retryAfter: 900 });
     expect(prismaMock.order.findFirst).not.toHaveBeenCalled();
   });
 
@@ -1244,6 +1425,28 @@ describe("trackOrder", () => {
       deliveredAt: null,
       rejectedAt: null,
       cancelledAt: null,
+      subtotal: { toNumber: () => 4000 },
+      discount: { toNumber: () => 400 },
+      items: [
+        {
+          variantId: "v1",
+          quantity: 2,
+          unitPrice: { toNumber: () => 2000 },
+          lineTotal: { toNumber: () => 4000 },
+          variant: {
+            size: "M",
+            color: "Blanc",
+            product: {
+              name: "T-shirt",
+              slug: "t-shirt",
+              images: [
+                { storagePath: "p/noir.jpg", color: "Noir" },
+                { storagePath: "p/blanc.jpg", color: "Blanc" },
+              ],
+            },
+          },
+        },
+      ],
     } as never);
 
     const result = await trackOrder({
@@ -1267,6 +1470,21 @@ describe("trackOrder", () => {
       total: 3600,
       createdAt: new Date("2026-08-15T10:00:00Z"),
       statusSince: new Date("2026-08-15T12:00:00Z"),
+      subtotal: 4000,
+      discount: 400,
+      items: [
+        {
+          variantId: "v1",
+          productName: "T-shirt",
+          productSlug: "t-shirt",
+          size: "M",
+          color: "Blanc",
+          quantity: 2,
+          unitPrice: 2000,
+          lineTotal: 4000,
+          imageUrl: expect.stringMatching(/\/p\/blanc\.jpg$/),
+        },
+      ],
     });
   });
 
@@ -1281,6 +1499,9 @@ describe("trackOrder", () => {
       deliveredAt: null,
       rejectedAt: null,
       cancelledAt: null,
+      subtotal: { toNumber: () => 3600 },
+      discount: { toNumber: () => 0 },
+      items: [],
     } as never);
 
     const result = await trackOrder({

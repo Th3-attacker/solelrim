@@ -1,7 +1,7 @@
 import { CashRegister } from "@phosphor-icons/react/dist/ssr";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { requireAdminScope } from "@/lib/shop/admin-scope";
+import { requireAdminScope } from "@/lib/auth/scope";
 import { getDayView, listDayClosures } from "@/lib/queries/cash-sessions";
 import { businessDateOf, formatBusinessDate, parseBusinessDate } from "@/lib/shop/cash";
 import { formatPrice } from "@/lib/format/currency";
@@ -93,7 +93,9 @@ export default async function CashClosuresPage({
                     <SessionStatusBadge status={session.status} />
                   </TableCell>
                   <TableCell className="tabular-nums">{money(session.totals.salesTotal)}</TableCell>
-                  <TableCell className="tabular-nums">{money(session.totals.expectedCash)}</TableCell>
+                  <TableCell className="tabular-nums">
+                    {money(session.totals.expectedCash)}
+                  </TableCell>
                   <TableCell className="tabular-nums">
                     {session.countedCash === null ? "—" : money(session.countedCash)}
                   </TableCell>

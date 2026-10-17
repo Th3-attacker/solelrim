@@ -3,13 +3,14 @@ import { mockDeep, mockReset, type DeepMockProxy } from "vitest-mock-extended";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockDeep<PrismaClient>() }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/rate-limit", async (importOriginal) => ({
+  RATE_LIMITS: (await importOriginal<typeof import("@/lib/rate-limit")>()).RATE_LIMITS,
   rateLimitRetryAfter: vi.fn(),
   getClientIp: vi.fn().mockResolvedValue("1.2.3.4"),
 }));
 
 import { prisma } from "@/lib/prisma";
-import { rateLimitRetryAfter } from "@/lib/rate-limit";
+import { RATE_LIMITS, rateLimitRetryAfter } from "@/lib/rate-limit";
 import { registerPushToken, removePushToken } from "@/lib/push/register";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
@@ -40,7 +41,9 @@ describe("registerPushToken", () => {
   });
 
   it("refuses something that isn't an Expo token", async () => {
-    expect(await registerPushToken("sport", { ...valid, token: "not-a-token" })).toEqual({ error: "invalid" });
+    expect(await registerPushToken("sport", { ...valid, token: "not-a-token" })).toEqual({
+      error: "invalid",
+    });
     expect(prismaMock.pushToken.upsert).not.toHaveBeenCalled();
   });
 
@@ -51,11 +54,14 @@ describe("registerPushToken", () => {
     expect(prismaMock.pushToken.upsert).not.toHaveBeenCalled();
   });
 
-  it("is rate-limited per IP, 20 an hour, and says how long to wait", async () => {
+  it("is rate-limited per IP and says how long to wait", async () => {
     rateLimitMock.mockResolvedValue(120);
 
-    expect(await registerPushToken("sport", valid)).toEqual({ error: "rateLimited", retryAfter: 120 });
-    expect(rateLimitMock).toHaveBeenCalledWith("push:1.2.3.4", { windowMs: 3_600_000, max: 20 });
+    expect(await registerPushToken("sport", valid)).toEqual({
+      error: "rateLimited",
+      retryAfter: 120,
+    });
+    expect(rateLimitMock).toHaveBeenCalledWith("push:1.2.3.4", RATE_LIMITS.pushPerIp);
   });
 
   it("keeps at most 5 tokens per order, dropping the oldest", async () => {
@@ -65,7 +71,9 @@ describe("registerPushToken", () => {
 
     await registerPushToken("sport", valid);
 
-    expect(prismaMock.pushToken.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ["f", "g"] } } });
+    expect(prismaMock.pushToken.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["f", "g"] } },
+    });
   });
 });
 

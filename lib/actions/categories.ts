@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { categorySchema } from "@/lib/validation/product";
-import { requireWritableAdminScope } from "@/lib/shop/admin-scope";
+import { requireWritableAdminScope } from "@/lib/auth/scope";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
+import { revalidateAdmin, revalidateSite } from "@/lib/revalidate";
 
 export async function createCategory(name: string) {
   const { productType } = await requireWritableAdminScope();
@@ -17,8 +17,7 @@ export async function createCategory(name: string) {
     data: { name: parsed.data.name, productType },
   });
 
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/categories");
+  revalidateAdmin();
   return { category };
 }
 
@@ -46,8 +45,7 @@ export async function updateCategory(id: string, name: string) {
       where: { id },
       data: { name: parsed.data.name },
     });
-    revalidatePath("/admin/categories");
-    revalidatePath("/admin/products");
+    revalidateAdmin();
     return { category: updated };
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
@@ -93,9 +91,7 @@ export async function moveCategory(id: string, direction: "up" | "down") {
     ),
   );
 
-  revalidatePath("/admin/categories");
-  revalidatePath("/admin/products");
-  revalidatePath("/", "layout");
+  revalidateSite();
   return {};
 }
 
@@ -116,7 +112,6 @@ export async function deleteCategory(id: string) {
   }
 
   await prisma.category.delete({ where: { id } });
-  revalidatePath("/admin/categories");
-  revalidatePath("/admin/products");
+  revalidateAdmin();
   return {};
 }

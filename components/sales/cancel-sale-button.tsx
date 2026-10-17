@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui/toast";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -12,21 +11,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveFormDialog } from "@/components/ui/responsive-form-dialog";
 import { cancelSale } from "@/lib/actions/sales";
 
-const KNOWN_ERRORS = new Set(["invalid", "notFound", "alreadyCancelled", "refunded", "pendingRefund"]);
+const KNOWN_ERRORS = new Set([
+  "invalid",
+  "notFound",
+  "alreadyCancelled",
+  "refunded",
+  "pendingRefund",
+]);
 
 // Voids a whole sale. The reason is mandatory and kept in the history; when
 // the sale's till is already closed the dialog warns that its frozen totals
 // won't follow.
-export function CancelSaleButton({
-  saleId,
-  tillClosed,
-}: {
-  saleId: string;
-  tillClosed: boolean;
-}) {
+export function CancelSaleButton({ saleId, tillClosed }: { saleId: string; tillClosed: boolean }) {
   const t = useTranslations("sales");
   const tCommon = useTranslations("common");
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
@@ -44,7 +42,6 @@ export function CancelSaleButton({
       }
       setOpen(false);
       setReason("");
-      router.refresh();
       toast.success(t("cancelled"));
     });
   }

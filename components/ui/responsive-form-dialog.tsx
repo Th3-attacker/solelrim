@@ -52,8 +52,13 @@ export function ResponsiveFormDialog({
   footer: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
-  const { ref, focusWithin: keyboardOpen, onFocus, onBlur, reset } =
-    useFocusWithin<HTMLDivElement>();
+  const {
+    ref,
+    focusWithin: keyboardOpen,
+    onFocus,
+    onBlur,
+    reset,
+  } = useFocusWithin<HTMLDivElement>();
   const viewportRect = useVisualViewport(keyboardOpen);
 
   if (!isMobile) {
@@ -89,11 +94,7 @@ export function ResponsiveFormDialog({
         side="bottom"
         showHandle
         overlayClassName="bg-popover/50 supports-backdrop-filter:backdrop-blur-lg"
-        style={
-          keyboardOpen
-            ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET)
-            : undefined
-        }
+        style={keyboardOpen ? visualViewportStyle(viewportRect, SHEET_PEEK_INSET) : undefined}
         className={cn(
           "flex flex-col gap-0 rounded-t-2xl transition-all duration-150 ease-out",
           !keyboardOpen && "max-h-[90svh]",
@@ -103,9 +104,7 @@ export function ResponsiveFormDialog({
           <SheetTitle>{title}</SheetTitle>
           {description && <SheetDescription>{description}</SheetDescription>}
         </SheetHeader>
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">{children}</div>
         <SheetFooter>{footer}</SheetFooter>
         {/* The iOS keyboard is translucent — extend our own background
             below the sheet's visible edge so it blurs through to this

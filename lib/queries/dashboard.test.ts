@@ -44,7 +44,9 @@ describe("getBestSellers", () => {
   });
 
   it("skips a variant that no longer exists", async () => {
-    prismaMock.$queryRaw.mockResolvedValue([{ variantId: "gone", quantity: 2, revenue: 10 }] as never);
+    prismaMock.$queryRaw.mockResolvedValue([
+      { variantId: "gone", quantity: 2, revenue: 10 },
+    ] as never);
     prismaMock.productVariant.findMany.mockResolvedValue([] as never);
 
     expect(await getBestSellers("sport")).toEqual([]);

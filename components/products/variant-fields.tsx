@@ -62,9 +62,7 @@ export function VariantFields({
         </Button>
       </div>
 
-      {errors.variants?.root && (
-        <FieldError>{tCommon("requiredField")}</FieldError>
-      )}
+      {errors.variants?.root && <FieldError>{tCommon("requiredField")}</FieldError>}
 
       <div className="flex flex-col gap-3">
         {fields.map((field, index) => (
@@ -88,11 +86,7 @@ export function VariantFields({
               <Label className="text-xs">
                 {t("price")} ({tCommon("optional")})
               </Label>
-              <Input
-                type="number"
-                step="0.01"
-                {...register(`variants.${index}.price`)}
-              />
+              <Input type="number" step="0.01" {...register(`variants.${index}.price`)} />
             </div>
             <div className="flex flex-col gap-1">
               <Label className="text-xs">{t("stock")}</Label>
@@ -101,10 +95,7 @@ export function VariantFields({
             <div className="flex items-end gap-1">
               <div className="flex flex-1 flex-col gap-1">
                 <Label className="text-xs">{t("lowStockThreshold")}</Label>
-                <Input
-                  type="number"
-                  {...register(`variants.${index}.lowStockThreshold`)}
-                />
+                <Input type="number" {...register(`variants.${index}.lowStockThreshold`)} />
               </div>
               <Button
                 type="button"

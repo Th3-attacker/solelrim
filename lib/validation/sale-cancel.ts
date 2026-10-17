@@ -6,4 +6,3 @@ export const saleCancelSchema = z.object({
   saleId: z.string().min(1),
   reason: z.string().trim().min(3).max(500),
 });
-
