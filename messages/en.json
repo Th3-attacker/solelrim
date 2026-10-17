@@ -977,7 +977,21 @@
       "disabled": "The loyalty card is turned off for this shop.",
       "unauthorized": "Your session expired. Sign in again to continue.",
       "licenseBlocked": "The shop is suspended or its license has expired."
-    }
+    },
+    "ticketTitle": "Ticket",
+    "viewTicket": "View ticket",
+    "catalogLabel": "Items",
+    "searchLabel": "Scan or search an item",
+    "categoriesLabel": "Categories",
+    "allCategories": "All",
+    "addToTicket": "Add {name} to the ticket",
+    "clearTicket": "Clear",
+    "unitPrice": "{price} each",
+    "itemCount": "{count, plural, =0 {No item} one {# item} other {# items}}",
+    "toPay": "To pay",
+    "changeShort": "Change",
+    "printReceipt": "Print receipt",
+    "walletCheckHint": "Check the payment arrived on the store's phone before charging."
   },
   "sales": {
     "title": "Sales",
@@ -1029,8 +1043,22 @@
       "reasonPlaceholder": "E.g. entry mistake, customer changed their mind…",
       "closedTill": "This sale's till is already closed: its frozen totals won't change. If money was handed back to the customer, mention it in the reason.",
       "confirm": "Cancel sale",
-      "keep": "Keep sale"
-    }
+      "keep": "Keep sale",
+      "cancelled": "Sale cancelled."
+    },
+    "description": "In-store sales, how they were paid and their refunds.",
+    "tabsLabel": "Sales and refunds",
+    "refundsTab": "Refunds",
+    "saleDetailTitle": "Sale details",
+    "summaryLabel": "Sales summary",
+    "collected": "Collected",
+    "completedCount": "Completed sales",
+    "averageBasket": "Average basket",
+    "searchLabel": "Search sales",
+    "searchPlaceholder": "Reference, customer or phone…",
+    "saleNotFound": "This sale could not be found.",
+    "closedTillShort": "Till closed",
+    "itemsTitle": "Items"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -1236,7 +1264,22 @@
     "movementConfirmBody": "{amount} — {reason}. It can't be deleted.",
     "closeConfirmTitle": "Close the till?",
     "closeConfirmBody": "Counted cash: {counted}. {difference} Once closed, the till can't be changed.",
-    "cashRefunds": "Cash refunds"
+    "cashRefunds": "Cash refunds",
+    "lastClosedSummary": "Last closing: {date}, {counted} counted, difference {difference}.",
+    "openingFloatLabel": "Opening float",
+    "openingFloatHint": "The cash in the drawer before the first sale.",
+    "goBack": "Go back",
+    "notCounted": "Not counted",
+    "expectedCashHint": "Expected: {amount}",
+    "previousSessions": "See previous sessions",
+    "openBadge": "Open · float {amount} · since {time}",
+    "sessionsDescription": "Every till opened, what it took in and its difference at closing.",
+    "cashSections": "Tills and closures",
+    "closuresTab": "Closures",
+    "sessionTitle": "Till of {date}",
+    "closuresDescription": "Each day's balance: what came in, by which means, and the difference.",
+    "closeDayConfirmTitle": "Close the day of {date}?",
+    "noClosures": "No day closed yet."
   },
   "mySales": {
     "title": "My sales",

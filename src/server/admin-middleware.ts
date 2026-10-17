@@ -55,6 +55,24 @@ export const staffMiddleware = createMiddleware({ type: "function" }).server(asy
   return next({ context: { admin, email: user.email ?? "", name, productType } });
 });
 
+// The checkout writing (a sale, the till): sellers included, refused while
+// the boutique's license blocks writes. Hands over the command context the
+// shared commands (lib/services/*-commands.ts) take.
+export const writableStaffMiddleware = createMiddleware({ type: "function" })
+  .middleware([staffMiddleware])
+  .server(async ({ next, context }) => {
+    await assertLicenseWritable(context.admin, context.productType);
+    return next({
+      context: {
+        command: {
+          admin: { id: context.admin.id, role: context.admin.role },
+          productType: context.productType,
+          actor: { id: context.admin.id, role: context.admin.role, email: context.email },
+        },
+      },
+    });
+  });
+
 // Boutique admins and superadmins: everything but the checkout is closed to
 // sellers.
 export const adminMiddleware = createMiddleware({ type: "function" })
@@ -71,9 +89,15 @@ export const writableAdminMiddleware = createMiddleware({ type: "function" })
   .middleware([adminMiddleware])
   .server(async ({ next, context }) => {
     await assertLicenseWritable(context.admin, context.productType);
+    const actor = { id: context.admin.id, role: context.admin.role, email: context.email };
     return next({
       context: {
-        actor: { id: context.admin.id, role: context.admin.role, email: context.email },
+        actor,
+        command: {
+          admin: { id: context.admin.id, role: context.admin.role },
+          productType: context.productType,
+          actor,
+        },
       },
     });
   });

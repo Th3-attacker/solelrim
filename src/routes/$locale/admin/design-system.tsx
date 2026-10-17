@@ -34,6 +34,7 @@ import {
   selectionColumn,
 } from "~/components/table/data-table";
 import { shellQuery } from "~/features/shell/shell.queries";
+import { Checkout } from "~/features/pos/checkout";
 
 // The design's "Composants" board, built from the real components inside the
 // real frame, to review them in both themes and three languages. Development
@@ -84,6 +85,7 @@ function DesignSystemPage() {
           <Cards />
           <Overlays />
           <TableDemo />
+          <CheckoutDemo locale={locale} />
         </div>
       </AppShell>
     </QueryClientProvider>
@@ -519,5 +521,54 @@ function TableDemo() {
         onPageChange={setPage}
       />
     </Card>
+  );
+}
+
+// The checkout with made-up products, at a desktop screen's height.
+const DEMO_CHECKOUT = {
+  open: true as const,
+  session: { id: "demo", openingFloat: 900, openedAt: new Date("2026-10-14T09:00:00Z") },
+  products: [
+    ["p1", "Casquette", "Casual", 150, 4],
+    ["p2", "Chaussettes", "Chaussettes", 50, 12],
+    ["p3", "Fitbit", "Accessoires", 900, 0],
+    ["p4", "Pullover", "Casual", 570, 3],
+  ].map(([id, name, category, price, stock]) => ({
+    id: String(id),
+    name: String(name),
+    category: String(category),
+    imageUrl: null,
+    variants: [
+      {
+        id: `${id}-v`,
+        size: "M",
+        color: "Noir",
+        sku: `SKU-${id}`,
+        stock: Number(stock),
+        price: Number(price),
+      },
+    ],
+  })),
+  wallets: ["Bankily", "Masrvi", "Sedad", "Bimbank"].map((provider, index) => ({
+    id: `w${index}`,
+    provider,
+    number: "",
+  })),
+  loyaltyRule: { enabled: true, spendPerPoint: 100, rewardPoints: 100, rewardValue: 1000 },
+};
+
+function CheckoutDemo({ locale }: { locale: "fr" | "en" | "ar" }) {
+  return (
+    <Section
+      title="Caisse"
+      hint="L'écran de vente, avec des articles inventés (aucune vente n'est envoyée sans clic sur Encaisser)."
+    >
+      <div
+        className="flex h-[836px] flex-col overflow-hidden rounded-card border border-line"
+        data-testid="checkout-demo"
+      >
+        <Checkout data={DEMO_CHECKOUT} locale={locale} />
+      </div>
+    </Section>
   );
 }

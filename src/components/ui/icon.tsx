@@ -45,6 +45,8 @@ const PATHS = {
     "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",
   chat: "M4 20l1.5-4A8 8 0 1 1 8 18.5z",
   star: "M12 3l2.7 5.5 6 .9-4.4 4.3 1 6L12 17l-5.3 2.7 1-6L3.3 9.4l6-.9z",
+  // Un retour de marchandise : la flèche qui revient sur sa piste.
+  refund: "M4 10h11a5 5 0 0 1 0 10H9M9 5 4 10l5 5",
 } as const;
 
 export type IconName = keyof typeof PATHS;
