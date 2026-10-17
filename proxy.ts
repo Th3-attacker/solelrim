@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { getStoreTypeRouting } from "@/lib/services/domain-cache";
+import { getSiteUrl } from "@/lib/shop/site-url";
 import { serverEnv } from "@/lib/env";
 import { contentSecurityPolicy, newNonce } from "@/lib/csp";
 
@@ -48,7 +49,34 @@ export async function proxy(request: NextRequest) {
 
   const response = await route(new NextRequest(request, { headers }));
   response.headers.set("Content-Security-Policy", policy);
+
+  // Les seuls hôtes dont le contenu mérite d'être indexé : le domaine de
+  // production officiel (getSiteUrl) et les domaines propres des boutiques.
+  // Tout le reste — URL de prévisualisation Vercel (*.vercel.app, déjà
+  // noindexées côté Vercel mais sans garantie contractualisée), domaine
+  // accidentellement pointé vers le déploiement — reçoit X-Robots-Tag:
+  // noindex, pour qu'un miroir de prévisualisation ne devienne jamais un
+  // doublon indexé à côté du vrai site. En dev locale, getSiteUrl retombe
+  // sur localhost, donc le dev reste noindexable sur son propre hôte.
+  const host = (request.headers.get("host") ?? "").toLowerCase().split(":")[0];
+  if (host && !(await isIndexableHost(host))) {
+    response.headers.set("X-Robots-Tag", "noindex");
+  }
+
   return response;
+}
+
+// Hôte indexable = domaine de production (sans tenir compte du port) ou
+// domaine boutique enregistré en base. false si on n'arrive pas à déterminer
+// le domaine de production (getSiteUrl n'échoue jamais — retombe sur
+// localhost) ; domainMap vide = fonctionnalité domaine désactivée (erreur
+// DB, cf. domain-cache), donc aucune URL de prévisualisation n'est alors
+// déclarée indexable par erreur grâce à un miroir vide.
+async function isIndexableHost(host: string): Promise<boolean> {
+  const productionHost = new URL(getSiteUrl()).hostname.toLowerCase();
+  if (host === productionHost) return true;
+  const { domainMap } = await getStoreTypeRouting();
+  return domainMap.has(host);
 }
 
 async function route(request: NextRequest) {

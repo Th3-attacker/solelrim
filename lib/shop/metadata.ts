@@ -7,6 +7,23 @@ import { routing } from "@/i18n/routing";
 // no /{storeKey} segment (see proxy.ts), so canonical/hreflang tags must
 // agree with what the sitemap already tells Google, not the path the
 // current request happened to arrive on.
+// Open Graph attend un identifiant langue_PAYS (ex. "fr_FR"), pas une simple
+// langue ("fr") : un og:locale bare n'est pas reconnu par Facebook/WhatsApp,
+// qui retomberaient sur une locale par défaut pour l'aperçu du lien.
+// Chaque locale de l'app est mappée sur la variante correspondant au pays
+// cible (Mauritanie pour l'arabe, standard international pour le français et
+// l'anglais) — toute locale ajoutée plus tard sans mapping retombe sur la
+// langue seule, comportement explicite et non un crash.
+const OG_LOCALES: Record<string, string> = {
+  fr: "fr_FR",
+  en: "en_US",
+  ar: "ar_MR",
+};
+
+export function ogLocale(locale: string): string {
+  return OG_LOCALES[locale] ?? locale;
+}
+
 export function buildStoreUrl({
   domain,
   storeKey,
@@ -78,7 +95,7 @@ export function buildSocialMetadata({
       title,
       description,
       url: urlFor(locale),
-      locale,
+      locale: ogLocale(locale),
       type: "website",
       images,
       ...(siteName ? { siteName } : {}),
