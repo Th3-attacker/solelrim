@@ -9,6 +9,8 @@ export type AdminPath =
   | "/$locale/admin/orders"
   | "/$locale/admin/sales"
   | "/$locale/admin/pos"
+  | "/$locale/admin/pos/my-sales"
+  | "/$locale/admin/pos/refunds"
   | "/$locale/admin/pos/sessions"
   | "/$locale/admin/cash-closures";
 
@@ -31,6 +33,10 @@ export type NavItem = {
 export type NavGroup = { label: string; superadminOnly?: boolean; items: readonly NavItem[] };
 
 const STAFF: readonly AdminRole[] = ["SUPERADMIN", "BOUTIQUE_ADMIN", "SELLER"];
+
+// Ses propres ventes et remboursements : les pages de la caisse, que voit
+// seul le vendeur — un admin les suit depuis l'entrée Ventes.
+const SELLERS: readonly AdminRole[] = ["SELLER"];
 
 export const NAV: readonly NavGroup[] = [
   {
@@ -64,6 +70,13 @@ export const NAV: readonly NavGroup[] = [
         tabBar: true,
         exact: true,
       },
+      {
+        to: "/$locale/admin/pos/my-sales",
+        label: "nav.mySales",
+        icon: "sales",
+        roles: SELLERS,
+      },
+      { to: "/$locale/admin/pos/refunds", label: "nav.refunds", icon: "refund", roles: SELLERS },
       { to: "/$locale/admin/pos/sessions", label: "nav.cashSessions", icon: "clock", roles: STAFF },
       { to: "/$locale/admin/cash-closures", label: "nav.cashClosures", icon: "lock" },
     ],

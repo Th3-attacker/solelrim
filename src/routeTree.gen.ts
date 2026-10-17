@@ -18,9 +18,12 @@ import { Route as LocaleAdminDesignSystemRouteImport } from './routes/$locale/ad
 import { Route as LocaleAdminLoginRouteImport } from './routes/$locale/admin/login'
 import { Route as LocaleAdminDashboardIndexRouteImport } from './routes/$locale/admin/_dashboard/index'
 import { Route as LocaleAdminDashboardCashClosuresRouteImport } from './routes/$locale/admin/_dashboard/cash-closures'
+import { Route as LocaleAdminDashboardSalesRouteImport } from './routes/$locale/admin/_dashboard/sales'
 import { Route as LocaleAdminDashboardOrdersIndexRouteImport } from './routes/$locale/admin/_dashboard/orders/index'
 import { Route as LocaleAdminDashboardOrdersLabelsRouteImport } from './routes/$locale/admin/_dashboard/orders/labels'
 import { Route as LocaleAdminDashboardPosIndexRouteImport } from './routes/$locale/admin/_dashboard/pos/index'
+import { Route as LocaleAdminDashboardPosMySalesRouteImport } from './routes/$locale/admin/_dashboard/pos/my-sales'
+import { Route as LocaleAdminDashboardPosRefundsRouteImport } from './routes/$locale/admin/_dashboard/pos/refunds'
 import { Route as LocaleAdminDashboardPosRegisterRouteImport } from './routes/$locale/admin/_dashboard/pos/register'
 import { Route as LocaleAdminDashboardOrdersOrderIdIndexRouteImport } from './routes/$locale/admin/_dashboard/orders/$orderId/index'
 import { Route as LocaleAdminDashboardOrdersOrderIdLabelRouteImport } from './routes/$locale/admin/_dashboard/orders/$orderId/label'
@@ -75,6 +78,12 @@ const LocaleAdminDashboardCashClosuresRoute =
     path: '/cash-closures',
     getParentRoute: () => LocaleAdminDashboardRouteRoute,
   } as any)
+const LocaleAdminDashboardSalesRoute =
+  LocaleAdminDashboardSalesRouteImport.update({
+    id: '/sales',
+    path: '/sales',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
 const LocaleAdminDashboardOrdersIndexRoute =
   LocaleAdminDashboardOrdersIndexRouteImport.update({
     id: '/orders/',
@@ -91,6 +100,18 @@ const LocaleAdminDashboardPosIndexRoute =
   LocaleAdminDashboardPosIndexRouteImport.update({
     id: '/pos/',
     path: '/pos/',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
+const LocaleAdminDashboardPosMySalesRoute =
+  LocaleAdminDashboardPosMySalesRouteImport.update({
+    id: '/pos/my-sales',
+    path: '/pos/my-sales',
+    getParentRoute: () => LocaleAdminDashboardRouteRoute,
+  } as any)
+const LocaleAdminDashboardPosRefundsRoute =
+  LocaleAdminDashboardPosRefundsRouteImport.update({
+    id: '/pos/refunds',
+    path: '/pos/refunds',
     getParentRoute: () => LocaleAdminDashboardRouteRoute,
   } as any)
 const LocaleAdminDashboardPosRegisterRoute =
@@ -138,8 +159,11 @@ export interface FileRoutesByFullPath {
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/cash-closures': typeof LocaleAdminDashboardCashClosuresRoute
+  '/$locale/admin/sales': typeof LocaleAdminDashboardSalesRoute
   '/$locale/admin/': typeof LocaleAdminDashboardIndexRoute
   '/$locale/admin/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/pos/my-sales': typeof LocaleAdminDashboardPosMySalesRoute
+  '/$locale/admin/pos/refunds': typeof LocaleAdminDashboardPosRefundsRoute
   '/$locale/admin/pos/register': typeof LocaleAdminDashboardPosRegisterRoute
   '/$locale/admin/orders/': typeof LocaleAdminDashboardOrdersIndexRoute
   '/$locale/admin/pos/': typeof LocaleAdminDashboardPosIndexRoute
@@ -156,7 +180,10 @@ export interface FileRoutesByTo {
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/cash-closures': typeof LocaleAdminDashboardCashClosuresRoute
+  '/$locale/admin/sales': typeof LocaleAdminDashboardSalesRoute
   '/$locale/admin/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/pos/my-sales': typeof LocaleAdminDashboardPosMySalesRoute
+  '/$locale/admin/pos/refunds': typeof LocaleAdminDashboardPosRefundsRoute
   '/$locale/admin/pos/register': typeof LocaleAdminDashboardPosRegisterRoute
   '/$locale/admin/orders': typeof LocaleAdminDashboardOrdersIndexRoute
   '/$locale/admin/pos': typeof LocaleAdminDashboardPosIndexRoute
@@ -176,8 +203,11 @@ export interface FileRoutesById {
   '/$locale/admin/design-system': typeof LocaleAdminDesignSystemRoute
   '/$locale/admin/login': typeof LocaleAdminLoginRoute
   '/$locale/admin/_dashboard/cash-closures': typeof LocaleAdminDashboardCashClosuresRoute
+  '/$locale/admin/_dashboard/sales': typeof LocaleAdminDashboardSalesRoute
   '/$locale/admin/_dashboard/': typeof LocaleAdminDashboardIndexRoute
   '/$locale/admin/_dashboard/orders/labels': typeof LocaleAdminDashboardOrdersLabelsRoute
+  '/$locale/admin/_dashboard/pos/my-sales': typeof LocaleAdminDashboardPosMySalesRoute
+  '/$locale/admin/_dashboard/pos/refunds': typeof LocaleAdminDashboardPosRefundsRoute
   '/$locale/admin/_dashboard/pos/register': typeof LocaleAdminDashboardPosRegisterRoute
   '/$locale/admin/_dashboard/orders/': typeof LocaleAdminDashboardOrdersIndexRoute
   '/$locale/admin/_dashboard/pos/': typeof LocaleAdminDashboardPosIndexRoute
@@ -197,8 +227,11 @@ export interface FileRouteTypes {
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/cash-closures'
+    | '/$locale/admin/sales'
     | '/$locale/admin/'
     | '/$locale/admin/orders/labels'
+    | '/$locale/admin/pos/my-sales'
+    | '/$locale/admin/pos/refunds'
     | '/$locale/admin/pos/register'
     | '/$locale/admin/orders/'
     | '/$locale/admin/pos/'
@@ -215,7 +248,10 @@ export interface FileRouteTypes {
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/cash-closures'
+    | '/$locale/admin/sales'
     | '/$locale/admin/orders/labels'
+    | '/$locale/admin/pos/my-sales'
+    | '/$locale/admin/pos/refunds'
     | '/$locale/admin/pos/register'
     | '/$locale/admin/orders'
     | '/$locale/admin/pos'
@@ -234,8 +270,11 @@ export interface FileRouteTypes {
     | '/$locale/admin/design-system'
     | '/$locale/admin/login'
     | '/$locale/admin/_dashboard/cash-closures'
+    | '/$locale/admin/_dashboard/sales'
     | '/$locale/admin/_dashboard/'
     | '/$locale/admin/_dashboard/orders/labels'
+    | '/$locale/admin/_dashboard/pos/my-sales'
+    | '/$locale/admin/_dashboard/pos/refunds'
     | '/$locale/admin/_dashboard/pos/register'
     | '/$locale/admin/_dashboard/orders/'
     | '/$locale/admin/_dashboard/pos/'
@@ -316,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleAdminDashboardCashClosuresRouteImport
       parentRoute: typeof LocaleAdminDashboardRouteRoute
     }
+    '/$locale/admin/_dashboard/sales': {
+      id: '/$locale/admin/_dashboard/sales'
+      path: '/sales'
+      fullPath: '/$locale/admin/sales'
+      preLoaderRoute: typeof LocaleAdminDashboardSalesRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
     '/$locale/admin/_dashboard/orders/': {
       id: '/$locale/admin/_dashboard/orders/'
       path: '/orders'
@@ -335,6 +381,20 @@ declare module '@tanstack/react-router' {
       path: '/pos'
       fullPath: '/$locale/admin/pos/'
       preLoaderRoute: typeof LocaleAdminDashboardPosIndexRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
+    '/$locale/admin/_dashboard/pos/my-sales': {
+      id: '/$locale/admin/_dashboard/pos/my-sales'
+      path: '/pos/my-sales'
+      fullPath: '/$locale/admin/pos/my-sales'
+      preLoaderRoute: typeof LocaleAdminDashboardPosMySalesRouteImport
+      parentRoute: typeof LocaleAdminDashboardRouteRoute
+    }
+    '/$locale/admin/_dashboard/pos/refunds': {
+      id: '/$locale/admin/_dashboard/pos/refunds'
+      path: '/pos/refunds'
+      fullPath: '/$locale/admin/pos/refunds'
+      preLoaderRoute: typeof LocaleAdminDashboardPosRefundsRouteImport
       parentRoute: typeof LocaleAdminDashboardRouteRoute
     }
     '/$locale/admin/_dashboard/pos/register': {
@@ -384,8 +444,11 @@ declare module '@tanstack/react-router' {
 
 interface LocaleAdminDashboardRouteRouteChildren {
   LocaleAdminDashboardCashClosuresRoute: typeof LocaleAdminDashboardCashClosuresRoute
+  LocaleAdminDashboardSalesRoute: typeof LocaleAdminDashboardSalesRoute
   LocaleAdminDashboardIndexRoute: typeof LocaleAdminDashboardIndexRoute
   LocaleAdminDashboardOrdersLabelsRoute: typeof LocaleAdminDashboardOrdersLabelsRoute
+  LocaleAdminDashboardPosMySalesRoute: typeof LocaleAdminDashboardPosMySalesRoute
+  LocaleAdminDashboardPosRefundsRoute: typeof LocaleAdminDashboardPosRefundsRoute
   LocaleAdminDashboardPosRegisterRoute: typeof LocaleAdminDashboardPosRegisterRoute
   LocaleAdminDashboardOrdersIndexRoute: typeof LocaleAdminDashboardOrdersIndexRoute
   LocaleAdminDashboardPosIndexRoute: typeof LocaleAdminDashboardPosIndexRoute
@@ -400,9 +463,12 @@ const LocaleAdminDashboardRouteRouteChildren: LocaleAdminDashboardRouteRouteChil
   {
     LocaleAdminDashboardCashClosuresRoute:
       LocaleAdminDashboardCashClosuresRoute,
+    LocaleAdminDashboardSalesRoute: LocaleAdminDashboardSalesRoute,
     LocaleAdminDashboardIndexRoute: LocaleAdminDashboardIndexRoute,
     LocaleAdminDashboardOrdersLabelsRoute:
       LocaleAdminDashboardOrdersLabelsRoute,
+    LocaleAdminDashboardPosMySalesRoute: LocaleAdminDashboardPosMySalesRoute,
+    LocaleAdminDashboardPosRefundsRoute: LocaleAdminDashboardPosRefundsRoute,
     LocaleAdminDashboardPosRegisterRoute: LocaleAdminDashboardPosRegisterRoute,
     LocaleAdminDashboardOrdersIndexRoute: LocaleAdminDashboardOrdersIndexRoute,
     LocaleAdminDashboardPosIndexRoute: LocaleAdminDashboardPosIndexRoute,
