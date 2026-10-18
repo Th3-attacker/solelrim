@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ImageSquare } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { FeaturedShowcaseScroller } from "@/components/shop/featured-showcase-scroller";
@@ -14,15 +14,16 @@ type Product = Awaited<ReturnType<typeof getActiveProducts>>[number];
 // in deliverOrder() and already capped at 5 there) — one horizontally
 // scrollable row of big cards, same as the reference: ~3 visible at once on
 // desktop, one (plus a peek of the next) on mobile.
-export async function FeaturedShowcase({
+export function FeaturedShowcase({
   products,
   basePath,
 }: {
   products: Product[];
   basePath: string;
 }) {
+  // Hook avant le retour anticipé (règles des hooks React).
+  const t = useTranslations("shop");
   if (products.length === 0) return null;
-  const t = await getTranslations("shop");
 
   const cards = products.map((product) => (
     <div
