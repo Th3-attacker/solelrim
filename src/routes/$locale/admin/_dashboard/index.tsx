@@ -13,7 +13,7 @@ import { getAdminScope } from "@/lib/auth/scope";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { LazyRevenueChart } from "@/components/dashboard/revenue-chart-lazy";
 import { formatPrice } from "@/lib/format/currency";
 import {
   Table,
@@ -169,7 +169,7 @@ function DashboardPage() {
           <CardDescription>{t("revenueOverTimeSubtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <RevenueChart data={revenue} />
+          <LazyRevenueChart data={revenue} />
         </CardContent>
       </Card>
 
