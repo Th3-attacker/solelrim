@@ -1,17 +1,17 @@
-import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toast";
-import { getDirection, routing } from "@/i18n/routing";
-import { getSiteUrl } from "@/lib/shop/site-url";
-import { cn } from "@/lib/utils";
-import { DirectionProvider } from "@radix-ui/react-direction";
 import type { Metadata, Viewport } from "next";
+import { Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { DirectionProvider } from "@radix-ui/react-direction";
 import "../globals.css";
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ServiceWorkerCleanup } from "@/components/service-worker-cleanup";
+import { Toaster } from "@/components/ui/toast";
+import { routing, getDirection } from "@/i18n/routing";
+import { getSiteUrl } from "@/lib/shop/site-url";
 
 // Body/heading font is the native OS UI font stack (SF Pro on Apple
 // devices) defined in globals.css's --font-sans — no webfont to load here.
@@ -43,30 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(getSiteUrl()),
     title: `SOLAL — ${t("title")}`,
     description: t("metaDescription"),
-    applicationName: "Solal",
-
-    alternates: {
-      canonical: "/",
-    },
-    openGraph: {
-      type: "website",
-      locale: "fr_FR",
-      url: getSiteUrl(),
-      siteName: "Solal",
-      title: "Solal | Vêtements de sport en Mauritanie",
-      description:
-        "Découvrez nos vêtements de sport, de musculation et de fitness pour hommes et femmes.",
-      images: ["/og-image.jpg"],
-    },
+    openGraph: { siteName: "SOLAL", type: "website" },
     twitter: { card: "summary" },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-      },
-    },
   };
 }
 

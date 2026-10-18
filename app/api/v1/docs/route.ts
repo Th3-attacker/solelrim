@@ -64,19 +64,7 @@ const HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta
-  name="description"
-  content="Découvrez Solal, votre boutique en ligne de vêtements de sport, musculation et fitness pour hommes et femmes en Mauritanie. Explorez nos collections et commandez en ligne."
-/>
-<link rel="canonical" href="https://solal-rim.com/" />
 <meta name="robots" content="noindex">
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Solal" />
-<meta property="og:title"
-  content="Solal – Vêtements de sport et fitness en Mauritanie" />
-<meta property="og:description"
-  content="Explorez notre collection de vêtements de sport pour hommes et femmes." />
-<meta property="og:url" content="https://solal-rim.com/" />
 <title>SOLAL API v1</title>
 <link rel="icon" href="/favicon.ico">
 </head>

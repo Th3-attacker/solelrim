@@ -12,14 +12,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["app/**", "components/**", "lib/**", "src/**"],
-      exclude: ["lib/generated/**", "src/routeTree.gen.ts", "**/*.test.ts", "**/*.d.ts"],
+      include: ["app/**", "components/**", "lib/**"],
+      exclude: ["lib/generated/**", "**/*.test.ts", "**/*.d.ts"],
     },
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),
-      "~": path.resolve(__dirname, "src"),
       // The marker throws outside the react-server condition; tests run server
       // modules in plain Node, like Next.js does on the server.
       "server-only": path.resolve(__dirname, "node_modules/server-only/empty.js"),

@@ -23,24 +23,6 @@ import { Link, redirect } from "@/i18n/navigation";
 
 const RELATED_PRODUCTS_LIMIT = 4;
 
-// Repli de description SEO pour un produit sans description réelle : plutôt
-// que de retomber sur le sous-titre générique de la vitrine (ce qui donnerait
-// à toutes les fiches sans description la même meta description — signal de
-// contenu mince pour Google), on compose une phrase unique à partir des données
-// réelles du produit (nom + catégorie + boutique). Jamais de caractéristique
-// inventée : on ne répète que ce qui existe déjà en base.
-function seoDescriptionFor(
-  product: { name: string; description: string | null; category: { name: string } },
-  siteName: string,
-  genericFallback: string,
-): string {
-  return (
-    product.description?.trim() ||
-    `${product.name} — ${product.category.name} · ${siteName}`.trim() ||
-    genericFallback
-  );
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -60,7 +42,7 @@ export async function generateMetadata({
 
   const siteName = resolveBoutiqueText(boutique, locale).siteName?.trim() || tShop("siteName");
   const title = `${product.name} — ${siteName}`;
-  const description = seoDescriptionFor(product, siteName, tShop("heroSubtitle"));
+  const description = product.description?.trim() || tShop("heroSubtitle");
   // Through the image optimizer, not the original: WhatsApp and the other
   // link previews fetch og:image on every share, and an original can weigh
   // a few MB (each fetch counts against Supabase's egress).
@@ -153,26 +135,14 @@ export default async function ProductDetailPage({
   const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
   const startingPrice =
     variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : product.basePrice.toNumber();
-  // Un an à partir de maintenant : Google recommande un priceValidUntil
-  // limité dans le futur pour les offres ; le prix étant revu régulièrement
-  // côté admin, une date lointaine laisserait mentir la page après un changement.
-  const priceValidUntil = new Date();
-  priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1);
-
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    // Aligné sur la meta description (même repli) pour éviter qu'un produit
-    // sans description porte deux textes différents dans la même page.
-    description: seoDescriptionFor(product, siteName, t("heroSubtitle")),
+    description: product.description?.trim() || t("heroSubtitle"),
     image: images.map((image) =>
       new URL(optimizedImagePath(image.url, 1200), canonicalUrl).toString(),
     ),
-    // L'identifiant public du produit est son slug d'URL — unique en base —
-    // utilisé comme sku : Google le recommande comme identifiant marchand
-    // quand aucun code-barres (gtin) n'existe.
-    sku: productSlug,
     category: product.category.name,
     brand: { "@type": "Brand", name: siteName },
     offers: {
@@ -181,9 +151,6 @@ export default async function ProductDetailPage({
       priceCurrency: "MRU",
       availability: totalStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       url: canonicalUrl,
-      // Produits toujours neufs en boutique — aucune occasion revendue.
-      itemCondition: "https://schema.org/NewCondition",
-      priceValidUntil: priceValidUntil.toISOString().slice(0, 10),
     },
   };
   const breadcrumbJsonLd = {
