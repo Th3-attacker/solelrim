@@ -13,7 +13,7 @@ import {
 import type { OrderStatus, StoreType } from "@/lib/generated/prisma/client";
 import { buildOrderReference } from "@/lib/shop/reference";
 import { PrismaClientKnownRequestError } from "@/lib/generated/prisma/internal/prismaNamespace";
-import { DEFAULT_LOCALE, isAppLocale } from "@/lib/i18n-locales";
+import { routing } from "@/i18n/routing";
 import {
   getClientIp,
   peekRateLimit,
@@ -32,7 +32,7 @@ import { notifyOrdersChanged } from "@/lib/realtime";
 import { after } from "next/server";
 
 // Placing and tracking an order, the customer side: the website's Server
-// Actions (lib/actions/orders.ts) and the app's API routes (app/api/v1) both
+// Actions (lib/actions/orders.ts) and the app's API routes (src/api/v1) both
 // call these, so prices, stock, promo codes, the payment proof check and the
 // rate limits exist once.
 
@@ -167,7 +167,8 @@ async function checkCustomer(input: OrderInput) {
 }
 
 function resolveOrderLocale(value: FormDataEntryValue | null): string {
-  return isAppLocale(value) ? value : DEFAULT_LOCALE;
+  const locales: readonly string[] = routing.locales;
+  return typeof value === "string" && locales.includes(value) ? value : routing.defaultLocale;
 }
 
 type ReadOrder = {

@@ -1,45 +1,89 @@
-import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
-import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import { createIsomorphicFn, getGlobalStartContext } from "@tanstack/react-start";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { toInternalPath, toPublicPath, type BrandedDomain } from "@/lib/services/branded-domain";
+import { GlobalError, RootNotFound } from "@/components/errors/global-error";
+import { getAppRequestContext } from "@/src/server/request-context";
 import { routeTree } from "./routeTree.gen";
-import { NotFound } from "./components/not-found";
-import { RouteError } from "./components/route-error";
 
-// The CSP nonce of the page being rendered (src/start.ts). Only the server
-// needs it: the browser runs the scripts already in the page.
-const getNonce = createIsomorphicFn()
-  .server(() => getGlobalStartContext()?.nonce)
-  .client(() => undefined);
+declare global {
+  interface Window {
+    // Posé par src/routes/__root.tsx avant le chargement des scripts : le
+    // domaine de marque de la page, pour que la navigation côté navigateur
+    // réécrive les URL comme le serveur.
+    __BRANDED_DOMAIN__?: BrandedDomain | null;
+  }
+}
 
-// One router and one query cache per request on the server, one for the
-// whole visit in the browser.
+// Ce que le routeur doit savoir de la requête : le nonce CSP de ses propres
+// scripts (serveur seulement) et le domaine de marque éventuel.
+const getRequestRouting = createIsomorphicFn()
+  .server(() => {
+    const context = getAppRequestContext();
+    return { nonce: context?.nonce, branded: context?.branded ?? null };
+  })
+  .client(() => ({ nonce: undefined, branded: window.__BRANDED_DOMAIN__ ?? null }));
+
+// Les paramètres d'URL restent des chaînes, comme les searchParams de
+// Next.js (le format par défaut de TanStack Router convertirait "2" en
+// nombre et sérialiserait les objets en JSON).
+function parseSearch(searchStr: string): Record<string, string | string[]> {
+  const params = new URLSearchParams(searchStr);
+  const search: Record<string, string | string[]> = {};
+  for (const key of new Set(params.keys())) {
+    const values = params.getAll(key);
+    search[key] = values.length > 1 ? values : values[0];
+  }
+  return search;
+}
+
+function stringifySearch(search: Record<string, unknown>): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(search)) {
+    if (value === undefined || value === null) continue;
+    for (const item of Array.isArray(value) ? value : [value]) params.append(key, String(item));
+  }
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 export function getRouter() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        // Data shown less than 30 s ago is shown again at once, without a
-        // request; older data is shown too, and refreshed behind it.
-        staleTime: 30_000,
-      },
-    },
-  });
+  const { nonce, branded } = getRequestRouting();
 
-  const router = createRouter({
+  return createRouter({
     routeTree,
-    context: { queryClient },
-    // A link's page starts loading as soon as the pointer rests on it.
-    defaultPreload: "intent",
-    // Freshness is the query cache's call, not the router's.
-    defaultPreloadStaleTime: 0,
+    context: { branded },
     scrollRestoration: true,
-    defaultNotFoundComponent: NotFound,
-    defaultErrorComponent: RouteError,
-    ssr: { nonce: getNonce() },
+    // Préchargement des données au survol des liens : la page suivante est
+    // souvent prête au clic, comme avec le prefetch de Next.js.
+    defaultPreload: "intent",
+    // Les squelettes (ex-loading.tsx) n'apparaissent que si le chargement
+    // dure, puis restent assez longtemps pour ne pas clignoter.
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 300,
+    // Toute route sans frontière propre retombe sur celles-ci (ex-global-error
+    // et 404 par défaut de Next.js).
+    defaultErrorComponent: GlobalError,
+    defaultNotFoundComponent: RootNotFound,
+    parseSearch,
+    stringifySearch,
+    ssr: { nonce },
+    // Domaine de marque (lib/services/branded-domain.ts) : URL publique sans
+    // segment boutique ↔ route interne /$locale/$storeType/….
+    ...(branded && {
+      rewrite: {
+        input: ({ url }) => {
+          const internal = toInternalPath(url.pathname, branded);
+          if (!internal) return undefined;
+          url.pathname = internal;
+          return url;
+        },
+        output: ({ url }) => {
+          const publicPath = toPublicPath(url.pathname, branded);
+          if (!publicPath) return undefined;
+          url.pathname = publicPath;
+          return url;
+        },
+      },
+    }),
   });
-
-  // Queries filled on the server travel to the browser with the page.
-  setupRouterSsrQueryIntegration({ router, queryClient });
-
-  return router;
 }

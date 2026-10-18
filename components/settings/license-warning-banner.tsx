@@ -1,5 +1,5 @@
 import { Warning } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations, getFormatter } from "next-intl/server";
+import { useTranslations, useFormatter } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -20,13 +20,15 @@ import {
 // is actually rejected server-side (lib/auth/scope.ts:
 // requireWritableAdminScope) — the banner's copy says so rather than just
 // warning about an upcoming date.
-export async function LicenseWarningBanner({ license }: { license: LicenseInfo }) {
+export function LicenseWarningBanner({ license }: { license: LicenseInfo }) {
+  // Hooks avant tout retour anticipé (règles des hooks React).
+  const t = useTranslations("settings");
+  const format = useFormatter();
   const state = getEffectiveLicenseState(license);
   if (!isLicenseWarning(state, license)) {
     return null;
   }
 
-  const [t, format] = await Promise.all([getTranslations("settings"), getFormatter()]);
   const blocking = isLicenseBlocking(state);
   const variant = blocking ? "destructive" : "warning";
   const expiresAt = license.licenseExpiresAt;

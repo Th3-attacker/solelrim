@@ -1,10 +1,10 @@
 import { CreditCard, ChatCircle, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { OrderProcedureTrigger } from "@/components/shop/order-procedure-trigger";
 import { SectionTitle } from "@/components/shop/section-title";
 
-export async function TrustBadges() {
-  const t = await getTranslations("shop");
+export function TrustBadges() {
+  const t = useTranslations("shop");
 
   const items = [
     {

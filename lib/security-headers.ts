@@ -1,10 +1,12 @@
-// Sent with every response, by both builds (next.config.ts and the TanStack
-// Start one's src/start.ts). The Content-Security-Policy comes apart
-// (lib/csp.ts): it carries a fresh nonce per page.
-export const SECURITY_HEADERS: ReadonlyArray<{ key: string; value: string }> = [
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-];
+// Les en-têtes de sécurité de toutes les réponses (ex-headers() de
+// next.config.ts). La Content-Security-Policy n'en fait pas partie : celle des
+// pages porte un nonce propre à chaque requête (src/start.ts, lib/csp.ts).
+export function securityHeaders(): Record<string, string> {
+  return {
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  };
+}

@@ -33,7 +33,6 @@ export function WalletList({
             <PopoverTrigger asChild>
               <button type="button" className="flex flex-col items-center gap-1.5">
                 {wallet.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={wallet.logoUrl}
                     alt=""

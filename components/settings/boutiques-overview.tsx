@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatPriceNumber } from "@/lib/format/currency";
 import { LICENSE_PRICING } from "@/lib/legal/license-terms";
@@ -13,8 +13,8 @@ type Boutique = LicenseInfo;
 // gated by requireSuperAdminPage). The detailed per-boutique table right
 // below it (BoutiqueLicenseManager) is where each row gets managed — this
 // card is just the summary above it.
-export async function BoutiquesOverview({ storeTypes }: { storeTypes: Boutique[] }) {
-  const t = await getTranslations("boutiquesOverview");
+export function BoutiquesOverview({ storeTypes }: { storeTypes: Boutique[] }) {
+  const t = useTranslations("boutiquesOverview");
 
   const statusCounts: Record<LicenseStatus, number> = {
     ACTIVE: 0,

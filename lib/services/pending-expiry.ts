@@ -14,7 +14,7 @@ const BATCH_SIZE = 100;
 // Cancels the PENDING orders older than their boutique's
 // pendingAutoCancelHours: same restitution as an admin's reject (stock and
 // promo redemption given back), status CANCELLED, push sent. Run by the cron
-// route (app/api/cron/expire-pending-orders). Returns the references
+// route (src/api/cron/expire-pending-orders). Returns the references
 // cancelled.
 export async function cancelExpiredPendingOrders(now = new Date()): Promise<string[]> {
   const boutiques = await prisma.storeType.findMany({

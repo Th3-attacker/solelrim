@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Prohibit } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 // Replaces the entire storefront (rendered by the (shop) layout instead of
 // {children}) once the boutique's license is SUSPENDED, EXPIRED, or
@@ -10,14 +10,14 @@ import { getTranslations } from "next-intl/server";
 // boutique/superadmin can still sign in and see the license section to
 // reactivate it (only sensitive write actions are blocked there — see
 // lib/auth/scope.ts: requireWritableAdminScope).
-export async function ExpiredStorefront({
+export function ExpiredStorefront({
   siteName,
   logoUrl,
 }: {
   siteName: string;
   logoUrl: string | null;
 }) {
-  const t = await getTranslations("shop");
+  const t = useTranslations("shop");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">

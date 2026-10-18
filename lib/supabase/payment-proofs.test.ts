@@ -4,7 +4,7 @@ vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn() }));
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSignedPaymentProofUrl, PAYMENT_PROOFS_BUCKET } from "@/lib/supabase/payment-proofs";
-import nextConfig from "@/next.config";
+import { vercelImagesConfig } from "@/lib/image-config";
 
 describe("payment proofs", () => {
   it("are read through a 5-minute signed URL from the private bucket", async () => {
@@ -32,8 +32,8 @@ describe("payment proofs", () => {
 
   it("can't go through the image optimizer, whose copies are public and cached a month", async () => {
     // Signed URLs are /storage/v1/object/sign/...; only public objects match.
-    const patterns = (await nextConfig).images?.remotePatterns ?? [];
+    const patterns = vercelImagesConfig().remotePatterns;
     expect(patterns).toHaveLength(1);
-    expect(patterns[0]).toMatchObject({ pathname: "/storage/v1/object/public/**" });
+    expect(patterns[0]).toMatchObject({ pathname: "^/storage/v1/object/public/.*$" });
   });
 });
