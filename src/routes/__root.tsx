@@ -46,6 +46,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         // Ex-conventions de fichiers de Next.js (app/favicon.ico, app/icon.tsx).
         { rel: "icon", href: "/favicon.ico", sizes: "any" },
         { rel: "icon", href: "/icon", type: "image/png", sizes: "32x32" },
+        // Icône d'écran d'accueil iOS (180x180, fond plein : iOS arrondit
+        // lui-même les coins) ; sans elle, Safari prend une capture de la page.
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         ...links,
       ],
     };
