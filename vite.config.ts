@@ -27,8 +27,11 @@ export default defineConfig(({ command, mode }) => {
       .map(([name, value]) => [`process.env.${name}`, JSON.stringify(value)]),
   );
   // Vercel n'expose NEXT_PUBLIC_VERCEL_ENV qu'aux projets Next.js : on le
-  // reconstruit depuis VERCEL_ENV pour Sentry (instrumentation-client).
-  publicEnv["process.env.NEXT_PUBLIC_VERCEL_ENV"] = JSON.stringify(process.env.VERCEL_ENV);
+  // reconstruit depuis VERCEL_ENV pour Sentry (instrumentation-client), sauf
+  // s'il est défini explicitement (.env.local, CI), qui reste prioritaire.
+  publicEnv["process.env.NEXT_PUBLIC_VERCEL_ENV"] = JSON.stringify(
+    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV,
+  );
 
   return {
     server: { port: 3000 },
