@@ -1,0 +1,19 @@
+import { cancelExpiredPendingOrders } from "@/lib/services/pending-expiry";
+import { revalidateSite } from "@/lib/revalidate";
+
+// GET /api/cron/expire-pending-orders — called by Vercel Cron (vite.config.ts),
+// which sends "Authorization: Bearer $CRON_SECRET". Without CRON_SECRET set,
+// the route refuses everything rather than run unauthenticated.
+export async function GET(request: Request) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const cancelled = await cancelExpiredPendingOrders();
+  if (cancelled.length > 0) {
+    console.info(JSON.stringify({ cron: "expire-pending-orders", cancelled }));
+    revalidateSite();
+  }
+  return Response.json({ cancelled: cancelled.length });
+}

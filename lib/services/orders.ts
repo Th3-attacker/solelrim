@@ -32,7 +32,7 @@ import { notifyOrdersChanged } from "@/lib/realtime";
 import { after } from "next/server";
 
 // Placing and tracking an order, the customer side: the website's Server
-// Actions (lib/actions/orders.ts) and the app's API routes (app/api/v1) both
+// Actions (lib/actions/orders.ts) and the app's API routes (src/api/v1) both
 // call these, so prices, stock, promo codes, the payment proof check and the
 // rate limits exist once.
 
