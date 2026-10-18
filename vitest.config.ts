@@ -1,6 +1,6 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
-import { nextCompatAliases } from "./src/compat/aliases";
+import { nextCompatAliases } from "./src/compat/aliases.ts";
 
 export default defineConfig({
   test: {

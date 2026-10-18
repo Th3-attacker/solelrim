@@ -4,10 +4,10 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
-import { nextCompatAliases } from "./src/compat/aliases";
-import { serverActionsPlugin } from "./src/compat/server-actions-plugin";
-import { securityHeaders } from "./lib/security-headers";
-import { vercelImagesConfig } from "./lib/image-config";
+import { nextCompatAliases } from "./src/compat/aliases.ts";
+import { serverActionsPlugin } from "./src/compat/server-actions-plugin.ts";
+import { securityHeaders } from "./lib/security-headers.ts";
+import { vercelImagesConfig } from "./lib/image-config.ts";
 
 const root = import.meta.dirname;
 
