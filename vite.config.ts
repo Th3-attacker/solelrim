@@ -4,6 +4,8 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
+// Imports locaux avec leur extension `.ts` : le chargeur natif de Vite (futur
+// défaut) les exige, et ces modules ne doivent eux-mêmes rien importer sans.
 import { nextCompatAliases } from "./src/compat/aliases.ts";
 import { serverActionsPlugin } from "./src/compat/server-actions-plugin.ts";
 import { securityHeaders } from "./lib/security-headers.ts";

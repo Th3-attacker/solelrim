@@ -1,5 +1,6 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+// Extension `.ts` explicite : voir le commentaire équivalent dans vite.config.ts.
 import { nextCompatAliases } from "./src/compat/aliases.ts";
 
 export default defineConfig({
