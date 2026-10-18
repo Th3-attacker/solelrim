@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/tanstackstart-react";
 
 // For a failure the code catches and lives with (a push that couldn't go out,
 // a cache refresh that failed, an audit line that couldn't be written): still

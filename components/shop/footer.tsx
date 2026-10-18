@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ChatCircle } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 type FooterCategory = { id: string; name: string };
@@ -21,8 +21,8 @@ type FooterProps = {
 // footer kept as the default so existing boutiques don't change on
 // deploy; "minimal" and "centered" trade that density for a smaller
 // footprint / a brand-forward look, same underlying links either way.
-export async function Footer(props: FooterProps) {
-  const t = await getTranslations("shop");
+export function Footer(props: FooterProps) {
+  const t = useTranslations("shop");
 
   switch (props.variant) {
     case "minimal":
@@ -34,7 +34,7 @@ export async function Footer(props: FooterProps) {
   }
 }
 
-type Translate = Awaited<ReturnType<typeof getTranslations>>;
+type Translate = ReturnType<typeof useTranslations>;
 
 function BrandMark({
   siteName,

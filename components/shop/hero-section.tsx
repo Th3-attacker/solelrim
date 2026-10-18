@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { getStoreHeroImageUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Package } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 
@@ -288,14 +288,8 @@ function HeroMinimal({
   );
 }
 
-export async function HeroSection({
-  settings,
-  basePath,
-}: {
-  settings: HeroSettings;
-  basePath: string;
-}) {
-  const t = await getTranslations("shop");
+export function HeroSection({ settings, basePath }: { settings: HeroSettings; basePath: string }) {
+  const t = useTranslations("shop");
 
   const content: HeroContent = {
     imagePath: settings.heroImagePath,

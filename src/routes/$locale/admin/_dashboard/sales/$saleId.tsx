@@ -1,0 +1,184 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { useFormatter, useTranslations } from "next-intl";
+import { adminPageBoundaries } from "@/components/errors/admin-boundaries";
+import { SaleDetailSkeleton } from "@/components/dashboard/page-skeletons";
+import { pageInput } from "@/src/server/validators";
+import { notFound } from "next/navigation";
+import { getSaleById } from "@/lib/queries/sales";
+import { getAdminScope } from "@/lib/auth/scope";
+import { SaleStatusBadge } from "@/components/sales/sale-status-badge";
+import { PrintInvoiceButton } from "@/components/sales/print-invoice-button";
+import { CancelSaleButton } from "@/components/sales/cancel-sale-button";
+import { SaleRefundsSection } from "@/components/refunds/sale-refunds-section";
+import { EditSaleDialog } from "@/components/sales/edit-sale-dialog";
+import { getPosWallets } from "@/lib/queries/pos";
+import { getAllClients } from "@/lib/queries/clients";
+import { getSaleRefunds } from "@/lib/queries/refunds";
+import { formatPrice } from "@/lib/format/currency";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+// Ex-app/[locale]/admin/(dashboard)/sales/[saleId]/page.tsx.
+
+const loadSaleDetailPage = createServerFn({ method: "GET" })
+  .validator(pageInput)
+  .handler(async ({ data }) => {
+    const { saleId } = data.params;
+    const scope = await getAdminScope();
+    const [sale, refunds, wallets, clients] = await Promise.all([
+      getSaleById(saleId, scope),
+      getSaleRefunds(saleId, scope),
+      getPosWallets(scope),
+      getAllClients(scope),
+    ]);
+
+    if (!sale) {
+      notFound();
+    }
+
+    return { sale, refunds, wallets, clients };
+  });
+
+export const Route = createFileRoute("/$locale/admin/_dashboard/sales/$saleId")({
+  loader: ({ params }) => loadSaleDetailPage({ data: { params } }),
+  component: SaleDetailPage,
+  ...adminPageBoundaries,
+  pendingComponent: SaleDetailSkeleton,
+});
+
+function SaleDetailPage() {
+  const { sale, refunds, wallets, clients } = Route.useLoaderData();
+  const t = useTranslations("sales");
+  const tProducts = useTranslations("products");
+  const tCommon = useTranslations("common");
+  const format = useFormatter();
+
+  return (
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 print:max-w-full">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">{sale.reference}</h1>
+          <SaleStatusBadge status={sale.status} />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <PrintInvoiceButton />
+          {sale.status !== "CANCELLED" && (
+            <EditSaleDialog
+              saleId={sale.id}
+              paymentMethod={sale.paymentMethod}
+              walletProvider={sale.walletProvider}
+              clientId={sale.clientId}
+              notes={sale.notes}
+              wallets={wallets.map((w) => ({ id: w.id, provider: w.provider }))}
+              clients={clients.map((c) => ({ id: c.id, fullName: c.fullName }))}
+              paymentLocked={(refunds?.requests ?? []).some((r) => r.status !== "REJECTED")}
+              clientLocked={sale.loyaltyPointsEarned > 0 || sale.loyaltyPointsRedeemed > 0}
+            />
+          )}
+          {sale.status === "COMPLETED" && (
+            <CancelSaleButton saleId={sale.id} tillClosed={sale.cashSession?.status === "CLOSED"} />
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border bg-card p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-lg font-semibold">SOLAL</p>
+            <p className="text-sm text-muted-foreground">{t("invoiceTitle")}</p>
+          </div>
+          <div className="text-end text-sm">
+            <p className="font-medium">{sale.reference}</p>
+            <p className="text-muted-foreground">
+              {format.dateTime(sale.createdAt, { dateStyle: "medium" })}
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-col gap-1 text-sm">
+          <p>
+            {t("client")}: {sale.client?.fullName ?? t("walkInClient")}
+          </p>
+          <p>
+            {t("paymentMethod")}:{" "}
+            {sale.paymentMethod === "wallet"
+              ? (sale.walletProvider ?? t("wallet"))
+              : sale.paymentMethod === "cash"
+                ? t("cash")
+                : sale.paymentMethod === "card" || sale.paymentMethod === "transfer"
+                  ? t(sale.paymentMethod)
+                  : "—"}
+          </p>
+          {sale.notes && (
+            <p className="text-muted-foreground">
+              {t("notes")}: {sale.notes}
+            </p>
+          )}
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{tProducts("name")}</TableHead>
+              <TableHead>{tProducts("size")}</TableHead>
+              <TableHead>{tProducts("color")}</TableHead>
+              <TableHead>{t("quantity")}</TableHead>
+              <TableHead>{t("unitPrice")}</TableHead>
+              <TableHead>{t("lineTotal")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sale.items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.variant.product.name}</TableCell>
+                <TableCell>{item.variant.size}</TableCell>
+                <TableCell>{item.variant.color}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{formatPrice(item.unitPrice, tCommon("currency"))}</TableCell>
+                <TableCell>{formatPrice(item.lineTotal, tCommon("currency"))}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <div className="mt-4 flex flex-col items-end gap-1 text-sm">
+          <p>
+            {t("subtotal")}: {formatPrice(sale.subtotal, tCommon("currency"))}
+          </p>
+          <p>
+            {t("discount")}: {formatPrice(sale.discount, tCommon("currency"))}
+          </p>
+          <p className="text-base font-semibold">
+            {t("total")}: {formatPrice(sale.total, tCommon("currency"))}
+          </p>
+          {refunds && refunds.refundedAmount > 0 && (
+            <p className="text-muted-foreground">
+              {t("refundedAmount")}: -{formatPrice(refunds.refundedAmount, tCommon("currency"))}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {refunds && (
+        <SaleRefundsSection
+          saleId={refunds.saleId}
+          refundable={refunds.refundable}
+          hasPending={refunds.hasPending}
+          subtotal={refunds.subtotal}
+          total={refunds.total}
+          refundedAmount={refunds.refundedAmount}
+          lines={refunds.lines}
+          requests={refunds.requests}
+          canDecide
+        />
+      )}
+    </div>
+  );
+}

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/tanstackstart-react";
 import { expectedErrorCode } from "@/lib/errors";
 
 // For an error.tsx boundary: logs the error and sends it to Sentry, unless the
-// server already did (the error then carries a digest, see instrumentation.ts)
+// server already did (the error then carries a digest)
 // or it's a refusal thrown on purpose (lib/errors.ts). Returns the reference
 // worth showing so the person can quote it: the server's digest.
 export function useReportedError(error: Error & { digest?: string }): string | null {

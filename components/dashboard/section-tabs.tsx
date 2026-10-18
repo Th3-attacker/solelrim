@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ const GROUPS = {
 
 export type SectionTabsGroup = keyof typeof GROUPS;
 
-export async function SectionTabs({
+export function SectionTabs({
   group,
   current,
   pendingRefunds = 0,
@@ -36,7 +36,7 @@ export async function SectionTabs({
   // Shown on the refunds tab so a waiting request isn't hidden behind it.
   pendingRefunds?: number;
 }) {
-  const t = await getTranslations("nav");
+  const t = useTranslations("nav");
 
   return (
     <nav aria-label={t("sectionTabs")} className="flex gap-1 border-b">

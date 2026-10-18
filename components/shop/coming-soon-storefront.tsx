@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { Sparkle, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 // Replaces the entire storefront (rendered by the (shop) layout instead of
 // {children}) as long as this boutique has zero active products — every
 // page under this boutique's route shows this instead of shop content.
 // Disappears on its own the moment the first real product goes active, so
 // there's nothing to remember to turn off. Mirrors ExpiredStorefront.
-export async function ComingSoonStorefront({
+export function ComingSoonStorefront({
   siteName,
   logoUrl,
   whatsappHref,
@@ -16,7 +16,7 @@ export async function ComingSoonStorefront({
   logoUrl: string | null;
   whatsappHref: string | null;
 }) {
-  const t = await getTranslations("shop");
+  const t = useTranslations("shop");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">

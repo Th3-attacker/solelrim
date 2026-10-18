@@ -36,10 +36,10 @@ import {
   getFilteredProductsPage,
   searchActiveProducts,
 } from "@/lib/queries/shop";
-import { POST as postOrder } from "@/app/api/v1/boutiques/[key]/orders/route";
-import { POST as postTrack } from "@/app/api/v1/boutiques/[key]/orders/track/route";
-import { GET as getProducts } from "@/app/api/v1/boutiques/[key]/products/route";
-import { POST as postStocks } from "@/app/api/v1/boutiques/[key]/stocks/route";
+import { POST as postOrder } from "@/src/api/v1/boutiques/[key]/orders/route";
+import { POST as postTrack } from "@/src/api/v1/boutiques/[key]/orders/track/route";
+import { GET as getProducts } from "@/src/api/v1/boutiques/[key]/products/route";
+import { POST as postStocks } from "@/src/api/v1/boutiques/[key]/stocks/route";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 const submitOrderMock = placeOrder as unknown as Mock;

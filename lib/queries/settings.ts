@@ -1,4 +1,5 @@
-import { cache } from "react";
+// Mémorisation par requête (ex-cache() de React, voir lib/request-cache.ts).
+import { cache } from "@/lib/request-cache";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { cachedShopQuery } from "@/lib/data-cache";

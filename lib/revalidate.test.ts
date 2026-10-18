@@ -12,8 +12,7 @@ const revalidatePathMock = revalidatePath as unknown as Mock;
 beforeEach(() => revalidatePathMock.mockReset());
 
 describe("revalidate helpers", () => {
-  // A pattern that names no folder under app/ revalidates nothing, silently:
-  // what the old "/admin/..." literals did.
+  // Chaque helper nomme un vrai dossier de routes (src/routes).
   it.each([
     ["admin", revalidateAdmin],
     ["storefront", revalidateStorefront],
@@ -22,6 +21,6 @@ describe("revalidate helpers", () => {
     helper();
     const [pattern, type] = revalidatePathMock.mock.calls[0];
     expect(type).toBe("layout");
-    expect(existsSync(path.join(__dirname, "..", "app", pattern))).toBe(true);
+    expect(existsSync(path.join(__dirname, "..", "src", "routes", pattern))).toBe(true);
   });
 });

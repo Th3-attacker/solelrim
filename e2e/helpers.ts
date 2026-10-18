@@ -8,7 +8,7 @@ import { expect, type Page } from "@playwright/test";
 // on the admin side). The catalog moves: E2E_PRODUCT_SLUG points the tests
 // at another product that has a WHITE/M variant in stock.
 export const PRODUCT_URL = `/fr/sport/products/${process.env.E2E_PRODUCT_SLUG ?? "t-shirt"}`;
-const PAYMENT_PROOF = path.join(__dirname, "fixtures/payment-proof.png");
+const PAYMENT_PROOF = path.join(import.meta.dirname, "fixtures/payment-proof.png");
 const ORDER_REFERENCE_RE = /CMD-\d{8}-\d{4}/;
 
 // Runs the full customer checkout flow and returns the resulting order's

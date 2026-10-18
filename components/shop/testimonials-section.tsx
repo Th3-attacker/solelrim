@@ -1,7 +1,7 @@
 import { SectionTitle } from "@/components/shop/section-title";
 import { Star, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 type Testimonial = {
   id: string;
@@ -14,9 +14,10 @@ type Testimonial = {
 // Optional, admin-toggled (StoreType.testimonialsEnabled) — the caller
 // already gates on that flag; this only additionally hides itself when
 // there's nothing to show yet (enabled but zero entries added).
-export async function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) {
+export function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) {
+  // Hook avant le retour anticipé (règles des hooks React).
+  const t = useTranslations("shop");
   if (testimonials.length === 0) return null;
-  const t = await getTranslations("shop");
 
   return (
     <div className="flex flex-col gap-6">

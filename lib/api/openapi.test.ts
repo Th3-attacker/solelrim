@@ -6,7 +6,7 @@ import spec from "@/docs/openapi.json";
 // Every /api/v1 route file must be described in docs/openapi.json, with the
 // same HTTP methods, so the spec the app generates its client from can't
 // silently fall behind the code.
-const ROOT = join(process.cwd(), "app/api/v1");
+const ROOT = join(process.cwd(), "src/api/v1");
 
 function routeFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
