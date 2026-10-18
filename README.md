@@ -8,10 +8,18 @@ est manuel : le client commande, paie sur un compte mobile money affiché,
 envoie une capture WhatsApp, un admin confirme depuis le dashboard — pas de
 passerelle de paiement.
 
-**Stack** : Next.js 16 (App Router, Turbopack) · TypeScript · Prisma +
-PostgreSQL (Supabase) · Supabase Auth (admin) & Storage (images) ·
-next-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest · Sentry
-(suivi d'erreurs, optionnel — voir `NEXT_PUBLIC_SENTRY_DSN`).
+**Stack** : TanStack Start (React 19, TanStack Router, Vite, Nitro) ·
+TypeScript · Prisma + PostgreSQL (Supabase) · Supabase Auth (admin) & Storage
+(images) · use-intl (fr/en/ar, RTL pour l'arabe) · Tailwind v4 · Vitest ·
+Sentry (suivi d'erreurs, optionnel — voir `NEXT_PUBLIC_SENTRY_DSN`).
+
+L'application vient de Next.js : les composants (`components/`) et le code
+partagé (`lib/`) importent encore `next/navigation`, `next/image`,
+`next-intl`… Ces modules sont redirigés vers des remplaçants construits sur
+TanStack Start (`src/compat/`, voir `src/compat/aliases.ts`). Les pages sont
+dans `src/routes/` (routage par fichiers de TanStack Router), le middleware
+de requête (langue, CSP, garde admin, domaines de boutique) dans
+`src/middleware/request.ts`.
 
 ## Installation locale
 
@@ -47,6 +55,11 @@ workflow `dev` → `staging` → `master` ci-dessous). Vercel détecte pnpm via
 `postinstall`, et `lib/generated/prisma` n'est pas versionné) puis applique les
 migrations en attente (`prisma migrate deploy`) avant de builder — s'assurer que
 `DATABASE_URL`/`DIRECT_URL` pointent vers la bonne base avant de déployer.
+
+Le build (`vite build`) produit la sortie Vercel via Nitro : dans les réglages
+du projet Vercel, le *Framework Preset* doit être « Other » (ou laissé en
+détection automatique), plus « Next.js ». Les crons et l'optimiseur d'images
+sont déclarés dans `vite.config.ts` (ex-`vercel.json` / `next.config.ts`).
 
 ## Workflow de contribution
 
