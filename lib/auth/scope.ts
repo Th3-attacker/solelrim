@@ -1,20 +1,18 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { getStoreSettings, getStoreTypes } from "@/lib/queries/settings";
+import { DEFAULT_PRODUCT_TYPE } from "@/lib/shop/product-type";
 import { getCurrentAdmin } from "@/lib/auth/admin";
 import { ExpectedError, expectedErrorCode } from "@/lib/errors";
-import {
-  ADMIN_SCOPE_COOKIE,
-  assertLicenseWritable,
-  resolveSuperAdminScope,
-} from "@/lib/auth/scope-core";
+import { getEffectiveLicenseState, isLicenseBlocking } from "@/lib/shop/license";
 import type { AdminUser } from "@/lib/generated/prisma/client";
 
 // Independent from StoreSettings.productType (the public "live" toggle) —
 // lets a superadmin browse/manage one boutique's back office while a
 // different one is currently live to customers. See
 // lib/actions/admin-scope.ts.
-export { ADMIN_SCOPE_COOKIE };
+export const ADMIN_SCOPE_COOKIE = "admin_store_scope";
 
 export async function getAdminScope(): Promise<string> {
   // Every admin data page (orders and their payment proofs, clients, sales,
@@ -36,11 +34,17 @@ export async function getAdminScope(): Promise<string> {
 
   const storeTypes = await getStoreTypes();
   const cookieStore = await cookies();
-  return resolveSuperAdminScope({
-    requested: cookieStore.get(ADMIN_SCOPE_COOKIE)?.value,
-    storeTypeKeys: storeTypes.map((t) => t.key),
-    liveProductType: async () => (await getStoreSettings()).productType,
-  });
+  const cookieValue = cookieStore.get(ADMIN_SCOPE_COOKIE)?.value;
+  if (cookieValue && storeTypes.some((t) => t.key === cookieValue)) {
+    return cookieValue;
+  }
+
+  const settings = await getStoreSettings();
+  if (storeTypes.some((t) => t.key === settings.productType)) {
+    return settings.productType;
+  }
+
+  return storeTypes[0]?.key ?? DEFAULT_PRODUCT_TYPE;
 }
 
 // The single replacement for every action's old
@@ -135,6 +139,21 @@ export async function requireAppearanceScope(): Promise<{
 // acting on their own (or, via the free-choice cookie, a SUPERADMIN acting
 // *as* a boutique — but that path never reaches here since it's still a
 // SUPERADMIN role) boutique gets blocked.
+async function assertLicenseWritable(admin: AdminUser, productType: string): Promise<void> {
+  if (admin.role === "SUPERADMIN") return;
+
+  const storeType = await prisma.storeType.findUnique({
+    where: { key: productType },
+    select: { licenseType: true, licenseStatus: true, licenseExpiresAt: true },
+  });
+  if (!storeType) return;
+
+  if (isLicenseBlocking(getEffectiveLicenseState(storeType))) {
+    // The dashboard's error.tsx tells "your boutique is suspended/expired"
+    // apart from a bug by this code (lib/errors.ts).
+    throw new ExpectedError("licenseBlocked");
+  }
+}
 
 // The gate every mutating Server Action (lib/actions/*.ts) uses instead of
 // requireAdminScope: same identity + scope resolution, plus "is this

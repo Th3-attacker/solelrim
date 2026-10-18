@@ -95,7 +95,6 @@ export async function getMySales(
     })),
     total: count,
     page: currentPage,
-    pageSize: MY_SALES_PAGE_SIZE,
     summary: {
       // Same sold (non-cancelled) sales as the amounts next to it; the
       // cancelled ones in the filtered list are counted apart.
