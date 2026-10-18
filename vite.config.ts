@@ -4,6 +4,8 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
+// Imports locaux avec leur extension `.ts` : le chargeur natif de Vite (futur
+// défaut) les exige, et ces modules ne doivent eux-mêmes rien importer sans.
 import { nextCompatAliases } from "./src/compat/aliases.ts";
 import { serverActionsPlugin } from "./src/compat/server-actions-plugin.ts";
 import { securityHeaders } from "./lib/security-headers.ts";
@@ -27,8 +29,11 @@ export default defineConfig(({ command, mode }) => {
       .map(([name, value]) => [`process.env.${name}`, JSON.stringify(value)]),
   );
   // Vercel n'expose NEXT_PUBLIC_VERCEL_ENV qu'aux projets Next.js : on le
-  // reconstruit depuis VERCEL_ENV pour Sentry (instrumentation-client).
-  publicEnv["process.env.NEXT_PUBLIC_VERCEL_ENV"] = JSON.stringify(process.env.VERCEL_ENV);
+  // reconstruit depuis VERCEL_ENV pour Sentry (instrumentation-client), sauf
+  // s'il est défini explicitement (.env.local, CI), qui reste prioritaire.
+  publicEnv["process.env.NEXT_PUBLIC_VERCEL_ENV"] = JSON.stringify(
+    process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV,
+  );
 
   return {
     server: { port: 3000 },

@@ -34,6 +34,10 @@ export function optimizedImagePath(src: string, width: OptimizedWidth): string {
   return process.env.VERCEL ? optimizedImageUrl(src, width) : src;
 }
 
+// Motif d'hôte accepté par l'optimiseur, exporté pour être testé
+// (lib/image-config.test.ts).
+export const SUPABASE_HOSTNAME_PATTERN = "^[^.]+\\.supabase\\.co$";
+
 // La configuration de l'optimiseur de Vercel (vite.config.ts, sortie de build
 // Vercel) : ex-`images` de next.config.ts — mêmes largeurs, même durée de
 // cache, limité au stockage public de Supabase. Les motifs sont des
@@ -47,7 +51,10 @@ export function vercelImagesConfig() {
     remotePatterns: [
       {
         protocol: "https" as const,
-        hostname: "^(.+\\.)?supabase\\.co$",
+        // Équivalent exact de `*.supabase.co` sous Next : un seul sous-domaine
+        // (l'identifiant du projet), ni le domaine nu ni des sous-domaines
+        // imbriqués, pour ne pas élargir ce que l'optimiseur accepte de servir.
+        hostname: SUPABASE_HOSTNAME_PATTERN,
         pathname: "^/storage/v1/object/public/.*$",
       },
     ],

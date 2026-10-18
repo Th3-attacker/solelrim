@@ -12,6 +12,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    // vite.config.ts et vitest.config.ts importent leurs modules locaux avec
+    // l'extension `.ts`, qu'exige le chargeur natif de Vite (futur défaut) ;
+    // cette option permet à tsc de les accepter. Ne pas la retirer.
     "allowImportingTsExtensions": true,
     "types": ["vite/client"],
     "paths": {
