@@ -612,7 +612,7 @@ describe("submitOrder", () => {
     const createArgs = prismaMock.order.create.mock.calls[0][0];
     expect(createArgs.data.subtotal).toBe(3000); // basePrice 1500 * qty 2
     expect(createArgs.data.total).toBe(3000);
-    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/admin", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/$locale/admin", "layout");
   });
 
   it("applies a valid promo code, stores the discount, and increments usedCount", async () => {

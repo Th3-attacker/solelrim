@@ -85,19 +85,7 @@
       "mfaSubmit": "تحقق",
       "mfaInvalidCode": "رمز غير صحيح أو منتهي الصلاحية.",
       "mfaOtherAccount": "استخدام حساب آخر",
-      "backToShop": "العودة إلى المتجر",
-      "welcomeTitle": "سعداء بعودتك",
-      "welcomeSubtitle": "سجّل الدخول إلى إدارة المتجر.",
-      "emailAddress": "البريد الإلكتروني",
-      "twoStepNotice": "إذا كان التحقق بخطوتين مفعّلًا، سيُطلب منك رمز بعد ذلك.",
-      "showcaseEyebrow": "SOLAL · الإدارة",
-      "showcaseHeadline": "كل طلب متحقق منه، وكل أوقية محسوبة.",
-      "showcaseMobilePaymentTitle": "الدفع عبر الهاتف",
-      "showcaseMobilePaymentBody": "بنكيلي ومصرفي وسداد وبيم بنك، مع لقطة الشاشة كإثبات.",
-      "showcaseWhatsappTitle": "تأكيد عبر واتساب",
-      "showcaseWhatsappBody": "يُبلَّغ العميل فور تأكيدك.",
-      "showcasePosTitle": "صندوق المتجر",
-      "showcasePosBody": "الافتتاح والمبيعات والإغلاق في مكان واحد."
+      "backToShop": "العودة إلى المتجر"
     }
   },
   "theme": {
@@ -142,42 +130,7 @@
     "last7Days": "آخر 7 أيام",
     "last30Days": "آخر 30 يومًا",
     "last90Days": "آخر 3 أشهر",
-    "allTime": "الكل",
-    "greetingWithName": "مرحبًا {name}",
-    "greeting": "مرحبًا",
-    "monthRevenueMultiple": "حقق هذا الشهر بالفعل {ratio} أضعاف الشهر الماضي.",
-    "paymentsToCheckSentence": "{count, plural, zero {لا توجد مدفوعات للتحقق.} one {تبقى دفعة واحدة للتحقق.} two {تبقى دفعتان للتحقق.} few {تبقى # دفعات للتحقق.} many {تبقى # دفعة للتحقق.} other {تبقى # دفعة للتحقق.}}",
-    "toHandleLabel": "للمعالجة",
-    "pendingOrdersCard": "{count, plural, zero {لا طلبات قيد الانتظار} one {طلب واحد قيد الانتظار} two {طلبان قيد الانتظار} few {# طلبات قيد الانتظار} many {# طلبًا قيد الانتظار} other {# طلب قيد الانتظار}}",
-    "oldestPendingAge": "الأقدم: {age}",
-    "lowStockVariantsCard": "{count, plural, zero {لا متغيرات على وشك النفاد} one {متغير واحد على وشك النفاد} two {متغيران على وشك النفاد} few {# متغيرات على وشك النفاد} many {# متغيرًا على وشك النفاد} other {# متغير على وشك النفاد}}",
-    "pendingRefundsCard": "{count, plural, zero {لا استرجاعات للبت فيها} one {استرجاع واحد للبت فيه} two {استرجاعان للبت فيهما} few {# استرجاعات للبت فيها} many {# استرجاعًا للبت فيه} other {# استرجاع للبت فيه}}",
-    "latestRefundRequested": "آخر طلب: {age}",
-    "nothingToHandle": "لا شيء للمعالجة حاليًا.",
-    "keyFiguresLabel": "الأرقام الرئيسية",
-    "revenueThisMonthTile": "رقم الأعمال · هذا الشهر",
-    "salesThisMonthTile": "المبيعات · هذا الشهر",
-    "versusLastMonth": "مقارنة بالشهر الماضي",
-    "salesSinceOpening": "{count, plural, zero {لا مبيعات منذ الافتتاح} one {عملية بيع واحدة منذ الافتتاح} two {عمليتا بيع منذ الافتتاح} few {# عمليات بيع منذ الافتتاح} many {# عملية بيع منذ الافتتاح} other {# عملية بيع منذ الافتتاح}}",
-    "newClientsThisMonthShort": "{count, plural, zero {لا عملاء جدد هذا الشهر} one {عميل جديد هذا الشهر} two {عميلان جديدان هذا الشهر} few {# عملاء جدد هذا الشهر} many {# عميلًا جديدًا هذا الشهر} other {# عميل جديد هذا الشهر}}",
-    "lowStockStatus": "{count, plural, zero {لا مخزون منخفض} one {واحد بمخزون منخفض} two {اثنان بمخزون منخفض} few {# بمخزون منخفض} many {# بمخزون منخفض} other {# بمخزون منخفض}}",
-    "revenueChartSubtitle": "المبيعات المكتملة بالأوقية، حسب {unit, select, day {اليوم} week {الأسبوع} other {الشهر}}",
-    "revenueBestBucket": "{unit, select, day {أفضل يوم} week {أفضل أسبوع} other {أفضل شهر}}: {label}، {amount}",
-    "revenuePeriodLabel": "الفترة",
-    "revenueChartLabel": "رقم الأعمال من {from} إلى {to}",
-    "revenueDataToggle": "عرض الأرقام",
-    "revenuePeriodColumn": "الفترة",
-    "noRevenueYet": "لا مبيعات في هذه الفترة.",
-    "weekOf": "أسبوع {date}",
-    "bestSellersSubtitle": "الكميات المباعة منذ الافتتاح",
-    "lowStockSubtitle": "أعد التزويد قبل النفاد",
-    "onlyLeft": "{count, plural, =0 {نفد} other {تبقى #}}",
-    "lowStockVariantsBadge": "{count, plural, zero {لا متغيرات} one {متغير واحد} two {متغيران} few {# متغيرات} many {# متغيرًا} other {# متغير}}",
-    "latestOrdersTitle": "آخر الطلبات عبر الإنترنت",
-    "latestOrdersSubtitle": "الدفع عبر بنكيلي أو مصرفي أو سداد أو بيم بنك، يُتحقق منه عبر لقطة الشاشة",
-    "receivedColumn": "الاستلام",
-    "revenueChartRole": "رسم بياني",
-    "checkPaymentsAction": "التحقق من المدفوعات"
+    "allTime": "الكل"
   },
   "products": {
     "title": "المنتجات",
@@ -572,89 +525,7 @@
     "pushRejected": "تعذّر قبول طلبك.",
     "pushShipped": "طلبك في الطريق إليك.",
     "pushDelivered": "تم تسليم طلبك. شكراً لك!",
-    "pushCancelled": "تم إلغاء طلبك.",
-    "listDescription": "الطلبات المقدمة عبر الموقع والتطبيق. تحقق من لقطة الشاشة قبل التأكيد.",
-    "statusTabsLabel": "التصفية حسب الحالة",
-    "tabAll": "الكل",
-    "tabPending": "قيد الانتظار",
-    "tabConfirmed": "مؤكدة",
-    "tabShipping": "قيد التوصيل",
-    "tabDelivered": "تم التسليم",
-    "tabRejected": "مرفوضة",
-    "tabCancelled": "ملغاة",
-    "tabCountLabel": "{count, plural, zero {لا طلبات} one {طلب واحد} two {طلبان} few {# طلبات} many {# طلبًا} other {# طلب}}",
-    "searchLabel": "البحث برقم الهاتف أو المرجع",
-    "searchShortPlaceholder": "الهاتف أو المرجع",
-    "dateFilterAll": "كل التواريخ",
-    "dateFilterCustom": "فترة مخصصة",
-    "dateFilterLabel": "التصفية حسب التاريخ",
-    "dateFrom": "من",
-    "dateTo": "إلى",
-    "dateRangeShown": "من {from} إلى {to}",
-    "exportSelection": "تصدير التحديد",
-    "printSelectedLabels": "طباعة الملصقات",
-    "selectOrder": "تحديد {reference}",
-    "verifyAction": "تحقق",
-    "openAction": "فتح",
-    "noOrdersMatching": "لا يوجد طلب يطابق هذه المرشحات.",
-    "backToOrders": "كل الطلبات",
-    "receivedOn": "استُلم في {date}",
-    "callCustomer": "اتصال",
-    "whatsappCustomer": "واتساب",
-    "paymentProofTitle": "إثبات الدفع",
-    "openProof": "تكبير لقطة الشاشة",
-    "proofUnavailable": "لقطة الشاشة غير متاحة.",
-    "expectedAmount": "المبلغ المتوقع",
-    "beforeConfirming": "قبل التأكيد",
-    "checkProofAmount": "المبلغ في لقطة الشاشة هو {amount}",
-    "checkMoneyReceived": "وصل المال فعلًا إلى الحساب",
-    "checkTransactionUnused": "رقم العملية لم يُستخدم من قبل",
-    "subtotal": "المجموع الفرعي",
-    "promoCodeLine": "رمز الخصم {code}",
-    "totalPaid": "المبلغ المدفوع",
-    "trackingTitle": "المتابعة",
-    "stepReceived": "مستلمة",
-    "stepConfirmed": "تم تأكيد الدفع",
-    "stepShipping": "قيد التوصيل",
-    "stepDelivered": "تم التسليم",
-    "stepRejected": "مرفوضة",
-    "stepCancelled": "ملغاة",
-    "stepWaiting": "قادمة",
-    "confirmPayment": "تأكيد الدفع",
-    "rejectOrderAction": "رفض الطلب",
-    "markShipping": "تحديد كقيد التوصيل",
-    "markDelivered": "تحديد كمسلَّم",
-    "cancelOrderAction": "إلغاء الطلب",
-    "customerNotifiedHint": "يُبلَّغ العميل الذي يتابع عبر التطبيق في كل مرحلة؛ وزر واتساب يرسل له الرسالة الجاهزة.",
-    "rejectDialogTitle": "رفض الطلب؟",
-    "rejectDialogBody": "يعود المخزون المحجوز للبيع. ويمكن للعميل إرسال إثبات جديد.",
-    "confirmRejection": "نعم، ارفض",
-    "confirmCancellation": "نعم، ألغِ",
-    "goBack": "رجوع",
-    "confirmPaymentQuestion": "تأكيد دفع {reference}؟",
-    "customerTitle": "العميل",
-    "ordersFromPhone": "الطلبات السابقة",
-    "toastConfirmed": "تم تأكيد الدفع.",
-    "toastRejected": "تم رفض الطلب.",
-    "toastShipped": "الطلب قيد التوصيل.",
-    "toastDelivered": "تم تسليم الطلب.",
-    "toastCancelled": "تم إلغاء الطلب.",
-    "reasonRequired": "اذكر سببًا.",
-    "transitionFailed": "لم يكتمل الإجراء. حاول مرة أخرى.",
-    "rejectedBecause": "مرفوضة: {reason}",
-    "cancelledBecause": "ملغاة: {reason}",
-    "labelsTitle": "ملصقات التوصيل",
-    "labelDelivery": "توصيل",
-    "labelOrder": "الطلب",
-    "labelRecipient": "المستلم",
-    "labelItems": "القطع",
-    "labelPayment": "الدفع",
-    "labelPaidMobile": "مدفوع · محفظة إلكترونية",
-    "labelSender": "المرسل:",
-    "printLabels": "طباعة",
-    "labelsCount": "{count, plural, zero {لا ملصقات} one {ملصق واحد} two {ملصقان} few {# ملصقات} many {# ملصقًا} other {# ملصق}}",
-    "orderNotFound": "هذا الطلب غير موجود في هذا المتجر.",
-    "staleWarning": "قيد الانتظار منذ أكثر من {hours} ساعة"
+    "pushCancelled": "تم إلغاء طلبك."
   },
   "settings": {
     "title": "الإعدادات",
@@ -1384,7 +1255,9 @@
           "غيّر الترتيب بالأسهم: هذا هو الترتيب الذي يراه العملاء.",
           "عدّل الفئة أو احذفها بالأيقونات الموجودة في سطرها."
         ],
-        "issues": ["لا يمكن حذف فئة لا تزال تحتوي على منتجات: انقل منتجاتها أولاً."]
+        "issues": [
+          "لا يمكن حذف فئة لا تزال تحتوي على منتجات: انقل منتجاتها أولاً."
+        ]
       },
       "configureBoutique": {
         "title": "إعداد المتجر",
@@ -1422,7 +1295,9 @@
           "امسح رمز QR بتطبيق المصادقة.",
           "أدخل الرمز المكوّن من 6 أرقام للتأكيد."
         ],
-        "issues": ["احتفظ بهاتفك: إذا فقدته فلا يستطيع إعادة ضبط المصادقة إلا الدعم (انظر أدناه)."]
+        "issues": [
+          "احتفظ بهاتفك: إذا فقدته فلا يستطيع إعادة ضبط المصادقة إلا الدعم (انظر أدناه)."
+        ]
       },
       "processOrder": {
         "title": "معالجة طلب عبر الإنترنت",
@@ -1474,7 +1349,9 @@
           "اختر «إيداع» أو «سحب» وأدخل المبلغ.",
           "اذكر السبب (إلزامي) ثم «تسجيل»."
         ],
-        "issues": ["يُرفض السحب الذي يتجاوز النقد المتوقع."]
+        "issues": [
+          "يُرفض السحب الذي يتجاوز النقد المتوقع."
+        ]
       },
       "promoCode": {
         "title": "إنشاء كود خصم",
@@ -1497,7 +1374,9 @@
           "إذا لم توجد بطاقة اضغط «إنشاء البطاقة».",
           "تضيف عملية البيع النقاط تلقائياً ويمكن للعميل استخدام مكافأته في عملية لاحقة."
         ],
-        "issues": ["يجب أن يفعّل المدير البرنامج ويضبطه في «الإعدادات»."]
+        "issues": [
+          "يجب أن يفعّل المدير البرنامج ويضبطه في «الإعدادات»."
+        ]
       },
       "manageClients": {
         "title": "إدارة العملاء",
@@ -1507,7 +1386,9 @@
           "أنشئ بطاقة أو عدّلها بالاسم والهاتف.",
           "افتح بطاقة العميل لعرض سجلّه."
         ],
-        "issues": ["لا يمكن حذف عميل لديه مبيعات سابقة."]
+        "issues": [
+          "لا يمكن حذف عميل لديه مبيعات سابقة."
+        ]
       },
       "closeRegister": {
         "title": "إغلاق الصندوق",
@@ -1566,7 +1447,10 @@
       "cancelSale": {
         "title": "إلغاء عملية بيع أو تصحيحها",
         "when": "عندما سُجّلت عملية بيع بالخطأ. مخصص لمدير المتجر.",
-        "steps": ["افتح «المبيعات» ثم عملية البيع المعنية.", "صحّحها أو ألغِها مع ذكر السبب."],
+        "steps": [
+          "افتح «المبيعات» ثم عملية البيع المعنية.",
+          "صحّحها أو ألغِها مع ذكر السبب."
+        ],
         "issues": [
           "إذا أرجع العميل منتجاً فاستخدم الاسترجاع بدلاً من ذلك.",
           "يُسجَّل كل إلغاء في «السجل»."
@@ -1597,7 +1481,10 @@
       "newBoutique": {
         "title": "متجر جديد أو نوع متجر",
         "when": "لإنشاء متجر أو تغيير اسمه أو حذفه.",
-        "steps": ["يتولى الدعم هذه العمليات.", "اذكر الاسم المطلوب ونوع النشاط وبريد المسؤول."]
+        "steps": [
+          "يتولى الدعم هذه العمليات.",
+          "اذكر الاسم المطلوب ونوع النشاط وبريد المسؤول."
+        ]
       },
       "domain": {
         "title": "اسم نطاق المتجر",
@@ -1611,12 +1498,18 @@
       "sellerQuota": {
         "title": "الحد الأقصى لعدد البائعين",
         "when": "عندما لا تستطيع إنشاء بائع لأنك بلغت الحد.",
-        "steps": ["يعدّل الدعم الحصة.", "اذكر عدد البائعين الذين تحتاجهم."]
+        "steps": [
+          "يعدّل الدعم الحصة.",
+          "اذكر عدد البائعين الذين تحتاجهم."
+        ]
       },
       "adminAccount": {
         "title": "حساب المدير: إضافة أو حذف",
         "when": "عندما يحتاج مسؤول جديد إلى صلاحية المدير أو عندما يجب سحب صلاحية.",
-        "steps": ["ينشئ الدعم حسابات المدير ويحذفها.", "اذكر بريد الشخص والإجراء المطلوب."]
+        "steps": [
+          "ينشئ الدعم حسابات المدير ويحذفها.",
+          "اذكر بريد الشخص والإجراء المطلوب."
+        ]
       },
       "lostTwoFactor": {
         "title": "فقدان المصادقة الثنائية",
@@ -1643,54 +1536,6 @@
           "بالنسبة لـ SEO أرسل العنوان والوصف المطلوبين، وبالنسبة لرأي عميل أرسل اسمه ونصه."
         ]
       }
-    }
-  },
-  "formErrors": {
-    "required": "هذا الحقل مطلوب.",
-    "invalidValue": "قيمة غير صالحة.",
-    "invalidEmail": "بريد إلكتروني غير صالح."
-  },
-  "admin": {
-    "shell": {
-      "skipToContent": "انتقل إلى المحتوى",
-      "adminNavigationLabel": "تنقل الإدارة",
-      "mobileTabBarLabel": "التنقل الرئيسي",
-      "breadcrumbLabel": "مسار التنقل",
-      "openMenu": "فتح القائمة",
-      "hideSidebar": "إخفاء القائمة",
-      "showSidebar": "إظهار القائمة",
-      "moreTab": "المزيد",
-      "menuDrawerTitle": "القائمة",
-      "adminBadge": "إدارة",
-      "superadminOnlyBadge": "مشرف عام",
-      "languageSwitcherLabel": "لغة الواجهة",
-      "darkModeSwitch": "الوضع الداكن",
-      "switchToDarkMode": "التبديل إلى الوضع الداكن",
-      "switchToLightMode": "التبديل إلى الوضع الفاتح",
-      "activeBoutiqueSwitchLabel": "المتجر النشط: {name}. تغيير المتجر",
-      "switchBoutiqueMenuTitle": "تغيير المتجر",
-      "boutiqueSwitchedToast": "أنت الآن تدير {name}.",
-      "viewStorefront": "عرض المتجر",
-      "pendingOrdersCount": "{count, plural, zero {لا طلبات للتحقق} one {طلب واحد للتحقق} two {طلبان للتحقق} few {# طلبات للتحقق} many {# طلبًا للتحقق} other {# طلب للتحقق}}",
-      "pendingRefundsCount": "{count, plural, zero {لا استرجاعات للمعالجة} one {استرجاع واحد للمعالجة} two {استرجاعان للمعالجة} few {# استرجاعات للمعالجة} many {# استرجاعًا للمعالجة} other {# استرجاع للمعالجة}}"
-    },
-    "nav": {
-      "overviewGroup": "نظرة عامة",
-      "salesGroup": "المبيعات",
-      "catalogGroup": "الكتالوج",
-      "clientsGroup": "العملاء",
-      "boutiqueGroup": "المتجر",
-      "platformGroup": "المنصة",
-      "platformLimitsAndDomains": "الحدود والنطاقات"
-    },
-    "table": {
-      "selectAllOnPage": "تحديد الكل في هذه الصفحة",
-      "selectedRowsCount": "{count, plural, zero {لا صفوف محددة} one {صف واحد محدد} two {صفان محددان} few {# صفوف محددة} many {# صفًا محددًا} other {# صف محدد}}",
-      "clearSelection": "إلغاء التحديد"
-    },
-    "ui": {
-      "decreaseQuantity": "إنقاص",
-      "increaseQuantity": "زيادة"
     }
   }
 }

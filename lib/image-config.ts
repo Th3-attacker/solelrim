@@ -1,4 +1,4 @@
-// The widths next/image may ask Vercel's optimizer for (next.config.ts). Each
+// The widths next/image may ask Vercel's optimizer for (vite.config.ts). Each
 // width an image is shown at is a separate optimized copy, and every copy
 // that isn't cached yet makes Vercel download the original from Supabase
 // Storage, which is what counts against Supabase's Cached Egress. Fewer
@@ -19,9 +19,44 @@ export const PUBLIC_IMAGE_CACHE_CONTROL = String(365 * 24 * 60 * 60);
 
 export type OptimizedWidth = (typeof DEVICE_SIZES)[number] | (typeof IMAGE_SIZES)[number];
 
+// L'URL de l'optimiseur d'images de Vercel (/_vercel/image, configuré dans
+// vite.config.ts) pour une image publique et une largeur donnée. Utilisée par
+// le remplaçant de next/image (src/compat/next/image.tsx).
+export function optimizedImageUrl(src: string, width: number): string {
+  return `/_vercel/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+}
+
 // The optimizer's URL for a public image, for places next/image can't render:
 // social previews (og:image) and structured data. Relative: metadata resolves
-// it against metadataBase.
+// it against metadataBase. Hors de Vercel (pnpm dev), il n'y a pas
+// d'optimiseur : l'image d'origine.
 export function optimizedImagePath(src: string, width: OptimizedWidth): string {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+  return process.env.VERCEL ? optimizedImageUrl(src, width) : src;
+}
+
+// Motif d'hôte accepté par l'optimiseur, exporté pour être testé
+// (lib/image-config.test.ts).
+export const SUPABASE_HOSTNAME_PATTERN = "^[^.]+\\.supabase\\.co$";
+
+// La configuration de l'optimiseur de Vercel (vite.config.ts, sortie de build
+// Vercel) : ex-`images` de next.config.ts — mêmes largeurs, même durée de
+// cache, limité au stockage public de Supabase. Les motifs sont des
+// expressions régulières, comme celles que Next.js écrivait lui-même.
+export function vercelImagesConfig() {
+  return {
+    domains: [],
+    sizes: [...DEVICE_SIZES, ...IMAGE_SIZES].sort((a, b) => a - b),
+    minimumCacheTTL: OPTIMIZED_IMAGE_TTL_SECONDS,
+    formats: ["image/webp" as const],
+    remotePatterns: [
+      {
+        protocol: "https" as const,
+        // Équivalent exact de `*.supabase.co` sous Next : un seul sous-domaine
+        // (l'identifiant du projet), ni le domaine nu ni des sous-domaines
+        // imbriqués, pour ne pas élargir ce que l'optimiseur accepte de servir.
+        hostname: SUPABASE_HOSTNAME_PATTERN,
+        pathname: "^/storage/v1/object/public/.*$",
+      },
+    ],
+  };
 }

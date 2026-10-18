@@ -102,7 +102,6 @@ export function WalletAccountsManager({ wallets }: { wallets: WalletAccount[] })
           {wallets.map((wallet, index) => (
             <div key={wallet.id} className="flex items-center gap-3 rounded-md border bg-card p-2">
               {wallet.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={wallet.logoUrl}
                   alt=""

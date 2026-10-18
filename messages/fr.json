@@ -85,19 +85,7 @@
       "mfaSubmit": "Vérifier",
       "mfaInvalidCode": "Code incorrect ou expiré.",
       "mfaOtherAccount": "Utiliser un autre compte",
-      "backToShop": "Retour à la boutique",
-      "welcomeTitle": "Content de vous revoir",
-      "welcomeSubtitle": "Connectez-vous à l'administration de la boutique.",
-      "emailAddress": "Adresse e-mail",
-      "twoStepNotice": "Si la vérification en deux étapes est active, un code vous sera demandé ensuite.",
-      "showcaseEyebrow": "SOLAL · ADMINISTRATION",
-      "showcaseHeadline": "Chaque commande vérifiée, chaque ouguiya comptée.",
-      "showcaseMobilePaymentTitle": "Paiement mobile",
-      "showcaseMobilePaymentBody": "Bankily, Masrivi, Sedad et Bimbank, capture à l'appui.",
-      "showcaseWhatsappTitle": "Confirmation WhatsApp",
-      "showcaseWhatsappBody": "Le client est prévenu dès que vous validez.",
-      "showcasePosTitle": "Caisse en boutique",
-      "showcasePosBody": "Ouverture, ventes et clôture au même endroit."
+      "backToShop": "Retour à la boutique"
     }
   },
   "theme": {
@@ -142,42 +130,7 @@
     "last7Days": "7 derniers jours",
     "last30Days": "30 derniers jours",
     "last90Days": "3 derniers mois",
-    "allTime": "Tout",
-    "greetingWithName": "Bonjour {name}",
-    "greeting": "Bonjour",
-    "monthRevenueMultiple": "Ce mois-ci a déjà rapporté {ratio} fois le mois dernier.",
-    "paymentsToCheckSentence": "{count, plural, =0 {Aucun paiement à vérifier.} one {Il reste # paiement à vérifier.} other {Il reste # paiements à vérifier.}}",
-    "toHandleLabel": "À traiter",
-    "pendingOrdersCard": "{count, plural, one {# commande en attente} other {# commandes en attente}}",
-    "oldestPendingAge": "La plus ancienne : {age}",
-    "lowStockVariantsCard": "{count, plural, one {# variante presque épuisée} other {# variantes presque épuisées}}",
-    "pendingRefundsCard": "{count, plural, one {# remboursement à décider} other {# remboursements à décider}}",
-    "latestRefundRequested": "Dernière demande : {age}",
-    "nothingToHandle": "Rien à traiter pour le moment.",
-    "keyFiguresLabel": "Chiffres clés",
-    "revenueThisMonthTile": "Chiffre d'affaires · ce mois",
-    "salesThisMonthTile": "Ventes · ce mois",
-    "versusLastMonth": "vs le mois dernier",
-    "salesSinceOpening": "{count, plural, one {# vente depuis l'ouverture} other {# ventes depuis l'ouverture}}",
-    "newClientsThisMonthShort": "{count, plural, =0 {Aucun nouveau ce mois} one {# nouveau ce mois} other {# nouveaux ce mois}}",
-    "lowStockStatus": "{count, plural, one {# en stock faible} other {# en stock faible}}",
-    "revenueChartSubtitle": "Ventes terminées, en MRU, par {unit, select, day {jour} week {semaine} other {mois}}",
-    "revenueBestBucket": "{unit, select, day {Meilleur jour} week {Meilleure semaine} other {Meilleur mois}} : {label}, {amount}",
-    "revenuePeriodLabel": "Période",
-    "revenueChartLabel": "Chiffre d'affaires du {from} au {to}",
-    "revenueDataToggle": "Voir les chiffres",
-    "revenuePeriodColumn": "Période",
-    "noRevenueYet": "Aucune vente sur cette période.",
-    "weekOf": "Semaine du {date}",
-    "bestSellersSubtitle": "Quantités vendues depuis l'ouverture",
-    "lowStockSubtitle": "À réapprovisionner avant rupture",
-    "onlyLeft": "{count, plural, =0 {Épuisé} other {Plus que #}}",
-    "lowStockVariantsBadge": "{count, plural, one {# variante} other {# variantes}}",
-    "latestOrdersTitle": "Dernières commandes en ligne",
-    "latestOrdersSubtitle": "Paiement par Bankily, Masrivi, Sedad ou Bimbank, à vérifier sur la capture",
-    "receivedColumn": "Reçue",
-    "revenueChartRole": "graphique",
-    "checkPaymentsAction": "Vérifier les paiements"
+    "allTime": "Tout"
   },
   "products": {
     "title": "Produits",
@@ -572,89 +525,7 @@
     "pushRejected": "Votre commande n'a pas pu être acceptée.",
     "pushShipped": "Votre commande est en cours de livraison.",
     "pushDelivered": "Votre commande a été livrée. Merci !",
-    "pushCancelled": "Votre commande a été annulée.",
-    "listDescription": "Commandes passées sur le site et l'app. Vérifiez la capture avant de confirmer.",
-    "statusTabsLabel": "Filtrer par statut",
-    "tabAll": "Toutes",
-    "tabPending": "En attente",
-    "tabConfirmed": "Confirmées",
-    "tabShipping": "En livraison",
-    "tabDelivered": "Livrées",
-    "tabRejected": "Refusées",
-    "tabCancelled": "Annulées",
-    "tabCountLabel": "{count, plural, one {# commande} other {# commandes}}",
-    "searchLabel": "Chercher par téléphone ou référence",
-    "searchShortPlaceholder": "Téléphone ou référence",
-    "dateFilterAll": "Toutes les dates",
-    "dateFilterCustom": "Période personnalisée",
-    "dateFilterLabel": "Filtrer par date",
-    "dateFrom": "Du",
-    "dateTo": "Au",
-    "dateRangeShown": "Du {from} au {to}",
-    "exportSelection": "Exporter la sélection",
-    "printSelectedLabels": "Imprimer les étiquettes",
-    "selectOrder": "Sélectionner {reference}",
-    "verifyAction": "Vérifier",
-    "openAction": "Ouvrir",
-    "noOrdersMatching": "Aucune commande ne correspond à ces filtres.",
-    "backToOrders": "Toutes les commandes",
-    "receivedOn": "Reçue le {date}",
-    "callCustomer": "Appeler",
-    "whatsappCustomer": "WhatsApp",
-    "paymentProofTitle": "Preuve de paiement",
-    "openProof": "Agrandir la capture",
-    "proofUnavailable": "Capture indisponible.",
-    "expectedAmount": "Montant attendu",
-    "beforeConfirming": "Avant de confirmer",
-    "checkProofAmount": "Le montant de la capture est {amount}",
-    "checkMoneyReceived": "L'argent est bien arrivé sur le compte",
-    "checkTransactionUnused": "Le n° de transaction n'a jamais servi",
-    "subtotal": "Sous-total",
-    "promoCodeLine": "Code promo {code}",
-    "totalPaid": "Total payé",
-    "trackingTitle": "Suivi",
-    "stepReceived": "Reçue",
-    "stepConfirmed": "Paiement confirmé",
-    "stepShipping": "En livraison",
-    "stepDelivered": "Livrée",
-    "stepRejected": "Refusée",
-    "stepCancelled": "Annulée",
-    "stepWaiting": "À venir",
-    "confirmPayment": "Confirmer le paiement",
-    "rejectOrderAction": "Refuser la commande",
-    "markShipping": "Marquer en livraison",
-    "markDelivered": "Marquer comme livrée",
-    "cancelOrderAction": "Annuler la commande",
-    "customerNotifiedHint": "Le client suivi dans l'app est prévenu à chaque étape ; le bouton WhatsApp lui envoie le message tout prêt.",
-    "rejectDialogTitle": "Refuser la commande ?",
-    "rejectDialogBody": "Le stock réservé est remis en vente. Le client pourra renvoyer une preuve.",
-    "confirmRejection": "Oui, refuser",
-    "confirmCancellation": "Oui, annuler",
-    "goBack": "Revenir",
-    "confirmPaymentQuestion": "Confirmer le paiement de {reference} ?",
-    "customerTitle": "Client",
-    "ordersFromPhone": "Commandes passées",
-    "toastConfirmed": "Paiement confirmé.",
-    "toastRejected": "Commande refusée.",
-    "toastShipped": "Commande en livraison.",
-    "toastDelivered": "Commande livrée.",
-    "toastCancelled": "Commande annulée.",
-    "reasonRequired": "Indiquez une raison.",
-    "transitionFailed": "L'action n'a pas abouti. Réessayez.",
-    "rejectedBecause": "Refusée : {reason}",
-    "cancelledBecause": "Annulée : {reason}",
-    "labelsTitle": "Étiquettes de livraison",
-    "labelDelivery": "LIVRAISON",
-    "labelOrder": "COMMANDE",
-    "labelRecipient": "DESTINATAIRE",
-    "labelItems": "ARTICLES",
-    "labelPayment": "PAIEMENT",
-    "labelPaidMobile": "Payé · mobile money",
-    "labelSender": "Expéditeur :",
-    "printLabels": "Imprimer",
-    "labelsCount": "{count, plural, one {# étiquette} other {# étiquettes}}",
-    "orderNotFound": "Cette commande n'existe pas dans cette boutique.",
-    "staleWarning": "En attente depuis plus de {hours} h"
+    "pushCancelled": "Votre commande a été annulée."
   },
   "settings": {
     "title": "Paramètres",
@@ -1478,7 +1349,9 @@
           "Choisissez « Entrée » ou « Sortie » et saisissez le montant.",
           "Indiquez le motif (obligatoire), puis « Enregistrer »."
         ],
-        "issues": ["Une sortie supérieure aux espèces attendues est refusée."]
+        "issues": [
+          "Une sortie supérieure aux espèces attendues est refusée."
+        ]
       },
       "promoCode": {
         "title": "Créer un code promo",
@@ -1501,7 +1374,9 @@
           "Si aucune carte n'existe, cliquez sur « Créer la carte ».",
           "La vente ajoute les points automatiquement ; le client peut utiliser sa récompense à une vente suivante."
         ],
-        "issues": ["Le programme doit être activé et réglé par l'admin dans « Paramètres »."]
+        "issues": [
+          "Le programme doit être activé et réglé par l'admin dans « Paramètres »."
+        ]
       },
       "manageClients": {
         "title": "Gérer les clients",
@@ -1511,7 +1386,9 @@
           "Créez ou modifiez une fiche avec le nom et le téléphone.",
           "Ouvrez la fiche d'un client pour voir son historique."
         ],
-        "issues": ["Un client qui a déjà des ventes ne peut pas être supprimé."]
+        "issues": [
+          "Un client qui a déjà des ventes ne peut pas être supprimé."
+        ]
       },
       "closeRegister": {
         "title": "Fermer sa caisse",
@@ -1659,54 +1536,6 @@
           "Pour le SEO, envoyez le titre et la description voulus ; pour un avis client, le nom du client et son texte."
         ]
       }
-    }
-  },
-  "formErrors": {
-    "required": "Ce champ est requis.",
-    "invalidValue": "Valeur invalide.",
-    "invalidEmail": "Adresse e-mail invalide."
-  },
-  "admin": {
-    "shell": {
-      "skipToContent": "Aller au contenu",
-      "adminNavigationLabel": "Navigation de l'administration",
-      "mobileTabBarLabel": "Navigation principale",
-      "breadcrumbLabel": "Fil d'Ariane",
-      "openMenu": "Ouvrir le menu",
-      "hideSidebar": "Masquer le menu",
-      "showSidebar": "Afficher le menu",
-      "moreTab": "Plus",
-      "menuDrawerTitle": "Menu",
-      "adminBadge": "ADMIN",
-      "superadminOnlyBadge": "Super-admin",
-      "languageSwitcherLabel": "Langue de l'interface",
-      "darkModeSwitch": "Mode sombre",
-      "switchToDarkMode": "Passer en mode sombre",
-      "switchToLightMode": "Passer en mode clair",
-      "activeBoutiqueSwitchLabel": "Boutique active : {name}. Changer de boutique",
-      "switchBoutiqueMenuTitle": "Changer de boutique",
-      "boutiqueSwitchedToast": "Vous gérez maintenant {name}.",
-      "viewStorefront": "Voir la boutique",
-      "pendingOrdersCount": "{count, plural, one {# commande à vérifier} other {# commandes à vérifier}}",
-      "pendingRefundsCount": "{count, plural, one {# remboursement à traiter} other {# remboursements à traiter}}"
-    },
-    "nav": {
-      "overviewGroup": "Pilotage",
-      "salesGroup": "Ventes",
-      "catalogGroup": "Catalogue",
-      "clientsGroup": "Clients",
-      "boutiqueGroup": "Boutique",
-      "platformGroup": "Plateforme",
-      "platformLimitsAndDomains": "Limites et domaines"
-    },
-    "table": {
-      "selectAllOnPage": "Tout sélectionner sur cette page",
-      "selectedRowsCount": "{count, plural, one {# ligne sélectionnée} other {# lignes sélectionnées}}",
-      "clearSelection": "Annuler la sélection"
-    },
-    "ui": {
-      "decreaseQuantity": "Moins",
-      "increaseQuantity": "Plus"
     }
   }
 }

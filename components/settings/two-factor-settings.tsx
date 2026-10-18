@@ -159,7 +159,6 @@ export function TwoFactorSettings({
           <div className="flex flex-col items-center gap-4">
             {/* Supabase returns the QR code pre-rendered as inline SVG data
                 (see enrollTotpFactor) — no client-side QR library needed. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={enrollment.qrCode}
               alt={t("twoFactorSetupTitle")}

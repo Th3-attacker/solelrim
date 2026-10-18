@@ -17,17 +17,15 @@
 /blob-report
 /playwright/.cache
 
-# next.js
+# tanstack start / vite / nitro
+/.output/
+/.tanstack/
+/.nitro/
+# ancien cache Next.js, s'il traîne encore en local
 /.next/
-/out/
 
 # production
 /build
-
-# TanStack Start (vite build, nitro)
-/.output/
-/.nitro/
-/.tanstack/
 
 # misc
 .DS_Store
@@ -48,7 +46,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 /lib/generated/prisma
 

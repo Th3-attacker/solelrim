@@ -1,9 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
-export async function ListPagination({
+export function ListPagination({
   page,
   pageSize,
   total,
@@ -21,7 +21,7 @@ export async function ListPagination({
   // shared "page").
   paramName?: string;
 }) {
-  const t = await getTranslations("common");
+  const t = useTranslations("common");
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) return null;
 

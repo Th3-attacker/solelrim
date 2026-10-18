@@ -141,7 +141,6 @@ export function PwaInstallPrompt({ siteName }: { siteName: string }) {
   // format" — some incompatibility between ImageResponse's PNG encoding
   // and re-processing it a second time, not something to fight here.
   const icon = (
-    // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/icon-192"
       alt=""

@@ -1,10 +1,9 @@
 lib/generated
-.next
+.output
+.tanstack
+.vercel
+src/routeTree.gen.ts
 coverage
 playwright-report
 test-results
 .tmp-*
-.output
-.nitro
-.tanstack
-src/routeTree.gen.ts

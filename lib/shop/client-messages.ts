@@ -2,11 +2,7 @@ import frMessages from "@/messages/fr.json";
 import enMessages from "@/messages/en.json";
 import arMessages from "@/messages/ar.json";
 import { formatPrice } from "@/lib/format/currency";
-import { DEFAULT_LOCALE, isAppLocale } from "@/lib/i18n-locales";
-import { REASON_LABEL_KEY } from "@/lib/shop/order-reasons";
-
-// The presets live apart (no message bundles): screens import them.
-export { REASON_LABEL_KEY, REJECT_REASON_PRESETS } from "@/lib/shop/order-reasons";
+import { routing } from "@/i18n/routing";
 
 // Messages sent to the *customer* (order confirmed/rejected), unlike
 // buildOrderWhatsAppLink in whatsapp.ts which is addressed to the
@@ -18,9 +14,31 @@ const MESSAGE_BUNDLES = { fr: frMessages, en: enMessages, ar: arMessages } as co
 
 type SupportedLocale = keyof typeof MESSAGE_BUNDLES;
 
+export const REJECT_REASON_PRESETS = [
+  "invalid_payment",
+  "out_of_stock",
+  "undeliverable_location",
+] as const;
+
 function resolveLocale(locale: string | null | undefined): SupportedLocale {
-  return isAppLocale(locale) ? locale : DEFAULT_LOCALE;
+  const locales: readonly string[] = routing.locales;
+  return locale && locales.includes(locale)
+    ? (locale as SupportedLocale)
+    : (routing.defaultLocale as SupportedLocale);
 }
+
+// Maps each reject-reason preset to its translation key under the "orders"
+// namespace — shared by the admin reject dialog (order-actions.tsx), the
+// order detail page (which redisplays a stored reason), and
+// resolveReasonLabel below. A free-typed ("other") reason has no entry here
+// and is shown/sent as whatever text the admin wrote.
+export const REASON_LABEL_KEY: Record<string, keyof (typeof MESSAGE_BUNDLES)["fr"]["orders"]> = {
+  invalid_payment: "reasonInvalidPayment",
+  out_of_stock: "reasonOutOfStock",
+  undeliverable_location: "reasonUndeliverableLocation",
+  // Set by the timer, not an admin (lib/services/pending-expiry.ts).
+  payment_timeout: "reasonPaymentTimeout",
+};
 
 // Preset reasons are translated into the customer's locale; free-typed
 // ("other") reasons stay in whatever language the admin wrote them in —

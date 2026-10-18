@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,24 +12,23 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    // vite.config.ts et vitest.config.ts importent leurs modules locaux avec
+    // l'extension `.ts`, qu'exige le chargeur natif de Vite (futur défaut) ;
+    // cette option permet à tsc de les accepter. Ne pas la retirer.
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client"],
     "paths": {
       "@/*": ["./*"],
-      "~/*": ["./src/*"]
+      "next": ["./src/compat/next/index.ts"],
+      "next/navigation": ["./src/compat/next/navigation.ts"],
+      "next/image": ["./src/compat/next/image.tsx"],
+      "next/headers": ["./src/compat/next/headers.ts"],
+      "next/cache": ["./src/compat/next/cache.ts"],
+      "next/server": ["./src/compat/next/server.ts"],
+      "next-intl": ["./src/compat/next-intl/index.tsx"],
+      "next-intl/server": ["./src/compat/next-intl/server.ts"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
+  "exclude": ["node_modules", ".output", ".vercel", "coverage"]
 }

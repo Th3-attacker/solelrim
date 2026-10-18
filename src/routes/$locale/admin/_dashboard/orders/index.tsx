@@ -1,260 +1,219 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { Link, createFileRoute, stripSearchParams, useNavigate } from "@tanstack/react-router";
-import { useTable, type RowSelectionState } from "@tanstack/react-table";
-import { useFormatter, useTranslations } from "use-intl";
-import { formatPriceNumber } from "@/lib/format/currency";
-import { Card } from "~/components/ui/card";
-import { Button, ButtonLink } from "~/components/ui/button";
-import { EmptyState } from "~/components/ui/empty-state";
-import { Icon } from "~/components/ui/icon";
-import { PageHeader } from "~/components/ui/page-header";
-import { Status } from "~/components/ui/status";
+import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { useFormatter, useTranslations } from "next-intl";
+import { adminPageBoundaries } from "@/components/errors/admin-boundaries";
+import { OrdersSkeleton } from "@/components/dashboard/page-skeletons";
+import { pageInput } from "@/src/server/validators";
+import Image from "next/image";
+import { differenceInHours } from "date-fns";
+import { ClipboardText, MagnifyingGlass, Warning } from "@phosphor-icons/react/dist/ssr";
+import { Link } from "@/i18n/navigation";
+import { getAllOrders, getAllOrdersForExport, ORDERS_PAGE_SIZE } from "@/lib/queries/orders";
+import { parseOrderDateFilters } from "@/lib/orders/filters";
+import { getAdminScope } from "@/lib/auth/scope";
+import { OrderStatus } from "@/lib/generated/prisma/enums";
+import { ORDER_STATUS_LABEL_KEY, STALE_PENDING_HOURS } from "@/lib/shop/order-status";
+import { getProductImageUrl } from "@/lib/supabase/storage";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { OrderFilters } from "@/components/orders/order-filters";
+import { StateMessage } from "@/components/ui/state-message";
+import { ExportCsvButton } from "@/components/ui/export-csv-button";
+import { ListPagination } from "@/components/ui/list-pagination";
+import { formatPrice } from "@/lib/format/currency";
 import {
-  DataTable,
-  Pagination,
-  adminColumns,
-  adminTableFeatures,
-  selectionColumn,
-} from "~/components/table/data-table";
-import { ORDER_STATUS } from "~/features/orders/order-status";
-import { orderListQuery } from "~/features/orders/orders.queries";
-import { orderListSearchSchema, type OrderListSearch } from "~/features/orders/orders.schemas";
-import {
-  DateFilter,
-  OrderCards,
-  OrderSearch,
-  PendingAge,
-  SelectionActions,
-  StatusTabs,
-  useOrdersCsv,
-  type OrderRow,
-} from "~/features/orders/order-list";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getFormatter, getTranslations } from "next-intl/server";
 
-export const Route = createFileRoute("/$locale/admin/_dashboard/orders/")({
-  validateSearch: orderListSearchSchema,
-  // Defaults stay out of the address.
-  search: { middlewares: [stripSearchParams({ status: "pending", page: 1 })] },
-  loaderDeps: ({ search }) => search,
-  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(orderListQuery(deps)),
-  staticData: { section: "admin.nav.salesGroup", title: "nav.orders" },
-  component: OrdersPage,
-});
+// Ex-app/[locale]/admin/(dashboard)/orders/page.tsx.
 
-const helper = adminColumns<OrderRow>();
+const ORDER_STATUSES: readonly string[] = Object.values(OrderStatus);
 
-function OrdersPage() {
-  const t = useTranslations("orders");
-  const tCommon = useTranslations("common");
-  const { locale } = Route.useRouteContext();
-  const search = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
-  const queryClient = useQueryClient();
-  // The loader read it before the page showed; while the next filters load,
-  // the router keeps this page on screen.
-  const { data: list } = useSuspenseQuery(orderListQuery(search));
-  const tTable = useTranslations("admin.table");
-  const csv = useOrdersCsv();
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+const loadAdminOrdersPage = createServerFn({ method: "GET" })
+  .validator(pageInput)
+  .handler(async ({ data }) => {
+    const params = data.search;
+    const rawStatus = typeof params.status === "string" ? params.status : undefined;
+    const status =
+      rawStatus && ORDER_STATUSES.includes(rawStatus) ? (rawStatus as OrderStatus) : undefined;
+    const search = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
+    const rawFrom = typeof params.from === "string" ? params.from : undefined;
+    const rawTo = typeof params.to === "string" ? params.to : undefined;
+    const { dateFrom, dateTo } = parseOrderDateFilters({ from: rawFrom, to: rawTo });
+    const hasFilters = Boolean(status || search || dateFrom || dateTo);
+    const page = typeof params.page === "string" ? Number(params.page) || 1 : 1;
 
-  const setSearch = useCallback(
-    (next: Partial<OrderListSearch>) => {
-      setRowSelection({});
-      void navigate({
-        search: (prev) => ({ ...prev, ...next, page: next.page ?? 1 }),
-        replace: true,
-        resetScroll: false,
-      });
-    },
-    [navigate],
-  );
+    const scope = await getAdminScope();
+    const orderFilters = { productType: scope, status, search, dateFrom, dateTo };
+    const [t, tCommon, format, { orders, total }, exportRows] = await Promise.all([
+      getTranslations("orders"),
+      getTranslations("common"),
+      getFormatter(),
+      getAllOrders(orderFilters, page),
+      getAllOrdersForExport(orderFilters),
+    ]);
 
-  // The next page is read before it's asked for.
-  const lastPage = Math.max(1, Math.ceil(list.total / list.pageSize));
-  useEffect(() => {
-    if (search.page < lastPage) {
-      void queryClient.prefetchQuery(orderListQuery({ ...search, page: search.page + 1 }));
-    }
-  }, [queryClient, search, lastPage]);
+    const csvColumns = [
+      { key: "reference", label: t("reference") },
+      { key: "customer", label: t("customer") },
+      { key: "phone", label: t("phone") },
+      { key: "city", label: t("city") },
+      { key: "paymentSenderPhone", label: t("paymentSenderPhone") },
+      { key: "total", label: t("total") },
+      { key: "status", label: t("status") },
+      { key: "date", label: t("date") },
+    ];
+    const csvRows = exportRows.map((order) => ({
+      reference: order.reference,
+      customer: order.customerName,
+      phone: order.customerPhone,
+      city: order.customerCity,
+      paymentSenderPhone: order.paymentSenderPhone ?? "",
+      total: formatPrice(order.total, tCommon("currency")),
+      status: t(ORDER_STATUS_LABEL_KEY[order.status]),
+      date: format.dateTime(order.createdAt, { dateStyle: "medium" }),
+    }));
 
-  const columns = useMemo(
-    () =>
-      helper.columns([
-        selectionColumn<OrderRow>({
-          selectAllLabel: tTable("selectAllOnPage"),
-          rowLabel: (order) => t("selectOrder", { reference: order.reference }),
-        }),
-        helper.accessor("reference", {
-          header: t("reference"),
-          enableSorting: false,
-          meta: { rowHeader: true },
-          cell: ({ row }) => (
-            <Link
-              to="/$locale/admin/orders/$orderId"
-              params={{ locale, orderId: row.original.id }}
-              className="font-semibold text-ink no-underline hover:text-brand hover:underline"
-            >
-              {row.original.reference}
-            </Link>
-          ),
-        }),
-        helper.accessor("customerName", { header: t("customer"), enableSorting: false }),
-        helper.accessor("customerPhone", {
-          header: t("phone"),
-          enableSorting: false,
-          cell: ({ getValue }) => (
-            <span dir="ltr" className="text-muted">
-              {getValue()}
-            </span>
-          ),
-        }),
-        helper.accessor("total", {
-          header: t("total"),
-          enableSorting: false,
-          meta: { align: "end" },
-          cell: ({ getValue }) => (
-            <b className="font-semibold">
-              {formatPriceNumber(getValue())} {tCommon("currency")}
-            </b>
-          ),
-        }),
-        helper.accessor("status", {
-          header: t("status"),
-          enableSorting: false,
-          cell: ({ row }) => {
-            const status = ORDER_STATUS[row.original.status];
-            return (
-              <>
-                <Status tone={status.tone}>{t(status.label)}</Status>
-                {row.original.status === "PENDING" && (
-                  <PendingAge
-                    createdAt={row.original.createdAt}
-                    now={list.now}
-                    staleAfterHours={list.staleAfterHours}
-                  />
-                )}
-              </>
-            );
-          },
-        }),
-        helper.accessor("createdAt", {
-          header: t("date"),
-          enableSorting: false,
-          cell: ({ getValue }) => <OrderDate date={getValue()} />,
-        }),
-        helper.display({
-          id: "action",
-          header: () => <span className="sr-only">{tCommon("actions")}</span>,
-          meta: { align: "end" },
-          cell: ({ row }) => (
-            <ButtonLink
-              size="sm"
-              to="/$locale/admin/orders/$orderId"
-              params={{ locale, orderId: row.original.id }}
-              aria-label={`${t(row.original.status === "PENDING" ? "verifyAction" : "openAction")} ${row.original.reference}`}
-            >
-              {t(row.original.status === "PENDING" ? "verifyAction" : "openAction")}
-            </ButtonLink>
-          ),
-        }),
-      ]),
-    [t, tCommon, tTable, locale, list.now, list.staleAfterHours],
-  );
-
-  const table = useTable({
-    features: adminTableFeatures,
-    columns,
-    data: list.rows,
-    getRowId: (order) => order.id,
-    state: { rowSelection },
-    onRowSelectionChange: setRowSelection,
+    // Les tailles de page viennent du serveur : leurs modules (lib/queries)
+    // importent Prisma et n'ont rien à faire dans le navigateur.
+    return {
+      status,
+      search,
+      rawFrom,
+      rawTo,
+      hasFilters,
+      page,
+      orders,
+      total,
+      csvColumns,
+      csvRows,
+      ordersPageSize: ORDERS_PAGE_SIZE,
+    };
   });
 
-  const { page: _page, ...filters } = search;
-  const filtered = Boolean(search.q || search.from || search.to);
+export const Route = createFileRoute("/$locale/admin/_dashboard/orders/")({
+  loaderDeps: ({ search }) => ({ search }),
+  loader: ({ deps }) => loadAdminOrdersPage({ data: { search: deps.search } }),
+  component: AdminOrdersPage,
+  ...adminPageBoundaries,
+  pendingComponent: OrdersSkeleton,
+});
 
-  return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-5 px-4 pt-7 pb-14 md:px-8">
-      <PageHeader
-        title={t("title")}
-        description={t("listDescription")}
-        actions={
-          <Button busy={csv.busy} onClick={() => void csv.download(filters)}>
-            <Icon name="download" />
-            {tCommon("exportCsv")}
-          </Button>
-        }
-      />
-
-      <Card as="section" aria-label={t("title")} className="overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-soft p-3">
-          <StatusTabs locale={locale} current={search.status} counts={list.tabCounts} />
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-            <OrderSearch value={search.q} onSearch={(q) => setSearch({ q })} />
-            <DateFilter
-              from={search.from}
-              to={search.to}
-              now={list.now}
-              onChange={(range) => setSearch(range)}
-            />
-          </div>
-        </div>
-
-        {list.rows.length === 0 ? (
-          <EmptyState
-            icon={filtered ? "search" : "orders"}
-            title={filtered ? t("noOrdersMatching") : t("noOrders")}
-            action={
-              filtered ? (
-                <Button onClick={() => setSearch({ q: undefined, from: undefined, to: undefined })}>
-                  {t("resetFilters")}
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-          <>
-            <div className="hidden md:block">
-              <DataTable
-                table={table}
-                caption={t("title")}
-                selectionBar={(selected) => (
-                  <SelectionActions
-                    selected={selected}
-                    locale={locale}
-                    onClear={() => setRowSelection({})}
-                  />
-                )}
-              />
-            </div>
-            <OrderCards
-              rows={list.rows}
-              locale={locale}
-              now={list.now}
-              staleAfterHours={list.staleAfterHours}
-            />
-          </>
-        )}
-
-        <Pagination
-          page={search.page}
-          pageSize={list.pageSize}
-          total={list.total}
-          rangeLabel={(range) => tCommon("paginationRange", range)}
-          previousLabel={tCommon("previous")}
-          nextLabel={tCommon("next")}
-          onPageChange={(page) => setSearch({ page })}
-        />
-      </Card>
-    </div>
-  );
-}
-
-function OrderDate({ date }: { date: Date }) {
+function AdminOrdersPage() {
+  const {
+    status,
+    search,
+    rawFrom,
+    rawTo,
+    hasFilters,
+    page,
+    orders,
+    total,
+    csvColumns,
+    csvRows,
+    ordersPageSize,
+  } = Route.useLoaderData();
+  const t = useTranslations("orders");
+  const tCommon = useTranslations("common");
   const format = useFormatter();
+
   return (
-    <time dateTime={date.toISOString()} className="text-muted">
-      {format.dateTime(date, { day: "numeric", month: "short" })}
-    </time>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <ExportCsvButton
+          label={tCommon("exportCsv")}
+          filename={`orders-${new Date().toISOString().slice(0, 10)}.csv`}
+          columns={csvColumns}
+          rows={csvRows}
+        />
+      </div>
+
+      <OrderFilters />
+
+      {orders.length === 0 ? (
+        <StateMessage
+          icon={hasFilters ? MagnifyingGlass : ClipboardText}
+          title={hasFilters ? tCommon("noResults") : t("noOrders")}
+        />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead></TableHead>
+              <TableHead>{t("reference")}</TableHead>
+              <TableHead>{t("customer")}</TableHead>
+              <TableHead>{t("phone")}</TableHead>
+              <TableHead>{t("total")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("date")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => {
+              const image = order.items[0]?.variant.product.images[0];
+              const isStale =
+                order.status === "PENDING" &&
+                differenceInHours(new Date(), order.createdAt) >= STALE_PENDING_HOURS;
+              return (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <div className="relative size-10 overflow-hidden rounded-md border bg-card">
+                      {image ? (
+                        <Image
+                          src={getProductImageUrl(image.storagePath)}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="40px"
+                        />
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {order.reference}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell className="text-muted-foreground">{order.customerPhone}</TableCell>
+                  <TableCell>{formatPrice(order.total, tCommon("currency"))}</TableCell>
+                  <TableCell>
+                    <OrderStatusBadge status={order.status} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {format.dateTime(order.createdAt, { dateStyle: "medium" })}
+                    {isStale && (
+                      <p className="mt-1 flex items-center gap-1 text-[color-mix(in_oklch,var(--warning),black_45%)] dark:text-warning">
+                        <Warning weight="fill" aria-hidden="true" className="size-3.5 shrink-0" />
+                        {t("pendingSince", {
+                          time: format.relativeTime(order.createdAt, new Date()),
+                        })}
+                      </p>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
+
+      <ListPagination
+        page={page}
+        pageSize={ordersPageSize}
+        total={total}
+        basePath="/admin/orders"
+        searchParams={{ status, q: search, from: rawFrom, to: rawTo }}
+      />
+    </div>
   );
 }

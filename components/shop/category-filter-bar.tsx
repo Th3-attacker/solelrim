@@ -1,10 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type Category = { id: string; name: string };
 
-export async function CategoryFilterBar({
+export function CategoryFilterBar({
   basePath,
   categories,
   activeCategoryId,
@@ -13,7 +13,7 @@ export async function CategoryFilterBar({
   categories: Category[];
   activeCategoryId?: string;
 }) {
-  const t = await getTranslations("shop");
+  const t = useTranslations("shop");
 
   return (
     <>

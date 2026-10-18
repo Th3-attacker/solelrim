@@ -14,7 +14,9 @@ import { Prisma } from "@/lib/generated/prisma/client";
 // (prerendered shells, <Activity> navigation, Suspense requirements). The tag
 // works the same with both, so moving later only changes this file.
 export const SHOP_DATA_TAG = "shop-data";
-const SAFETY_NET_SECONDS = 300;
+// Court : ce cache est propre à chaque instance du serveur (src/compat/next/cache.ts),
+// une écriture n'expire que celui de l'instance qui l'a faite.
+const SAFETY_NET_SECONDS = 30;
 
 // The cache stores JSON: Prisma's Decimal and Date would come back as
 // strings, and the code calls .toNumber() and getTime() on them. Tagged on
@@ -45,7 +47,7 @@ export function cachedShopQuery<Args extends unknown[], Result>(
 ): (...args: Args) => Promise<Result> {
   let cached: ((...args: Args) => Promise<string>) | undefined;
   return async (...args: Args) => {
-    // Unit tests run outside Next.js, where there is no cache to read.
+    // Unit tests run outside the server, where there is no cache to read.
     if (process.env.VITEST) return query(...args);
     cached ??= unstable_cache(
       async (...inner: Args) => encodeCached(await query(...inner)),

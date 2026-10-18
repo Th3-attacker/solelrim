@@ -2,25 +2,23 @@ import "server-only";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { SHOP_DATA_TAG } from "@/lib/data-cache";
 
-// Every page sits under a locale segment (localePrefix "always" in
-// i18n/routing.ts): the real URLs are /fr/admin/orders, /ar/sport/products/…
-// A literal "/admin/orders" names no route, so revalidatePath("/admin/orders")
-// invalidated nothing. These name the route patterns instead, every locale
-// and every boutique at once.
-//
-// Called from a Server Action, any of them also sends the current page back
-// re-rendered with the action's answer, so the client needs no
-// router.refresh() after it.
+// Ces helpers nomment ce qu'une écriture a changé (le back-office, les
+// vitrines, ou les deux), par les dossiers de routes de src/routes. Appelés
+// depuis une server action, ils font recharger au navigateur les données de
+// la page courante avant que l'action ne rende son résultat (voir
+// src/compat/next/cache.ts et src/compat/server-action-reference.ts), comme
+// le re-rendu serveur de Next.js : le client n'a pas besoin de
+// router.refresh() après coup.
 
-// The back office: every page under /[locale]/admin.
+// The back office: every page under /$locale/admin.
 export function revalidateAdmin(): void {
-  revalidatePath("/[locale]/admin", "layout");
+  revalidatePath("/$locale/admin", "layout");
   expireShopData();
 }
 
 // The storefronts: every page of every boutique.
 export function revalidateStorefront(): void {
-  revalidatePath("/[locale]/[storeType]", "layout");
+  revalidatePath("/$locale/$storeType", "layout");
   expireShopData();
 }
 
