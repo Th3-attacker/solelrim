@@ -30,5 +30,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
-  "exclude": ["node_modules", ".output", ".vercel", "coverage"]
+  "exclude": ["node_modules", ".output", ".vercel", "coverage", ".next"]
 }

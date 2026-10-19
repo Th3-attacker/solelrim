@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+// Le client Realtime seul : le client Supabase complet (auth, storage,
+// postgrest…) ajouterait ~35 Ko gzip à chaque page admin pour rien ici.
+import { RealtimeClient } from "@supabase/realtime-js";
 import { useRouter } from "@/i18n/navigation";
 
 // Same name as lib/realtime.ts's adminOrdersTopic (server-only there).
@@ -34,11 +36,17 @@ export function LiveOrders({ productType }: { productType: string }) {
       router.refresh();
     };
 
-    const supabase =
+    // Même configuration que celle que createClient de supabase-js donnait au
+    // client Realtime : point d'accès ws(s)://…/realtime/v1, et clé anonyme
+    // comme apikey et comme jeton (aucune session n'est ouverte ici).
+    const realtime =
       url && anonKey
-        ? createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
+        ? new RealtimeClient(`${url.replace(/^http/, "ws")}/realtime/v1`, {
+            params: { apikey: anonKey },
+            accessToken: async () => anonKey,
+          })
         : null;
-    const channel = supabase
+    const channel = realtime
       ?.channel(topicOf(productType))
       .on("broadcast", { event: "orders.changed" }, refresh)
       .subscribe((status) => {
@@ -53,7 +61,7 @@ export function LiveOrders({ productType }: { productType: string }) {
     return () => {
       clearInterval(fallback);
       document.removeEventListener("visibilitychange", refresh);
-      if (supabase && channel) void supabase.removeChannel(channel);
+      if (realtime && channel) void realtime.removeChannel(channel);
     };
   }, [productType, router]);
 

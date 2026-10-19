@@ -39,6 +39,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           name: "viewport",
           content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
         },
+        // Validation de la propriété du site dans Google Search Console. Ce code
+        // est public par nature (il figure dans le HTML) ; il est posé sur toutes
+        // les pages pour que l'accueil, que Google contrôle, le contienne.
+        {
+          name: "google-site-verification",
+          content: "SS0dHvdxKSTpJTalaHuP-r4Lap69AxARynKT0glDokI",
+        },
         ...meta,
       ],
       links: [
