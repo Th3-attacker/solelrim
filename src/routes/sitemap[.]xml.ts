@@ -10,7 +10,13 @@ import { getSiteUrl } from "@/lib/shop/site-url";
 // (see robots[.]txt.ts).
 const STATIC_SUBPATHS = ["", "/about", "/contact", "/products", "/legal"];
 
-type Entry = { url: string; lastModified: Date; languages: Record<string, string> };
+// `lastModified` est optionnel : Google ignore ce champ s'il change à chaque
+// requête, donc les pages sans date réelle (accueil, à propos…) l'omettent.
+type Entry = { url: string; lastModified?: Date; languages: Record<string, string> };
+
+// Durée de cache du sitemap côté CDN : évite une lecture en base à chaque
+// passage de Googlebot, tout en restant à jour (produits ajoutés / retirés).
+const SITEMAP_CACHE = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 function escapeXml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
@@ -35,7 +41,6 @@ async function sitemapEntries(): Promise<Entry[]> {
       for (const locale of routing.locales) {
         entries.push({
           url: urlFor(locale, path),
-          lastModified: new Date(),
           languages: alternatesFor(path),
         });
       }
@@ -71,7 +76,9 @@ export const Route = createFileRoute("/sitemap.xml")({
               ([lang, href]) =>
                 `<xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(href)}" />`,
             ),
-            `<lastmod>${entry.lastModified.toISOString()}</lastmod>`,
+            ...(entry.lastModified
+              ? [`<lastmod>${entry.lastModified.toISOString()}</lastmod>`]
+              : []),
             "</url>",
           ].join("\n"),
         );
@@ -82,7 +89,9 @@ export const Route = createFileRoute("/sitemap.xml")({
           "</urlset>",
           "",
         ].join("\n");
-        return new Response(xml, { headers: { "Content-Type": "application/xml" } });
+        return new Response(xml, {
+          headers: { "Content-Type": "application/xml", "Cache-Control": SITEMAP_CACHE },
+        });
       },
     },
   },
