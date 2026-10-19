@@ -18,3 +18,8 @@ overrides:
   deepmerge-ts: '>=8.0.0'
   # next's image optimiser (libheif advisories, fixed in 0.35.4).
   sharp: '>=0.35.4'
+  # Transitives runtime signalées par `pnpm audit` : fast-uri (via
+  # @hookform/resolvers > ajv) et js-yaml (via @tanstack/react-start).
+  # On force la plage corrigée ; le verrou garde la dernière version.
+  fast-uri: '^3.1.8'
+  js-yaml: '^4.3.2'
