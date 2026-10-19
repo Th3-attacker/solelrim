@@ -38,6 +38,17 @@ describe("GET /api/cron/expire-pending-orders", () => {
     expect(cancelMock).not.toHaveBeenCalled();
   });
 
+  it("refuses a header without the Bearer prefix or of another length", async () => {
+    vi.stubEnv("CRON_SECRET", "s3cret");
+
+    // Le secret nu (sans « Bearer ») et un en-tête plus long sont rejetés
+    // sans erreur, même si leur longueur diffère de celle attendue.
+    expect((await call("s3cret")).status).toBe(401);
+    expect((await call("Bearer s3cret-et-plus-long")).status).toBe(401);
+    expect((await call()).status).toBe(401);
+    expect(cancelMock).not.toHaveBeenCalled();
+  });
+
   it("refuses everything when CRON_SECRET isn't set", async () => {
     vi.stubEnv("CRON_SECRET", "");
 
