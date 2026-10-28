@@ -6,7 +6,6 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   prisma: true
-  sharp: true
   unrs-resolver: true
 
 # Transitive-only build-tool deps flagged by `pnpm audit` (nanoid via
@@ -16,8 +15,10 @@ allowBuilds:
 overrides:
   nanoid: '>=3.3.18'
   deepmerge-ts: '>=8.0.0'
-  # next's image optimiser (libheif advisories, fixed in 0.35.4).
-  sharp: '>=0.35.4'
+  # `sharp` n'arrivait que comme dépendance optionnelle de @vercel/og : sans lui,
+  # @vercel/og rend le PNG avec resvg (WebAssembly, déjà inclus). Ses binaires
+  # (@img/*, ~19 Mo) alourdissaient chaque function Vercel déployée.
+  '@vercel/og>sharp': '-'
   # Transitives runtime signalées par `pnpm audit` : fast-uri (via
   # @hookform/resolvers > ajv) et js-yaml (via @tanstack/react-start).
   # On force la plage corrigée ; le verrou garde la dernière version.
